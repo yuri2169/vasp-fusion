@@ -116,7 +116,16 @@ def bsc_unsupported(f):
     return EvmProvider("bsc", f, page_size=3).transfers(BSC_ADDR, "both", limit=3)
 
 
+BTC_ADDR = "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"  # Poloniex (label CSV), 72 txs
+
+
+def btc_pages(f):
+    from vaspfusion.chains.btc import BtcProvider
+    return BtcProvider(f, max_pages=3).transfers(BTC_ADDR, "both", limit=500)
+
+
 SCENARIOS = {
+    "btc_pages": (f"mempool.space, {BTC_ADDR}, full history (50 + 22 txs)", btc_pages),
     "eth_etherscan": (f"Etherscan v2 chainid=1, {ETH_ADDR}, page_size=3", eth_etherscan),
     "eth_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, page_size=3", eth_usdt),
     "eth_since_out": (f"Etherscan v2 chainid=1, {ETH_ADDR}, out since 2024-01-01", eth_since_out),
