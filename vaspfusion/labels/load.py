@@ -25,7 +25,7 @@ from .normalize import (
 
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
                  "source_url", "label"]
-DUNE_URL = "https://github.com/duneanalytics/spellbook"
+DUNE_SOURCE_URL = "https://github.com/duneanalytics/spellbook"
 
 _DDL = """
 CREATE TABLE labels (
@@ -81,7 +81,7 @@ def read_wallet_attribution(data_dir: Path) -> list[dict]:
 def read_dune(csv_path: Path) -> list[dict]:
     # Every row in this extract is a VASP wallet (the file lists exchanges only).
     return [_row(r["address"], r["chain"], r["exchange"], r["name_tag"], "exchange",
-                 r["source"], DUNE_URL) for r in _read(Path(csv_path))]
+                 r["source"], DUNE_SOURCE_URL) for r in _read(Path(csv_path))]
 
 
 def _dedupe(rows: list[dict]) -> pl.DataFrame:
