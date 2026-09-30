@@ -13,3 +13,7 @@ data/case.duckdb
 data/uploads/
 data/exports/
 ui/dist/
+
+# Local secrets (API keys). Never commit.
+.env
+.env.*
