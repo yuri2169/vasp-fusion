@@ -41,8 +41,10 @@ class UrllibTransport:
             return 599, str(getattr(e, "reason", e)).encode()  # treated as retryable
 
 
-def load_env(path: Path = DEFAULT_ENV) -> dict[str, str]:
-    """KEY=VALUE lines from `path`, each overridden by the process env when set there."""
+def load_env(path: Path | None = None) -> dict[str, str]:
+    """KEY=VALUE lines from `path` (default vasp-fusion/.env), each overridden by the
+    process env when set there."""
+    path = path or DEFAULT_ENV
     vals: dict[str, str] = {}
     if Path(path).exists():
         for line in Path(path).read_text().splitlines():
@@ -57,5 +59,5 @@ def load_env(path: Path = DEFAULT_ENV) -> dict[str, str]:
     return vals
 
 
-def api_key(name: str, env_path: Path = DEFAULT_ENV) -> str | None:
+def api_key(name: str, env_path: Path | None = None) -> str | None:
     return os.environ.get(name) or load_env(env_path).get(name) or None
