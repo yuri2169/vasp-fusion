@@ -10,6 +10,7 @@ make setup     # uv venv (Python 3.12) + install
 make labels    # build data/labels.duckdb from ../research/data and print the stats
 make test      # pytest
 make serve     # API on http://127.0.0.1:8000  (docs at /docs)
+make fetch ADDR=TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw   # transfers, cached; OFFLINE=1 = cache only
 ```
 Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` regenerates `docs/openapi.json` and `ui/src/api/types.ts`.
 
@@ -17,6 +18,7 @@ Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` rege
 | Path | What |
 |---|---|
 | `vaspfusion/labels/` | Label store: normalise → build (tier-ranked dedupe) → lookup/search |
+| `vaspfusion/chains/` | Chain adapters (Tron, EVM, BTC basic, Solana stub) behind a cache-first fetcher; the only code that reaches the network |
 | `vaspfusion/api/` | `schemas.py` (the contract) and `main.py` (routes; mocks until each phase lands) |
 | `vaspfusion/{graph,features,detect,attribute,explain,store,eval}/` | Carried over from BTC-FUSION |
 | `docs/api_contract.md` | Endpoints, conventions, mock rules |
@@ -33,3 +35,24 @@ One row per `(address, chain)`: `entity, category, kind, tier, source, source_ur
 from vaspfusion.labels.lookup import lookup, LabelStore
 lookup("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron")   # Label(entity='Bitget', tier='published_por', ...)
 ```
+
+## Chain adapters
+```python
+from vaspfusion.chains import get_provider, detect_chain
+p = get_provider(detect_chain("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw"))   # tron
+p.transfers("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw", "in", since=None, limit=200)
+# -> [Transfer(chain, tx_hash, block_time, from_addr, to_addr, asset, amount, amount_usd, fee_payer, asset_contract)]
+```
+| Chain | Source | Key (optional) |
+|---|---|---|
+| tron | TronGrid `/v1/accounts/{a}/transactions/trc20` (USDT) + `/transactions` (TRX) | `TRONGRID_API_KEY` |
+| ethereum, polygon, arbitrum | Etherscan v2 with a key, else Blockscout | `ETHERSCAN_API_KEY` |
+| base, optimism | Blockscout (keyless) | – |
+| bsc | Etherscan v2 **paid** plan only (the free plan refuses) | `ETHERSCAN_API_KEY` |
+| bitcoin | mempool.space `/api/address/{a}/txs` | – |
+| solana | address check only | – |
+
+- Keys come from the process env, then `.env` (never committed). They are never printed, cached or written to fixtures.
+- Every response is cached raw in `data/chain_cache.duckdb` with its SHA-256, keyed by `(chain, address, direction, query)`. Re-runs replay from the cache; `--refresh` re-fetches. **`OFFLINE=1`** serves only from the cache and fails loudly on a miss.
+- Tests replay responses recorded once from the live APIs (`scripts/record_chain_fixtures.py` → `tests/fixtures/chains/`); CI needs no network.
+- Tokens other than the known USDT/USDC contracts are named `SYMBOL@contract`, so a fake "USDT" never passes as USDT.
