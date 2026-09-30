@@ -1,0 +1,259 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "id": "demo-eth-abstain",
+  "address": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+  "chain": "ethereum",
+  "status": "done",
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "case_ref": "DEMO/2026/002",
+  "complaint_no": null,
+  "amount_lost_inr": 2150000.0,
+  "created_at": "2026-09-14T05:02:11Z",
+  "demo": true,
+  "hop_rail": [
+    {
+      "index": 1,
+      "from_address": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+      "to_address": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+      "tx_hash": "0xafa38917d8f932356168ad252b629f46adc1cf820ce343b4f4d4b8530ac88257",
+      "asset": "ETH",
+      "amount": 6.2,
+      "amount_usd": 15810.0,
+      "block_time": "2026-09-14T10:02:11Z",
+      "elapsed_s": null
+    },
+    {
+      "index": 2,
+      "from_address": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+      "to_address": "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+      "tx_hash": "0x362e1afaad7322d47cd16000b461db5506465448577b38817d32286a6f4957b5",
+      "asset": "ETH",
+      "amount": 1.3,
+      "amount_usd": 3315.0,
+      "block_time": "2026-09-14T10:57:11Z",
+      "elapsed_s": 3300
+    },
+    {
+      "index": 3,
+      "from_address": "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+      "to_address": "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+      "tx_hash": "0x2bfa7e8054cbfa621b2d1956365db906ea9aa4196d60f250805956a520fd6891",
+      "asset": "ETH",
+      "amount": 1.25,
+      "amount_usd": 3187.5,
+      "block_time": "2026-09-14T13:02:11Z",
+      "elapsed_s": 7500
+    },
+    {
+      "index": 4,
+      "from_address": "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+      "to_address": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+      "tx_hash": "0xef4b56e70eeb11404c2062831484b2fae735edf0ea10850d64c807fbe04d1b6b",
+      "asset": "ETH",
+      "amount": 1.22,
+      "amount_usd": 3111.0,
+      "block_time": "2026-09-14T16:42:11Z",
+      "elapsed_s": 13200
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+        "chain": "ethereum",
+        "role": "suspect",
+        "hop": 0,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+        "chain": "ethereum",
+        "role": "intermediary",
+        "hop": 1,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "0x1c19e76a88871a8d74a2fefb0dffdaad1691ae32",
+        "chain": "ethereum",
+        "role": "intermediary",
+        "hop": 1,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+        "chain": "ethereum",
+        "role": "intermediary",
+        "hop": 2,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+        "chain": "ethereum",
+        "role": "intermediary",
+        "hop": 3,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+        "chain": "ethereum",
+        "role": "swap_service",
+        "hop": 4,
+        "label": {
+          "address": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+          "chain": "ethereum",
+          "entity": "ChangeNOW",
+          "category": "swap_service",
+          "kind": "hot",
+          "tier": "explorer_tag",
+          "source": "eth-labels",
+          "source_url": "https://github.com/dawsbot/eth-labels",
+          "label": "ChangeNOW: Hot Wallet 1"
+        },
+        "cluster": "ChangeNOW",
+        "is_hub": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+        "target": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+        "tx_hash": "0xafa38917d8f932356168ad252b629f46adc1cf820ce343b4f4d4b8530ac88257",
+        "asset": "ETH",
+        "amount": 6.2,
+        "amount_usd": 15810.0,
+        "block_time": "2026-09-14T10:02:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e2",
+        "source": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+        "target": "0x1c19e76a88871a8d74a2fefb0dffdaad1691ae32",
+        "tx_hash": "0x8191e60df6ffc76c37f7dbaada2c1d9885e0b5b30ceaae750e2abe4808867054",
+        "asset": "USDT",
+        "amount": 9900.0,
+        "amount_usd": 9900.0,
+        "block_time": "2026-09-14T10:05:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e3",
+        "source": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+        "target": "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+        "tx_hash": "0x362e1afaad7322d47cd16000b461db5506465448577b38817d32286a6f4957b5",
+        "asset": "ETH",
+        "amount": 1.3,
+        "amount_usd": 3315.0,
+        "block_time": "2026-09-14T10:57:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e4",
+        "source": "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+        "target": "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+        "tx_hash": "0x2bfa7e8054cbfa621b2d1956365db906ea9aa4196d60f250805956a520fd6891",
+        "asset": "ETH",
+        "amount": 1.25,
+        "amount_usd": 3187.5,
+        "block_time": "2026-09-14T13:02:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e5",
+        "source": "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+        "target": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+        "tx_hash": "0xef4b56e70eeb11404c2062831484b2fae735edf0ea10850d64c807fbe04d1b6b",
+        "asset": "ETH",
+        "amount": 1.22,
+        "amount_usd": 3111.0,
+        "block_time": "2026-09-14T16:42:11Z",
+        "direction": "outbound"
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "vasp": "ChangeNOW",
+      "category": "swap_service",
+      "proximity_rank": 1,
+      "confidence": 0.34,
+      "confidence_interval": [
+        0.18,
+        0.52
+      ],
+      "hops": 4,
+      "share_of_funds": 0.12,
+      "time_to_reach_s": 24000,
+      "label_tier": "explorer_tag",
+      "deposit_address": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+      "path": [
+        "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+        "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+        "0xbef6bc83e10a859342184ee30234e33c8f57433a",
+        "0x89bccc1acd405b6b7d4b763bc58295fa6cfbc07d",
+        "0x975d9bd9928f398c7e01f6ba236816fa558cd94b"
+      ],
+      "evidence": [
+        {
+          "kind": "label",
+          "tier": "explorer_tag",
+          "tx_hashes": [
+            "0xef4b56e70eeb11404c2062831484b2fae735edf0ea10850d64c807fbe04d1b6b"
+          ],
+          "weight": 0.09,
+          "text": "Reached a wallet Etherscan tags as a ChangeNOW hot wallet, but only 12% of the funds and after 4 hops"
+        }
+      ],
+      "counterfactual": null
+    }
+  ],
+  "typology_flags": [
+    {
+      "code": "peel_chain",
+      "severity": "warn",
+      "wallet": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+      "text": "Peeled off small amounts over 3 hops, keeping the rest",
+      "figures": {
+        "hops": 3
+      },
+      "tx_hashes": [
+        "0x362e1afaad7322d47cd16000b461db5506465448577b38817d32286a6f4957b5",
+        "0x2bfa7e8054cbfa621b2d1956365db906ea9aa4196d60f250805956a520fd6891"
+      ]
+    }
+  ],
+  "narrative": "Wallet 0x238c… split its funds across several wallets. Only 12% reached a known VASP (a ChangeNOW hot wallet, 4 hops away). That is not enough to name a VASP, so none is named.",
+  "abstain_reason": "Only 12% of the funds reached a labelled VASP, after 4 hops; confidence 0.34 is below the 0.60 needed to name one.",
+  "what_would_change": [
+    "Trace the 9,900 USDT still held by 0x1c19e7… once it moves",
+    "A deposit-address link (sweep or gas payer) from the last hop to a named exchange wallet"
+  ],
+  "next_steps": [
+    "Add the suspect and its hops to the watchlist",
+    "Re-trace when new outflows appear"
+  ],
+  "provenance": {
+    "seed": 26182,
+    "code_version": "b1-mock",
+    "label_db_sha256": null,
+    "fetched_at": null,
+    "offline_replay": true,
+    "data_sources": [
+      "Etherscan v2 (demo replay)",
+      "wallet-attribution labels"
+    ]
+  }
+}

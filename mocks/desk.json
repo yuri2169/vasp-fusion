@@ -1,0 +1,39 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "follow_ups": [
+    {
+      "kind": "reply_overdue",
+      "vasp": "OKX",
+      "request_id": "demo-req-okx-001",
+      "due": "2026-09-21",
+      "text": "OKX has not replied; the reply was due 21 Sep"
+    }
+  ],
+  "rows": [
+    {
+      "vasp": "OKX",
+      "category": "exchange",
+      "wallet_count": 1,
+      "total_usd": 41150.0,
+      "case_ids": [
+        "demo-tron-okx"
+      ],
+      "status": "sent",
+      "next_action": "Follow up on reply",
+      "last_request_id": "demo-req-okx-001"
+    },
+    {
+      "vasp": "CoinDCX",
+      "category": "exchange",
+      "wallet_count": 1,
+      "total_usd": 990.0,
+      "case_ids": [
+        "demo-tron-sanctioned"
+      ],
+      "status": "not_requested",
+      "next_action": "Draft request",
+      "last_request_id": null
+    }
+  ]
+}

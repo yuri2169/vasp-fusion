@@ -1,0 +1,30 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+  "chain": "tron",
+  "labels": [
+    {
+      "address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+      "chain": "tron",
+      "entity": "OKX",
+      "category": "exchange",
+      "kind": "deposit",
+      "tier": "derived",
+      "source": "DEMO - derived by sweep pattern (computed for real in B4)",
+      "source_url": null,
+      "label": "OKX deposit (derived)"
+    }
+  ],
+  "risk": {
+    "score": null,
+    "reasons": []
+  },
+  "cases": [
+    {
+      "case_id": "demo-tron-okx",
+      "role": "exchange_deposit",
+      "hop": 3
+    }
+  ]
+}

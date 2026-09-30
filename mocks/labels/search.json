@@ -1,0 +1,120 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "query": "coindcx",
+  "total": 234,
+  "limit": 10,
+  "offset": 0,
+  "items": [
+    {
+      "address": "0x06051836ac6c5112b890f8b6ec78e33d1afeae7c",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 1"
+    },
+    {
+      "address": "0x07e114c06462d8892ae4574a7502b8c1c0fbdfbb",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 30"
+    },
+    {
+      "address": "0x0b5ffae844a4b21c7beeded2595f22215288173c",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 31"
+    },
+    {
+      "address": "0x2407b9b9662d970ece2224a0403d3b15c7e4d1fe",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 2"
+    },
+    {
+      "address": "0x274c427b1bf0bb4a137ede688c6d621263ca7ce8",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 28"
+    },
+    {
+      "address": "0x29a62a542b6ea441abb6f03c2bca54ad72ff750c",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 29"
+    },
+    {
+      "address": "0x2deffdde0867b6eca9a63fe53ef0fc3106d3dba0",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "hot",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX: Deposit Funder 3"
+    },
+    {
+      "address": "0x2e5129e77c928d96b5a70c0effb97ee6e95d77b6",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 18"
+    },
+    {
+      "address": "0x35efe40ceddb8dfa27f0c3e4cd65b711c29cb5d8",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 45"
+    },
+    {
+      "address": "0x3698cc7f524bade1a05e02910538f436a3e94384",
+      "chain": "avalanche",
+      "entity": "CoinDCX",
+      "category": "exchange",
+      "kind": "unknown",
+      "tier": "explorer_tag",
+      "source": "eth-labels",
+      "source_url": "https://github.com/dawsbot/eth-labels",
+      "label": "CoinDCX 3"
+    }
+  ]
+}

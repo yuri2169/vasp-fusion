@@ -1,0 +1,34 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "directory": {
+    "name": "CoinDCX",
+    "legal_name": null,
+    "fiu_ind_registered": null,
+    "jurisdiction": null,
+    "le_request_channel": null,
+    "source_urls": []
+  },
+  "label_counts": {
+    "evm": 53,
+    "avalanche": 52,
+    "worldchain": 52,
+    "ethereum": 30,
+    "bitcoin": 26,
+    "tron": 13,
+    "xrp": 5,
+    "bsc": 3
+  },
+  "wallets": [
+    {
+      "address": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+      "chain": "tron",
+      "case_id": "demo-tron-sanctioned",
+      "direction": "outbound",
+      "amount_usd": 990.0,
+      "tier": "curated",
+      "confidence": 0.58
+    }
+  ],
+  "requests": []
+}

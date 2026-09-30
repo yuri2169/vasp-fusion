@@ -1,0 +1,15 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "status": "not_measured",
+  "version": null,
+  "trained_at": null,
+  "split": null,
+  "metrics": {},
+  "reliability": [],
+  "risk_coverage": [],
+  "feature_importance": [],
+  "notes": [
+    "The deposit classifier is trained and calibrated in B6; until then there are no numbers to show."
+  ]
+}

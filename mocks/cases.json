@@ -1,0 +1,49 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "total": 3,
+  "items": [
+    {
+      "id": "demo-tron-okx",
+      "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+      "chain": "tron",
+      "status": "done",
+      "outcome": "ATTRIBUTED",
+      "top_vasp": "OKX",
+      "confidence": 0.91,
+      "case_ref": "DEMO/2026/001",
+      "complaint_no": "31509260001234",
+      "amount_lost_inr": 4050000.0,
+      "created_at": "2026-09-13T10:02:11Z",
+      "demo": true
+    },
+    {
+      "id": "demo-eth-abstain",
+      "address": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+      "chain": "ethereum",
+      "status": "done",
+      "outcome": "INSUFFICIENT_EVIDENCE",
+      "top_vasp": null,
+      "confidence": null,
+      "case_ref": "DEMO/2026/002",
+      "complaint_no": null,
+      "amount_lost_inr": 2150000.0,
+      "created_at": "2026-09-14T05:02:11Z",
+      "demo": true
+    },
+    {
+      "id": "demo-tron-sanctioned",
+      "address": "TLoXu5WereZCDVGXtmiCd9TNbfjuF4krPi",
+      "chain": "tron",
+      "status": "done",
+      "outcome": "SANCTIONED_OR_MIXER_REACHED",
+      "top_vasp": "CoinDCX",
+      "confidence": 0.58,
+      "case_ref": "DEMO/2026/003",
+      "complaint_no": "31509260004321",
+      "amount_lost_inr": 1000000.0,
+      "created_at": "2026-09-14T09:32:11Z",
+      "demo": true
+    }
+  ]
+}

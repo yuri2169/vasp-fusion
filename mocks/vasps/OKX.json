@@ -1,0 +1,54 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "directory": {
+    "name": "OKX",
+    "legal_name": null,
+    "fiu_ind_registered": null,
+    "jurisdiction": null,
+    "le_request_channel": null,
+    "source_urls": []
+  },
+  "label_counts": {
+    "worldchain": 271,
+    "avalanche": 269,
+    "ethereum": 238,
+    "litecoin": 168,
+    "solana": 40,
+    "tron": 21,
+    "zksync": 20,
+    "xrp": 14,
+    "arbitrum": 12,
+    "optimism": 11,
+    "base": 9,
+    "polkadot": 8,
+    "linea": 5,
+    "ton": 5,
+    "dogecoin": 4,
+    "polygon": 4
+  },
+  "wallets": [
+    {
+      "address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+      "chain": "tron",
+      "case_id": "demo-tron-okx",
+      "direction": "outbound",
+      "amount_usd": 41150.0,
+      "tier": "derived",
+      "confidence": 0.91
+    }
+  ],
+  "requests": [
+    {
+      "id": "demo-req-okx-001",
+      "reference": "DEMO/I4C/REQ/2026/001",
+      "vasp": "OKX",
+      "status": "sent",
+      "case_ids": [
+        "demo-tron-okx"
+      ],
+      "created_at": "2026-09-13T14:02:11Z",
+      "due": "2026-09-21"
+    }
+  ]
+}

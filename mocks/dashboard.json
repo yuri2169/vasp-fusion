@@ -1,0 +1,117 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "counts": {
+    "cases_total": 3,
+    "open_cases": 2,
+    "wallets_attributed": 2,
+    "requests_awaiting_reply": 1
+  },
+  "outcomes": {
+    "ATTRIBUTED": 1,
+    "INSUFFICIENT_EVIDENCE": 1,
+    "SANCTIONED_OR_MIXER_REACHED": 1
+  },
+  "top_vasps": [
+    {
+      "vasp": "OKX",
+      "cases": 1,
+      "total_usd": 41150.0
+    },
+    {
+      "vasp": "CoinDCX",
+      "cases": 1,
+      "total_usd": 990.0
+    }
+  ],
+  "chain_mix": [
+    {
+      "chain": "tron",
+      "cases": 2
+    },
+    {
+      "chain": "ethereum",
+      "cases": 1
+    }
+  ],
+  "median_time_to_attribution_s": null,
+  "recent_alerts": [
+    {
+      "wallet": "TA3941uFAvmVibSkQ6fMJXxmaSNovX86mz",
+      "chain": "tron",
+      "severity": "high",
+      "at": "2026-09-14T09:36:11Z",
+      "case_id": "demo-tron-sanctioned",
+      "text": "Case DEMO/2026/003 reached an OFAC-sanctioned address"
+    }
+  ],
+  "label_coverage": {
+    "total": 115257,
+    "by_category": {
+      "entity": 62949,
+      "exchange": 36747,
+      "defi": 11087,
+      "bridge": 2062,
+      "sanctioned": 941,
+      "scam": 652,
+      "custodial_wallet": 454,
+      "swap_service": 289,
+      "mixer": 76
+    },
+    "by_tier": {
+      "explorer_tag": 111724,
+      "curated": 1843,
+      "published_por": 1690
+    },
+    "by_chain": {
+      "ethereum": 88033,
+      "base": 6011,
+      "avalanche": 4946,
+      "worldchain": 4902,
+      "arbitrum": 3186,
+      "bsc": 3162,
+      "optimism": 2130,
+      "bitcoin": 830,
+      "celo": 463,
+      "tron": 388,
+      "gnosis": 302,
+      "litecoin": 194,
+      "solana": 89,
+      "near": 82,
+      "evm": 66,
+      "xrp": 64,
+      "polkadot": 45,
+      "aptos": 42,
+      "dogecoin": 35,
+      "polygon": 34,
+      "ton": 33,
+      "zksync": 30,
+      "cardano": 17,
+      "ethereum-classic": 14,
+      "algorand": 12,
+      "linea": 12,
+      "tezos": 12,
+      "monero": 11,
+      "fantom": 10,
+      "sui": 10,
+      "cosmos": 9,
+      "core": 8,
+      "hyperliquid": 8,
+      "multiversx": 8,
+      "bitcoin-cash": 7,
+      "eos": 7,
+      "cronos": 6,
+      "klaytn": 6,
+      "metis": 6,
+      "dash": 5,
+      "kcc": 5,
+      "zilliqa": 5,
+      "kava": 4,
+      "zcash": 4,
+      "bitcoin-gold": 1,
+      "bitcoin-sv": 1,
+      "sonic": 1,
+      "verge": 1
+    }
+  }
+}

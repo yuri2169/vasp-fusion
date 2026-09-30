@@ -1,0 +1,37 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+  "chain": "tron",
+  "labels": [],
+  "risk": {
+    "score": null,
+    "reasons": [
+      "Forwarded 100% of what it received within 9 minutes",
+      "Split one inflow into 2 outputs"
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "demo-tron-okx",
+      "role": "suspect",
+      "hop": 0
+    }
+  ],
+  "inbound": {
+    "tx_count": 3,
+    "total_usd": 48500.0,
+    "first_seen": "2026-09-14T08:02:11Z",
+    "last_seen": "2026-09-14T09:57:11Z",
+    "top_counterparties": []
+  },
+  "outbound": {
+    "tx_count": 1,
+    "total_usd": 48500.0,
+    "first_seen": "2026-09-14T10:02:11Z",
+    "last_seen": "2026-09-14T10:02:11Z",
+    "top_counterparties": [
+      "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o"
+    ]
+  }
+}

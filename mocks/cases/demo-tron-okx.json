@@ -1,0 +1,372 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "id": "demo-tron-okx",
+  "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+  "chain": "tron",
+  "status": "done",
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "OKX",
+  "confidence": 0.91,
+  "case_ref": "DEMO/2026/001",
+  "complaint_no": "31509260001234",
+  "amount_lost_inr": 4050000.0,
+  "created_at": "2026-09-13T10:02:11Z",
+  "demo": true,
+  "hop_rail": [
+    {
+      "index": 1,
+      "from_address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+      "to_address": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+      "tx_hash": "c09b2c24e2a4a6fd4308788cb7b6e9a9c340275ac162c4281ed549100c07287b",
+      "asset": "USDT",
+      "amount": 48500.0,
+      "amount_usd": 48500.0,
+      "block_time": "2026-09-14T10:02:11Z",
+      "elapsed_s": null
+    },
+    {
+      "index": 2,
+      "from_address": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+      "to_address": "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+      "tx_hash": "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
+      "asset": "USDT",
+      "amount": 41200.0,
+      "amount_usd": 41200.0,
+      "block_time": "2026-09-14T10:09:11Z",
+      "elapsed_s": 420
+    },
+    {
+      "index": 3,
+      "from_address": "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+      "to_address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+      "tx_hash": "f677a3f8ced01a4e91309d03f11b5af31d55932923fd62e683690beab064e4cb",
+      "asset": "USDT",
+      "amount": 41150.0,
+      "amount_usd": 41150.0,
+      "block_time": "2026-09-14T10:18:11Z",
+      "elapsed_s": 540
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+        "chain": "tron",
+        "role": "suspect",
+        "hop": 0,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "chain": "tron",
+        "role": "intermediary",
+        "hop": 1,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+        "chain": "tron",
+        "role": "intermediary",
+        "hop": 2,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+        "chain": "tron",
+        "role": "exchange_deposit",
+        "hop": 3,
+        "label": {
+          "address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+          "chain": "tron",
+          "entity": "OKX",
+          "category": "exchange",
+          "kind": "deposit",
+          "tier": "derived",
+          "source": "DEMO - derived by sweep pattern (computed for real in B4)",
+          "source_url": null,
+          "label": "OKX deposit (derived)"
+        },
+        "cluster": "OKX",
+        "is_hub": false
+      },
+      {
+        "id": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+        "chain": "tron",
+        "role": "exchange",
+        "hop": 4,
+        "label": {
+          "address": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+          "chain": "tron",
+          "entity": "OKX",
+          "category": "exchange",
+          "kind": "reserve",
+          "tier": "published_por",
+          "source": "defillama-cex",
+          "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+          "label": "OKX (OKEx) (proof-of-reserves)"
+        },
+        "cluster": "OKX",
+        "is_hub": false
+      },
+      {
+        "id": "TFyHFDhh5DeQnjsZj33vHKvJaTXRwmSxqE",
+        "chain": "tron",
+        "role": "intermediary",
+        "hop": 2,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "TSgt1sFBWdS9Ju1WmViPA5P6V9z6rHecg1",
+        "chain": "tron",
+        "role": "unknown",
+        "hop": 3,
+        "label": null,
+        "cluster": null,
+        "is_hub": false
+      },
+      {
+        "id": "TAuUCiH4JVNBZmDnEDZkXEUXDARdGpXTmX",
+        "chain": "tron",
+        "role": "exchange",
+        "hop": 4,
+        "label": {
+          "address": "TAuUCiH4JVNBZmDnEDZkXEUXDARdGpXTmX",
+          "chain": "tron",
+          "entity": "HTX",
+          "category": "exchange",
+          "kind": "reserve",
+          "tier": "published_por",
+          "source": "defillama-cex",
+          "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+          "label": "HTX (Huobi) (proof-of-reserves)"
+        },
+        "cluster": "HTX",
+        "is_hub": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "source": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+        "target": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "tx_hash": "c09b2c24e2a4a6fd4308788cb7b6e9a9c340275ac162c4281ed549100c07287b",
+        "asset": "USDT",
+        "amount": 48500.0,
+        "amount_usd": 48500.0,
+        "block_time": "2026-09-14T10:02:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e2",
+        "source": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "target": "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+        "tx_hash": "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
+        "asset": "USDT",
+        "amount": 41200.0,
+        "amount_usd": 41200.0,
+        "block_time": "2026-09-14T10:09:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e3",
+        "source": "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+        "target": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+        "tx_hash": "f677a3f8ced01a4e91309d03f11b5af31d55932923fd62e683690beab064e4cb",
+        "asset": "USDT",
+        "amount": 41150.0,
+        "amount_usd": 41150.0,
+        "block_time": "2026-09-14T10:18:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e4",
+        "source": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+        "target": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+        "tx_hash": "5da20346cafdc0636acc497c37f3b1d8b51749a019d3bf9ca145ed00f24619ad",
+        "asset": "USDT",
+        "amount": 41150.0,
+        "amount_usd": 41150.0,
+        "block_time": "2026-09-14T11:36:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e5",
+        "source": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "target": "TFyHFDhh5DeQnjsZj33vHKvJaTXRwmSxqE",
+        "tx_hash": "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8",
+        "asset": "USDT",
+        "amount": 7300.0,
+        "amount_usd": 7300.0,
+        "block_time": "2026-09-14T10:11:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e6",
+        "source": "TFyHFDhh5DeQnjsZj33vHKvJaTXRwmSxqE",
+        "target": "TSgt1sFBWdS9Ju1WmViPA5P6V9z6rHecg1",
+        "tx_hash": "1abb839093059efbdc2c073a0d57b3bc739f56e9d6d3ee4420f7fc70c46c42dc",
+        "asset": "USDT",
+        "amount": 7290.0,
+        "amount_usd": 7290.0,
+        "block_time": "2026-09-14T10:33:11Z",
+        "direction": "outbound"
+      },
+      {
+        "id": "e7",
+        "source": "TSgt1sFBWdS9Ju1WmViPA5P6V9z6rHecg1",
+        "target": "TAuUCiH4JVNBZmDnEDZkXEUXDARdGpXTmX",
+        "tx_hash": "21e69cdc6549c88837f682764212ebf98763f30502e20a2a21aca7fde2daa4a2",
+        "asset": "USDT",
+        "amount": 7290.0,
+        "amount_usd": 7290.0,
+        "block_time": "2026-09-14T13:32:11Z",
+        "direction": "outbound"
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "vasp": "OKX",
+      "category": "exchange",
+      "proximity_rank": 1,
+      "confidence": 0.91,
+      "confidence_interval": [
+        0.84,
+        0.95
+      ],
+      "hops": 3,
+      "share_of_funds": 0.85,
+      "time_to_reach_s": 960,
+      "label_tier": "published_por",
+      "deposit_address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+      "path": [
+        "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+        "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "TPJMWH7VNhGgj4a6osPAVKedxaFwAJLWZz",
+        "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR"
+      ],
+      "evidence": [
+        {
+          "kind": "sweep",
+          "tier": "published_por",
+          "tx_hashes": [
+            "5da20346cafdc0636acc497c37f3b1d8b51749a019d3bf9ca145ed00f24619ad"
+          ],
+          "weight": 0.41,
+          "text": "THS5KL… swept the full balance into an OKX wallet that OKX itself lists in its proof of reserves"
+        },
+        {
+          "kind": "path",
+          "tier": null,
+          "tx_hashes": [
+            "c09b2c24e2a4a6fd4308788cb7b6e9a9c340275ac162c4281ed549100c07287b",
+            "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
+            "f677a3f8ced01a4e91309d03f11b5af31d55932923fd62e683690beab064e4cb"
+          ],
+          "weight": 0.22,
+          "text": "85% of the suspect's USDT reached it in 3 hops within 16 minutes"
+        },
+        {
+          "kind": "gas_payer",
+          "tier": null,
+          "tx_hashes": [
+            "8527ede334e6999b817a9d030e8cdb46a8cc96e82eaea71944a0b1577dfd18ec"
+          ],
+          "weight": 0.12,
+          "text": "Its TRX for fees came from the same OKX wallet, the usual pattern for exchange deposit addresses"
+        }
+      ],
+      "counterfactual": "Still OKX (0.78) if the sweep evidence is removed"
+    },
+    {
+      "vasp": "HTX",
+      "category": "exchange",
+      "proximity_rank": 2,
+      "confidence": 0.46,
+      "confidence_interval": [
+        0.31,
+        0.61
+      ],
+      "hops": 4,
+      "share_of_funds": 0.15,
+      "time_to_reach_s": 12600,
+      "label_tier": "published_por",
+      "deposit_address": "TSgt1sFBWdS9Ju1WmViPA5P6V9z6rHecg1",
+      "path": [
+        "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+        "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "TFyHFDhh5DeQnjsZj33vHKvJaTXRwmSxqE",
+        "TSgt1sFBWdS9Ju1WmViPA5P6V9z6rHecg1"
+      ],
+      "evidence": [
+        {
+          "kind": "path",
+          "tier": "published_por",
+          "tx_hashes": [
+            "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8",
+            "1abb839093059efbdc2c073a0d57b3bc739f56e9d6d3ee4420f7fc70c46c42dc"
+          ],
+          "weight": 0.18,
+          "text": "15% of funds reached an address that later paid an HTX reserve wallet"
+        }
+      ],
+      "counterfactual": null
+    }
+  ],
+  "typology_flags": [
+    {
+      "code": "rapid_forwarding",
+      "severity": "warn",
+      "wallet": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+      "text": "Forwarded 100% of what it received within 9 minutes",
+      "figures": {
+        "minutes": 9,
+        "share": 1.0
+      },
+      "tx_hashes": [
+        "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
+        "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8"
+      ]
+    },
+    {
+      "code": "fan_out",
+      "severity": "info",
+      "wallet": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+      "text": "Split one inflow into 2 outputs",
+      "figures": {
+        "outputs": 2
+      },
+      "tx_hashes": [
+        "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
+        "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8"
+      ]
+    }
+  ],
+  "narrative": "Wallet TVZpWt… sent 48,500 USDT on Tron. 41,150 USDT (85%) reached THS5KL… in 3 hops within 16 minutes. That address swept its balance into an OKX wallet published in OKX's proof of reserves, so it is an OKX deposit address. Write to OKX.",
+  "abstain_reason": null,
+  "what_would_change": [],
+  "next_steps": [
+    "Draft a request to OKX for KYC and a freeze on the deposit account",
+    "Preserve the transaction records (§63 BSA certificate)"
+  ],
+  "provenance": {
+    "seed": 26182,
+    "code_version": "b1-mock",
+    "label_db_sha256": null,
+    "fetched_at": null,
+    "offline_replay": true,
+    "data_sources": [
+      "TronGrid (demo replay)",
+      "wallet-attribution labels"
+    ]
+  }
+}
