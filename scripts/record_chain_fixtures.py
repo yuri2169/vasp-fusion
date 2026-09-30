@@ -81,7 +81,47 @@ def tron_since_in(f):
     return p.transfers(TRON_ADDR, "in", since=datetime(2022, 7, 1, tzinfo=timezone.utc), limit=4)
 
 
+ETH_ADDR = "0x000483c56fe99127fbd62da5d8b899a159116dc1"   # "Bitget Dep:" (Etherscan tag)
+BASE_ADDR = "0x0d0707963952f2fba59dd06f2b425ace40b492fe"  # Gate.io proof-of-reserves
+BSC_ADDR = "0x8894e0a0c962cb723c1976a4421c95949be2d4e3"   # probed while planning
+
+
+def eth_etherscan(f):
+    from vaspfusion.chains.evm import EvmProvider
+    return EvmProvider("ethereum", f, page_size=3, max_pages=3).transfers(ETH_ADDR, "both", limit=5)
+
+
+ETH_USDT_ADDR = "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24"  # "Bitget Dep:"; real + fake USDT
+
+
+def eth_usdt(f):
+    from vaspfusion.chains.evm import EvmProvider
+    p = EvmProvider("ethereum", f, page_size=3, max_pages=2)
+    return p.transfers(ETH_USDT_ADDR, "both", limit=6)
+
+
+def eth_since_out(f):
+    from vaspfusion.chains.evm import EvmProvider
+    p = EvmProvider("ethereum", f, page_size=3, max_pages=3)
+    return p.transfers(ETH_ADDR, "out", since=datetime(2024, 1, 1, tzinfo=timezone.utc), limit=3)
+
+
+def base_blockscout(f):
+    from vaspfusion.chains.evm import EvmProvider
+    return EvmProvider("base", f, page_size=3, max_pages=2).transfers(BASE_ADDR, "both", limit=4)
+
+
+def bsc_unsupported(f):
+    from vaspfusion.chains.evm import EvmProvider
+    return EvmProvider("bsc", f, page_size=3).transfers(BSC_ADDR, "both", limit=3)
+
+
 SCENARIOS = {
+    "eth_etherscan": (f"Etherscan v2 chainid=1, {ETH_ADDR}, page_size=3", eth_etherscan),
+    "eth_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, page_size=3", eth_usdt),
+    "eth_since_out": (f"Etherscan v2 chainid=1, {ETH_ADDR}, out since 2024-01-01", eth_since_out),
+    "base_blockscout": (f"base.blockscout.com, {BASE_ADDR}, page_size=3", base_blockscout),
+    "bsc_unsupported": (f"Etherscan v2 chainid=56 on a free key, {BSC_ADDR}", bsc_unsupported),
     "tron_usdt": (f"TronGrid, {TRON_ADDR} (CoinDCX 1, Dune spellbook), page_size=3", tron_usdt),
     "tron_since_in": (f"TronGrid, {TRON_ADDR}, direction=in since 2022-07-01", tron_since_in),
 }

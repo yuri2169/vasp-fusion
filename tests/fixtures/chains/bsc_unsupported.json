@@ -1,0 +1,15 @@
+{
+ "_recorded": "2026-09-30",
+ "_result": "raised UnsupportedChain: Etherscan: Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis",
+ "_source": "Etherscan v2 chainid=56 on a free key, 0x8894e0a0c962cb723c1976a4421c95949be2d4e3",
+ "responses": {
+  "https://api.etherscan.io/v2/api?action=txlist&address=0x8894e0a0c962cb723c1976a4421c95949be2d4e3&chainid=56&module=account&offset=3&page=1&sort=asc&startblock=0": {
+   "body": {
+    "message": "NOTOK",
+    "result": "Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis",
+    "status": "0"
+   },
+   "status": 200
+  }
+ }
+}
