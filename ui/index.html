@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BTC-FUSION · Bitcoin Transaction Traffic Analysis</title>
+    <meta name="description" content="AI-powered monitoring and analysis of Bitcoin transaction traffic. Fuses network-layer and blockchain-layer evidence into ranked, explainable investigative leads." />
+  </head>
+  <script>
+      /* Runs before first paint so the theme is correct on the first frame.
+         Kept inline and tiny on purpose: a deferred module would be too late. */
+      try {
+        var t = localStorage.getItem('btcfusion.theme') || 'light';
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* storage blocked - fall through to the system preference */ }
+    </script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20fill%3D%22%230E1C27%22%2F%3E%3Ccircle%20cx%3D%2210%22%20cy%3D%2216%22%20r%3D%224%22%20fill%3D%22%237B4B94%22%2F%3E%3Ccircle%20cx%3D%2222%22%20cy%3D%2216%22%20r%3D%224%22%20fill%3D%22%232D6A9F%22%2F%3E%3Cpath%20d%3D%22M13%2016h6%22%20stroke%3D%22%23E4E8EC%22%20stroke-width%3D%221.6%22%2F%3E%3C%2Fsvg%3E" />
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

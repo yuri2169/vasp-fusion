@@ -1,0 +1,18 @@
+# The Dockerfile COPYs only what it needs, but the whole context is still sent to
+# the daemon first. Without this the build ships ~4 GB - datasets, a host venv and
+# two node_modules trees - none of which end up in the image.
+.venv/
+**/node_modules/
+.git/
+__pycache__/
+**/*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Datasets: 3.3 GB, none of it needed to build. data/geo/ is COPYed explicitly and
+# is re-included below because it IS needed - the GeoIP database ships in the image.
+data/
+!data/geo/
+
+ui/dist/
+docs/

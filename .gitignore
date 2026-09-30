@@ -1,0 +1,15 @@
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.pytest_cache/
+wheels/
+
+# Built from ../research/data by `make labels`; ~115k rows, rebuilt in seconds.
+data/labels.duckdb
+data/*.duckdb.tmp
+data/case.duckdb
+data/uploads/
+data/exports/
+ui/dist/

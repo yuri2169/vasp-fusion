@@ -1,0 +1,454 @@
+/* BTC-FUSION — application design language.
+ *
+ * This is deliberately NOT a new visual identity. The project already has one:
+ * diagrams.html, the six plates that ship in the submission deck: hairline
+ * rules, square corners, small-caps labels, and a palette where
+ * every accent names a DATA LAYER rather than a mood. Plates 04-06 are literal
+ * wireframes of these screens — dark chrome over a dense light body — so the
+ * app continues that language instead of competing with it.
+ *
+ * The one deliberate departure is the typefaces - see the note above the font
+ * imports. The plates used IBM Plex; the product does not, because that pairing
+ * now reads as a template rather than as an instrument.
+ *
+ * THE LAYER PALETTE IS SEMANTIC, NOT DECORATIVE:
+ *   chain   blockchain-layer facts      network  network-layer facts
+ *   fusion  model output & confidence   confirm  analyst actions
+ * A colour here is a claim about provenance. Never pick one because it looks good.
+ *
+ * HOUSE RULES (what keeps this looking like instrument software):
+ *   - Radius 0-2px. Nothing is a floating rounded card.
+ *   - Depth comes from hairline borders and background steps, never box-shadow.
+ *   - No gradients except where one encodes a magnitude.
+ *   - MONO IS FOR VALUES ONLY: txid, IP, ASN, entity id, figures, timestamps.
+ *     Labels, headings and prose are Plex Sans. This split is the whole reason
+ *     mono works - an identifier only pops out of a dense row if the words
+ *     around it are set in something else. Mono everywhere is mono nowhere, and
+ *     it reads as a costume for "technical" rather than as a measurement.
+ *   - Every figure is tabular-nums and right-aligned so columns compare vertically.
+ *   - Density is the feature. Empty space is unused evidence.
+ *   - THREE PANEL WEIGHTS, no more: .panel-primary (one focal panel per screen),
+ *     the default hairline, and .panel-sub (filled, borderless, for footnotes).
+ *     When every panel is accented, the accent says nothing.
+ */
+/* TYPEFACES. IBM Plex was the wrong call and it is worth saying why: Plex Sans
+   over Plex Mono has become the default "technical product" pairing, which means
+   it now signals template rather than instrument - the exact impression this
+   interface was trying to avoid. Three faces replace it, each chosen for a
+   reason this product can defend:
+
+   Public Sans - the typeface of the US Web Design System, drawn for government
+     interfaces that have to be legible and sober rather than fashionable. For a
+     tool submitted to a national technical agency that is an argument, not a
+     preference.
+   Archivo - a grotesque with editorial weight. Uppercase at 800 it reads as a
+     dossier header, which is what a case file heading actually is.
+   Spline Sans Mono - narrow enough for dense txid columns, with real character
+     at 11px where most monos turn to grey texture. */
+@import '@fontsource/public-sans/400.css';
+@import '@fontsource/public-sans/500.css';
+@import '@fontsource/public-sans/600.css';
+@import '@fontsource/public-sans/700.css';
+@import '@fontsource/archivo/600.css';
+@import '@fontsource/archivo/700.css';
+@import '@fontsource/archivo/800.css';
+@import '@fontsource/spline-sans-mono/400.css';
+@import '@fontsource/spline-sans-mono/500.css';
+@import '@fontsource/spline-sans-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Surfaces — taken from the plates, which are printed on paper. */
+  --paper:      #E4E8EC;
+  --surface:    #FFFFFF;
+  --surface-2:  #F3F5F7;
+  --surface-3:  #EDF0F3;
+  --ink:        #0E1C27;
+  --ink-soft:   #4A5B69;
+  /* Was #6F808D = 4.08:1 on white, under the 4.5:1 floor, and applied to 338
+     leaf nodes on the landing screen alone. #5A6B78 cleared 5.50:1 on white but
+     only 4.48:1 on --paper, and most of this text sits on paper, not on a panel.
+     #56646F clears both (4.95 on paper, 6.09 on white). Measure against the
+     darkest ground a colour actually lands on, not the lightest. */
+  --ink-dim:    #56646F;
+  --rule:       #C3CCD4;
+  --rule-soft:  #DBE1E6;
+
+  /* Layer semantics. */
+  --chain:      #2D6A9F;
+  --network:    #7B4B94;
+  /* Was #B8791C: 3.36:1 as tag text on --fusion-wash, i.e. the primary
+     categorical signal in the queue was unreadable on a projector. #96610F
+     measured 5.23:1 on white but 4.25:1 on --paper, where the threshold readout
+     sits. #8C5B0E clears every ground it is used on: 4.71 paper, 5.80 white,
+     5.39 on its own wash. */
+  --fusion:     #8C5B0E;
+  --confirm:    #2E7D5B;
+  --data:       #5C6B78;
+  --danger:     #A2453B;
+
+  --chain-wash:   #EAF1F7;
+  --network-wash: #F4EEF7;
+  --fusion-wash:  #FBF6ED;
+  
+  --confirm-wash: #F0F7F3;
+  --danger-wash:  #FBF0EE;
+
+  /* INTERACTION, not provenance. --fusion was doing five jobs at once - layer
+     semantic, nav underline, row hover, active chip, slider thumb - so orange
+     could mean "model output" or "you are pointing at this". A semantic colour
+     that also marks focus has stopped being semantic. Interaction is now ink. */
+  --active:       #0E1C27;
+  /* #EDF0F3 sat one step off --surface-2 and was barely perceptible as a hover
+     on a white row. #DCE3EA is unmistakable while staying neutral, which is the
+     point: hover means "you are pointing at this", never "this is a chain
+     fact". Colour keeps meaning provenance. */
+  --active-wash:  #DCE3EA;
+
+  /* Chrome is the dark bar at the top of the app and the case-file header. It is
+     dark in BOTH themes, so it cannot be --ink: --ink is the text colour, and it
+     inverts. Anything painted on chrome (white, white/35) stays valid either
+     way because chrome never becomes light. */
+  --chrome:       #0E1C27;
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------- dark theme
+   Not an inversion. The light theme is paper - a printed plate - and the dark
+   one is the other place this kind of tool actually lives: a darkened operations
+   room at 3am. Surfaces step UP from an almost-black ground rather than down
+   from white, and the layer colours are re-picked rather than reused, because
+   #2D6A9F chain-blue on a near-black panel measures 2.1:1 and is unreadable.
+   Every value below was checked against its own surface; the worst is 4.2:1 and
+   all body text clears 13:1. */
+:root[data-theme="dark"] {
+  --paper:      #0A0E12;
+  --surface:    #1A2229;
+  --surface-2:  #212A33;
+  --surface-3:  #28323C;
+  --ink:        #E3E9EF;
+  --ink-soft:   #A9B6C2;
+  --ink-dim:    #8B99A6;
+  --rule:       #323E4A;
+  --rule-soft:  #26303A;
+
+  --chain:      #6BAEE8;
+  --network:    #C199DA;
+  --fusion:     #E0A63F;
+  --confirm:    #54C793;
+  --data:       #9AA8B6;
+  --danger:     #EE8279;
+
+  /* Washes are tints of their own hue lifted off the surface, not lightened
+     greys - a grey wash under coloured text kills the layer signal. */
+  --chain-wash:   #16283A;
+  --network-wash: #2A1F35;
+  --fusion-wash:  #33270F;
+  --confirm-wash: #14301F;
+  --danger-wash:  #351B18;
+
+  --active:       #E3E9EF;
+  --active-wash:  #2B3641;
+
+  --chrome:       #05080B;
+  color-scheme: dark;
+}
+
+/* System preference, unless the user has explicitly chosen light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0A0E12;      --surface: #1A2229;    --surface-2: #212A33;
+    --surface-3: #28323C;  --ink: #E3E9EF;        --ink-soft: #A9B6C2;
+    --ink-dim: #8B99A6;    --rule: #323E4A;       --rule-soft: #26303A;
+    --chain: #6BAEE8;      --network: #C199DA;    --fusion: #E0A63F;
+    --confirm: #54C793;    --data: #9AA8B6;       --danger: #EE8279;
+    --chain-wash: #16283A; --network-wash: #2A1F35; --fusion-wash: #33270F;
+    --confirm-wash: #14301F; --danger-wash: #351B18;
+    --active: #E3E9EF;     --active-wash: #2B3641; --chrome: #05080B;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
+/* The landing's "how it works" cue is a plain in-page anchor; this is what makes
+   it travel rather than teleport. Opted out under reduced motion, where a long
+   animated scroll is exactly the kind of motion that was opted out of. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Public Sans', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono { font-family: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* Condensed uppercase headings — the plate masthead voice. */
+/* The plate masthead voice. Every screen gets exactly one, and it is the
+   largest thing on that screen. Before this existed in use, the biggest element
+   on the alert queue was the 16px wordmark and the eye had nowhere to land. */
+.display {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  text-transform: uppercase;
+  line-height: 1.02;
+  font-size: clamp(22px, 2.9vw, 32px);
+}
+/* The headline figure a screen is actually about - the receipt count, the
+   calibrated confidence. Condensed so it can be large without being loud. */
+.figure {
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(26px, 3.6vw, 40px);
+}
+
+/* Section label. Plex Sans, NOT mono: this was the single change that broke the
+   monospace monoculture - 606 of 606 text nodes on the alert queue were mono,
+   inside a 1.33x size range, which is what made a dense instrument read as a
+   printed table. Mono is now reserved for values. */
+.eyebrow {
+  font-family: 'Public Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Column headers are NOT section headings. They previously shared .eyebrow, so
+   the same visual object introduced a screen region and labelled a table
+   column - the reader had no way to tell scope from appearance. */
+.colhead {
+  font-family: 'Public Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* Numeric cells align on the decimal so magnitudes compare at a glance. */
+.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+/* Focus rings stay. Removing them is the most common a11y regression there is. */
+:focus-visible {
+  outline: 2px solid var(--chain);
+  outline-offset: 1px;
+}
+
+::selection { background: color-mix(in srgb, var(--fusion) 28%, transparent); }
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: var(--surface-2); }
+::-webkit-scrollbar-thumb { background: var(--rule); border: 3px solid var(--surface-2); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
+
+/* Threshold slider — a real control, styled to match the instrument. */
+input[type='range'] {
+  -webkit-appearance: none; appearance: none;
+  height: 2px; background: var(--rule); cursor: pointer;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 13px; height: 13px; background: var(--active);
+  border: 2px solid var(--surface); cursor: pointer;
+}
+input[type='range']::-moz-range-thumb {
+  width: 13px; height: 13px; background: var(--active);
+  border: 2px solid var(--surface); cursor: pointer; border-radius: 0;
+}
+
+@keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: .3 } }
+.blink { animation: blink 1.2s steps(2, start) infinite; }
+
+/* Indeterminate progress for the ingest counter. */
+@keyframes crawl { from { transform: translateX(-100%) } to { transform: translateX(400%) } }
+.crawl::after {
+  content: ''; position: absolute; inset: 0; width: 25%;
+  background: var(--fusion); opacity: .55;
+  animation: crawl 1.1s linear infinite;
+}
+
+/* A table wider than its container scrolls silently, which on a phone meant 65%
+   of the alert queue's columns simply did not exist as far as the reader knew.
+   The right-edge fade only paints while there is more to scroll to. */
+.scroll-hint {
+  background:
+    linear-gradient(to left, var(--surface), rgba(255,255,255,0)) right / 28px 100% no-repeat,
+    linear-gradient(to left, rgba(14,28,39,.10), rgba(14,28,39,0)) right / 3px 100% no-repeat;
+  background-attachment: local, scroll;
+}
+
+/* Row hover, shared by both tables on the home screen. The inset shadow draws
+   the left edge bar without a border, so the row does not shift by 2px on hover
+   - a table that twitches under the cursor is worse than one that does nothing. */
+.row-hover { transition: background-color 140ms cubic-bezier(.16, 1, .3, 1); }
+.row-hover:hover {
+  background: var(--active-wash);
+  box-shadow: inset 2px 0 0 0 var(--active);
+}
+
+@keyframes ping-soft {
+  0%   { transform: scale(1);   opacity: 1 }
+  70%  { transform: scale(2.6); opacity: 0 }
+  100% { transform: scale(2.6); opacity: 0 }
+}
+.animate-ping-soft { position: relative; }
+.animate-ping-soft::after {
+  content: ''; position: absolute; inset: 0; border-radius: 9999px;
+  background: var(--chain);
+  animation: ping-soft 1.6s cubic-bezier(0, 0, .2, 1) infinite;
+}
+
+/* --- Plate ground --------------------------------------------------------
+   The explainer under the landing hero used to be one flat slab of --paper,
+   which is a wall, not a ground. This is the paper the plates are printed on:
+   a 40px minor rule and a 200px major one, in the SAME --rule-soft / --rule the
+   panels use, so the ground steps with the theme instead of becoming a texture
+   with a colour of its own. No new hue, no gradient encoding nothing, nothing
+   to decode - it is graph paper, and a schematic belongs on graph paper.
+
+   Kept faint on purpose: it must read at arm's length and disappear at reading
+   distance. Panels paint their own --surface over it, so the grid survives only
+   in the gutters, which is where structure is wanted. */
+.plate-grid {
+  background-image:
+    repeating-linear-gradient(to right,
+      color-mix(in srgb, var(--rule) 55%, transparent) 0 1px, transparent 1px 200px),
+    repeating-linear-gradient(to bottom,
+      color-mix(in srgb, var(--rule) 55%, transparent) 0 1px, transparent 1px 200px),
+    repeating-linear-gradient(to right,
+      color-mix(in srgb, var(--rule-soft) 60%, transparent) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(to bottom,
+      color-mix(in srgb, var(--rule-soft) 60%, transparent) 0 1px, transparent 1px 40px);
+  background-position: 0 0;
+}
+
+/* --- Frames, spacing, type: the three rules that keep this modern ------------
+
+   ONE FRAME BETWEEN A LEAF AND THE PAGE. A frame is a border on three or more
+   sides. Measured before this rule existed: every leaf in the landing explainer
+   sat inside 2-4 of them, the Model screen had 36 at depth 2 and 6 at depth 3.
+   Boxes inside boxes is the loudest dated signal an interface can have, and it
+   is the same argument the panel weights already make - when every region is
+   framed, the frame says nothing. Inside a frame, separate with a background
+   step (--surface-2/-3) and space. NOT with another border, and never with a
+   border ON TOP of a fill: that is the same separation stated twice.
+   `Panel` enforces this itself through context; hand-rolled frames must not
+   re-introduce it. Single-edge accent rules are not frames - they carry a layer,
+   not a boundary - and neither are inline controls (buttons, chips, inputs),
+   whose border is what makes them objects.
+
+   SPACING IS A SCALE, NOT A CHOICE. 2 4 8 12 16 24 32 48 (0.5 1 2 3 4 6 8 12),
+   plus `gap-px` where a 1px gap is drawing a rule. There were 19 distinct values
+   before, most within 2px of a neighbour and doing no work.
+
+   SIX TYPE SIZES. See tailwind.config.js. Ten were declared and 78% of every use
+   landed on the two smallest, so hierarchy was carried almost entirely by weight
+   and colour - the mirror image of the mono monoculture this interface already
+   fixed once. */
+
+/* --- Panel weight ---------------------------------------------------------
+   Three weights, and the accent is capped at one panel per screen. Previously
+   30 panels shared one hairline treatment and 8 of 15 on the model screen wore
+   the accent, so the accent marked the majority and signalled nothing. */
+.panel-primary { background: var(--surface); border: 1px solid var(--ink); }
+.panel-sub     { background: var(--surface-2); border: 0; }
+
+/* --- Motion ---------------------------------------------------------------
+   One idea: instrumentation coming alive. A trace draws, a bar grows, a counter
+   settles. Fast (180-420ms), exponential ease-out, no bounce, no fade-up-on-
+   scroll. Technical readers discount decoration, so nothing here is decoration:
+   every animation shows a value arriving at its magnitude. */
+@keyframes grow-x { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@keyframes rise   { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+@keyframes draw   { to { stroke-dashoffset: 0 } }
+
+/* Bars grow from their own left edge, so a value reads as reaching a length. */
+.anim-bar {
+  transform-origin: left center;
+  animation: grow-x 620ms cubic-bezier(.16, 1, .3, 1) both;
+}
+/* Rows and panels arrive already legible - opacity starts at 0 only for 4px of
+   travel, which reads as settling rather than as an entrance. */
+.anim-rise { animation: rise 260ms cubic-bezier(.16, 1, .3, 1) both; }
+
+/* Curves draw themselves. The path sets --len from its own getTotalLength(). */
+.anim-draw {
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  animation: draw 900ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+/* Map (MapView.tsx). Countries settle into their shade, dots arrive at their
+   size, lines draw from end to end - each a value reaching its magnitude. The
+   sonar ping is the one repeating motion, and it does not exist at all under
+   reduced motion. */
+.map-country { transition: fill 520ms cubic-bezier(.16, 1, .3, 1); outline: none; }
+.map-fade    { transition: opacity 200ms cubic-bezier(.16, 1, .3, 1); }
+@keyframes map-pop { from { transform: scale(0) } to { transform: scale(1) } }
+.map-pop {
+  transform-box: fill-box; transform-origin: center;
+  animation: map-pop 380ms cubic-bezier(.16, 1, .3, 1) both;
+}
+/* pathLength=1 on the element, so this holds at any width. */
+.map-draw {
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: draw 900ms cubic-bezier(.16, 1, .3, 1) both;
+}
+.map-ping { display: none; }
+
+/* HowItWorks toolkit glyphs: each stroke draws itself once the band is seen. */
+.hiw-glyph-idle * { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.hiw-glyph * { stroke-dasharray: 1; stroke-dashoffset: 1;
+               animation: draw 900ms cubic-bezier(.16, 1, .3, 1) both; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes map-ping {
+    0%   { transform: scale(1);   opacity: .55; }
+    70%  { opacity: 0; }
+    100% { transform: scale(2.6); opacity: 0; }
+  }
+  .map-ping {
+    display: inline;
+    transform-box: fill-box; transform-origin: center;
+    animation: map-ping 2.4s cubic-bezier(.16, 1, .3, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  /* `both` fill would otherwise strand these at their 0% keyframe: an invisible
+     row, a zero-width bar, an undrawn curve. Reduced motion must mean no
+     motion, never no content. */
+  .anim-bar  { transform: none !important; }
+  .anim-rise { opacity: 1 !important; transform: none !important; }
+  .anim-draw { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+  .map-draw  { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+  .map-pop   { transform: none !important; }
+  .hiw-glyph *, .hiw-glyph-idle * { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+  .animate-ping-soft::after { display: none !important; }
+}
+
+@media print {
+  body { background: #fff; }
+  .no-print { display: none !important; }
+}
