@@ -136,3 +136,9 @@ def test_patching_a_request_appends_to_its_history(client):
 def test_cross_origin_writes_are_refused(client):
     r = client.post("/api/cases", json={"address": "x"}, headers={"origin": "https://evil.example"})
     assert r.status_code == 403
+
+
+def test_committed_openapi_matches_the_schemas():
+    """docs/openapi.json feeds ui/src/api/types.ts; if this fails, run `make types`."""
+    committed = json.loads((main.ROOT / "docs" / "openapi.json").read_text())
+    assert committed == json.loads(json.dumps(main.app.openapi()))

@@ -28,7 +28,7 @@ openapi:          ## write docs/openapi.json from the FastAPI app
 	$(PY) -m vaspfusion.cli openapi --out docs/openapi.json
 
 types: openapi    ## generate ui/src/api/types.ts from the OpenAPI schema
-	cd ui && npx --yes openapi-typescript ../docs/openapi.json -o src/api/types.ts
+	cd ui && npx --yes openapi-typescript@7.13.0 ../docs/openapi.json -o src/api/types.ts
 
 offline-check:    ## fail if any source file reaches the network at runtime
 	@! grep -rnE "https?://" --include=*.py vaspfusion/ \

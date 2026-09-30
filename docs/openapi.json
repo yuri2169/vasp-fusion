@@ -1,0 +1,3277 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "VASP-FUSION",
+    "description": "Nearest-VASP attribution for unknown crypto wallets, with calibrated confidence. SIH 2026 \u00b7 PS 26182 \u00b7 I4C.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases": {
+      "post": {
+        "summary": "Create Case",
+        "operationId": "create_case_api_cases_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseSummary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Cases",
+        "operationId": "list_cases_api_cases_get",
+        "parameters": [
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "ATTRIBUTED",
+                    "INSUFFICIENT_EVIDENCE",
+                    "SANCTIONED_OR_MIXER_REACHED"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Outcome"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "queued",
+                    "running",
+                    "done",
+                    "failed"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseList"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}": {
+      "get": {
+        "summary": "Get Case",
+        "operationId": "get_case_api_cases__case_id__get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallets/{chain}/{address}": {
+      "get": {
+        "summary": "Get Wallet",
+        "operationId": "get_wallet_api_wallets__chain___address__get",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "tron",
+                "ethereum",
+                "bsc",
+                "polygon",
+                "arbitrum",
+                "base",
+                "optimism",
+                "avalanche",
+                "bitcoin",
+                "solana"
+              ],
+              "type": "string",
+              "title": "Chain"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Address"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/labels/search": {
+      "get": {
+        "summary": "Search Labels",
+        "operationId": "search_labels_api_labels_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Chain"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "exchange",
+                    "custodial_wallet",
+                    "swap_service",
+                    "sanctioned",
+                    "scam",
+                    "mixer",
+                    "bridge",
+                    "defi",
+                    "entity"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "published_por",
+                    "curated",
+                    "explorer_tag",
+                    "derived"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tier"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelSearch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/desk": {
+      "get": {
+        "summary": "Get Desk",
+        "operationId": "get_desk_api_desk_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Desk"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vasps/{name}": {
+      "get": {
+        "summary": "Get Vasp",
+        "operationId": "get_vasp_api_vasps__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VaspDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requests": {
+      "post": {
+        "summary": "Create Request",
+        "operationId": "create_request_api_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requests/{request_id}": {
+      "get": {
+        "summary": "Get Request",
+        "operationId": "get_request_api_requests__request_id__get",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Patch Request",
+        "description": "Mock: returns the request with the new status applied; nothing persists.",
+        "operationId": "patch_request_api_requests__request_id__patch",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/requests/{request_id}/pdf": {
+      "get": {
+        "summary": "Get Request Pdf",
+        "operationId": "get_request_pdf_api_requests__request_id__pdf_get",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "501": {
+            "description": "Until B8"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "summary": "Get Dashboard",
+        "operationId": "get_dashboard_api_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/model": {
+      "get": {
+        "summary": "Get Model",
+        "operationId": "get_model_api_model_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alert": {
+        "properties": {
+          "wallet": {
+            "type": "string",
+            "title": "Wallet"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "high"
+            ],
+            "title": "Severity"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "wallet",
+          "chain",
+          "severity",
+          "text",
+          "at"
+        ],
+        "title": "Alert"
+      },
+      "Candidate": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "sanctioned",
+              "scam",
+              "mixer",
+              "bridge",
+              "defi",
+              "entity"
+            ],
+            "title": "Category"
+          },
+          "proximity_rank": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Proximity Rank",
+            "description": "1 = nearest; hops, share, time"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "description": "Calibrated; separate from proximity"
+          },
+          "confidence_interval": {
+            "anyOf": [
+              {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Interval"
+          },
+          "hops": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Hops"
+          },
+          "share_of_funds": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share Of Funds"
+          },
+          "time_to_reach_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time To Reach S"
+          },
+          "label_tier": {
+            "type": "string",
+            "enum": [
+              "published_por",
+              "curated",
+              "explorer_tag",
+              "derived"
+            ],
+            "title": "Label Tier"
+          },
+          "deposit_address": {
+            "type": "string",
+            "title": "Deposit Address"
+          },
+          "path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Path",
+            "description": "Addresses from the suspect to deposit_address"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceItem"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "counterfactual": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterfactual",
+            "examples": [
+              "Still Binance if the sweep evidence is removed"
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "category",
+          "proximity_rank",
+          "confidence",
+          "hops",
+          "share_of_funds",
+          "label_tier",
+          "deposit_address",
+          "path",
+          "evidence"
+        ],
+        "title": "Candidate"
+      },
+      "CaseCreate": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "Omit to auto-detect"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "complaint_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complaint No",
+            "description": "1930 / NCRP complaint number"
+          },
+          "amount_lost_inr": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Lost Inr"
+          },
+          "incident_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Date"
+          },
+          "max_hops": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Hops",
+            "default": 3
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "title": "CaseCreate"
+      },
+      "CaseDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ATTRIBUTED",
+                  "INSUFFICIENT_EVIDENCE",
+                  "SANCTIONED_OR_MIXER_REACHED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "top_vasp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Vasp"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "complaint_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complaint No"
+          },
+          "amount_lost_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Lost Inr"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": false
+          },
+          "hop_rail": {
+            "items": {
+              "$ref": "#/components/schemas/Hop"
+            },
+            "type": "array",
+            "title": "Hop Rail"
+          },
+          "graph": {
+            "$ref": "#/components/schemas/CaseGraph"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "type": "array",
+            "title": "Candidates",
+            "description": "Sorted by proximity_rank"
+          },
+          "typology_flags": {
+            "items": {
+              "$ref": "#/components/schemas/TypologyFlag"
+            },
+            "type": "array",
+            "title": "Typology Flags"
+          },
+          "narrative": {
+            "type": "string",
+            "title": "Narrative"
+          },
+          "abstain_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abstain Reason",
+            "description": "Set when INSUFFICIENT_EVIDENCE"
+          },
+          "what_would_change": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "What Would Change",
+            "description": "Evidence that would change an abstain",
+            "default": []
+          },
+          "next_steps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Next Steps",
+            "default": []
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "address",
+          "chain",
+          "status",
+          "created_at",
+          "hop_rail",
+          "graph",
+          "candidates",
+          "typology_flags",
+          "narrative",
+          "provenance"
+        ],
+        "title": "CaseDetail"
+      },
+      "CaseGraph": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "title": "CaseGraph"
+      },
+      "CaseList": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "CaseList"
+      },
+      "CaseSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ATTRIBUTED",
+                  "INSUFFICIENT_EVIDENCE",
+                  "SANCTIONED_OR_MIXER_REACHED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "top_vasp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Vasp"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "complaint_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complaint No"
+          },
+          "amount_lost_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Lost Inr"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "address",
+          "chain",
+          "status",
+          "created_at"
+        ],
+        "title": "CaseSummary"
+      },
+      "ChainCount": {
+        "properties": {
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chain",
+          "cases"
+        ],
+        "title": "ChainCount"
+      },
+      "Dashboard": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/DashboardCounts"
+          },
+          "outcomes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "ATTRIBUTED",
+                "INSUFFICIENT_EVIDENCE",
+                "SANCTIONED_OR_MIXER_REACHED"
+              ]
+            },
+            "type": "object",
+            "title": "Outcomes"
+          },
+          "top_vasps": {
+            "items": {
+              "$ref": "#/components/schemas/VaspCount"
+            },
+            "type": "array",
+            "title": "Top Vasps"
+          },
+          "chain_mix": {
+            "items": {
+              "$ref": "#/components/schemas/ChainCount"
+            },
+            "type": "array",
+            "title": "Chain Mix"
+          },
+          "median_time_to_attribution_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Time To Attribution S"
+          },
+          "recent_alerts": {
+            "items": {
+              "$ref": "#/components/schemas/Alert"
+            },
+            "type": "array",
+            "title": "Recent Alerts"
+          },
+          "label_coverage": {
+            "$ref": "#/components/schemas/LabelCoverage"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "counts",
+          "outcomes",
+          "top_vasps",
+          "chain_mix",
+          "recent_alerts",
+          "label_coverage"
+        ],
+        "title": "Dashboard"
+      },
+      "DashboardCounts": {
+        "properties": {
+          "cases_total": {
+            "type": "integer",
+            "title": "Cases Total"
+          },
+          "open_cases": {
+            "type": "integer",
+            "title": "Open Cases"
+          },
+          "wallets_attributed": {
+            "type": "integer",
+            "title": "Wallets Attributed"
+          },
+          "requests_awaiting_reply": {
+            "type": "integer",
+            "title": "Requests Awaiting Reply"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cases_total",
+          "open_cases",
+          "wallets_attributed",
+          "requests_awaiting_reply"
+        ],
+        "title": "DashboardCounts"
+      },
+      "Desk": {
+        "properties": {
+          "follow_ups": {
+            "items": {
+              "$ref": "#/components/schemas/FollowUp"
+            },
+            "type": "array",
+            "title": "Follow Ups"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/DeskRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "follow_ups",
+          "rows"
+        ],
+        "title": "Desk"
+      },
+      "DeskRow": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "sanctioned",
+              "scam",
+              "mixer",
+              "bridge",
+              "defi",
+              "entity"
+            ],
+            "title": "Category"
+          },
+          "wallet_count": {
+            "type": "integer",
+            "title": "Wallet Count"
+          },
+          "total_usd": {
+            "type": "number",
+            "title": "Total Usd"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "drafted",
+                  "approved",
+                  "sent",
+                  "acknowledged",
+                  "answered",
+                  "freeze_confirmed",
+                  "refused"
+                ]
+              },
+              {
+                "type": "string",
+                "const": "not_requested"
+              }
+            ],
+            "title": "Status"
+          },
+          "next_action": {
+            "type": "string",
+            "title": "Next Action"
+          },
+          "last_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Request Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "category",
+          "wallet_count",
+          "total_usd",
+          "case_ids",
+          "status",
+          "next_action"
+        ],
+        "title": "DeskRow"
+      },
+      "EvidenceItem": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "label",
+              "path",
+              "sweep",
+              "gas_payer",
+              "model",
+              "counterfactual"
+            ],
+            "title": "Kind"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Plain English, investigator's words"
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "published_por",
+                  "curated",
+                  "explorer_tag",
+                  "derived"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "default": []
+          },
+          "weight": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight",
+            "description": "Signed contribution (SHAP or rule)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "text"
+        ],
+        "title": "EvidenceItem"
+      },
+      "FeatureImportance": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "importance": {
+            "type": "number",
+            "title": "Importance"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "feature",
+          "importance"
+        ],
+        "title": "FeatureImportance"
+      },
+      "FlowSummary": {
+        "properties": {
+          "tx_count": {
+            "type": "integer",
+            "title": "Tx Count"
+          },
+          "total_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Usd"
+          },
+          "first_seen": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Seen"
+          },
+          "top_counterparties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Top Counterparties",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "tx_count"
+        ],
+        "title": "FlowSummary"
+      },
+      "FollowUp": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "reply_overdue",
+              "freeze_lapsing",
+              "preservation_closing"
+            ],
+            "title": "Kind"
+          },
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "due": {
+            "type": "string",
+            "format": "date",
+            "title": "Due"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "vasp",
+          "request_id",
+          "due",
+          "text"
+        ],
+        "title": "FollowUp"
+      },
+      "GraphEdge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "block_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Block Time"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound"
+            ],
+            "title": "Direction",
+            "default": "outbound"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "target",
+          "tx_hash",
+          "asset",
+          "amount",
+          "block_time"
+        ],
+        "title": "GraphEdge"
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "The address"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "suspect",
+              "intermediary",
+              "exchange_hot",
+              "exchange_deposit",
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "bridge",
+              "mixer",
+              "sanctioned",
+              "hub",
+              "unknown"
+            ],
+            "title": "Role"
+          },
+          "hop": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Hop",
+            "description": "0 = the suspect wallet"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cluster": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster",
+            "description": "VASP name when collapsible into one node"
+          },
+          "is_hub": {
+            "type": "boolean",
+            "title": "Is Hub",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "chain",
+          "role",
+          "hop"
+        ],
+        "title": "GraphNode"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "label_db": {
+            "type": "boolean",
+            "title": "Label Db"
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "live",
+              "mixed"
+            ],
+            "title": "Data Mode"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "version",
+          "label_db",
+          "data_mode"
+        ],
+        "title": "Health"
+      },
+      "Hop": {
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Index"
+          },
+          "from_address": {
+            "type": "string",
+            "title": "From Address"
+          },
+          "to_address": {
+            "type": "string",
+            "title": "To Address"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "block_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Block Time"
+          },
+          "elapsed_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elapsed S",
+            "description": "Seconds since the previous hop"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "index",
+          "from_address",
+          "to_address",
+          "tx_hash",
+          "asset",
+          "amount",
+          "block_time"
+        ],
+        "title": "Hop",
+        "description": "One step on the Hop Rail: money moved from `from_address` to `to_address`."
+      },
+      "LabelCoverage": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "by_category": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Category"
+          },
+          "by_tier": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Tier"
+          },
+          "by_chain": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Chain"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "by_category",
+          "by_tier",
+          "by_chain"
+        ],
+        "title": "LabelCoverage"
+      },
+      "LabelOut": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain",
+            "description": "Chain slug as stored; 'evm' = any EVM chain"
+          },
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "sanctioned",
+              "scam",
+              "mixer",
+              "bridge",
+              "defi",
+              "entity"
+            ],
+            "title": "Category"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "hot",
+              "cold",
+              "deposit",
+              "reserve",
+              "unknown"
+            ],
+            "title": "Kind"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "published_por",
+              "curated",
+              "explorer_tag",
+              "derived"
+            ],
+            "title": "Tier"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "The upstream name tag, verbatim"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "entity",
+          "category",
+          "kind",
+          "tier",
+          "source"
+        ],
+        "title": "LabelOut"
+      },
+      "LabelSearch": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "LabelSearch"
+      },
+      "LetterWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "published_por",
+              "curated",
+              "explorer_tag",
+              "derived"
+            ],
+            "title": "Tier"
+          },
+          "first_seen": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Seen"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "tier"
+        ],
+        "title": "LetterWallet"
+      },
+      "ModelInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_measured",
+              "measured"
+            ],
+            "title": "Status"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "trained_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trained At"
+          },
+          "split": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Split",
+            "description": "e.g. 'by exchange and time'"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/ModelMetrics"
+          },
+          "reliability": {
+            "items": {
+              "$ref": "#/components/schemas/ReliabilityBin"
+            },
+            "type": "array",
+            "title": "Reliability",
+            "default": []
+          },
+          "risk_coverage": {
+            "items": {
+              "$ref": "#/components/schemas/RiskCoveragePoint"
+            },
+            "type": "array",
+            "title": "Risk Coverage",
+            "default": []
+          },
+          "feature_importance": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureImportance"
+            },
+            "type": "array",
+            "title": "Feature Importance",
+            "default": []
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "metrics"
+        ],
+        "title": "ModelInfo"
+      },
+      "ModelMetrics": {
+        "properties": {
+          "pr_auc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pr Auc"
+          },
+          "ece": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ece"
+          },
+          "brier": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brier"
+          },
+          "accuracy_when_answering": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy When Answering"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage"
+          },
+          "n_test": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Test"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ModelMetrics"
+      },
+      "Provenance": {
+        "properties": {
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "code_version": {
+            "type": "string",
+            "title": "Code Version"
+          },
+          "label_db_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label Db Sha256"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "offline_replay": {
+            "type": "boolean",
+            "title": "Offline Replay",
+            "default": false
+          },
+          "data_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "seed",
+          "code_version"
+        ],
+        "title": "Provenance"
+      },
+      "ReliabilityBin": {
+        "properties": {
+          "bin_mid": {
+            "type": "number",
+            "title": "Bin Mid"
+          },
+          "observed": {
+            "type": "number",
+            "title": "Observed"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "bin_mid",
+          "observed",
+          "count"
+        ],
+        "title": "ReliabilityBin"
+      },
+      "RequestCreate": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Case Ids"
+          },
+          "wallets": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallets",
+            "description": "Default: every wallet of this VASP in the cases"
+          },
+          "asks": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "kyc",
+                "transactions",
+                "freeze",
+                "preservation"
+              ]
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Asks"
+          },
+          "officer": {
+            "type": "string",
+            "title": "Officer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "case_ids",
+          "asks",
+          "officer"
+        ],
+        "title": "RequestCreate"
+      },
+      "RequestDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "due": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due"
+          },
+          "status_history": {
+            "items": {
+              "$ref": "#/components/schemas/StatusEvent"
+            },
+            "type": "array",
+            "title": "Status History"
+          },
+          "letter": {
+            "$ref": "#/components/schemas/RequestLetter"
+          },
+          "pdf_url": {
+            "type": "string",
+            "title": "Pdf Url"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload",
+            "description": "SAHYOG JSON payload (docs/sahyog_contract.md, B8)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "vasp",
+          "status",
+          "case_ids",
+          "created_at",
+          "status_history",
+          "letter",
+          "pdf_url",
+          "payload"
+        ],
+        "title": "RequestDetail"
+      },
+      "RequestLetter": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Paragraphs"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/LetterWallet"
+            },
+            "type": "array",
+            "title": "Wallets"
+          },
+          "asks": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "kyc",
+                "transactions",
+                "freeze",
+                "preservation"
+              ]
+            },
+            "type": "array",
+            "title": "Asks"
+          },
+          "legal_basis": {
+            "type": "string",
+            "title": "Legal Basis"
+          },
+          "officer": {
+            "type": "string",
+            "title": "Officer"
+          },
+          "watermark": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Watermark",
+            "description": "null once approved",
+            "default": "Draft - officer review required"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reference",
+          "date",
+          "to",
+          "subject",
+          "paragraphs",
+          "wallets",
+          "asks",
+          "legal_basis",
+          "officer"
+        ],
+        "title": "RequestLetter"
+      },
+      "RequestPatch": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "RequestPatch"
+      },
+      "RequestSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "due": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "vasp",
+          "status",
+          "case_ids",
+          "created_at"
+        ],
+        "title": "RequestSummary"
+      },
+      "RiskCoveragePoint": {
+        "properties": {
+          "coverage": {
+            "type": "number",
+            "title": "Coverage"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "coverage",
+          "accuracy"
+        ],
+        "title": "RiskCoveragePoint"
+      },
+      "RiskInfo": {
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score",
+            "description": "null = not yet scored"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RiskInfo"
+      },
+      "StatusEvent": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "at"
+        ],
+        "title": "StatusEvent"
+      },
+      "TypologyFlag": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "peel_chain",
+              "fan_out",
+              "fan_in",
+              "rapid_forwarding",
+              "round_amounts",
+              "bridge_hop",
+              "mixer_contact",
+              "sanctioned_contact"
+            ],
+            "title": "Code"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "high"
+            ],
+            "title": "Severity"
+          },
+          "wallet": {
+            "type": "string",
+            "title": "Wallet"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "figures": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Figures",
+            "default": {}
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "wallet",
+          "text"
+        ],
+        "title": "TypologyFlag"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VaspCount": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases"
+          },
+          "total_usd": {
+            "type": "number",
+            "title": "Total Usd"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "cases",
+          "total_usd"
+        ],
+        "title": "VaspCount"
+      },
+      "VaspDetail": {
+        "properties": {
+          "directory": {
+            "$ref": "#/components/schemas/VaspDirectoryEntry"
+          },
+          "label_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Label Counts",
+            "description": "Labelled wallets by chain"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/VaspWallet"
+            },
+            "type": "array",
+            "title": "Wallets"
+          },
+          "requests": {
+            "items": {
+              "$ref": "#/components/schemas/RequestSummary"
+            },
+            "type": "array",
+            "title": "Requests"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "directory",
+          "label_counts",
+          "wallets",
+          "requests"
+        ],
+        "title": "VaspDetail"
+      },
+      "VaspDirectoryEntry": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "legal_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Name"
+          },
+          "fiu_ind_registered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fiu Ind Registered",
+            "description": "Only if cited"
+          },
+          "jurisdiction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Jurisdiction"
+          },
+          "le_request_channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Le Request Channel"
+          },
+          "source_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Urls",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "VaspDirectoryEntry"
+      },
+      "VaspWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound"
+            ],
+            "title": "Direction",
+            "default": "outbound"
+          },
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "published_por",
+              "curated",
+              "explorer_tag",
+              "derived"
+            ],
+            "title": "Tier"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "tier"
+        ],
+        "title": "VaspWallet"
+      },
+      "WalletCaseRef": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "suspect",
+              "intermediary",
+              "exchange_hot",
+              "exchange_deposit",
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "bridge",
+              "mixer",
+              "sanctioned",
+              "hub",
+              "unknown"
+            ],
+            "title": "Role"
+          },
+          "hop": {
+            "type": "integer",
+            "title": "Hop"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "role",
+          "hop"
+        ],
+        "title": "WalletCaseRef"
+      },
+      "WalletDetail": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "labels": {
+            "items": {
+              "$ref": "#/components/schemas/LabelOut"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/RiskInfo"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/WalletCaseRef"
+            },
+            "type": "array",
+            "title": "Cases"
+          },
+          "inbound": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FlowSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outbound": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FlowSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "labels",
+          "risk",
+          "cases"
+        ],
+        "title": "WalletDetail"
+      }
+    }
+  }
+}
