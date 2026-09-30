@@ -1,0 +1,5 @@
+address,network,entity,label,category,source,source_url,confidence,last_updated
+0x975d9bd9928f398c7e01f6ba236816fa558cd94b,ethereum,changenow,ChangeNOW: Hot Wallet 1,entity,eth-labels,https://github.com/dawsbot/eth-labels,medium,2026-07-17
+0xa5d29237a8f14ff25ab9683c38e64671e3bb5cc8,ethereum,bitgo,BitGo: MultiSig 3,entity,eth-labels,https://github.com/dawsbot/eth-labels,medium,2026-07-17
+0x000483c56fe99127fbd62da5d8b899a159116dc1,ethereum,bitget,Bitget Dep: 0x000483C56FE99127fbd62da5D8b899a159116dc1,exchange,eth-labels,https://github.com/dawsbot/eth-labels,medium,2026-07-17
+0x03893a7c7463ae47d46bc7f091665f1893656003,ethereum,blocked,"Tornado.Cash: 50,000 cDAI 2",mixer,eth-labels,https://github.com/dawsbot/eth-labels,medium,2026-07-17

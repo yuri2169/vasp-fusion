@@ -65,7 +65,7 @@ _ALIASES = {
     "coinbase": "Coinbase", "kraken": "Kraken", "bitfinex": "Bitfinex",
     "deribit": "Deribit", "mexc": "MEXC", "coinex": "CoinEx", "bybit": "Bybit",
     "gemini": "Gemini", "ftx": "FTX", "poloniex": "Poloniex", "bithumb": "Bithumb",
-    "upbit": "Upbit", "changenow": "ChangeNOW", "celsius-network": "Celsius",
+    "upbit": "Upbit", "uphold.com": "Uphold", "changenow": "ChangeNOW", "celsius-network": "Celsius",
     "celsius": "Celsius", "bitgo": "BitGo", "blockfi": "BlockFi", "nexo": "Nexo",
 }
 
@@ -78,6 +78,14 @@ CUSTODIAL_PROVIDERS = frozenset(s.lower() for s in (
     "BitGo", "Fireblocks", "Anchorage Digital", "Copper", "Cobo", "Ceffu", "Paxos",
     "Celsius", "BlockFi", "Revolut", "Uphold", "Wirex", "Xapo",
 ))
+
+# Canonical spelling for every name the rules above know about.
+_CANONICAL = {**{s.lower(): s for s in (
+    "FixedFloat", "ChangeNOW", "SideShift", "SimpleSwap", "Changelly", "StealthEX",
+    "Exolix", "LetsExchange", "Godex", "SwapZone", "SwapSpace", "Quickex", "Flyp.me",
+    "Swapuz", "Evercoin", "ShapeShift", "BitGo", "Fireblocks", "Anchorage Digital",
+    "Copper", "Cobo", "Ceffu", "Paxos", "Celsius", "BlockFi", "Revolut", "Uphold",
+    "Wirex", "Xapo")}, **_ALIASES}
 
 _CONTRACT = re.compile(r"\b(token|deployer|airdrop)\b")
 
@@ -109,7 +117,8 @@ def _name_from_label(label: str) -> str:
     s = label.split(":")[0].strip()
     s = re.sub(r"\s*\(proof-of-reserves\)$", "", s)
     s = re.sub(r"\s+\d+$", "", s)
-    return re.sub(r"\.com$", "", s, flags=re.I).strip()
+    s = re.sub(r"\s+Dep$", "", s)  # "OKX Dep: 0x46C..." is an OKX deposit address
+    return s.strip()
 
 
 def _alnum(s: str) -> str:
@@ -123,10 +132,13 @@ def canonical_entity(raw_entity: str, label: str) -> str:
     if derived.lower() == "null":
         derived = ""
     if not raw or key in _GENERIC_ENTITIES:
-        name = derived or raw
-        return _ALIASES.get(name.lower(), name)
-    if key in _ALIASES:
-        return _ALIASES[key]
+        if not derived or derived.lower() == key:
+            # The label is only the tag ("exchange"): some exchange, nobody knows
+            # which. Still a VASP hit, but not one a request can be addressed to.
+            return f"Unidentified {raw}".strip()
+        return _CANONICAL.get(derived.lower(), derived)
+    if key in _CANONICAL:
+        return _CANONICAL[key]
     if raw == key:  # a lowercase slug such as "cex-io": prefer the label's spelling
         if derived and _alnum(derived) == _alnum(raw):
             return derived
@@ -134,14 +146,21 @@ def canonical_entity(raw_entity: str, label: str) -> str:
     return raw
 
 
-def map_category(raw_category: str, entity: str, label: str) -> str:
+def map_category(raw_category: str, entity: str, label: str, raw_entity: str = "") -> str:
     raw = raw_category.strip().lower()
+    # Etherscan's generic "Exchange" tag, filed upstream as `entity`: the owner was
+    # read from the label, and the tag says it is an exchange. Only this per-row
+    # signal promotes; an owner name alone does not, because some upstream slugs
+    # contradict their own labels (5,000 "Binance Dep" rows under `bilaxy`).
+    if raw == "entity" and raw_entity.strip().lower() == "exchange":
+        raw = "exchange"
     is_contract = bool(_CONTRACT.search((label or "").lower()))
     ent = entity.lower()
     if raw in ("exchange", "entity") and not is_contract:
         if ent in SWAP_SERVICES:
             return "swap_service"
-        if raw == "entity" and ent in CUSTODIAL_PROVIDERS:
+        # Upstream `exchange` rows stay exchanges (Nexo); only untyped rows move.
+        if raw_category.strip().lower() == "entity" and ent in CUSTODIAL_PROVIDERS:
             return "custodial_wallet"
     if raw == "exchange" and is_contract:
         return "entity"

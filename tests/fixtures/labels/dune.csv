@@ -1,0 +1,5 @@
+chain,address,exchange,name_tag,confidence,source
+BTC,12T8i8tpeczk5JGf8ppZf1w6SFBRwEa9y4,CoinDCX,CoinDCX 1,single-source,dune-spellbook
+EVM,0x37b6bd5fece5b88b6e8e825196bcc868a2feed51,CoinDCX,CoinDCX 3,single-source,dune-spellbook
+TRX,TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR,CoinDCX,CoinDCX 11,single-source,dune-spellbook
+EVM,0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4,WazirX,WazirX 2,operator-confirmed,wazirx.com post-incident report + etherscan + dune-spellbook

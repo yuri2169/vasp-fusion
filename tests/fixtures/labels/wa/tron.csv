@@ -1,0 +1,3 @@
+address,network,entity,label,category,source,source_url,confidence,last_updated
+TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz,tron,Bitget,Bitget (proof-of-reserves),exchange,defillama-cex,https://github.com/DefiLlama/DefiLlama-Adapters,high,2026-07-17
+TA3941uFAvmVibSkQ6fMJXxmaSNovX86mz,tron,OFAC SDN,OFAC sanctioned (USDT),sanctioned,ofac-sdn,https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses,high,2026-07-17

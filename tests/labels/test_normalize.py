@@ -60,25 +60,40 @@ def test_tier_follows_the_strongest_source(source, want):
     ("anchorage-digital", "Anchorage Digital: Custodian 1", "Anchorage Digital"),
     ("altcoin-trader", "AltCoinTrader: Celsius Deposit 1", "AltCoinTrader"),
     ("CoinDCX", "CoinDCX 3", "CoinDCX"),
+    ("exchange", "OKX Dep: 0x46C...A2851", "OKX"),
+    ("exchange", "Crypto.com 44", "Crypto.com"),
+    ("exchange", "exchange", "Unidentified exchange"),
+    ("exchange", "Sideshift: Deposit Funder 1", "SideShift"),
+    ("bilaxy", "Binance Dep: 0x000f9f5F6db6d63bB64bb55d58272A1ce660fD90", "Bilaxy"),
 ])
 def test_entity_names_are_canonical(raw, label, want):
     assert canonical_entity(raw, label) == want
 
 
-@pytest.mark.parametrize("raw,entity,label,want", [
-    ("entity", "ChangeNOW", "ChangeNOW: Hot Wallet 1", "swap_service"),
-    ("entity", "BitGo", "BitGo: MultiSig 3", "custodial_wallet"),
-    ("entity", "Paxos", "Paxos: USDP Token", "entity"),
-    ("entity", "Wirex", "Wirex: Deployer", "entity"),
-    ("exchange", "Vela Exchange", "Vela Exchange: VELA Token", "entity"),
-    ("exchange", "Binance", "Binance Hot Wallet", "exchange"),
-    ("exchange", "Nexo", "Nexo 1", "exchange"),
-    ("mixer", "Tornado.Cash", "Tornado.Cash: 50,000 cDAI 2", "mixer"),
-    ("sanctioned", "OFAC SDN", "OFAC sanctioned (USDT)", "sanctioned"),
-    ("bridge", "THORSwap", "THORSwap: RouterV2", "bridge"),
+@pytest.mark.parametrize("raw,entity,label,want,raw_entity", [
+    ("entity", "ChangeNOW", "ChangeNOW: Hot Wallet 1", "swap_service", ""),
+    ("entity", "BitGo", "BitGo: MultiSig 3", "custodial_wallet", ""),
+    ("entity", "Paxos", "Paxos: USDP Token", "entity", ""),
+    ("entity", "Wirex", "Wirex: Deployer", "entity", ""),
+    ("exchange", "Vela Exchange", "Vela Exchange: VELA Token", "entity", ""),
+    ("exchange", "Binance", "Binance Hot Wallet", "exchange", ""),
+    ("exchange", "Nexo", "Nexo 1", "exchange", ""),
+    ("mixer", "Tornado.Cash", "Tornado.Cash: 50,000 cDAI 2", "mixer", ""),
+    ("sanctioned", "OFAC SDN", "OFAC sanctioned (USDT)", "sanctioned", ""),
+    ("bridge", "THORSwap", "THORSwap: RouterV2", "bridge", ""),
+    # Etherscan's generic "Exchange" tag: the owner is in the label, and it is a VASP
+    ("entity", "OKX", "OKX Dep: 0x46C...A2851", "exchange", "exchange"),
+    ("entity", "Bilaxy", "Bilaxy: Deposit Funder", "exchange", "exchange"),
+    ("entity", "Celsius", "Celsius 20", "custodial_wallet", "exchange"),
+    ("entity", "SideShift", "Sideshift: Deposit Funder 1", "swap_service", "exchange"),
+    ("entity", "SideShift", "Sideshift: svXAI Token", "entity", "exchange"),
+    # Slug and label disagree on the owner (bilaxy vs "Binance Dep"): not promoted
+    ("entity", "Bilaxy", "Binance Dep: 0x000f9f5F6db6d63bB64bb55d58272A1ce660fD90",
+     "entity", "bilaxy"),
 ])
-def test_categories_separate_swap_services_and_custodians(raw, entity, label, want):
-    assert map_category(raw, entity, label) == want
+def test_categories_separate_swap_services_and_custodians(raw, entity, label, want,
+                                                         raw_entity):
+    assert map_category(raw, entity, label, raw_entity) == want
 
 
 @pytest.mark.parametrize("label,source,want", [
