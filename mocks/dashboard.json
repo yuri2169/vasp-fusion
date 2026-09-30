@@ -46,10 +46,10 @@
     }
   ],
   "label_coverage": {
-    "total": 115257,
+    "total": 115242,
     "by_category": {
-      "entity": 62949,
-      "exchange": 36747,
+      "entity": 62948,
+      "exchange": 36733,
       "defi": 11087,
       "bridge": 2062,
       "sanctioned": 941,
@@ -59,21 +59,21 @@
       "mixer": 76
     },
     "by_tier": {
-      "explorer_tag": 111724,
+      "explorer_tag": 111709,
       "curated": 1843,
       "published_por": 1690
     },
     "by_chain": {
       "ethereum": 88033,
-      "base": 6011,
+      "base": 5996,
       "avalanche": 4946,
       "worldchain": 4902,
       "arbitrum": 3186,
       "bsc": 3162,
       "optimism": 2130,
-      "bitcoin": 830,
+      "bitcoin": 829,
       "celo": 463,
-      "tron": 388,
+      "tron": 389,
       "gnosis": 302,
       "litecoin": 194,
       "solana": 89,

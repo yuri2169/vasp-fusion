@@ -24,6 +24,8 @@ def cmd_labels(args) -> None:
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
           f"{stats['duplicates_dropped']:,}  unique (address, chain) {t:,}")
+    print(f"  unusable addresses dropped {stats['invalid_dropped']:,} (valid on no chain, e.g. "
+          f"truncated upstream)  re-filed to their real chain {stats['chain_refiled']:,}")
     ex = stats["by_category"].get("exchange", 0)
     print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted']:,} upstream + Dune "
           f"exchange rows + {stats['exchange_tag_promoted']:,} promoted by Etherscan's Exchange tag")

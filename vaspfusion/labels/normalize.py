@@ -102,6 +102,29 @@ def normalize_address(address: str, chain: str) -> str:
     return a.lower() if chain in EVM_CHAINS else a
 
 
+_VALIDATED = ("tron", "bitcoin", "ethereum", "solana")
+
+
+def address_chain(address: str, chain: str) -> str | None:
+    """The chain a label's address really belongs to, or None if it is unusable.
+
+    Only Tron, Bitcoin, EVM and Solana have validators (vaspfusion.chains); rows
+    on other chains are kept as filed. An address that fails its filed chain but
+    is valid on another is re-filed there (the 0xB10C OFAC list files a Tron
+    address as XBT); one valid nowhere (upstream truncated some Base addresses to
+    '0x1985EA6E...2Fdb25c87') can never match and is dropped."""
+    from vaspfusion.chains.addresses import detect_chain, validate
+    from vaspfusion.chains.base import InvalidAddress
+
+    family = "ethereum" if chain in EVM_CHAINS else chain
+    if family not in _VALIDATED or validate(address, family):
+        return chain
+    try:
+        return detect_chain(address)
+    except InvalidAddress:
+        return None
+
+
 def tier_for(source: str) -> str:
     best = None
     for part in re.split(r"\s*\+\s*", source.strip().lower()):

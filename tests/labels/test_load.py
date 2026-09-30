@@ -26,10 +26,12 @@ def _one(db, address, chain):
 
 def test_all_csv_is_skipped_and_duplicates_collapse(fixture_db):
     db, stats = fixture_db
-    # 11 wallet-attribution rows + 4 Dune rows, one address in both sources.
-    assert stats["raw_rows"] == 15
+    # 13 wallet-attribution rows + 4 Dune rows, one address in both sources,
+    # one truncated address dropped.
+    assert stats["raw_rows"] == 17
+    assert stats["invalid_dropped"] == 1
     assert stats["duplicates_dropped"] == 1
-    assert stats["total"] == 14 == len(_rows(db))
+    assert stats["total"] == 15 == len(_rows(db))
 
 
 def test_highest_tier_wins_a_duplicate(fixture_db):
@@ -86,3 +88,17 @@ def test_rebuild_is_deterministic(fixture_db, tmp_path):
     build_labels(again, FIX / "wa", FIX / "dune.csv")  # overwrite in place
     digest = lambda p: hashlib.sha256(repr(_rows(p)).encode()).hexdigest()
     assert digest(again) == digest(db)
+
+
+def test_truncated_address_is_dropped(fixture_db):
+    db, _ = fixture_db
+    assert not [r for r in _rows(db) if "..." in r[0]]
+
+
+def test_misfiled_ofac_address_is_refiled_to_tron(fixture_db):
+    db, stats = fixture_db
+    assert _one(db, "TUCsTq7TofTCJRRoHk6RvhMoS2mJLm5Yzq", "bitcoin") is None
+    row = _one(db, "TUCsTq7TofTCJRRoHk6RvhMoS2mJLm5Yzq", "tron")
+    assert (row["entity"], row["category"], row["tier"]) == ("OFAC SDN", "sanctioned", "curated")
+    assert row["label"] == "OFAC sanctioned (XBT) [filed upstream as bitcoin]"
+    assert stats["chain_refiled"] == 1

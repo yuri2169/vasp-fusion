@@ -19,6 +19,7 @@ import duckdb
 import polars as pl
 
 from .normalize import (
+    address_chain,
     CATEGORY_RANK, TIER_RANK, canonical_entity, infer_kind, map_category,
     normalize_address, normalize_chain, tier_for,
 )
@@ -84,6 +85,23 @@ def read_dune(csv_path: Path) -> list[dict]:
                  r["source"], DUNE_SOURCE_URL) for r in _read(Path(csv_path))]
 
 
+def _validate(rows: list[dict]) -> tuple[list[dict], int, int]:
+    """Drop rows whose address is valid on no chain; re-file misfiled ones.
+    Returns (kept rows, dropped count, re-filed count)."""
+    kept, dropped, refiled = [], 0, 0
+    for r in rows:
+        chain = address_chain(r["address"], r["chain"])
+        if chain is None:
+            dropped += 1
+            continue
+        if chain != r["chain"]:
+            refiled += 1
+            r = {**r, "address": normalize_address(r["address"], chain), "chain": chain,
+                 "label": f"{r['label']} [filed upstream as {r['chain']}]"}
+        kept.append(r)
+    return kept, dropped, refiled
+
+
 def _dedupe(rows: list[dict]) -> pl.DataFrame:
     df = pl.DataFrame(rows, schema={**{c: pl.String for c in LABEL_COLUMNS},
                                     "_promoted": pl.Boolean})
@@ -108,7 +126,8 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path) -> dict:
     rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv)
-    df = _dedupe(rows)
+    kept, dropped, refiled = _validate(rows)
+    df = _dedupe(kept)
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = db_path.with_name(db_path.name + ".tmp")
@@ -121,6 +140,8 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path) -> dict:
         stats = label_stats(con)
     os.replace(tmp, db_path)  # readers never see a half-built DB
     stats["raw_rows"] = len(rows)
-    stats["duplicates_dropped"] = len(rows) - stats["total"]
+    stats["invalid_dropped"] = dropped
+    stats["chain_refiled"] = refiled
+    stats["duplicates_dropped"] = len(kept) - stats["total"]
     stats["exchange_tag_promoted"] = int(df["_promoted"].sum())
     return stats

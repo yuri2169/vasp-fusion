@@ -1,2 +1,3 @@
 address,network,entity,label,category,source,source_url,confidence,last_updated
 12T8i8tpeczk5JGf8ppZf1w6SFBRwEa9y4,bitcoin,CoinDCX,CoinDCX (proof-of-reserves),exchange,defillama-cex,https://github.com/DefiLlama/DefiLlama-Adapters,high,2026-07-17
+TUCsTq7TofTCJRRoHk6RvhMoS2mJLm5Yzq,bitcoin,OFAC SDN,OFAC sanctioned (XBT),sanctioned,ofac-sdn,https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses,high,2026-07-17

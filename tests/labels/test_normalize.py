@@ -3,6 +3,7 @@ research/data (wallet-attribution or the Dune spellbook extract)."""
 import pytest
 
 from vaspfusion.labels.normalize import (
+    address_chain,
     canonical_entity, infer_kind, map_category, normalize_address, normalize_chain,
     tier_for,
 )
@@ -108,3 +109,17 @@ def test_categories_separate_swap_services_and_custodians(raw, entity, label, wa
 ])
 def test_wallet_kind_is_read_from_the_label(label, source, want):
     assert infer_kind(label, source) == want
+
+
+# Real rows: base.csv "Coinbase 35" (address truncated upstream) and the OFAC SDN
+# entry the 0xB10C list files as XBT although the address is a Tron address.
+@pytest.mark.parametrize("address,chain,want", [
+    ("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron", "tron"),            # valid as filed
+    ("12T8i8tpeczk5JGf8ppZf1w6SFBRwEa9y4", "bitcoin", "bitcoin"),
+    ("0x0639556F03714A74a5fEEaF5736a4A64fF70D206", "cronos", "cronos"),
+    ("0x1985EA6E...2Fdb25c87", "base", None),                          # truncated: unusable
+    ("TUCsTq7TofTCJRRoHk6RvhMoS2mJLm5Yzq", "bitcoin", "tron"),         # misfiled: re-file
+    ("r3AEihLNr81VYUf5PdfH5wLPqtJJyJs6yY", "xrp", "xrp"),              # no validator: kept
+])
+def test_address_chain_drops_unusable_and_refiles_misfiled(address, chain, want):
+    assert address_chain(address, chain) == want

@@ -98,7 +98,7 @@ def test_every_mocked_vasp_request_and_wallet_answers(client):
 
 def test_dashboard_label_coverage_is_live(client):
     cov = client.get("/api/dashboard").json()["label_coverage"]
-    assert cov["total"] == 14
+    assert cov["total"] == 15
 
 
 def test_posting_a_demo_address_returns_its_case(client):
