@@ -61,8 +61,17 @@ class ChainCache:
         with self._con() as con:
             con.execute(_DDL)
 
-    def _con(self, read_only: bool = False):
-        return duckdb.connect(str(self.path), read_only=read_only)
+    def _con(self, read_only: bool = False, wait_s: float = 30.0):
+        """DuckDB allows one writing process per file. If the API server and a CLI
+        run at once, the loser waits for the lock instead of failing the fetch."""
+        deadline = time.monotonic() + wait_s
+        while True:
+            try:
+                return duckdb.connect(str(self.path), read_only=read_only)
+            except duckdb.IOException as e:
+                if "lock" not in str(e).lower() or time.monotonic() > deadline:
+                    raise
+                time.sleep(0.05)
 
     def get(self, chain: str, address: str, direction: str, query: str) -> tuple[str, str] | None:
         with self._con() as con:
@@ -98,7 +107,7 @@ class Fetcher:
         self.min_interval = dict(min_interval or {})
         self.max_retries, self.backoff = max_retries, backoff
         self._last_call: dict[str, float] = {}
-        self.stats = {"hits": 0, "live": 0}
+        self.stats = {"hits": 0, "live": 0, "retries": 0}
         self.trail: list[dict] = []   # per page: query, sha256, source (for provenance)
 
     @property
@@ -151,6 +160,7 @@ class Fetcher:
             except Retryable as e:
                 if attempt == self.max_retries:
                     raise ProviderError(f"gave up on {host} after {attempt + 1} tries: {e}") from e
+                self.stats["retries"] += 1
                 self.sleep(self.backoff * 2 ** attempt)
                 continue
             sha = self.cache.put(chain, address, direction, query, body)

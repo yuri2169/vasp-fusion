@@ -153,6 +153,8 @@ class EvmProvider(ChainProvider):
             amount=Decimal(value).scaleb(-18), amount_usd=None, fee_payer=item["from"].lower())
 
     def _parse_token(self, item: dict) -> Transfer | None:
+        if item.get("tokenID"):  # an NFT row, if a backend mixes them in
+            return None
         contract = (item.get("contractAddress") or "").lower()
         decimals = int(item.get("tokenDecimal") or 0)
         amount = Decimal(int(item.get("value") or 0)).scaleb(-decimals)

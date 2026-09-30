@@ -91,7 +91,8 @@ def cmd_fetch(args) -> None:
         print(f"  {t.to_dict()['block_time']:<21}{d:<5}{asset:<12}{t.to_dict()['amount']:>24}  "
               f"{who(other):<34}{_short(t.tx_hash)}")
     s = fetcher.stats
-    print(f"{len(rows)} transfers | pages: {s['live']} live, {s['hits']} cached | "
+    print(f"{len(rows)} transfers | pages: {s['live']} live, {s['hits']} cached, "
+          f"{s['retries']} retries | "
           f"OFFLINE={1 if fetcher.offline else 0} | cache {fetcher.cache.path}")
 
 

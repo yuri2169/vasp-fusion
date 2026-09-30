@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime
+from functools import partial
 from decimal import Decimal
 
 from .addresses import tron_hex_to_base58, validate
@@ -60,16 +61,16 @@ class TronProvider(ChainProvider):
         address = address.strip()
         if not validate(address, "tron"):
             raise InvalidAddress(f"not a Tron address: {address}")
-        self._signers: dict[str, str] = {}
+        signers: dict[str, str] = {}   # txID -> signer, per call (providers are shared)
         rows: list[Transfer] = []
         for token in (self.tokens if self.tokens is not None else (None,)):
             extra = {"contract_address": token} if token else {}
             rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions/trc20", address,
                                 direction, since, limit, extra, self._parse_trc20)
         rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions", address,
-                            direction, since, limit, {}, self._parse_trx)
-        rows = [replace(t, fee_payer=self._signers[t.tx_hash])
-                if t.fee_payer is None and t.tx_hash in self._signers else t for t in rows]
+                            direction, since, limit, {}, partial(self._parse_trx, signers))
+        rows = [replace(t, fee_payer=signers[t.tx_hash])
+                if t.fee_payer is None and t.tx_hash in signers else t for t in rows]
         return sort_transfers(rows)[:limit]
 
     # ------------------------------------------------------------------ paging
@@ -114,13 +115,14 @@ class TronProvider(ChainProvider):
             amount=amount, amount_usd=amount if symbol else None,
             fee_payer=None, asset_contract=contract)
 
-    def _parse_trx(self, item: dict) -> Transfer | None:
+    @staticmethod
+    def _parse_trx(signers: dict[str, str], item: dict) -> Transfer | None:
         ret = (item.get("ret") or [{}])[0]
         contracts = (item.get("raw_data") or {}).get("contract") or []
         if contracts and contracts[0].get("type") == "TriggerSmartContract":
             owner = contracts[0]["parameter"]["value"].get("owner_address")
             if owner:
-                self._signers[item["txID"]] = tron_hex_to_base58(owner)
+                signers[item["txID"]] = tron_hex_to_base58(owner)
         if not contracts or contracts[0].get("type") != "TransferContract" \
                 or ret.get("contractRet") != "SUCCESS":
             return None

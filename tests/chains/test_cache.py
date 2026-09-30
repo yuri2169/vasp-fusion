@@ -59,7 +59,7 @@ def test_miss_then_hit(tmp_path):
     assert get(f) == {"data": [1, 2]}
     assert get(f) == {"data": [1, 2]}
     assert len(t.calls) == 1
-    assert f.stats == {"hits": 1, "live": 1}
+    assert f.stats == {"hits": 1, "live": 1, "retries": 0}
     assert [e["source"] for e in f.trail] == ["live", "cache"]
 
 
@@ -172,3 +172,20 @@ def test_corrupted_cache_row_detected(tmp_path):
     con.close()
     with pytest.raises(ProviderError, match="sha256"):
         get(f)
+
+
+def test_waits_for_another_process_holding_the_cache(tmp_path):
+    import subprocess
+    import sys
+    import time
+    path = tmp_path / "c.duckdb"
+    ChainCache(path)  # create the table
+    holder = subprocess.Popen([sys.executable, "-c",
+                               "import duckdb, time, sys; c = duckdb.connect(sys.argv[1]); "
+                               "print('held', flush=True); time.sleep(1.5)", str(path)],
+                              stdout=subprocess.PIPE, text=True)
+    assert holder.stdout.readline().strip() == "held"
+    t0 = time.monotonic()
+    assert ChainCache(path).count() == 0  # blocks until the other process lets go
+    assert time.monotonic() - t0 > 0.3
+    holder.wait()
