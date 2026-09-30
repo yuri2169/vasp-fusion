@@ -89,8 +89,9 @@ class Fetcher:
                  offline: bool | None = None, sleep: Callable[[float], None] = time.sleep,
                  clock: Callable[[], float] = time.monotonic,
                  min_interval: dict[str, float] | None = None,
-                 max_retries: int = 5, backoff: float = 1.0):
+                 max_retries: int = 5, backoff: float = 1.0, refresh: bool = False):
         self.cache = cache
+        self.refresh = refresh  # True: skip cache reads (still writes), i.e. re-fetch live
         self.transport = transport
         self._offline = offline
         self.sleep, self.clock = sleep, clock
@@ -117,7 +118,7 @@ class Fetcher:
                  headers: dict | None = None, check: Callable[[Any], None] | None = None,
                  refresh: bool = False) -> Any:
         query = request_key(url, params)
-        if not refresh:
+        if not (refresh or self.refresh):
             hit = self.cache.get(chain, address, direction, query)
             if hit:
                 raw, sha = hit
