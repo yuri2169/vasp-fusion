@@ -67,6 +67,22 @@ def test_seeds_are_the_chains_exchange_wallets_in_a_fixed_order(store):
     assert store.seeds("dogecoin") == []
 
 
+def test_a_label_survives_a_round_trip_through_its_dict():
+    from vaspfusion.labels.lookup import Label
+    scored = Label("TDEP", "tron", "OKX", "exchange", "deposit", "derived", "vaspfusion-discover",
+                   None, "OKX deposit address", 0.9, "Sweep rule.", 0.88, 0.93,
+                   '[{"feature": "n_out", "text": "1 outgoing transfer", "weight": 0.2}]')
+    d = scored.as_dict()
+    assert d["reasons"] == [{"feature": "n_out", "text": "1 outgoing transfer", "weight": 0.2}]
+    assert Label.from_dict(d).as_dict() == d
+    assert Label.from_dict({**d, "query_chain": "tron"}).confidence_low == 0.88
+    plain = Label("T1", "tron", "OKX", "exchange", "hot", "curated", "x", None, None)
+    assert Label.from_dict(plain.as_dict()) == plain
+    old = {k: v for k, v in plain.as_dict().items() if k in (
+        "address", "chain", "entity", "category", "kind", "tier", "source", "source_url", "label")}
+    assert Label.from_dict(old) == plain            # a row recorded before B4
+
+
 def test_non_deposit_lists_a_chains_labels_that_are_not_deposit_addresses(store):
     rows = store.non_deposit("tron")
     assert rows and [l.address for l in rows] == sorted(l.address for l in rows)

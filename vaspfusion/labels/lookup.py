@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from pathlib import Path
 from typing import Iterable
 
@@ -40,6 +40,15 @@ class Label:
         d = asdict(self)
         d["reasons"] = json.loads(self.reasons) if self.reasons else None
         return d
+
+    @classmethod
+    def from_dict(cls, row: dict) -> "Label":
+        """The inverse of `as_dict` (keys that are not label fields are ignored)."""
+        names = {f.name for f in fields(cls)}
+        d = {k: v for k, v in row.items() if k in names}
+        if d.get("reasons") is not None and not isinstance(d["reasons"], str):
+            d["reasons"] = json.dumps(d["reasons"], ensure_ascii=False, sort_keys=True)
+        return cls(**d)
 
 
 def _chains_for(chain: str) -> list[str]:

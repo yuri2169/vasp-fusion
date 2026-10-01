@@ -44,7 +44,7 @@ class FixtureLabels:
     """The label rows the full label DB returned while a fixture was recorded."""
 
     def __init__(self, name: str):
-        self.rows = {key: Label(**{k: v for k, v in row.items() if k != "query_chain"})
+        self.rows = {key: Label.from_dict(row)
                      for key, row in load(name)["labels"].items()}
 
     def seeds(self, chain):

@@ -40,7 +40,7 @@ class DemoLabels:
 
     def __init__(self):
         rows = json.loads((FIX / "labels.json").read_text())["labels"]
-        self.rows = {key: Label(**{k: v for k, v in row.items() if k != "query_chain"})
+        self.rows = {key: Label.from_dict(row)
                      for key, row in rows.items()}
 
     def lookup_many(self, pairs):
