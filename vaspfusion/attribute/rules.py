@@ -33,7 +33,7 @@ from ..labels.lookup import Label
 from ..labels.normalize import VASP_CATEGORIES
 from ..trace import ZERO, TraceEdge, TraceNode, TraceResult
 
-TIER_WEIGHT = {"published_por": 1.0, "curated": 0.9, "explorer_tag": 0.75, "derived": 0.6}
+TIER_WEIGHT = {"published_por": 0.95, "curated": 0.85, "explorer_tag": 0.75, "derived": 0.6}
 ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"}
 UNROUTABLE = "Unidentified exchange"
 

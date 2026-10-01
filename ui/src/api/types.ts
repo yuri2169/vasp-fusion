@@ -265,7 +265,17 @@ export interface components {
                 number,
                 number
             ] | null;
-            /** Hops */
+            /**
+             * Direction
+             * @description outbound = the wallet's money went there; inbound = it funded the wallet
+             * @default outbound
+             * @enum {string}
+             */
+            direction: "outbound" | "inbound";
+            /**
+             * Hops
+             * @description 0 = the wallet itself is a labelled VASP address
+             */
             hops: number;
             /** Share Of Funds */
             share_of_funds: number;
@@ -355,6 +365,29 @@ export interface components {
              * @default false
              */
             demo: boolean;
+            /**
+             * Error
+             * @description Set when status is 'failed': what went wrong, in plain English
+             */
+            error?: string | null;
+            /**
+             * Asset
+             * @description The asset that was traced, e.g. USDT
+             */
+            asset?: string | null;
+            /**
+             * Total Sent
+             * @description What the wallet sent, in `asset`
+             */
+            total_sent?: number | null;
+            /** Total Received */
+            total_received?: number | null;
+            /**
+             * Where Funds Went
+             * @description Adds up to the whole of `total_sent`; largest first
+             * @default []
+             */
+            where_funds_went: components["schemas"]["FundsSlice"][];
             /** Hop Rail */
             hop_rail: components["schemas"]["Hop"][];
             graph: components["schemas"]["CaseGraph"];
@@ -437,6 +470,11 @@ export interface components {
              * @default false
              */
             demo: boolean;
+            /**
+             * Error
+             * @description Set when status is 'failed': what went wrong, in plain English
+             */
+            error?: string | null;
         };
         /** ChainCount */
         ChainCount: {
@@ -572,6 +610,26 @@ export interface components {
             /** Text */
             text: string;
         };
+        /**
+         * FundsSlice
+         * @description One part of the answer to "where did the wallet's money end up?".
+         */
+        FundsSlice: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "vasp" | "sanctioned" | "mixer" | "bridge" | "other_label" | "hub" | "beyond_hop_limit" | "not_moved" | "not_followed" | "returned";
+            /**
+             * Name
+             * @description The VASP or labelled party, when there is one
+             */
+            name?: string | null;
+            /** Share */
+            share: number;
+            /** Amount */
+            amount: number;
+        };
         /** GraphEdge */
         GraphEdge: {
             /** Id */
@@ -588,6 +646,11 @@ export interface components {
             amount: number;
             /** Amount Usd */
             amount_usd?: number | null;
+            /**
+             * Traced Amount
+             * @description The part of `amount` that is the suspect wallet's money
+             */
+            traced_amount?: number | null;
             /**
              * Block Time
              * Format: date-time
@@ -675,6 +738,11 @@ export interface components {
             amount: number;
             /** Amount Usd */
             amount_usd?: number | null;
+            /**
+             * Traced Amount
+             * @description The part of `amount` that is the suspect wallet's money
+             */
+            traced_amount?: number | null;
             /**
              * Block Time
              * Format: date-time

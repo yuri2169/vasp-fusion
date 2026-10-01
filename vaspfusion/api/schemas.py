@@ -38,6 +38,8 @@ RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered
 Ask = Literal["kyc", "transactions", "freeze", "preservation"]
 FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
 Direction = Literal["outbound", "inbound"]
+FundsKind = Literal["vasp", "sanctioned", "mixer", "bridge", "other_label", "hub",
+                    "beyond_hop_limit", "not_moved", "not_followed", "returned"]
 
 
 class _M(BaseModel):
@@ -89,6 +91,8 @@ class CaseSummary(_M):
     amount_lost_inr: float | None = None
     created_at: datetime
     demo: bool = False
+    error: str | None = Field(None, description="Set when status is 'failed': what went "
+                                                "wrong, in plain English")
 
 
 class CaseList(_M):
@@ -105,6 +109,8 @@ class Hop(_M):
     asset: str
     amount: float
     amount_usd: float | None = None
+    traced_amount: float | None = Field(None, description="The part of `amount` that is the "
+                                                           "suspect wallet's money")
     block_time: datetime
     elapsed_s: int | None = Field(None, description="Seconds since the previous hop")
 
@@ -127,6 +133,8 @@ class GraphEdge(_M):
     asset: str
     amount: float
     amount_usd: float | None = None
+    traced_amount: float | None = Field(None, description="The part of `amount` that is the "
+                                                           "suspect wallet's money")
     block_time: datetime
     direction: Direction = "outbound"
 
@@ -150,7 +158,9 @@ class Candidate(_M):
     proximity_rank: int = Field(ge=1, description="1 = nearest; hops, share, time")
     confidence: float = Field(ge=0, le=1, description="Calibrated; separate from proximity")
     confidence_interval: tuple[float, float] | None = None
-    hops: int = Field(ge=1)
+    direction: Direction = Field("outbound", description="outbound = the wallet's money went "
+                                 "there; inbound = it funded the wallet")
+    hops: int = Field(ge=0, description="0 = the wallet itself is a labelled VASP address")
     share_of_funds: float = Field(ge=0, le=1)
     time_to_reach_s: int | None = None
     label_tier: Tier
@@ -179,7 +189,20 @@ class Provenance(_M):
     data_sources: list[str] = []
 
 
+class FundsSlice(_M):
+    """One part of the answer to "where did the wallet's money end up?"."""
+    kind: FundsKind
+    name: str | None = Field(None, description="The VASP or labelled party, when there is one")
+    share: float = Field(ge=0, le=1)
+    amount: float
+
+
 class CaseDetail(CaseSummary):
+    asset: str | None = Field(None, description="The asset that was traced, e.g. USDT")
+    total_sent: float | None = Field(None, description="What the wallet sent, in `asset`")
+    total_received: float | None = None
+    where_funds_went: list[FundsSlice] = Field([], description="Adds up to the whole of "
+                                               "`total_sent`; largest first")
     hop_rail: list[Hop]
     graph: CaseGraph
     candidates: list[Candidate] = Field(description="Sorted by proximity_rank")

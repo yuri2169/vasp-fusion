@@ -60,20 +60,20 @@ def test_a_share_of_a_quarter_or_more_counts_in_full():
     att = run([tx(1, "S", "HOT", 460, 0), tx(2, "S", "POR", 540, 1)])
     c = by_vasp(att)
     assert c["ExA"].share == D("0.46") and c["ExB"].share == D("0.54")
-    assert c["ExA"].confidence == approx(0.9)
-    assert c["ExB"].confidence == approx(1.0)
+    assert c["ExA"].confidence == approx(TIER_WEIGHT["curated"])
+    assert c["ExB"].confidence == approx(TIER_WEIGHT["published_por"])
 
 
 def test_a_small_share_scales_confidence_down():
     att = run([tx(1, "S", "HOT", 100, 0), tx(2, "S", "X", 900, 1)])
-    assert att.candidates[0].confidence == approx(0.9 * 0.10 / 0.25)
+    assert att.candidates[0].confidence == approx(TIER_WEIGHT["curated"] * 0.10 / 0.25)
 
 
 def test_share_full_of_one_is_the_plain_product():
     """tier weight x share x hop decay, exactly as the phase brief writes it."""
     att = run([tx(1, "S", "M1", 460, 0), tx(2, "M1", "HOT", 460, 1), tx(3, "S", "X", 540, 2)],
               rules=RuleConfig(share_full=1.0))
-    assert att.candidates[0].confidence == approx(0.9 * 0.46 * 0.85)
+    assert att.candidates[0].confidence == approx(TIER_WEIGHT["curated"] * 0.46 * 0.85)
 
 
 def test_money_arriving_by_two_routes_is_weighted_by_amount():
@@ -81,7 +81,7 @@ def test_money_arriving_by_two_routes_is_weighted_by_amount():
     att = run([tx(1, "S", "POR", 200, 0), tx(2, "S", "M1", 800, 1), tx(3, "M1", "POR", 800, 2)])
     c = att.candidates[0]
     assert (c.hops, c.share) == (1, D(1))                 # nearest route gives the hop count
-    assert c.confidence == approx(0.2 * 1.0 + 0.8 * 0.85)
+    assert c.confidence == approx(TIER_WEIGHT["published_por"] * (0.2 + 0.8 * 0.85))
 
 
 def test_two_wallets_of_one_vasp_are_one_candidate():
@@ -243,7 +243,7 @@ def test_evidence_states_the_label_and_the_path():
     label, path = att.candidates[0].evidence[:2]
     assert (label["kind"], label["tier"]) == ("label", "curated")
     assert "ExA" in label["text"] and "curated list" in label["text"]
-    assert label["weight"] == approx(0.9)
+    assert label["weight"] == approx(TIER_WEIGHT["curated"])
     assert path["kind"] == "path" and path["tx_hashes"] == ["tx1", "tx2"]
     assert "100%" in path["text"] and "2 hops" in path["text"] and "16 minutes" in path["text"]
 

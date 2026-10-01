@@ -739,10 +739,21 @@
             ],
             "title": "Confidence Interval"
           },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound"
+            ],
+            "title": "Direction",
+            "description": "outbound = the wallet's money went there; inbound = it funded the wallet",
+            "default": "outbound"
+          },
           "hops": {
             "type": "integer",
-            "minimum": 1.0,
-            "title": "Hops"
+            "minimum": 0.0,
+            "title": "Hops",
+            "description": "0 = the wallet itself is a labelled VASP address"
           },
           "share_of_funds": {
             "type": "number",
@@ -1032,6 +1043,62 @@
             "title": "Demo",
             "default": false
           },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Set when status is 'failed': what went wrong, in plain English"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset",
+            "description": "The asset that was traced, e.g. USDT"
+          },
+          "total_sent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Sent",
+            "description": "What the wallet sent, in `asset`"
+          },
+          "total_received": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Received"
+          },
+          "where_funds_went": {
+            "items": {
+              "$ref": "#/components/schemas/FundsSlice"
+            },
+            "type": "array",
+            "title": "Where Funds Went",
+            "description": "Adds up to the whole of `total_sent`; largest first",
+            "default": []
+          },
           "hop_rail": {
             "items": {
               "$ref": "#/components/schemas/Hop"
@@ -1276,6 +1343,18 @@
             "type": "boolean",
             "title": "Demo",
             "default": false
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Set when status is 'failed': what went wrong, in plain English"
           }
         },
         "additionalProperties": false,
@@ -1708,6 +1787,57 @@
         ],
         "title": "FollowUp"
       },
+      "FundsSlice": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "vasp",
+              "sanctioned",
+              "mixer",
+              "bridge",
+              "other_label",
+              "hub",
+              "beyond_hop_limit",
+              "not_moved",
+              "not_followed",
+              "returned"
+            ],
+            "title": "Kind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "The VASP or labelled party, when there is one"
+          },
+          "share": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "share",
+          "amount"
+        ],
+        "title": "FundsSlice",
+        "description": "One part of the answer to \"where did the wallet's money end up?\"."
+      },
       "GraphEdge": {
         "properties": {
           "id": {
@@ -1744,6 +1874,18 @@
               }
             ],
             "title": "Amount Usd"
+          },
+          "traced_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traced Amount",
+            "description": "The part of `amount` that is the suspect wallet's money"
           },
           "block_time": {
             "type": "string",
@@ -1943,6 +2085,18 @@
               }
             ],
             "title": "Amount Usd"
+          },
+          "traced_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traced Amount",
+            "description": "The part of `amount` that is the suspect wallet's money"
           },
           "block_time": {
             "type": "string",

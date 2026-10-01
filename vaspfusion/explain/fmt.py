@@ -17,14 +17,15 @@ def short(address: str) -> str:
 
 
 def amount(value, asset: str | None = None) -> str:
-    """48,500 USDT · 252,163.80 USDT · 0.0024 ETH. Two decimals for sums of 1 or more,
-    up to six significant decimals below that; trailing zeros dropped."""
+    """48,500 USDT · 252,163.80 USDT · 0.002428 ETH. Whole sums have no decimals, other
+    sums of 1 or more have two, and smaller ones up to six."""
     d = Decimal(value)
-    q = d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP) if abs(d) >= 1 \
-        else d.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
-    text = f"{q:,f}"
-    if "." in text:
-        text = text.rstrip("0").rstrip(".")
+    if abs(d) >= 1:
+        q = d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        text = f"{q:,.0f}" if q == q.to_integral_value() else f"{q:,.2f}"
+    else:
+        text = f"{d.quantize(Decimal('0.000001'), rounding=ROUND_HALF_UP):f}"
+        text = text.rstrip("0").rstrip(".") if "." in text else text
     return f"{text} {asset}" if asset else text
 
 
