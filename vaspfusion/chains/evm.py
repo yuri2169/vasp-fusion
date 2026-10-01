@@ -74,6 +74,10 @@ def _check(body) -> None:
 
 
 class EvmProvider(ChainProvider):
+    # A gas top-up for one token sweep is a few thousandths of a coin (0.0024 ETH in the
+    # recorded Bitget sweep). More than 0.1 is a deposit of the coin, not gas.
+    top_up_range = (None, Decimal("0.1"))
+
     def __init__(self, chain: str, fetcher: Fetcher, page_size: int = 1000,
                  max_pages: int = 10, key: str | None = None):
         if chain not in BACKENDS:

@@ -27,8 +27,8 @@ from functools import partial
 from decimal import Decimal
 
 from .addresses import tron_hex_to_base58, validate
-from .base import (ChainProvider, Direction, GasEvent, InvalidAddress, ProviderError, Transfer,
-                   TransferList, sort_transfers, utc_from_ms)
+from .base import (ChainProvider, Direction, GasEvent, GasList, InvalidAddress, ProviderError,
+                   Transfer, TransferList, sort_transfers, utc_from_ms)
 from .cache import Fetcher
 from .http import api_key
 
@@ -37,7 +37,10 @@ HOST = "api.trongrid.io"
 USDT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 USDC = "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8"
 STABLECOINS = {USDT: "USDT", USDC: "USDC"}
-MIN_TOP_UP = Decimal(1)      # TRX; smaller transfers are address-poisoning dust, not gas
+# TRX sent to cover a sweep's fee. Seen on real deposit addresses: 6, 7 and 15 TRX
+# (Bitfinex, CoinDCX, KuCoin). Under 1 TRX is address-poisoning dust; over 100 TRX is
+# somebody depositing TRX, and its sender is a customer or another exchange, not a payer.
+TOP_UP_RANGE = (Decimal(1), Decimal(100))
 
 
 def _check(body) -> None:
@@ -48,6 +51,7 @@ def _check(body) -> None:
 
 class TronProvider(ChainProvider):
     chain = "tron"
+    top_up_range = TOP_UP_RANGE
 
     def __init__(self, fetcher: Fetcher, page_size: int = 200, max_pages: int = 50,
                  tokens: tuple[str, ...] | None = (USDT,), key: str | None = None):
@@ -90,11 +94,12 @@ class TronProvider(ChainProvider):
                             complete=all(ended) and len(rows) <= limit)
 
     def gas_events(self, address: str, since: datetime | None = None,
-                   limit: int | None = None) -> list[GasEvent]:
+                   limit: int | None = None) -> GasList:
         """Who covered `address`'s fees, from its raw transaction listing: energy or
-        bandwidth delegated to it, TRX top-ups of at least 1 TRX, and contract calls
+        bandwidth delegated to it, TRX top-ups of 1 to 100 TRX, and contract calls
         that touch it but were signed by someone else (kind "signer", matched to a
-        sweep by transaction hash). At most `max_pages` pages, oldest first."""
+        sweep by transaction hash). At most `max_pages` pages, oldest first;
+        `.complete` is False when the listing goes on past them."""
         address = address.strip()
         if not validate(address, "tron"):
             raise InvalidAddress(f"not a Tron address: {address}")
@@ -104,6 +109,7 @@ class TronProvider(ChainProvider):
             params["min_timestamp"] = int(since.timestamp() * 1000)
         headers = {"TRON-PRO-API-KEY": self.key} if self.key else {}
         out: list[GasEvent] = []
+        ended = False
         for _ in range(self.max_pages):
             body = self.fetcher.get_json("tron", address, "both",
                                          f"{BASE}/v1/accounts/{address}/transactions",
@@ -112,10 +118,13 @@ class TronProvider(ChainProvider):
             out += [e for item in data if (e := self._parse_gas(address, item)) is not None]
             fp = (body.get("meta") or {}).get("fingerprint")
             if not fp or len(data) < self.page_size:
+                ended = True
                 break
             params = {**params, "fingerprint": fp}
         out.sort(key=lambda e: (e.time, e.tx_hash, e.payer, e.kind))
-        return out if limit is None else out[:limit]
+        if limit is not None and len(out) > limit:
+            out, ended = out[:limit], False
+        return GasList(out, complete=ended)
 
     @staticmethod
     def _parse_gas(address: str, item: dict) -> GasEvent | None:
@@ -135,7 +144,8 @@ class TronProvider(ChainProvider):
                             item["txID"])
         if kind == "TransferContract":
             amount = Decimal(int(v["amount"])).scaleb(-6)
-            if tron_hex_to_base58(v["to_address"]) != address or amount < MIN_TOP_UP:
+            if tron_hex_to_base58(v["to_address"]) != address \
+                    or not TOP_UP_RANGE[0] <= amount <= TOP_UP_RANGE[1]:
                 return None
             return GasEvent(when, owner, "native", item["txID"], amount)
         if kind == "TriggerSmartContract":

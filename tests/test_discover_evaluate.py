@@ -83,9 +83,9 @@ def test_a_tagged_non_deposit_address_the_rules_fire_on_is_a_false_positive():
     assert r.rows[0]["tag"] == "ExC" and r.rows[0]["truth"] == "exchange_wallet"
 
 
-def test_a_negatives_own_label_is_hidden_from_the_rules():
-    # X0 is itself an exchange seed; with its label visible the crawler would skip it, and
-    # P0's sweep to X1 (another visible exchange wallet) still counts as ExC, not ExA
+def test_other_exchange_wallets_stay_visible_as_seeds():
+    # only deposit tags are hidden: P0 sweeps to X1, a tagged ExC wallet, so the rules
+    # name ExC, which is the wrong exchange for an address tagged ExA
     r = run(deposit_and_sweep(1, "P0", "X1", 0), pos=["P0"])
     assert r.rows[0]["outcome"] == "wrong_entity" and r.rows[0]["entity"] == "ExC"
 
@@ -109,6 +109,13 @@ def test_a_gas_conflict_is_not_a_discovered_address():
     r = run(deposit_and_sweep(1, "P0", "HOT", 0), pos=["P0"], gas=gas)
     assert r.rows[0]["outcome"] == "conflict" and r.metrics["recall"] == 0.0
     assert r.metrics["conflicts"] == 1
+
+
+def test_a_conflict_on_a_negative_is_reported_and_is_not_a_false_positive():
+    gas = {"X0": [GasEvent(T0 + timedelta(minutes=4), "BHOT", "native", "g1")]}
+    r = run(deposit_and_sweep(1, "X0", "HOT", 0), pos=[], neg_exchange=["X0"], gas=gas)
+    assert r.rows[0]["outcome"] == "conflict"
+    assert r.metrics["false_positives"] == 0 and r.metrics["negative_conflicts"] == 1
 
 
 def test_fetch_errors_are_reported_and_left_out_of_the_rates():

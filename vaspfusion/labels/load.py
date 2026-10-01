@@ -32,6 +32,8 @@ from .normalize import (
 
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
                  "source_url", "label", "confidence", "evidence"]
+_DERIVED_COLUMNS = {"address", "chain", "entity", "category", "kind", "status", "rule",
+                    "confidence", "evidence"}
 _RULE_WORDS = {"sweep+gas": "sweep + gas payer", "sweep+station": "sweep + gas station",
                "sweep": "sweep"}
 DUNE_SOURCE_URL = "https://github.com/duneanalytics/spellbook"
@@ -105,9 +107,16 @@ def read_derived(derived_dir: Path | None) -> list[dict]:
         return rows
     for path in sorted(Path(derived_dir).glob("*.csv")):
         with path.open(newline="", encoding="utf-8") as fh:
-            for r in csv.DictReader(fh):
+            reader = csv.DictReader(fh)
+            if not _DERIVED_COLUMNS <= set(reader.fieldnames or ()):
+                continue                    # some other CSV, not a discovery file
+            for r in reader:
                 if r["status"] != "derived":
                     continue
+                confidence = float(r["confidence"])
+                if not 0 < confidence <= 1:
+                    raise ValueError(f"{path.name}: {r['address']} has confidence "
+                                     f"{r['confidence']}; a derived label needs one in (0, 1]")
                 chain = normalize_chain(r["chain"])
                 rows.append({
                     "address": normalize_address(r["address"], chain), "chain": chain,
@@ -115,10 +124,20 @@ def read_derived(derived_dir: Path | None) -> list[dict]:
                     "tier": "derived", "source": DERIVED_SOURCE, "source_url": None,
                     "label": f"{r['entity']} deposit address "
                              f"(derived: {_RULE_WORDS[r['rule']]})",
-                    "confidence": float(r["confidence"]), "evidence": r["evidence"],
+                    "confidence": confidence, "evidence": r["evidence"],
                     "_promoted": False,
                 })
     return rows
+
+
+def _drop_conflicting(derived: list[dict]) -> tuple[list[dict], int]:
+    """Two discovery runs that name different exchanges for one address disagree, and
+    neither is loaded: a conflict is reported, never settled by picking a side."""
+    named: dict[tuple[str, str], set[str]] = {}
+    for r in derived:
+        named.setdefault((r["address"], r["chain"]), set()).add(r["entity"])
+    kept = [r for r in derived if len(named[(r["address"], r["chain"])]) == 1]
+    return kept, len(derived) - len(kept)
 
 
 def _validate(rows: list[dict]) -> tuple[list[dict], int, int]:
@@ -164,10 +183,12 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
                  derived_dir: Path | None = None) -> dict:
-    derived = read_derived(derived_dir)
-    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv) + derived
+    read = read_derived(derived_dir)
+    derived, conflicting = _drop_conflicting(read)
+    derived, dropped_derived, _ = _validate(derived)
+    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv)
     kept, dropped, refiled = _validate(rows)
-    df = _dedupe(kept)
+    df = _dedupe(kept + derived)
     db_path = Path(db_path)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = db_path.with_name(db_path.name + ".tmp")
@@ -179,12 +200,14 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
         con.unregister("df")
         stats = label_stats(con)
     os.replace(tmp, db_path)  # readers never see a half-built DB
-    stats["raw_rows"] = len(rows) - len(derived)
-    stats["derived_loaded"] = len(derived)
-    # derived rows that lost to a label of a higher tier for the same address
+    stats["raw_rows"] = len(rows)
+    stats["derived_loaded"] = len(read)
+    stats["derived_conflicting"] = conflicting
+    # derived rows that lost to a label of a higher tier, or that two runs both named
     stats["derived_shadowed"] = len(derived) - stats["by_tier"].get("derived", 0)
-    stats["invalid_dropped"] = dropped
+    stats["invalid_dropped"] = dropped + dropped_derived
     stats["chain_refiled"] = refiled
-    stats["duplicates_dropped"] = len(kept) - stats["total"] - stats["derived_shadowed"]
+    stats["duplicates_dropped"] = len(kept) + len(derived) - stats["total"] \
+        - stats["derived_shadowed"]
     stats["exchange_tag_promoted"] = int(df["_promoted"].sum())
     return stats

@@ -16,6 +16,7 @@
    "missed_by_reason": {
     "no stablecoin transfers": 4
    },
+   "negative_conflicts": 0,
    "negatives": 6,
    "positives": 6,
    "positives_with_stablecoin_activity": 2,

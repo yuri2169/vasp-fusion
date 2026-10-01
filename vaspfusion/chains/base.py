@@ -78,6 +78,15 @@ class GasEvent:
     amount: Decimal | None = None   # native units for a top-up, else None
 
 
+class GasList(list):
+    """What `gas_events()` returns: a list, plus whether the listing behind it was read
+    to its end. False: later payers may be missing."""
+
+    def __init__(self, rows=(), complete: bool = True):
+        super().__init__(rows)
+        self.complete = complete
+
+
 class TransferList(list):
     """What `transfers()` returns: a list, plus whether it is the whole answer.
 
@@ -127,16 +136,26 @@ class ChainProvider(ABC):
         limits), at most `limit`. With `asset` (one of `traceable_assets`) only that
         asset is fetched, so `limit` is not used up by anything else."""
 
+    # A native transfer in this range (whole coins) is a fee top-up; anything larger is
+    # a deposit of the coin itself, not gas. None = no bound.
+    top_up_range: tuple[Decimal | None, Decimal | None] = (None, None)
+
+    def _is_top_up(self, amount: Decimal) -> bool:
+        low, high = self.top_up_range
+        return amount > 0 and (low is None or amount >= low) and (high is None or amount <= high)
+
     def gas_events(self, address: str, since: datetime | None = None,
-                   limit: int = 200) -> list[GasEvent]:
+                   limit: int = 200) -> "GasList":
         """Who covered `address`'s network fee. The default is what every chain has:
         native-coin top-ups from someone else (an exchange funding a deposit address
         before it sweeps it). Tron adds energy delegations, see tron.py."""
         native = self.traceable_assets[-1]
         rows = self.transfers(address, "both", since=since, limit=limit, asset=native)
-        return [GasEvent(t.block_time, t.from_addr, "native", t.tx_hash, t.amount)
-                for t in rows if t.to_addr != t.from_addr and t.to_addr.lower() == address.lower()
-                and t.amount > 0]
+        return GasList(
+            [GasEvent(t.block_time, t.from_addr, "native", t.tx_hash, t.amount)
+             for t in rows if t.to_addr != t.from_addr and t.to_addr.lower() == address.lower()
+             and self._is_top_up(t.amount)],
+            complete=getattr(rows, "complete", True))
 
     def _check_asset(self, asset: str | None) -> None:
         if asset is not None and asset not in self.traceable_assets:

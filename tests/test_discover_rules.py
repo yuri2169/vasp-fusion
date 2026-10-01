@@ -199,7 +199,7 @@ def test_a_signer_event_counts_only_for_the_sweep_it_signed():
 
 def test_a_derived_or_non_vasp_payer_counts_as_unlabelled():
     assert gas([gas_ev("DER", 29)]).verdict == "unlabelled"
-    assert gas([gas_ev("OFAC", 29)]).verdict == "unlabelled"
+    assert gas([gas_ev("OFAC", 29)]).verdict == "other_label"     # named, never a station
 
 
 # ------------------------------------------------------------------ decision
@@ -208,6 +208,7 @@ def test_a_derived_or_non_vasp_payer_counts_as_unlabelled():
     ("station", "derived", "sweep+station", 0.765),
     ("unlabelled", "derived", "sweep", 0.68),
     ("none", "derived", "sweep", 0.68),
+    ("other_label", "derived", "sweep", 0.68),
     ("conflict", "conflict", "sweep", None),
 ])
 def test_decision_table(verdict, status, rule, conf):

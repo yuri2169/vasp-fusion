@@ -38,11 +38,11 @@
     "asset": "USDT",
     "category": "exchange",
     "chain": "tron",
-    "complete": true,
+    "complete": false,
     "confidence": 0.8075,
     "conflict": null,
     "entity": "CoinDCX",
-    "evidence": "Sweep rule: forwarded 100% of the 673.12 USDT it received from 10 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 14 sweeps, typically 27 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 14 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+    "evidence": "Sweep rule: forwarded 100% of the 673.12 USDT it received from 10 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 14 sweeps, typically 27 seconds after arrival. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 14 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
     "first_sweep_tx": "1e5a9563100e50df44c0a0d1d28500e5a405ff5bae1315f7a04062da149c40e6",
     "forwarded": "673.120000",
     "gas_kinds": "native",
@@ -323,6 +323,7 @@
     "labelled_senders": 0,
     "median_sweep_delay_s": 30.0,
     "rejected": {},
+    "seed_errors": 0,
     "seeds": 13
    },
    "KuCoin": {
@@ -343,6 +344,7 @@
     "labelled_senders": 2,
     "median_sweep_delay_s": 306.0,
     "rejected": {},
+    "seed_errors": 0,
     "seeds": 24
    }
   },
@@ -355,6 +357,11 @@
    "fired": 10,
    "inbound_rows": 293,
    "known": 0,
+   "labels_by_exchange": {
+    "CoinDCX": 5,
+    "KuCoin": 5
+   },
+   "seed_errors": 0,
    "seeds": 37,
    "stations": 0
   }

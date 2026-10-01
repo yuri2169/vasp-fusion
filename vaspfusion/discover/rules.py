@@ -33,7 +33,8 @@ from ..labels.lookup import Label
 from ..labels.normalize import VASP_CATEGORIES
 
 ZERO = Decimal(0)
-GAS_FACTOR = {"confirmed": 0.95, "station": 0.90, "unlabelled": 0.80, "none": 0.80}
+GAS_FACTOR = {"confirmed": 0.95, "station": 0.90, "unlabelled": 0.80, "other_label": 0.80,
+              "none": 0.80}
 RULE_NAME = {"confirmed": "sweep+gas", "station": "sweep+station"}
 
 
@@ -77,13 +78,20 @@ class Sweep:
 
 @dataclass
 class Gas:
-    verdict: str                     # confirmed | conflict | unlabelled | none | station
+    # confirmed | conflict | unlabelled | other_label | none | station
+    verdict: str
     payer: str | None = None
     payer_entity: str | None = None
     kinds: tuple[str, ...] = ()
     n_paid: int = 0                  # sweeps with at least one outside payer
     n_sweeps: int = 0
     payers: dict[str, int] = field(default_factory=dict)   # payer -> sweeps it paid for
+    kinds_by_payer: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    # payers that carry a label which is not an exchange wallet's (sanctioned, a service,
+    # a tagged deposit address): named in the evidence, and never a gas station
+    other_labels: dict[str, str] = field(default_factory=dict)
+    seed_payers: dict[str, str] = field(default_factory=dict)   # payer -> its exchange
+    complete: bool = True            # False: the gas listing was cut short
 
 
 @dataclass(frozen=True)
@@ -98,8 +106,10 @@ def sweep_rule(address: str, rows: list[Transfer], labels: dict[str, Label],
                cfg: DiscoverConfig = DiscoverConfig()) -> Sweep:
     rows = [t for t in rows if t.amount_usd is not None and t.amount_usd >= cfg.dust
             and address in (t.from_addr, t.to_addr) and t.from_addr != t.to_addr]
-    # a deposit and a sweep in the same second: the deposit came first
-    rows.sort(key=lambda t: (t.block_time, t.from_addr == address, t.tx_hash))
+    # a deposit and a sweep in the same second: the deposit came first. The rest of the
+    # key only makes the order total, so the result never depends on the input order
+    rows.sort(key=lambda t: (t.block_time, t.from_addr == address, t.tx_hash, t.to_addr,
+                             t.from_addr, t.asset, t.amount))
     out = Sweep(address)
     outs = [i for i, t in enumerate(rows) if t.from_addr == address]
     to_seed: dict[str, list[Transfer]] = defaultdict(list)
@@ -192,7 +202,9 @@ def gas_rule(address: str, sweeps: list[Transfer], events: list[GasEvent],
                 kinds[e.payer].add(e.kind)
         n_paid += bool(found)
         payers.update(found)
-    gas = Gas("none", n_paid=n_paid, n_sweeps=len(sweeps), payers=dict(sorted(payers.items())))
+    gas = Gas("none", n_paid=n_paid, n_sweeps=len(sweeps), payers=dict(sorted(payers.items())),
+              kinds_by_payer={p: tuple(sorted(kinds[p])) for p in sorted(payers)},
+              complete=getattr(events, "complete", True))
     if not payers:
         return gas
 
@@ -203,18 +215,27 @@ def gas_rule(address: str, sweeps: list[Transfer], events: list[GasEvent],
     def most(group: list[str]) -> str:
         return min(group, key=lambda p: (-payers[p], p))
 
+    for p in sorted(payers):
+        lab = labels.get(p)
+        if lab is not None and lab.tier != "derived" and not is_seed(lab):
+            gas.other_labels[p] = f"{lab.entity} ({lab.category})"
+    gas.seed_payers = {p: owner(p) for p in sorted(payers) if owner(p) is not None}
     other = [p for p in payers if owner(p) not in (None, entity)]
     same = [p for p in payers if owner(p) == entity]
-    gas.verdict = "conflict" if other else "confirmed" if same else "unlabelled"
     gas.payer = most(other or same or list(payers))
+    gas.verdict = ("conflict" if other else "confirmed" if same
+                   else "other_label" if gas.payer in gas.other_labels else "unlabelled")
     gas.payer_entity = owner(gas.payer)
-    gas.kinds = tuple(sorted(kinds[gas.payer]))
+    gas.kinds = gas.kinds_by_payer[gas.payer]
     return gas
 
 
 def decide(sweep: Sweep, verdict: str, existing: Label | None) -> Decision:
     """`existing` is the address's own label, if it has one that we did not derive."""
     rule = RULE_NAME.get(verdict, "sweep")
+    if existing is not None and existing.tier == "derived" and existing.entity != sweep.entity:
+        return Decision("conflict", rule, None, f"an earlier run derived it as a "
+                                                f"{existing.entity} deposit address")
     if existing is not None and existing.tier != "derived":
         if existing.entity == sweep.entity and existing.category in VASP_CATEGORIES:
             return Decision("known", rule, None)
@@ -230,20 +251,28 @@ def _plural(n: int, word: str) -> str:
     return f"{n} {word}{'' if n == 1 else 's'}"
 
 
-def evidence_text(sweep: Sweep, gas: Gas, decision: Decision) -> str:
-    """What an officer reads next to a derived label: the numbers both rules used."""
+def evidence_text(sweep: Sweep, gas: Gas, decision: Decision,
+                  cut: tuple[int, str] | None = None) -> str:
+    """What an officer reads next to a derived label: the numbers both rules used.
+    `cut` = (rows read, since) when the address has more transfers than were read."""
     text = (f"Sweep rule: forwarded {fmt.pct(sweep.share)} of the "
             f"{fmt.amount(sweep.received, sweep.asset)} it received from "
             f"{_plural(sweep.n_senders, 'sender')} to {sweep.entity} wallet "
             f"{fmt.short(sweep.target)} ({fmt.tier_words(sweep.target_tier)}) in "
             f"{_plural(sweep.n_sweeps, 'sweep')}, typically "
             f"{fmt.duration(sweep.median_delay_s)} after arrival. ")
+    if cut is not None:
+        text += (f"Only its first {cut[0]} transfers since {cut[1]} were read; what it did "
+                 "later is not covered. ")
+    if not gas.complete:
+        text += "Its gas listing was not read to the end. "
     if gas.payer is None:
         text += "Gas rule: no outside gas payer seen. "
     else:
         who = {"confirmed": f"labelled {gas.payer_entity}",
                "conflict": f"labelled {gas.payer_entity}",
                "station": f"derived as a {gas.payer_entity} gas station",
+               "other_label": f"labelled {gas.other_labels.get(gas.payer)}",
                "unlabelled": "not labelled"}[gas.verdict]
         did = ("paid the energy" if {"energy", "bandwidth"} & set(gas.kinds)
                else "sent the fee money" if "native" in gas.kinds else "signed and paid")

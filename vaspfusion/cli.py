@@ -34,7 +34,8 @@ def cmd_labels(args) -> None:
     print(f"  derived deposit addresses merged from {args.derived}: "
           f"{stats['by_tier'].get('derived', 0):,} (of {stats['derived_loaded']:,} in the "
           f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
-          "source or named by two runs). Run `make discover` to produce them.")
+          f"source or named by two runs; {stats['derived_conflicting']:,} left out because two "
+          "runs name different exchanges). Run `make discover` to produce them.")
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -188,6 +189,7 @@ def cmd_discover(args) -> None:
     print(f"{'TOTAL':<12}{t['seeds']:>6}{t['active_seeds']:>7}{t['candidates']:>7}"
           f"{t['fired']:>7}{t['derived']:>8}{'':>20}{t['conflict']:>7}{t['known']:>6}"
           f"{t['errors']:>7}")
+    print(f"derived labels by the exchange they name: {t['labels_by_exchange']}")
     for s in result.stations:
         print(f"gas station (reported, not a label): {s['address']} pays for {s['addresses']} "
               f"{s['entity']} deposit addresses ({s['share']:.0%} of those it serves)")

@@ -8,7 +8,9 @@ label, so the rules have to rediscover it from the exchange's other wallets alon
   recall = rediscovered for that exchange / positives.
 * Negatives: a seeded sample of tagged addresses that are not deposit addresses,
   half of them exchange wallets (the hard case: they also move funds to exchange
-  wallets) and half anything else. false-positive rate = rule fired / negatives.
+  wallets) and half anything else. false-positive rate = would have become a derived
+  label / negatives. A negative the rules fire on but mark as a conflict is not a
+  label, so it is not a false positive; those are counted as `negative_conflicts`.
 * precision_in_sample = right / all the rule fired on. It depends on the mix of the
   sample, so the false-positive rates are the numbers to carry elsewhere.
 
@@ -158,6 +160,8 @@ def evaluate(provider, labels, positives: list[str], neg_exchange: list[str],
         "missed_by_reason": dict(sorted(by_reason.items())),
         "negatives": size("exchange_wallet") + size("other_tagged"),
         "false_positives": len(fp_rows),
+        "negative_conflicts": count("exchange_wallet", "conflict")
+        + count("other_tagged", "conflict"),
         "false_positives_naming_the_tagged_exchange":
             sum(1 for r in fp_rows if r["entity"] == r["tag"]),
         "false_positive_rate": {

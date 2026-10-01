@@ -1,0 +1,267 @@
+{
+ "chain": "tron",
+ "config": {
+  "candidate_limit": 50,
+  "entities": null,
+  "lookback_days": 7,
+  "max_candidates": null,
+  "rules": {
+   "dust": "0.1",
+   "gas_window_s": 3600,
+   "max_hours": 24.0,
+   "min_senders": 1,
+   "min_share": 0.9,
+   "min_station": 10,
+   "station_share": 0.95
+  },
+  "seed_limit": 1000,
+  "window_start": "2026-09-24T00:00:00Z"
+ },
+ "note": "Derived by the sweep and gas-payer rules from labelled exchange wallets. Confidences are rule-based, not calibrated.",
+ "stations": [
+  {
+   "address": "TBf14pAU2aZ2kYjnfwDgcVDF2nH6kVHhkZ",
+   "addresses": 447,
+   "chain": "tron",
+   "entity": "Bitget",
+   "kinds": "bandwidth+energy",
+   "share": 1.0
+  },
+  {
+   "address": "TLJSH71sp4hGcAAv7BXsrKLJ8bYbZ7LYU7",
+   "addresses": 195,
+   "chain": "tron",
+   "entity": "OKX",
+   "kinds": "bandwidth+energy",
+   "share": 1.0
+  },
+  {
+   "address": "TQQBRmmgRXJChVC66Vp5T5vpcnAq7ZXVL3",
+   "addresses": 537,
+   "chain": "tron",
+   "entity": "OKX",
+   "kinds": "bandwidth+energy",
+   "share": 1.0
+  },
+  {
+   "address": "TV445TTDr8hrf7kcDtHzVPBNarTVVucqy8",
+   "addresses": 217,
+   "chain": "tron",
+   "entity": "Bitfinex",
+   "kinds": "native",
+   "share": 1.0
+  }
+ ],
+ "stats": {
+  "Bitfinex": {
+   "active_seeds": 2,
+   "by_gas": {
+    "station": 217
+   },
+   "by_rule": {
+    "sweep+station": 217
+   },
+   "candidates": 219,
+   "conflict": 0,
+   "derived": 217,
+   "errors": 0,
+   "fired": 217,
+   "inbound_rows": 1055,
+   "known": 0,
+   "labelled_senders": 1,
+   "median_sweep_delay_s": 153.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 1,
+    "sends nothing to a labelled exchange wallet": 1
+   },
+   "seeds": 2
+  },
+  "Bitget": {
+   "active_seeds": 3,
+   "by_gas": {
+    "station": 447
+   },
+   "by_rule": {
+    "sweep+station": 447
+   },
+   "candidates": 760,
+   "conflict": 0,
+   "derived": 447,
+   "errors": 0,
+   "fired": 447,
+   "inbound_rows": 1005,
+   "known": 0,
+   "labelled_senders": 2,
+   "median_sweep_delay_s": 249.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 311,
+    "sends nothing to a labelled exchange wallet": 2
+   },
+   "seeds": 29
+  },
+  "Bitrue": {
+   "active_seeds": 1,
+   "by_gas": {
+    "confirmed": 132
+   },
+   "by_rule": {
+    "sweep+gas": 132
+   },
+   "candidates": 133,
+   "conflict": 0,
+   "derived": 132,
+   "errors": 0,
+   "fired": 132,
+   "inbound_rows": 246,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": 213.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 1
+   },
+   "seeds": 3
+  },
+  "CoinDCX": {
+   "active_seeds": 1,
+   "by_gas": {
+    "confirmed": 23,
+    "none": 7
+   },
+   "by_rule": {
+    "sweep": 7,
+    "sweep+gas": 23
+   },
+   "candidates": 30,
+   "conflict": 0,
+   "derived": 30,
+   "errors": 0,
+   "fired": 30,
+   "inbound_rows": 66,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": 31.5,
+   "rejected": {},
+   "seeds": 13
+  },
+  "Gate.io": {
+   "active_seeds": 2,
+   "by_gas": {
+    "confirmed": 940
+   },
+   "by_rule": {
+    "sweep+gas": 940
+   },
+   "candidates": 1930,
+   "conflict": 0,
+   "derived": 940,
+   "errors": 0,
+   "fired": 940,
+   "inbound_rows": 2000,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": 5718.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 215,
+    "no deposit seen before a sweep": 775
+   },
+   "seeds": 11
+  },
+  "HTX": {
+   "active_seeds": 2,
+   "by_gas": {},
+   "by_rule": {},
+   "candidates": 7,
+   "conflict": 0,
+   "derived": 0,
+   "errors": 0,
+   "fired": 0,
+   "inbound_rows": 8,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": null,
+   "rejected": {
+    "forwards under 90% of what it receives": 2,
+    "no deposit seen before a sweep": 5
+   },
+   "seeds": 17
+  },
+  "KuCoin": {
+   "active_seeds": 3,
+   "by_gas": {
+    "confirmed": 955
+   },
+   "by_rule": {
+    "sweep+gas": 955
+   },
+   "candidates": 958,
+   "conflict": 0,
+   "derived": 955,
+   "errors": 0,
+   "fired": 955,
+   "inbound_rows": 1027,
+   "known": 0,
+   "labelled_senders": 3,
+   "median_sweep_delay_s": 378.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 3
+   },
+   "seeds": 24
+  },
+  "OKX": {
+   "active_seeds": 6,
+   "by_gas": {
+    "confirmed": 465,
+    "station": 732,
+    "unlabelled": 1
+   },
+   "by_rule": {
+    "sweep": 1,
+    "sweep+gas": 465,
+    "sweep+station": 732
+   },
+   "candidates": 1750,
+   "conflict": 0,
+   "derived": 1198,
+   "errors": 0,
+   "fired": 1198,
+   "inbound_rows": 2626,
+   "known": 0,
+   "labelled_senders": 4,
+   "median_sweep_delay_s": 1324.5,
+   "rejected": {
+    "forwards under 90% of what it receives": 547,
+    "no deposit seen before a sweep": 3,
+    "sends nothing to a labelled exchange wallet": 2
+   },
+   "seeds": 21
+  },
+  "WazirX": {
+   "active_seeds": 0,
+   "by_gas": {},
+   "by_rule": {},
+   "candidates": 0,
+   "conflict": 0,
+   "derived": 0,
+   "errors": 0,
+   "fired": 0,
+   "inbound_rows": 0,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": null,
+   "rejected": {},
+   "seeds": 2
+  }
+ },
+ "totals": {
+  "active_seeds": 20,
+  "candidates": 5787,
+  "conflict": 0,
+  "derived": 3919,
+  "errors": 0,
+  "fired": 3919,
+  "inbound_rows": 8033,
+  "known": 0,
+  "seeds": 122,
+  "stations": 4
+ }
+}
