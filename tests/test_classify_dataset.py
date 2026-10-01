@@ -116,6 +116,22 @@ def test_both_classes_are_read_with_the_same_calls(tmp_path):
     assert set(shapes) - set(ex) and set(shapes) - set(ex) <= {"Y", "Z", "W", "P"}
 
 
+def test_both_classes_are_read_with_the_same_row_limit(tmp_path):
+    runs, chain = runs_of(world(), tmp_path)
+    limits: dict[str, set] = {}
+
+    class Recording(Chain):
+        def transfers(self, address, direction="both", since=None, limit=200, asset=None):
+            limits.setdefault(address, set()).add(limit)
+            return super().transfers(address, direction, since, limit, asset)
+
+    rec = Recording(world(), {"D1": [ev("PAY", 4)]})
+    examples, _ = build(runs, rec, rec, Store(LABELS), DatasetConfig())
+    by_class = {y: {frozenset(limits[e["address"]]) for e in examples if e["y"] == y}
+                for y in (0, 1)}
+    assert by_class[0] == by_class[1] == {frozenset({runs[0].limit})}
+
+
 def test_nothing_after_the_runs_last_positive_transfer_is_read(tmp_path):
     # the customers are fetched later than the positives were: what happened since is cut
     late = world() + [tx(50, "U2", "W", 99, 600)]

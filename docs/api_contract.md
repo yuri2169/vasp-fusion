@@ -79,14 +79,17 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 
 ### The deposit-address model (B6)
 All additive; `make mocks types` has been run.
-- **What the model is.** LightGBM on 14 behaviour features of one address (how much it forwards, to how many wallets, how fast, who pays its fees). It answers "is this an exchange deposit address?" and reads no label. Its probability is calibrated with Venn-Abers, which also gives a range.
+- **What the model is.** LightGBM on 14 behaviour features of one address (how much it forwards, to how many wallets, how fast, who pays its fees, whether the wallet it pays most forwards everything on). It answers "is this an exchange deposit address?" and reads no label. Its probability is calibrated with Venn-Abers, which also gives a range. On Tron the truth it was trained and measured on is the discovery rules' verdict; `?chain=ethereum` is the same model family measured on explorer tags.
 - **Labels (`LabelOut`).** A derived label the model scored has three more fields; they are `null` on every other label:
-  - `confidence_low`, `confidence_high`: the calibrated range of `confidence`.
-  - `reasons: ModelReason[]`: the model's strongest reasons, strongest first. Each has `feature` (a stable key), `text` (plain English, e.g. "forwards 100% of what it receives to one wallet") and `weight` (SHAP, in log-odds: above 0 speaks for a deposit address, below 0 against).
-  - `confidence` is then `weight of the exchange wallet's label × the model's probability`, and `evidence` ends with the model's sentence instead of "Rule confidence …, not calibrated". Show such a label as "confidence 0.83 (0.80 to 0.85)". A derived label without a range keeps B4's rule confidence: show it as "rule confidence".
+  - `model: ModelScore`: what the model said about the address. `p`, `low`, `high` (its calibrated probability that an address behaving like this is an exchange deposit address, and the range), `basis` (`model` or `rule`, see below), `scored_by`, and `reasons: ModelReason[]`, strongest first. Each reason has `feature` (a stable key), `text` (plain English, e.g. "forwards 100% of what it receives to one wallet") and `weight` (SHAP, in log-odds: above 0 speaks for a deposit address, below 0 against).
+  - `confidence_low`, `confidence_high`: the range of the label's `confidence`. Set only when `model.basis` is `model`.
+  - **`basis: "model"`** (5,249 of the 5,497 derived labels): the model confirms the label. `confidence` is `weight of the exchange wallet's label × model.p`. Show it as "confidence 0.85" with its range.
+  - **`basis: "rule"`** (248): the model's value would be lower than what the discovery rules gave, so B4's rule confidence is kept and there is no range. Show it as "rule confidence", and show `model.p` next to it as the model's own view. The model reads behaviour only and cannot see the sweep into a labelled exchange wallet, so it never lowers a label.
+  - `evidence` ends with the model's sentence in both cases.
+  - Never print a probability as 1.00: `model.p` can round to it. The backend writes "over 0.99" and "range narrower than 0.01" in its own texts.
 - **Cases (`Candidate`).**
   - `confidence_interval: [low, high]` is set when the money reached a model-scored deposit address; `null` otherwise. **`null` means "rule confidence", a range means the label behind it was scored by the model.**
-  - `evidence` gains items of `kind: "model"`, one per reason, right after the label item. `weight` is the signed SHAP value; `text` starts "Deposit-address model, for: …" or "…, against: …". Draw them as signed bars.
+  - `evidence` gains items of `kind: "model"` right after the label item: first the model's probability and range (`weight: null`), then one per reason. There `weight` is the signed SHAP value and `text` starts "Deposit-address model, for: …" or "…, against: …". Draw the reasons as signed bars.
   - The narrative says "confidence 0.83 (range 0.80 to 0.85)" for such a case, and still says "rule confidence … (rule-based, not calibrated)" for the others.
   - Only the model's probability is calibrated. The weight of the exchange wallet's label (0.95 published by the exchange, 0.85 curated), the hop decay (0.85 per hop) and the share factor are still rule-set, so a case confidence is not a calibrated probability end to end. Say so wherever the number is shown.
 - **`GET /api/model`** is live (`X-Data-Source: live`): `status: "measured"`, `version`, `trained_at`, `chain`, `split`, and
@@ -95,8 +98,10 @@ All additive; `make mocks types` has been run.
   - `risk_coverage[]`: accuracy when only the surest share (`coverage`) of addresses is answered.
   - `feature_importance[]`: `feature` is already a plain-English name; `importance` sums to 1.
   - `leave_one_exchange_out[]`: one row per exchange the model never saw (`exchange`, `n`, `n_positive`, `pr_auc`, `roc_auc`, `brier`, `ece`, `precision`, `recall`).
+  - `baseline`: what the single rule "forwards 90% or more to one wallet" scores on the same test addresses (`rule`, `precision`, `recall`, `accuracy`). Show it next to the model's figures: it is the bar, not chance.
+  - `look_alikes`: the hard negatives, i.e. wallets that are not deposit addresses but forward as much (`negatives`, `flagged`, `false_positive_rate`).
   - `notes[]`: sentences that say what the numbers are and are not. Show them; they are part of the result.
-- Ready-made plots (SVG, light and dark): `artifacts/model_v1/<chain>/reliability.svg`, `reliability_by_exchange.svg`, `importance.svg`.
+- Ready-made plots (SVG, light and dark): `artifacts/model_v1/<chain>/reliability.svg`, `reliability_by_exchange.svg`, `reliability_labels.svg`, `importance.svg`.
 
 ## Key shapes (see `types.ts` for every field)
 

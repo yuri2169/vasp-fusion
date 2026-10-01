@@ -46,6 +46,11 @@ def test_the_notes_say_what_the_numbers_are_and_are_not(metrics):
     assert "not an accuracy" in text                # what cross-fit numbers are not
     assert "left out of the shipped model" in text  # the label ablation
     assert "rule-set" in text                       # what is still not learned
+    # a dataset whose truth is an explorer's tags scores no label, and says so
+    tagged = {**metrics, "dataset": {**metrics["dataset"], "by_source": {"explorer_tag": 120,
+                                                                        "customer": 120}}}
+    said = " ".join(notes(tagged))
+    assert "scores no label" in said and "a truth our rules never saw" in said
 
 
 def test_build_model_writes_every_artefact_and_reruns_to_the_same_files(tmp_path):

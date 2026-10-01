@@ -1483,5 +1483,5 @@
   "The two features that read exchange labels were left out of the shipped model: with them it scores PR-AUC 1.0 by time, because the positives were picked by those labels, and recall 0.0395 on an exchange whose labels are hidden (near zero by construction: without the labels those features say nothing).",
   "A derived label carries the model's value (the weight of the exchange wallet's own label times this probability, with its range) when that is at least what the discovery rules gave it; otherwise the rules' confidence is kept. The model can confirm a label; it cannot overrule label evidence it does not see. The label weights, the hop decay and the share factor are still rule-set."
  ],
- "trained_at": "2026-10-01T19:38:34Z"
+ "trained_at": "2026-10-01T19:48:18Z"
 }

@@ -170,8 +170,8 @@ def reliability_svg(bins: list[dict], title: str, ece: float | None,
                     brier: float | None) -> str:
     """Predicted probability against the observed share of deposit addresses, per bin,
     with the number of addresses in each bin underneath."""
-    W, H, x0, y0, w, h = 640, 452, 64, 76, 536, 240
-    base, strip = y0 + h + 104, 56
+    W, H, x0, y0, w, h = 640, 488, 64, 76, 536, 240
+    base, strip = y0 + h + 122, 56
 
     def px(v: float) -> float:
         return x0 + v * w
@@ -199,7 +199,8 @@ def reliability_svg(bins: list[dict], title: str, ece: float | None,
             f'<text class="m" x="{x0}" y="{y0 - 10}">observed share</text>',
             f'<line class="d" x1="{px(0):.1f}" y1="{py(0):.1f}" x2="{px(1):.1f}" '
             f'y2="{py(1):.1f}"/>',
-            f'<text class="m" x="{px(0.72):.1f}" y="{py(0.8):.1f}" text-anchor="end">'
+            # named above the plot, where no point can sit under the words
+            f'<text class="m" x="{x0 + w}" y="{y0 - 10}" text-anchor="end">dashed line: '
             'perfect calibration</text>']
     pts = [(px(b["predicted"]), py(b["observed"])) for b in bins]
     if len(pts) > 1:
@@ -211,7 +212,7 @@ def reliability_svg(bins: list[dict], title: str, ece: float | None,
                    f'{b["count"]:,} addresses</title></circle>')
     most = max((b["count"] for b in bins), default=1) or 1
     bar_w = w / 10 - 2
-    out.append(f'<text class="m" x="{x0}" y="{base - strip - 8}">addresses per bin</text>')
+    out.append(f'<text class="m" x="{x0}" y="{base + 16}">addresses per bin</text>')
     out.append(f'<line class="a" x1="{x0}" x2="{x0 + w}" y1="{base}" y2="{base}"/>')
     for b in bins:
         height = max(1.0, strip * b["count"] / most)

@@ -104,6 +104,40 @@ def test_no_real_address_is_in_the_dataset_twice_or_on_two_sides_of_a_split(tron
         assert exchange not in set(group.gather(fold["calib"]).to_list())
 
 
+def test_cross_fitting_the_real_dataset_scores_every_address_once_from_its_neighbours(tron):
+    from vaspfusion.classify.splits import crossfit_folds
+    df, m, _ = tron
+    folds = crossfit_folds(df, k=m["cross_fit"]["blocks"])
+    tested = sorted(i for _, s in folds for i in s["test"].tolist())
+    assert tested == list(range(df.height))
+    ts = df["first_ts"]
+    okx = (df["group"] == "OKX").to_numpy()
+    for _, s in folds:
+        assert not set(s["train"]) & set(s["test"]) and not set(s["calib"]) & set(s["test"])
+        assert not set(s["train"]) & set(s["calib"])
+    # the newest OKX block is calibrated on the OKX rows just before it, not on the oldest
+    last = folds[-1][1]
+    calib = [i for i in last["calib"].tolist() if okx[i]]
+    train = [i for i in last["train"].tolist() if okx[i]]
+    test = [i for i in last["test"].tolist() if okx[i]]
+    assert ts.gather(train).max() <= ts.gather(calib).min()
+    assert ts.gather(calib).max() <= ts.gather(test).min()
+
+
+def test_what_is_read_from_the_collector_cannot_identify_it_in_the_real_dataset(tron):
+    """Every deposit address of an exchange pays the same collector. Anything read from
+    the collector's own listing is therefore the same for all of them, and a number would
+    let the model memorise which collector (which exchange) it is. Only a yes/no is kept,
+    and it takes both values in both classes."""
+    df, _, _ = tron
+    from_recipient = [f for f in FEATURES if f.startswith("recipient_")]
+    assert from_recipient == ["recipient_forwards_on"]
+    for y in (0, 1):
+        values = df.filter(pl.col("y") == y)["recipient_forwards_on"].drop_nulls().unique()
+        assert set(values.to_list()) == {0.0, 1.0}
+    assert "age_days" not in df.columns and "recipient_senders" not in df.columns
+
+
 def test_every_derived_label_has_exactly_one_score_and_no_other_address_has_one(tron):
     df, _, scores = tron
     from vaspfusion.classify.score import label_findings

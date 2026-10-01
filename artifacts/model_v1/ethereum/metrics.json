@@ -1315,13 +1315,13 @@
  "notes": [
   "Trained on 1,467 real ethereum addresses: 599 deposit addresses and 868 others. The model reads what an address does (forwarding, timing, who pays its fees), never a label. The deposit addresses are the ones a block explorer tagged, a truth our rules never saw.",
   "By time (latest 294 addresses by first transfer, unseen): PR-AUC 0.9547, Brier 0.0574, ECE 0.0563, precision 0.803 and recall 0.9815 at 0.5. The rule \"forwards 90% or more to one wallet\" alone gives precision 0.5545 and recall 0.5648 on the same addresses: that, not chance, is the bar.",
-  "By exchange: each exchange's addresses (1,196 in total) were scored by a model that never saw that exchange. Pooled PR-AUC 0.7615, recall 0.1002 and precision 0.9091 at 0.5.",
-  "The scores the labels carry are cross-fit: each address is scored by a model that never trained on it but knows its exchange from the exchange's other addresses. On all 1,467 addresses: PR-AUC 0.9504, Brier 0.0607, ECE 0.028. Most of those models also trained on later addresses, so this describes the scores; it is not an accuracy to expect on new addresses.",
+  "By exchange: each exchange's addresses (1,196 in total) were scored by a model that never saw that exchange. Pooled PR-AUC 0.7615, recall 0.1002 and precision 0.9091 at 0.5. With 2 exchanges, each of those models learned deposit addresses from one exchange only, and what it learned did not carry over.",
+  "Cross-fit: each address is scored by a model that never trained on it but knows its exchange from the exchange's other addresses. On all 1,467 addresses: PR-AUC 0.9504, Brier 0.0607, ECE 0.028. Most of those models also trained on later addresses, so this describes the scores; it is not an accuracy to expect on new addresses.",
   "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, at this dataset's class mix (the negatives are a capped sample), not at the mix of the chain at large.",
   "The hard case, by time: of the 49 other wallets that also forward 90% or more of what they receive to one wallet, the model still calls 15 a deposit address (1 of 49 by exchange, 37 of 204 cross-fit).",
   "597 of the 868 others are wallets that paid into the deposit addresses; the rest are labelled wallets that are not deposit addresses. A wallet that never dealt with an exchange is not in this sample, so how often the model would take such a wallet for a deposit address is not measured here.",
   "The two features that read exchange labels were left out of the shipped model: with them it scores PR-AUC 0.9752 by time and recall 0.1569 on an exchange whose labels are hidden.",
-  "A derived label carries the model's value (the weight of the exchange wallet's own label times this probability, with its range) when that is at least what the discovery rules gave it; otherwise the rules' confidence is kept. The model can confirm a label; it cannot overrule label evidence it does not see. The label weights, the hop decay and the share factor are still rule-set."
+  "This model scores no label. It is the benchmark against a truth the rules never saw; the labels carry the scores of the model trained on their own chain."
  ],
- "trained_at": "2026-10-01T19:33:57Z"
+ "trained_at": "2026-10-01T19:44:09Z"
 }

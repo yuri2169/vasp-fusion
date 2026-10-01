@@ -26,6 +26,7 @@ def notes(m: dict) -> list[str]:
     ab = m["ablation_label_features"]
     ab_pooled = ab["leave_one_exchange_out"]["pooled"]
     by_rules = "derived" in d["by_source"]
+    n_folds = len(m["leave_one_exchange_out"]["folds"])
     truth = ("The deposit addresses are the ones the discovery rules derived, so these numbers "
              "say how well behaviour alone recovers what rules and labels found; they are not "
              "an accuracy against an outside truth."
@@ -46,8 +47,11 @@ def notes(m: dict) -> list[str]:
         f"and recall {base['recall']} on the same addresses: that, not chance, is the bar.",
         f"By exchange: each exchange's addresses ({pooled['n']:,} in total) were scored by a "
         f"model that never saw that exchange. Pooled PR-AUC {pooled['pr_auc']}, recall "
-        f"{pooled['at_0_5']['recall']} and precision {pooled['at_0_5']['precision']} at 0.5.",
-        f"The scores the labels carry are cross-fit: each address is scored by a model that "
+        f"{pooled['at_0_5']['recall']} and precision {pooled['at_0_5']['precision']} at 0.5."
+        + (f" With {n_folds} exchanges, each of those models learned deposit addresses from "
+           "one exchange only, and what it learned did not carry over." if n_folds <= 2 else ""),
+        ("The scores the labels carry are cross-fit" if by_rules else "Cross-fit")
+        + ": each address is scored by a model that "
         f"never trained on it but knows its exchange from the exchange's other addresses. "
         f"On all {cf['n']:,} addresses: PR-AUC {cf['pr_auc']}, Brier {cf['brier']}, ECE "
         f"{cf['ece']}. Most of those models also trained on later addresses, so this "
@@ -72,11 +76,13 @@ def notes(m: dict) -> list[str]:
         + f" and recall {ab_pooled['at_0_5']['recall']} on an exchange whose labels are hidden"
         + (" (near zero by construction: without the labels those features say nothing)."
            if by_rules else "."),
-        "A derived label carries the model's value (the weight of the exchange wallet's own "
-        "label times this probability, with its range) when that is at least what the "
-        "discovery rules gave it; otherwise the rules' confidence is kept. The model can "
-        "confirm a label; it cannot overrule label evidence it does not see. The label "
-        "weights, the hop decay and the share factor are still rule-set.",
+        *(["A derived label carries the model's value (the weight of the exchange wallet's own "
+           "label times this probability, with its range) when that is at least what the "
+           "discovery rules gave it; otherwise the rules' confidence is kept. The model can "
+           "confirm a label; it cannot overrule label evidence it does not see. The label "
+           "weights, the hop decay and the share factor are still rule-set."] if by_rules else
+          ["This model scores no label. It is the benchmark against a truth the rules never "
+           "saw; the labels carry the scores of the model trained on their own chain."]),
     ]
 
 

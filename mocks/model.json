@@ -3,7 +3,7 @@
   "_notice": "UI fixture. Unlike the other mock files these figures are real: the deposit-address model's measurements, copied from artifacts/model_v1/tron/metrics.json when `make mocks` last ran. /api/model serves the current ones.",
   "status": "measured",
   "version": "model_v1",
-  "trained_at": "2026-10-01T19:38:34Z",
+  "trained_at": "2026-10-01T19:48:18Z",
   "split": "by time, and by exchange (leave one exchange out)",
   "chain": "tron",
   "metrics": {
