@@ -1,0 +1,471 @@
+{
+ "version": "abstain_v1",
+ "chain": "tron",
+ "seed": 26182,
+ "config": {
+  "per_exchange": 40,
+  "target_risk": 0.05,
+  "delta": 0.05,
+  "grid": [
+   0.3,
+   0.4,
+   0.5,
+   0.55,
+   0.6,
+   0.65,
+   0.7,
+   0.75,
+   0.8
+  ],
+  "max_hops": 3,
+  "hidden_tier": "derived"
+ },
+ "wallets": 280,
+ "wallets_by_exchange": {
+  "Bitfinex": 40,
+  "Bitget": 40,
+  "Bitrue": 40,
+  "CoinDCX": 40,
+  "Gate.io": 40,
+  "KuCoin": 40,
+  "OKX": 40
+ },
+ "wallets_with_a_claim": 248,
+ "through_unlabelled": {
+  "claims": 303,
+  "right": 224,
+  "wrong": 79,
+  "risk_coverage": {
+   "available": true,
+   "aurc": 0.1372,
+   "e_aurc": 0.0994,
+   "oracle_aurc": 0.0378,
+   "max_coverage": 1.0,
+   "risk_at_coverage": {
+    "0.25": 0.1067,
+    "0.50": 0.0993,
+    "0.75": 0.1806
+   },
+   "curve": [
+    {
+     "coverage": 0.0033,
+     "risk": 0.0
+    },
+    {
+     "coverage": 0.0231,
+     "risk": 0.1429
+    },
+    {
+     "coverage": 0.0429,
+     "risk": 0.1538
+    },
+    {
+     "coverage": 0.0627,
+     "risk": 0.1579
+    },
+    {
+     "coverage": 0.0825,
+     "risk": 0.12
+    },
+    {
+     "coverage": 0.1023,
+     "risk": 0.0968
+    },
+    {
+     "coverage": 0.1221,
+     "risk": 0.0811
+    },
+    {
+     "coverage": 0.1452,
+     "risk": 0.1136
+    },
+    {
+     "coverage": 0.165,
+     "risk": 0.1
+    },
+    {
+     "coverage": 0.1848,
+     "risk": 0.1071
+    },
+    {
+     "coverage": 0.2046,
+     "risk": 0.0968
+    },
+    {
+     "coverage": 0.2244,
+     "risk": 0.1176
+    },
+    {
+     "coverage": 0.2442,
+     "risk": 0.1081
+    },
+    {
+     "coverage": 0.2673,
+     "risk": 0.0988
+    },
+    {
+     "coverage": 0.2871,
+     "risk": 0.092
+    },
+    {
+     "coverage": 0.3069,
+     "risk": 0.086
+    },
+    {
+     "coverage": 0.3267,
+     "risk": 0.0808
+    },
+    {
+     "coverage": 0.3465,
+     "risk": 0.0762
+    },
+    {
+     "coverage": 0.3663,
+     "risk": 0.0721
+    },
+    {
+     "coverage": 0.3894,
+     "risk": 0.0763
+    },
+    {
+     "coverage": 0.4092,
+     "risk": 0.0806
+    },
+    {
+     "coverage": 0.429,
+     "risk": 0.0923
+    },
+    {
+     "coverage": 0.4488,
+     "risk": 0.0882
+    },
+    {
+     "coverage": 0.4686,
+     "risk": 0.0845
+    },
+    {
+     "coverage": 0.4884,
+     "risk": 0.0946
+    },
+    {
+     "coverage": 0.5116,
+     "risk": 0.1097
+    },
+    {
+     "coverage": 0.5314,
+     "risk": 0.1056
+    },
+    {
+     "coverage": 0.5512,
+     "risk": 0.1138
+    },
+    {
+     "coverage": 0.571,
+     "risk": 0.1156
+    },
+    {
+     "coverage": 0.5908,
+     "risk": 0.1341
+    },
+    {
+     "coverage": 0.6106,
+     "risk": 0.1297
+    },
+    {
+     "coverage": 0.6337,
+     "risk": 0.1406
+    },
+    {
+     "coverage": 0.6535,
+     "risk": 0.1566
+    },
+    {
+     "coverage": 0.6733,
+     "risk": 0.1569
+    },
+    {
+     "coverage": 0.6931,
+     "risk": 0.1524
+    },
+    {
+     "coverage": 0.7129,
+     "risk": 0.1667
+    },
+    {
+     "coverage": 0.7327,
+     "risk": 0.1712
+    },
+    {
+     "coverage": 0.7558,
+     "risk": 0.1834
+    },
+    {
+     "coverage": 0.7756,
+     "risk": 0.1787
+    },
+    {
+     "coverage": 0.7954,
+     "risk": 0.1826
+    },
+    {
+     "coverage": 0.8152,
+     "risk": 0.1984
+    },
+    {
+     "coverage": 0.835,
+     "risk": 0.1976
+    },
+    {
+     "coverage": 0.8548,
+     "risk": 0.2046
+    },
+    {
+     "coverage": 0.8779,
+     "risk": 0.218
+    },
+    {
+     "coverage": 0.8977,
+     "risk": 0.2279
+    },
+    {
+     "coverage": 0.9175,
+     "risk": 0.2374
+    },
+    {
+     "coverage": 0.9373,
+     "risk": 0.243
+    },
+    {
+     "coverage": 0.9571,
+     "risk": 0.2517
+    },
+    {
+     "coverage": 0.9769,
+     "risk": 0.2568
+    },
+    {
+     "coverage": 1.0,
+     "risk": 0.2607
+    }
+   ]
+  },
+  "threshold": {
+   "target_risk": 0.05,
+   "delta": 0.05,
+   "n_calibration": 303,
+   "grid": [
+    {
+     "threshold": 0.3,
+     "n_answered": 200,
+     "errors": 31,
+     "risk": 0.155,
+     "risk_upper_bound": 0.2304
+    },
+    {
+     "threshold": 0.4,
+     "n_answered": 176,
+     "errors": 22,
+     "risk": 0.125,
+     "risk_upper_bound": 0.2011
+    },
+    {
+     "threshold": 0.5,
+     "n_answered": 163,
+     "errors": 18,
+     "risk": 0.1104,
+     "risk_upper_bound": 0.1872
+    },
+    {
+     "threshold": 0.55,
+     "n_answered": 161,
+     "errors": 17,
+     "risk": 0.1056,
+     "risk_upper_bound": 0.1819
+    },
+    {
+     "threshold": 0.6,
+     "n_answered": 159,
+     "errors": 17,
+     "risk": 0.1069,
+     "risk_upper_bound": 0.1841
+    },
+    {
+     "threshold": 0.65,
+     "n_answered": 154,
+     "errors": 16,
+     "risk": 0.1039,
+     "risk_upper_bound": 0.1819
+    },
+    {
+     "threshold": 0.7,
+     "n_answered": 151,
+     "errors": 15,
+     "risk": 0.0993,
+     "risk_upper_bound": 0.1772
+    },
+    {
+     "threshold": 0.75,
+     "n_answered": 137,
+     "errors": 12,
+     "risk": 0.0876,
+     "risk_upper_bound": 0.1672
+    },
+    {
+     "threshold": 0.8,
+     "n_answered": 123,
+     "errors": 9,
+     "risk": 0.0732,
+     "risk_upper_bound": 0.1541
+    }
+   ],
+   "attainable": false,
+   "threshold": 1.01,
+   "n_answered": 0,
+   "errors": 0,
+   "risk": null,
+   "risk_upper_bound": 1.0
+  }
+ },
+ "all_claims": {
+  "claims": 303,
+  "right": 224,
+  "wrong": 79
+ },
+ "by_hops": [
+  {
+   "hops": 2,
+   "claims": 283,
+   "right": 222
+  },
+  {
+   "hops": 3,
+   "claims": 20,
+   "right": 2
+  }
+ ],
+ "cases_by_threshold": [
+  {
+   "threshold": 0.3,
+   "wallets": 280,
+   "named": 187,
+   "right": 163,
+   "wrong": 24,
+   "abstained": 93,
+   "coverage": 0.6679,
+   "risk": 0.1283
+  },
+  {
+   "threshold": 0.4,
+   "wallets": 280,
+   "named": 168,
+   "right": 150,
+   "wrong": 18,
+   "abstained": 112,
+   "coverage": 0.6,
+   "risk": 0.1071
+  },
+  {
+   "threshold": 0.5,
+   "wallets": 280,
+   "named": 158,
+   "right": 143,
+   "wrong": 15,
+   "abstained": 122,
+   "coverage": 0.5643,
+   "risk": 0.0949
+  },
+  {
+   "threshold": 0.55,
+   "wallets": 280,
+   "named": 157,
+   "right": 142,
+   "wrong": 15,
+   "abstained": 123,
+   "coverage": 0.5607,
+   "risk": 0.0955
+  },
+  {
+   "threshold": 0.6,
+   "wallets": 280,
+   "named": 155,
+   "right": 140,
+   "wrong": 15,
+   "abstained": 125,
+   "coverage": 0.5536,
+   "risk": 0.0968
+  },
+  {
+   "threshold": 0.65,
+   "wallets": 280,
+   "named": 150,
+   "right": 136,
+   "wrong": 14,
+   "abstained": 130,
+   "coverage": 0.5357,
+   "risk": 0.0933
+  },
+  {
+   "threshold": 0.7,
+   "wallets": 280,
+   "named": 147,
+   "right": 134,
+   "wrong": 13,
+   "abstained": 133,
+   "coverage": 0.525,
+   "risk": 0.0884
+  },
+  {
+   "threshold": 0.75,
+   "wallets": 280,
+   "named": 135,
+   "right": 124,
+   "wrong": 11,
+   "abstained": 145,
+   "coverage": 0.4821,
+   "risk": 0.0815
+  },
+  {
+   "threshold": 0.8,
+   "wallets": 280,
+   "named": 121,
+   "right": 113,
+   "wrong": 8,
+   "abstained": 159,
+   "coverage": 0.4321,
+   "risk": 0.0661
+  }
+ ],
+ "current_threshold": 0.6,
+ "at_current": {
+  "claims": {
+   "threshold": 0.6,
+   "n_answered": 159,
+   "errors": 17,
+   "risk": 0.1069,
+   "risk_upper_bound": 0.1841
+  },
+  "cases": {
+   "threshold": 0.6,
+   "wallets": 280,
+   "named": 155,
+   "right": 140,
+   "wrong": 15,
+   "abstained": 125,
+   "coverage": 0.5536,
+   "risk": 0.0968
+  }
+ },
+ "notes": [
+  "Validation set: 280 real Tron wallets that paid an address the discovery rules derived as an exchange deposit address (a seeded sample of the deposit model's customers). Known answer: the exchanges each paid directly, from the full label store.",
+  "Test: each wallet traced from the start of its discovery window with every derived label hidden, so an exchange has to be found through an unlabelled wallet. 303 such claims were made, 224 right and 79 wrong.",
+  "Strict on purpose: a claim that reached an exchange's wallet through a wallet the rules did not derive counts as wrong, so the risk is an upper bound.",
+  "No bar on the grid keeps the risk under 5% with 95% confidence on this set.",
+  "At the bar in use, 0.60: 159 claims answered, 17 wrong (risk 10.7%, upper bound 18.4%); of 280 wallets 155 get an exchange named (15 wrong) and 125 abstain.",
+  "Not calibrated: the confidence swept here is rule-set (label weight x hop decay x share factor). And every wallet in the set is an exchange customer, so nothing here measures wallets that never paid an exchange."
+ ],
+ "collected": {
+  "wallets_sampled": 280,
+  "wallets_read": 280,
+  "errors": 0
+ }
+}

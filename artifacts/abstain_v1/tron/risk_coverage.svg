@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400" class="viz" role="img" aria-label="Risk against coverage of the abstain bar on tron">
+<style>
+.viz{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;
+--axis:#c3c2b7;--series:#2a78d6;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){.viz{--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;
+--grid:#2c2c2a;--axis:#383835;--series:#3987e5}}
+.bg{fill:var(--surface)}.t{fill:var(--ink);font-size:15px;font-weight:600}
+.s{fill:var(--ink2);font-size:12px}.m{fill:var(--muted);font-size:11px}
+.v{fill:var(--ink);font-size:12px;font-variant-numeric:tabular-nums}
+.g{stroke:var(--grid);stroke-width:1}.a{stroke:var(--axis);stroke-width:1}
+.d{stroke:var(--axis);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.l{stroke:var(--series);stroke-width:2;fill:none;stroke-linejoin:round}
+.p{fill:var(--series);stroke:var(--surface);stroke-width:2}.b{fill:var(--series)}
+</style>
+<rect class="bg" width="640" height="400"/>
+<text class="t" x="64" y="28">What abstaining buys: Tron, 303 claims from 280 real wallets</text>
+<text class="s" x="64" y="48">Wrong answers as more claims are answered, most confident first (derived labels hidden)</text>
+<line class="a" x1="64" x2="600" y1="316.0" y2="316.0"/>
+<text class="m" x="56" y="320.0" text-anchor="end">0%</text>
+<line class="g" x1="64" x2="600" y1="256.0" y2="256.0"/>
+<text class="m" x="56" y="260.0" text-anchor="end">8%</text>
+<line class="g" x1="64" x2="600" y1="196.0" y2="196.0"/>
+<text class="m" x="56" y="200.0" text-anchor="end">15%</text>
+<line class="g" x1="64" x2="600" y1="136.0" y2="136.0"/>
+<text class="m" x="56" y="140.0" text-anchor="end">22%</text>
+<line class="g" x1="64" x2="600" y1="76.0" y2="76.0"/>
+<text class="m" x="56" y="80.0" text-anchor="end">30%</text>
+<text class="m" x="64.0" y="334" text-anchor="middle">0%</text>
+<text class="m" x="198.0" y="334" text-anchor="middle">25%</text>
+<text class="m" x="332.0" y="334" text-anchor="middle">50%</text>
+<text class="m" x="466.0" y="334" text-anchor="middle">75%</text>
+<text class="m" x="600.0" y="334" text-anchor="middle">100%</text>
+<text class="m" x="600" y="352" text-anchor="end">share of the claims answered (coverage)</text>
+<text class="m" x="64" y="66">wrong among the answers (risk)</text>
+<line class="d" x1="64" x2="600" y1="276.0" y2="276.0"/>
+<text class="m" x="600" y="66" text-anchor="end">dashed line: 5% risk</text>
+<polyline class="l" points="65.8,316.0 76.4,201.7 87.0,193.0 97.6,189.7 108.2,220.0 118.8,238.6 129.4,251.1 141.8,225.1 152.4,236.0 163.1,230.3 173.7,238.6 184.3,221.9 194.9,229.5 207.3,237.0 217.9,242.4 228.5,247.2 239.1,251.4 249.7,255.0 260.3,258.3 272.7,255.0 283.3,251.5 293.9,242.2 304.6,245.4 315.2,248.4 325.8,240.3 338.2,228.2 348.8,231.5 359.4,225.0 370.1,223.5 380.7,208.7 391.3,212.2 403.7,203.5 414.3,190.7 424.9,190.5 435.5,194.1 446.1,182.6 456.7,179.0 469.1,169.3 479.7,173.0 490.3,169.9 500.9,157.3 511.6,157.9 522.2,152.3 534.6,141.6 545.2,133.7 555.8,126.1 566.4,121.6 577.0,114.6 587.6,110.6 600.0,107.4"/>
+<circle class="p" cx="417.8" cy="192.0" r="4"><title>Bar 0.30: 200 claims answered, 31 wrong (15.5%)</title></circle>
+<circle class="p" cx="375.3" cy="216.0" r="4"><title>Bar 0.40: 176 claims answered, 22 wrong (12.5%)</title></circle>
+<circle class="p" cx="352.3" cy="227.7" r="4"><title>Bar 0.50: 163 claims answered, 18 wrong (11.0%)</title></circle>
+<circle class="p" cx="348.8" cy="231.5" r="4"><title>Bar 0.55: 161 claims answered, 17 wrong (10.6%)</title></circle>
+<circle class="p" cx="345.3" cy="230.5" r="6"><title>Bar 0.60: 159 claims answered, 17 wrong (10.7%)</title></circle>
+<text class="v" x="355.3" y="252.5">bar 0.60 in use: 10.7% wrong</text>
+<circle class="p" cx="336.4" cy="232.9" r="4"><title>Bar 0.65: 154 claims answered, 16 wrong (10.4%)</title></circle>
+<circle class="p" cx="331.1" cy="236.6" r="4"><title>Bar 0.70: 151 claims answered, 15 wrong (9.9%)</title></circle>
+<circle class="p" cx="306.3" cy="245.9" r="4"><title>Bar 0.75: 137 claims answered, 12 wrong (8.8%)</title></circle>
+<circle class="p" cx="281.6" cy="257.4" r="4"><title>Bar 0.80: 123 claims answered, 9 wrong (7.3%)</title></circle>
+</svg>

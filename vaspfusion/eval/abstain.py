@@ -320,8 +320,8 @@ def risk_coverage_svg(m: dict) -> str:
     out += [f'<text class="t" x="{x0}" y="28">What abstaining buys: '
             f'{escape(m["chain"].title())}, {ind["claims"]:,} claims from {m["wallets"]:,} '
             'real wallets</text>',
-            f'<text class="s" x="{x0}" y="48">Share of answers that are wrong, as more claims '
-            'are answered (most confident first). Labels hidden; strict test</text>']
+            f'<text class="s" x="{x0}" y="48">Wrong answers as more claims are answered, most '
+            'confident first (derived labels hidden)</text>']
     for i in range(5):
         tick = top * i / 4
         out.append(f'<line class="{"a" if i == 0 else "g"}" x1="{x0}" x2="{x0 + w}" '
@@ -352,7 +352,7 @@ def risk_coverage_svg(m: dict) -> str:
                    f'Bar {g["threshold"]:.2f}: {g["n_answered"]:,} claims answered, '
                    f'{g["errors"]:,} wrong ({g["risk"]:.1%})</title></circle>')
         if mine:
-            out.append(f'<text class="v" x="{x:.1f}" y="{y - 12:.1f}" text-anchor="middle">bar '
+            out.append(f'<text class="v" x="{x + 10:.1f}" y="{y + 22:.1f}">bar '
                        f'{g["threshold"]:.2f} in use: {g["risk"]:.1%} wrong</text>')
     out.append("</svg>")
     return "\n".join(out) + "\n"

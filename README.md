@@ -14,6 +14,7 @@ make fetch ADDR=TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw   # transfers, cached; OFFLIN
 make trace ADDR=TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c   # wallet -> nearest exchange(s), as an officer reads it
 make demo      # the real demo wallets (demo/cases.json) into the case store; OFFLINE=1 replays them
 make model     # train, calibrate and measure the deposit-address model; then `make labels`
+make abstain-eval   # measure the abstain bar on real customers traced with labels hidden
 ```
 Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` regenerates `docs/openapi.json` and `ui/src/api/types.ts`.
 
@@ -27,7 +28,10 @@ Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` rege
 | `vaspfusion/discover/` | Deposit-address discovery: the sweep and gas-payer rules, the crawler, the hold-out evaluation |
 | `derived/` | What discovery found (`<run>.csv`, `<run>_report.json`) and the hold-out result; `make labels` merges the CSVs |
 | `vaspfusion/classify/` | The deposit-address model: features, dataset, splits, training + calibration, SHAP reasons, label scores |
-| `artifacts/model_v1/<chain>/` | The model's dataset, measurements, plots and label scores (tracked; `model.pkl` is rebuilt by `make model`) |
+| `artifacts/model_v1/<chain>/` | The model's dataset, measurements, plots, label scores and the model itself as LightGBM text (`model.txt`), all tracked |
+| `vaspfusion/detect/typologies.py` | Typology flags over the traced money, each with figures and hashes |
+| `vaspfusion/attribute/counterfactual.py`, `leads.py` | Does a named exchange survive without its label; unlabelled wallets that behave like deposit addresses |
+| `vaspfusion/eval/abstain.py`, `artifacts/abstain_v1/` | The abstain bar measured by hiding labels: claims, risk vs coverage |
 | `vaspfusion/explain/case_narrative.py` | The paragraph an officer reads |
 | `vaspfusion/cases.py`, `vaspfusion/store/cases.py` | `run_case` → the API's `CaseDetail`; cases in `data/case.duckdb` |
 | `vaspfusion/api/` | `schemas.py` (the contract) and `main.py` (routes; cases and labels are live, the rest answer from mocks until their phase lands) |
@@ -130,6 +134,17 @@ A LightGBM model (`vaspfusion/classify/`) says how likely an address is an excha
 - Reading the exchange's other labelled wallets (the two ablation features) lifts PR-AUC by time from 0.955 to 0.975 on this truth, where the labels did not pick the positives.
 
 Plots: `reliability.svg`, `reliability_by_exchange.svg`, `reliability_labels.svg`, `importance.svg` in each chain's folder.
+
+## The abstain bar, measured
+```bash
+make abstain-eval                 # 280 real wallets traced twice (cached; OFFLINE=1 replays byte-identical)
+python -m vaspfusion.cli abstain-eval --from-claims   # measure again from the tracked claims.csv
+```
+No exchange is named below confidence 0.60. There is no labelled set of "wallet → exchange" cases to pick that bar on, so one is built by hiding labels (`vaspfusion/eval/abstain.py`):
+- **Wallets:** 280 real Tron wallets (40 per exchange, seed 26182) that paid an address the discovery rules derived as a deposit address. **Known answer:** the exchanges each paid directly, from the full label store.
+- **Test:** each is traced with all 5,497 derived labels hidden, so the exchange must be found through an unlabelled wallet. Each exchange reached is a claim; it is right if it is in the known answer. Strict: a claim through a wallet the rules did not derive counts as wrong, so the risk is an upper bound.
+- **Result** (`artifacts/abstain_v1/tron/validation.json`): 303 claims, 224 right. At 0.60: 159 claims answered, 17 wrong (10.7%; 95% upper bound 18.4%); 155 of 280 wallets get an exchange named, 15 of them wrong, 125 abstain. Raising the bar to 0.80 gives 7.3% (9 of 123). **No bar on the grid brings the strict risk under 5%.** Claims three hops away are right 2 times in 20.
+- **Not calibrated.** The confidence is rule-set, and every wallet in the set is an exchange customer. Plot: `artifacts/abstain_v1/tron/risk_coverage.svg`.
 
 ## Trace and attribution
 ```bash
