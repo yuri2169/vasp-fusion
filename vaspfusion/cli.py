@@ -267,6 +267,46 @@ def cmd_discover_eval(args) -> None:
     print(_pages(fetcher))
 
 
+def _model_data_tagged(args) -> None:
+    """A chain with no discovery run: the truth is the explorer's deposit tags."""
+    import json
+
+    from . import chains
+    from .classify.dataset import TaggedConfig, build_tagged, write_dataset
+    from .labels.lookup import LabelStore
+
+    base = TaggedConfig()
+    cfg = TaggedConfig(chain=args.chain, per_exchange=min(args.per_exchange, base.per_exchange),
+                       seed=args.seed)
+    # B4's hold-out pages are in the main cache: read them there, fetch the rest into ours
+    cache = chains.LayeredCache(chains.ChainCache(args.cache, hold=True), chains.ChainCache())
+    fetcher = chains.Fetcher(cache, chains.UrllibTransport())
+    provider = chains.get_provider(args.chain, fetcher, page_size=cfg.limit, max_pages=1)
+
+    def progress(stage: str, i: int, n: int) -> None:
+        if i == n or i % 100 == 0:
+            print(f"  {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr, flush=True)
+
+    with LabelStore(args.labels_db) as labels:
+        examples, stats = build_tagged(provider, labels, cfg, progress, workers=args.workers)
+    cache.close()
+    out = Path(args.out) / args.chain
+    path = write_dataset(out / "dataset.csv", examples)
+    stats["config"] = {"entities": list(cfg.entities), "n_positive": cfg.n_positive,
+                       "n_negative": cfg.n_negative, "per_exchange": cfg.per_exchange,
+                       "limit": cfg.limit, "seed": cfg.seed}
+    (out / "dataset_report.json").write_text(json.dumps(stats, indent=1, sort_keys=True) + "\n")
+    print(f"deposit-address dataset for {args.chain} (explorer-tagged truth): "
+          f"{stats['examples']} addresses")
+    for source, n in stats["by_source"].items():
+        print(f"  {source:<22}{n:>7}")
+    print(f"customers seen {stats['customers_seen']} (sampled up to {cfg.per_exchange} per "
+          f"exchange: {stats['customers']})")
+    print(f"no usable transfers: {stats['empty']}; could not be read: {stats['errors']}")
+    print(f"wrote {path}")
+    print(_pages(fetcher))
+
+
 def cmd_model_data(args) -> None:
     """Build the deposit-address model's training set (B6) from the chain caches."""
     import json
@@ -277,7 +317,7 @@ def cmd_model_data(args) -> None:
 
     runs = [r for r in load_runs(args.derived) if r.chain == args.chain]
     if not runs:
-        sys.exit(f"no discovery run for {args.chain} in {args.derived}: run `make discover`")
+        return _model_data_tagged(args)
     limit = runs[0].limit
     if any(r.limit != limit for r in runs):
         sys.exit("the discovery runs were read with different row limits")

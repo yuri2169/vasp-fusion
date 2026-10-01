@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels discover discover-run discover-eval test serve fetch trace demo mocks openapi types offline-check clean
+.PHONY: help setup labels discover discover-run discover-eval model-data model test serve fetch trace demo mocks openapi types offline-check clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -26,6 +26,13 @@ discover-run:     ## one discovery run: ENTITIES="OKX,HTX" SINCE=2026-09-01 NAME
 
 discover-eval:    ## measure the discovery rules on held-out explorer-tagged deposit addresses
 	$(PY) -m vaspfusion.cli discover-eval
+
+MODEL_CHAIN ?= tron
+model-data:       ## build the deposit model's training set into artifacts/model_v1/$(MODEL_CHAIN)/ (cached; OFFLINE=1 replays)
+	$(PY) -m vaspfusion.cli model-data --chain $(MODEL_CHAIN)
+
+model:            ## train, calibrate and measure the deposit model on that set; score the derived labels, then `make labels`
+	$(PY) -m vaspfusion.cli model --chain $(MODEL_CHAIN)
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q

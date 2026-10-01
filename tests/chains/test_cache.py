@@ -5,7 +5,7 @@ import duckdb
 import pytest
 
 from vaspfusion.chains.base import CacheMiss, ProviderError, Retryable
-from vaspfusion.chains.cache import ChainCache, Fetcher, request_key
+from vaspfusion.chains.cache import ChainCache, Fetcher, LayeredCache, request_key
 
 URL = "https://api.example.com/v1/x"
 
@@ -189,3 +189,19 @@ def test_waits_for_another_process_holding_the_cache(tmp_path):
     assert ChainCache(path).count() == 0  # blocks until the other process lets go
     assert time.monotonic() - t0 > 0.3
     holder.wait()
+
+
+def test_a_layered_cache_reads_an_older_cache_and_writes_only_to_its_own(tmp_path):
+    old, new = ChainCache(tmp_path / "old.duckdb"), ChainCache(tmp_path / "new.duckdb")
+    Fetcher(old, Scripted((200, {"n": 1})), sleep=lambda s: None) \
+        .get_json("tron", "A", "both", URL, {"page": 1})
+    layered = LayeredCache(new, old)
+    live = Scripted((200, {"n": 2}))
+    fetcher = Fetcher(layered, live, sleep=lambda s: None)
+    assert fetcher.get_json("tron", "A", "both", URL, {"page": 1}) == {"n": 1}
+    assert live.calls == [] and fetcher.stats == {"hits": 1, "live": 0, "retries": 0}
+    assert fetcher.get_json("tron", "A", "both", URL, {"page": 2}) == {"n": 2}
+    assert (new.count(), old.count(), layered.count()) == (1, 1, 2)
+    again = Fetcher(layered, None, offline=True)
+    assert again.get_json("tron", "A", "both", URL, {"page": 2}) == {"n": 2}
+    layered.close()

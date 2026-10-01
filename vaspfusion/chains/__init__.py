@@ -8,11 +8,11 @@ from __future__ import annotations
 from .addresses import EVM_FAMILY, detect_chain, validate
 from .base import (CacheMiss, ChainProvider, Direction, InvalidAddress, ProviderError,
                    Transfer, UnsupportedChain)
-from .cache import ChainCache, Fetcher
+from .cache import ChainCache, Fetcher, LayeredCache
 from .http import UrllibTransport
 
 __all__ = ["CacheMiss", "ChainCache", "ChainProvider", "Direction", "Fetcher", "InvalidAddress",
-           "ProviderError", "Transfer", "UnsupportedChain", "UrllibTransport", "default_fetcher",
+           "LayeredCache", "ProviderError", "Transfer", "UnsupportedChain", "UrllibTransport", "default_fetcher",
            "detect_chain", "get_provider", "validate"]
 
 

@@ -30,6 +30,7 @@ import polars as pl
 
 from ..chains.base import ProviderError
 from ..discover.crawl import Finding, _stable_rows, _warm
+from ..discover.evaluate import EvalConfig, sample
 from ..discover.rules import DiscoverConfig, is_seed
 from ..discover.store import read_findings
 from .features import FEATURES, LABEL_FEATURES, address_features
@@ -52,9 +53,42 @@ class Run:
     stations: tuple[dict, ...] = ()
 
 
+    def read(self, provider, address: str):
+        """(stablecoin transfers, whether that is all of them, gas events)."""
+        rows, complete = _stable_rows(provider, address, "both", self.since, self.limit)
+        return rows, complete, provider.gas_events(address, since=self.since)
+
+
+@dataclass(frozen=True)
+class Listing:
+    """The fetch protocol of the explorer-tagged dataset: an address's earliest `limit`
+    transfers of every asset (what B4's hold-out test read)."""
+    name: str
+    chain: str
+    limit: int
+
+    def read(self, provider, address: str):
+        rows = provider.transfers(address, "both", limit=self.limit)
+        complete = getattr(rows, "complete", len(rows) < self.limit)
+        return rows, complete, provider.gas_events(address, limit=self.limit)
+
+
 @dataclass(frozen=True)
 class DatasetConfig:
     per_exchange: int = 700          # customers sampled per exchange
+    seed: int = SEED
+    rules: DiscoverConfig = DiscoverConfig()
+
+
+@dataclass(frozen=True)
+class TaggedConfig:
+    chain: str = "ethereum"
+    # "Bilaxy" is the upstream slug of 5,000 addresses Etherscan tags "Binance Dep"
+    entities: tuple[str, ...] = ("Bitget", "Bilaxy")
+    n_positive: int = 300            # tagged deposit addresses per exchange
+    n_negative: int = 300            # tagged non-deposit addresses (B4's hold-out sample)
+    per_exchange: int = 300          # customers sampled per exchange
+    limit: int = 200                 # transfers read per address
     seed: int = SEED
     rules: DiscoverConfig = DiscoverConfig()
 
@@ -77,12 +111,11 @@ def load_runs(derived_dir: Path | str) -> list[Run]:
     return runs
 
 
-def _read(provider, address: str, run: Run):
-    rows, complete = _stable_rows(provider, address, "both", run.since, run.limit)
-    return rows, complete, provider.gas_events(address, since=run.since)
+def _read(provider, address: str, run):
+    return run.read(provider, address)
 
 
-def _example(address: str, run: Run, read, labels, cutoff, cfg: DatasetConfig) -> dict | None:
+def _example(address: str, run, read, labels, cutoff, rules: DiscoverConfig) -> dict | None:
     rows, complete, events = read
     if cutoff is not None:
         rows = [t for t in rows if t.block_time <= cutoff]
@@ -91,24 +124,28 @@ def _example(address: str, run: Run, read, labels, cutoff, cfg: DatasetConfig) -
     near |= {e.payer for e in events}
     near.discard(address)                        # judged without its own label
     lab = {a: l for (a, _), l in labels.lookup_many({(a, run.chain) for a in near}).items()}
-    f = address_features(address, rows, events, lab, cfg=cfg.rules)
+    f = address_features(address, rows, events, lab, cfg=rules)
     if f is None:
         return None
     return {"address": address, "chain": run.chain, "run": run.name, "complete": int(complete),
             **f}
 
 
-def build(runs: list[Run], provider, extra_provider, labels,
-          cfg: DatasetConfig = DatasetConfig(), progress=None,
-          workers: int = 1) -> tuple[list[dict], dict]:
-    """`provider` reads the positives (the discovery crawl's cache holds them);
-    `extra_provider` reads the negatives. Both must page the same way."""
-    chain = runs[0].chain
-    fired = {f.address for run in runs for f in run.findings}
-    stats = {"positives": 0, "customers_seen": 0, "customers_in_two_exchanges": 0,
-             "customers": {}, "labelled": 0, "stations": 0, "errors": 0, "empty": 0}
+def _pays(t, address: str, dust) -> bool:
+    """Is this transfer a real payment into `address`? Unknown tokens are spam senders."""
+    if t.to_addr != address or t.from_addr == address or "@" in t.asset:
+        return False
+    return t.amount_usd >= dust if t.amount_usd is not None else t.amount > 0
 
-    todo: list[tuple[str, Run, int, str, str, object]] = []   # address, run, y, group, source
+
+def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], not_ordinary,
+              provider, extra_provider, labels, per_exchange: int, seed: int,
+              rules: DiscoverConfig, progress, workers: int) -> tuple[list[dict], dict]:
+    """positives / known_negatives: (address, listing, group, source). Customers are found
+    in the positives' own listings. `not_ordinary`: addresses that may not be customers."""
+    stats = {"positives": 0, "customers_seen": 0, "customers_in_two_exchanges": 0,
+             "customers": {}, "labelled": 0, "errors": 0, "empty": 0}
+    todo: list[tuple] = []                        # address, listing, y, group, source, provider
     taken: set[str] = set()
 
     def add(address, run, y, group, source, prov) -> None:
@@ -116,33 +153,26 @@ def build(runs: list[Run], provider, extra_provider, labels,
             taken.add(address)
             todo.append((address, run, y, group, source, prov))
 
-    for run in runs:                              # an address in two runs: the first one
-        for f in sorted(run.findings, key=lambda f: f.address):
-            if f.status == "derived":
-                add(f.address, run, 1, f.entity, "derived", provider)
-    positives = list(todo)
-
+    for address, run, group, source in positives:
+        add(address, run, 1, group, source, provider)
+    n_positive = len(todo)
     reads: dict[str, tuple] = {}
-
-    def fetch(item) -> None:
-        address, run, *_, prov = item
-        reads[address] = _read(prov, address, run)
 
     def read_all(items, stage: str) -> None:
         _warm(workers, items, lambda it: _read(it[-1], it[0], it[1]), stage, progress)
-        for i, item in enumerate(items):
+        for i, (address, run, *_, prov) in enumerate(items):
             if progress:
                 progress(f"{stage} (features)", i + 1, len(items))
             try:
-                fetch(item)
+                reads[address] = _read(prov, address, run)
             except ProviderError:
                 stats["errors"] += 1
 
-    read_all(positives, "positives")
+    read_all(todo, "positives")
     cutoff: dict[str, datetime] = {}
     paid_into: dict[str, set[str]] = {}
-    first_run: dict[str, Run] = {}
-    for address, run, _, group, _, _ in positives:
+    first_run: dict[str, object] = {}
+    for address, run, _, group, _, _ in todo:
         if address not in reads:
             continue
         rows = reads[address][0]
@@ -150,13 +180,13 @@ def build(runs: list[Run], provider, extra_provider, labels,
             last = max(t.block_time for t in rows)
             cutoff[run.name] = max(cutoff.get(run.name, last), last)
         for t in rows:
-            if t.to_addr == address and t.from_addr != address \
-                    and t.amount_usd is not None and t.amount_usd >= cfg.rules.dust:
+            if _pays(t, address, rules.dust):
                 paid_into.setdefault(t.from_addr, set()).add(group)
                 first_run.setdefault(t.from_addr, run)
 
     known = labels.lookup_many({(a, chain) for a in paid_into})
-    ordinary = sorted(a for a in paid_into if a not in fired and (a, chain) not in known)
+    ordinary = sorted(a for a in paid_into
+                      if a not in not_ordinary and a not in taken and (a, chain) not in known)
     stats["customers_seen"] = len(ordinary)
     stats["customers_in_two_exchanges"] = sum(1 for a in ordinary if len(paid_into[a]) > 1)
     by_exchange: dict[str, list[str]] = {}
@@ -164,31 +194,24 @@ def build(runs: list[Run], provider, extra_provider, labels,
         by_exchange.setdefault(min(paid_into[a]), []).append(a)
     for exchange in sorted(by_exchange):
         pool = by_exchange[exchange]
-        rng = random.Random(f"{cfg.seed}:{exchange}")
-        picked = sorted(rng.sample(pool, min(cfg.per_exchange, len(pool))))
+        rng = random.Random(f"{seed}:{exchange}")
+        picked = sorted(rng.sample(pool, min(per_exchange, len(pool))))
         stats["customers"][exchange] = len(picked)
         for a in picked:
             add(a, first_run[a], 0, exchange, "customer", extra_provider)
 
-    main = runs[0]
     before = len(todo)
-    for lab in labels.non_deposit(chain):
-        add(lab.address, main, 0, lab.entity if is_seed(lab) else "other",
-            f"labelled:{lab.category}", extra_provider)
+    for address, run, group, source in known_negatives:
+        add(address, run, 0, group, source, extra_provider)
     stats["labelled"] = len(todo) - before
-    before = len(todo)
-    for run in runs:
-        for s in run.stations:
-            add(s["address"], run, 0, s["entity"], "gas_station", extra_provider)
-    stats["stations"] = len(todo) - before
-    stats["positives"] = len(positives)
-    read_all(todo[len(positives):], "negatives")
+    stats["positives"] = n_positive
+    read_all(todo[n_positive:], "negatives")
 
     examples = []
     for address, run, y, group, source, _ in todo:
         if address not in reads:
             continue
-        ex = _example(address, run, reads[address], labels, cutoff.get(run.name), cfg)
+        ex = _example(address, run, reads[address], labels, cutoff.get(run.name), rules)
         if ex is None:
             stats["empty"] += 1
             continue
@@ -201,6 +224,53 @@ def build(runs: list[Run], provider, extra_provider, labels,
     stats["by_source"] = dict(sorted(by_source.items()))
     stats["cutoff"] = {k: _iso(v) for k, v in sorted(cutoff.items())}
     return examples, stats
+
+
+def build(runs: list[Run], provider, extra_provider, labels,
+          cfg: DatasetConfig = DatasetConfig(), progress=None,
+          workers: int = 1) -> tuple[list[dict], dict]:
+    """The dataset of a chain with discovery runs (Tron). `provider` reads the positives
+    (the discovery crawl's cache holds them); `extra_provider` reads the negatives. Both
+    must page the same way."""
+    chain = runs[0].chain
+    fired = {f.address for run in runs for f in run.findings}
+    seen: set[str] = set()
+    positives = []
+    for run in runs:                              # an address in two runs: the first one
+        for f in sorted(run.findings, key=lambda f: f.address):
+            if f.status == "derived" and f.address not in seen:
+                seen.add(f.address)
+                positives.append((f.address, run, f.entity, "derived"))
+    main = runs[0]
+    known = [(lab.address, main, lab.entity if is_seed(lab) else "other",
+              f"labelled:{lab.category}") for lab in labels.non_deposit(chain)]
+    known += [(s["address"], run, s["entity"], "gas_station")
+              for run in runs for s in run.stations]
+    return _assemble(chain, positives, known, fired, provider, extra_provider, labels,
+                     cfg.per_exchange, cfg.seed, cfg.rules, progress, workers)
+
+
+def build_tagged(provider, labels, cfg: TaggedConfig = TaggedConfig(), progress=None,
+                 workers: int = 1) -> tuple[list[dict], dict]:
+    """The dataset of a chain whose truth is an explorer's tags (Ethereum): the rules
+    never saw these labels. Positives: a seeded sample of each exchange's tagged deposit
+    addresses. Negatives: B4's hold-out sample of tagged addresses that are not deposit
+    addresses (half exchange wallets, half anything else), and the positives' customers."""
+    listing = Listing(f"tagged_{cfg.chain}", cfg.chain, cfg.limit)
+    positives, known = [], []
+    for i, entity in enumerate(cfg.entities):
+        pos, neg_exchange, neg_other = sample(labels, EvalConfig(
+            chain=cfg.chain, entity=entity, n_positive=cfg.n_positive,
+            n_negative=cfg.n_negative, seed=cfg.seed, limit=cfg.limit))
+        positives += [(a, listing, entity, "explorer_tag") for a in pos]
+        if i == 0:                                # one negative sample: the first exchange's
+            tags = labels.lookup_many({(a, cfg.chain) for a in neg_exchange + neg_other})
+            for a in neg_exchange + neg_other:
+                lab = tags[(a, cfg.chain)]
+                known.append((a, listing, lab.entity if is_seed(lab) else "other",
+                              f"labelled:{lab.category}"))
+    return _assemble(cfg.chain, positives, known, set(), provider, provider, labels,
+                     cfg.per_exchange, cfg.seed, cfg.rules, progress, workers)
 
 
 # ------------------------------------------------------------------ the CSV

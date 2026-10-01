@@ -115,6 +115,32 @@ class ChainCache:
         return self._exec("SELECT count(*) FROM chain_cache", [], fetch=True)[0]
 
 
+class LayeredCache:
+    """A cache of its own on top of older ones: a page is read from the first cache
+    that holds it, and a newly fetched page is written to `own` only. A batch job can
+    then reuse what the main cache already has without growing it."""
+
+    def __init__(self, own: ChainCache, *older: ChainCache):
+        self.own, self.older = own, older
+
+    def get(self, chain: str, address: str, direction: str, query: str):
+        for cache in (self.own, *self.older):
+            hit = cache.get(chain, address, direction, query)
+            if hit:
+                return hit
+        return None
+
+    def put(self, chain: str, address: str, direction: str, query: str, raw: bytes) -> str:
+        return self.own.put(chain, address, direction, query, raw)
+
+    def count(self) -> int:
+        return sum(c.count() for c in (self.own, *self.older))
+
+    def close(self) -> None:
+        for c in (self.own, *self.older):
+            c.close()
+
+
 class Fetcher:
     def __init__(self, cache: ChainCache, transport: Transport | None = None,
                  offline: bool | None = None, sleep: Callable[[float], None] = time.sleep,

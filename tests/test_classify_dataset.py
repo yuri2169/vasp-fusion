@@ -5,8 +5,8 @@ from datetime import timedelta
 from test_discover_crawl import Chain, Labels, deposit_and_sweep, ev
 from tracekit import CHAIN, T0, tx
 from vaspfusion.chains.base import ProviderError
-from vaspfusion.classify.dataset import (DatasetConfig, build, load_runs, read_dataset,
-                                         write_dataset)
+from vaspfusion.classify.dataset import (DatasetConfig, TaggedConfig, build, build_tagged,
+                                         load_runs, read_dataset, write_dataset)
 from vaspfusion.classify.features import FEATURES, LABEL_FEATURES
 from vaspfusion.discover.crawl import CrawlConfig, discover
 from vaspfusion.discover.store import write_result
@@ -153,3 +153,71 @@ def test_a_failed_address_never_breaks_the_build(tmp_path):
     flaky = Flaky(world())
     examples, stats = build(runs, flaky, flaky, Store(LABELS), DatasetConfig())
     assert "U1" not in {e["address"] for e in examples} and stats["errors"] == 1
+
+
+# ------------------------------------------------------------------ explorer-tagged truth
+TAGGED = {
+    "HOT": ("ExA", "exchange", "hot", "curated"),
+    "T1": ("ExA", "exchange", "deposit", "explorer_tag"),
+    "T2": ("ExA", "exchange", "deposit", "explorer_tag"),
+    "B1": ("ExB", "exchange", "deposit", "explorer_tag"),
+    "HOTA": ("ExA", "exchange", "hot", "explorer_tag"),
+    "DEFI": ("Pool", "defi", "unknown", "explorer_tag"),
+}
+
+
+class TagStore(Store):
+    def by_tier(self, chain, tier):
+        return sorted((l for l in self.labels.values() if l.tier == tier),
+                      key=lambda l: l.address)
+
+
+def tagged_world():
+    return [tx(1, "U1", "T1", 2, 0, asset="COIN"), tx(2, "T1", "HOTA", 2, 5, asset="COIN"),
+            tx(3, "U2", "T2", 80, 10), tx(4, "T2", "HOT", 80, 12),
+            tx(5, "X", "B1", 9, 20), tx(6, "SPAMMER", "T1", 1, 21, asset="FAKE@0xabc"),
+            tx(7, "HOTA", "T1", 1, 22, asset="COIN"), tx(8, "DEFI", "P", 3, 23),
+            tx(9, "W", "U1", 5, -3, asset="COIN"), tx(10, "U2", "T1", 4, 30, asset="COIN")]
+
+
+def tagged(cfg=None):
+    chain = Chain(tagged_world())
+    cfg = cfg or TaggedConfig(chain=CHAIN, entities=("ExA", "ExB"), n_positive=5, n_negative=4,
+                              per_exchange=5)
+    examples, stats = build_tagged(chain, TagStore(TAGGED), cfg)
+    return {e["address"]: e for e in examples}, stats, chain
+
+
+def test_explorer_tagged_deposit_addresses_are_the_positives():
+    ex, stats, _ = tagged()
+    assert {a: (e["group"], e["source"]) for a, e in ex.items() if e["y"] == 1} == {
+        "T1": ("ExA", "explorer_tag"), "T2": ("ExA", "explorer_tag"),
+        "B1": ("ExB", "explorer_tag")}
+    assert stats["positives"] == 3
+    # judged without its own tag, with the exchange's other wallets visible
+    assert ex["T1"]["to_exchange_share"] == 1.0 and ex["T1"]["label_entity"] == "ExA"
+
+
+def test_tagged_wallets_that_are_not_deposit_addresses_and_customers_are_the_negatives():
+    ex, stats, _ = tagged()
+    negatives = {a: (e["group"], e["source"]) for a, e in ex.items() if e["y"] == 0}
+    assert negatives == {"HOTA": ("ExA", "labelled:exchange"), "DEFI": ("other", "labelled:defi"),
+                         "U1": ("ExA", "customer"), "U2": ("ExA", "customer"),
+                         "X": ("ExB", "customer")}
+    # the sender of an unknown token is spam, not a customer; a labelled sender is not one
+    assert "SPAMMER" not in ex and stats["customers_seen"] == 3
+    assert stats["customers_in_two_exchanges"] == 0
+
+
+def test_tagged_addresses_are_all_read_with_one_protocol():
+    _, _, chain = tagged()
+    assert {(d, since, asset) for _, d, since, asset in chain.calls} == {("both", None, None)}
+    assert set(chain.gas_calls) == {a for a, *_ in chain.calls}
+
+
+def test_the_tagged_sample_is_seeded():
+    cfg = TaggedConfig(chain=CHAIN, entities=("ExA",), n_positive=1, n_negative=4, per_exchange=5)
+    a, _, _ = tagged(cfg)
+    b, _, _ = tagged(cfg)
+    assert sorted(a) == sorted(b)
+    assert sum(e["y"] for e in a.values()) == 1
