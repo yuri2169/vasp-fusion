@@ -66,6 +66,23 @@ p.transfers("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw", "in", since=None, limit=200)
 - Tests replay responses recorded once from the live APIs (`scripts/record_chain_fixtures.py` → `tests/fixtures/chains/`); CI needs no network.
 - Tokens other than the known USDT/USDC contracts are named `SYMBOL@contract`, so a fake "USDT" never passes as USDT.
 
+## Deposit-address discovery
+```bash
+make discover        # three Tron runs -> derived/*.csv (cached; OFFLINE=1 replays byte-identical)
+make labels          # merges the derived rows into the label DB as tier=derived
+make discover-eval   # hold-out test on explorer-tagged addresses -> derived/holdout_*.json
+```
+Starting from an exchange's labelled wallets, every address that paid stablecoins into one of them is a candidate. Two rules decide (`vaspfusion/discover/rules.py`):
+- **Sweep rule.** The address forwarded at least 90% of the stablecoins it received to labelled wallets of one exchange, each part within 7 days of arriving. Sweeps are paired with the newest deposits; an idle balance counts against the share.
+- **Gas-payer rule.** Whoever delegated energy or sent 1 to 100 TRX to the address in the hour before a sweep (or signed the sweep) is its payer. A payer that is a labelled wallet of the same exchange confirms the sweep rule. A payer of another exchange is a **conflict**: recorded in the CSV, never a label.
+- An unlabelled payer that serves 10 or more of these addresses, 95% of them one exchange's, is reported as that exchange's **gas station** (in `<run>_report.json`, not as a label: an energy seller would look the same).
+- Each derived label carries `confidence` = the attribution weight of the wallet it sweeps to × 0.95 (both rules agree), 0.90 (gas station) or 0.80 (sweep rule only), and `evidence`, the paragraph an officer reads. **The confidence is rule-based, not calibrated** (B6).
+- A derived label never replaces a label from another source, and two runs that name different exchanges for one address load neither.
+
+**Result (1 Oct 2026, `derived/`):** 122 labelled Tron exchange wallets → **5,497 derived deposit addresses**: OKX 1,742 · Gate.io 1,134 · KuCoin 958 · Bitget 755 · CoinDCX 558 · Bitfinex 217 · Bitrue 133 (HTX and WazirX: none). 3,773 by both rules, 1,711 by sweep + gas station, 13 by the sweep rule alone; no conflicts. 811 have a listing that was cut at 50 rows, and their evidence says so.
+
+**Measured on held-out explorer tags** (`derived/holdout_ethereum_bitget.json`; Ethereum, because our data has no tagged Tron deposit addresses): of 300 Etherscan-tagged Bitget deposit addresses, labels hidden, the rules rediscovered 66 (**recall 22.0%**; 230 never held a stablecoin, which is all the rule reads; among the 70 that did, **94.3%**). None was given to the wrong exchange. On 300 tagged addresses that are not deposit addresses the rule fired on 24 of 150 exchange wallets (16.0%) and 0 of 150 others; all 24 named the exchange their own tag names.
+
 ## Trace and attribution
 ```bash
 python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since ISO] [--json] [--save]
@@ -75,7 +92,7 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 - **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
 - **Chains:** Tron and the EVM chains with a free data source (Ethereum, Polygon, Arbitrum, Base, Optimism). Bitcoin tracing arrives with B5.
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
-- **Confidence is rule-based and not calibrated** (B6 replaces it): the average over the traced money of *tier weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Tier weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75, derived 0.60. A VASP is named at 0.60 or more.
+- **Confidence is rule-based and not calibrated** (B6 replaces it): the average over the traced money of *tier weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Tier weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75; a derived deposit address weighs its own rule confidence (0.68 to 0.90). A VASP is named at 0.60 or more.
 - **Outcomes:** `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (with the reason and what would change it) · `SANCTIONED_OR_MIXER_REACHED` (1% or more of the funds reached a sanctioned or mixer label).
 - Demo wallets are real addresses chosen for their on-chain shape; nothing alleges wrongdoing by their owners. Their traces are recorded in `tests/fixtures/demo/` (`scripts/record_demo_fixtures.py`) and replay with no network.
 - Offline replay must pick the same EVM backend as the run that filled the cache: set `ETHERSCAN_API_KEY` to any non-empty value (it is never sent when `OFFLINE=1`).
