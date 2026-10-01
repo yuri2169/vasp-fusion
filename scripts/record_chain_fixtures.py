@@ -100,6 +100,12 @@ def eth_usdt(f):
     return p.transfers(ETH_USDT_ADDR, "both", limit=6)
 
 
+def eth_asset_usdt(f):
+    from vaspfusion.chains.evm import EvmProvider
+    p = EvmProvider("ethereum", f, page_size=3, max_pages=2)
+    return p.transfers(ETH_USDT_ADDR, "both", limit=6, asset="USDT")
+
+
 def eth_since_out(f):
     from vaspfusion.chains.evm import EvmProvider
     p = EvmProvider("ethereum", f, page_size=3, max_pages=3)
@@ -128,6 +134,7 @@ SCENARIOS = {
     "btc_pages": (f"mempool.space, {BTC_ADDR}, full history (50 + 22 txs)", btc_pages),
     "eth_etherscan": (f"Etherscan v2 chainid=1, {ETH_ADDR}, page_size=3", eth_etherscan),
     "eth_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, page_size=3", eth_usdt),
+    "eth_asset_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, asset=USDT only", eth_asset_usdt),
     "eth_since_out": (f"Etherscan v2 chainid=1, {ETH_ADDR}, out since 2024-01-01", eth_since_out),
     "base_blockscout": (f"base.blockscout.com, {BASE_ADDR}, page_size=3", base_blockscout),
     "bsc_unsupported": (f"Etherscan v2 chainid=56 on a free key, {BSC_ADDR}", bsc_unsupported),

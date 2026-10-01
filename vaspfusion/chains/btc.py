@@ -39,16 +39,19 @@ def _check(body) -> None:
 
 class BtcProvider(ChainProvider):
     chain = "bitcoin"
+    traceable_assets = ("BTC",)
 
     def __init__(self, fetcher: Fetcher, max_pages: int = 40):
         self.fetcher, self.max_pages = fetcher, max_pages
         fetcher.min_interval.setdefault(HOST, 0.5)
 
     def transfers(self, address: str, direction: Direction = "both",
-                  since: datetime | None = None, limit: int = 200) -> list[Transfer]:
+                  since: datetime | None = None, limit: int = 200,
+                  asset: str | None = None) -> list[Transfer]:
         address = address.strip()
         if not validate(address, "bitcoin"):
             raise InvalidAddress(f"not a Bitcoin address: {address}")
+        self._check_asset(asset)
         if address.lower().startswith("bc1"):
             address = address.lower()
         out: list[Transfer] = []

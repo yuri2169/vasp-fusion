@@ -14,7 +14,8 @@ class SolanaProvider(ChainProvider):
         self.fetcher = fetcher
 
     def transfers(self, address: str, direction: Direction = "both",
-                  since: datetime | None = None, limit: int = 200) -> list[Transfer]:
+                  since: datetime | None = None, limit: int = 200,
+                  asset: str | None = None) -> list[Transfer]:
         if not validate(address, "solana"):
             raise InvalidAddress(f"not a Solana address: {address}")
         raise UnsupportedChain("Solana transfers are not implemented yet (planned for F-finale); "

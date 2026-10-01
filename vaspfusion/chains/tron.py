@@ -56,19 +56,31 @@ class TronProvider(ChainProvider):
         self.key = key if key is not None else api_key("TRONGRID_API_KEY")
         fetcher.min_interval.setdefault(HOST, 0.1 if self.key else 1.0)
 
+    @property
+    def traceable_assets(self) -> tuple[str, ...]:
+        return (*(STABLECOINS[t] for t in self.tokens or () if t in STABLECOINS), "TRX")
+
     def transfers(self, address: str, direction: Direction = "both",
-                  since: datetime | None = None, limit: int = 200) -> list[Transfer]:
+                  since: datetime | None = None, limit: int = 200,
+                  asset: str | None = None) -> list[Transfer]:
         address = address.strip()
         if not validate(address, "tron"):
             raise InvalidAddress(f"not a Tron address: {address}")
+        self._check_asset(asset)
         signers: dict[str, str] = {}   # txID -> signer, per call (providers are shared)
         rows: list[Transfer] = []
-        for token in (self.tokens if self.tokens is not None else (None,)):
+        tokens = self.tokens if self.tokens is not None else (None,)
+        if asset == "TRX":
+            tokens = ()
+        elif asset is not None:
+            tokens = tuple(t for t in tokens if STABLECOINS.get(t) == asset)
+        for token in tokens:
             extra = {"contract_address": token} if token else {}
             rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions/trc20", address,
                                 direction, since, limit, extra, self._parse_trc20)
-        rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions", address,
-                            direction, since, limit, {}, partial(self._parse_trx, signers))
+        if asset in (None, "TRX"):   # a token-only fetch skips the raw listing (no fee payer)
+            rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions", address,
+                                direction, since, limit, {}, partial(self._parse_trx, signers))
         rows = [replace(t, fee_payer=signers[t.tx_hash])
                 if t.fee_payer is None and t.tx_hash in signers else t for t in rows]
         return sort_transfers(rows)[:limit]

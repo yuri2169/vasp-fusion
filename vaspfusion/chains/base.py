@@ -92,12 +92,21 @@ class ChainProvider(ABC):
     request goes through a `Fetcher` (cache.py), which caches and honours OFFLINE=1."""
 
     chain: str
+    # Assets a trace can follow on this chain: USD stablecoins first, the native coin last.
+    traceable_assets: tuple[str, ...] = ()
 
     @abstractmethod
     def transfers(self, address: str, direction: Direction = "both",
-                  since: datetime | None = None, limit: int = 200) -> list[Transfer]:
+                  since: datetime | None = None, limit: int = 200,
+                  asset: str | None = None) -> list[Transfer]:
         """Transfers touching `address`, oldest first (see each adapter for paging
-        limits), at most `limit`."""
+        limits), at most `limit`. With `asset` (one of `traceable_assets`) only that
+        asset is fetched, so `limit` is not used up by anything else."""
+
+    def _check_asset(self, asset: str | None) -> None:
+        if asset is not None and asset not in self.traceable_assets:
+            raise ValueError(f"{self.chain} cannot fetch asset {asset!r} on its own "
+                             f"(traceable: {', '.join(self.traceable_assets)})")
 
     @staticmethod
     def detect_chain(address: str) -> str:

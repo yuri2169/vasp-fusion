@@ -20,18 +20,24 @@ def default_fetcher() -> Fetcher:
     return Fetcher(ChainCache(), UrllibTransport())
 
 
-def get_provider(chain: str, fetcher: Fetcher | None = None) -> ChainProvider:
+def get_provider(chain: str, fetcher: Fetcher | None = None, **opts) -> ChainProvider:
+    """`opts` are paging options (page_size, max_pages, key); each adapter takes the
+    ones it has and the rest are dropped, so one call site can serve every chain."""
     fetcher = fetcher or default_fetcher()
+
+    def only(*names: str) -> dict:
+        return {k: opts[k] for k in names if opts.get(k) is not None}
+
     if chain == "tron":
         from .tron import TronProvider
-        return TronProvider(fetcher)
+        return TronProvider(fetcher, **only("page_size", "max_pages", "key"))
     if chain == "bitcoin":
         from .btc import BtcProvider
-        return BtcProvider(fetcher)
+        return BtcProvider(fetcher, **only("max_pages"))
     if chain == "solana":
         from .solana import SolanaProvider
         return SolanaProvider(fetcher)
     if chain in EVM_FAMILY:
         from .evm import EvmProvider
-        return EvmProvider(chain, fetcher)
+        return EvmProvider(chain, fetcher, **only("page_size", "max_pages", "key"))
     raise UnsupportedChain(f"no adapter for chain {chain!r}")

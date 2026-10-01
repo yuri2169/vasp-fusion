@@ -111,24 +111,39 @@ class EvmProvider(ChainProvider):
         r = body["result"]
         return int(r["blockNumber"] if isinstance(r, dict) else r)
 
+    @property
+    def traceable_assets(self) -> tuple[str, ...]:
+        return (*STABLECOINS[self.chain].values(), NATIVE[self.chain])
+
     def transfers(self, address: str, direction: Direction = "both",
-                  since: datetime | None = None, limit: int = 200) -> list[Transfer]:
+                  since: datetime | None = None, limit: int = 200,
+                  asset: str | None = None) -> list[Transfer]:
         address = address.strip()
         if not validate(address, self.chain):
             raise InvalidAddress(f"not an EVM address: {address}")
+        self._check_asset(asset)
         address = address.lower()
         limit = min(limit, MAX_WINDOW)
         start = self.start_block(address, since) if since is not None else 0
-        rows = (self._pages(address, direction, "txlist", start, limit, self._parse_native)
-                + self._pages(address, direction, "tokentx", start, limit, self._parse_token))
+        rows: list[Transfer] = []
+        if asset in (None, NATIVE[self.chain]):
+            rows += self._pages(address, direction, "txlist", start, limit, self._parse_native)
+        if asset is None:
+            rows += self._pages(address, direction, "tokentx", start, limit, self._parse_token)
+        elif asset != NATIVE[self.chain]:
+            contract = next(c for c, sym in STABLECOINS[self.chain].items() if sym == asset)
+            rows += self._pages(address, direction, "tokentx", start, limit, self._parse_token,
+                                {"contractaddress": contract})
         return sort_transfers(rows)[:limit]
 
-    def _pages(self, address, direction, action, start, limit, parse) -> list[Transfer]:
+    def _pages(self, address, direction, action, start, limit, parse,
+               extra: dict | None = None) -> list[Transfer]:
         out: list[Transfer] = []
         for page in range(1, self.max_pages + 1):
             body = self._get(address, direction, {
                 "module": "account", "action": action, "address": address,
-                "startblock": start, "page": page, "offset": self.page_size, "sort": "asc"})
+                "startblock": start, "page": page, "offset": self.page_size, "sort": "asc",
+                **(extra or {})})
             result = body.get("result") or []
             for item in result:
                 t = parse(item)
