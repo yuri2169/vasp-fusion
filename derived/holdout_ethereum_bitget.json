@@ -21,11 +21,11 @@
   "entity_precision": 1.0,
   "errors": 0,
   "false_positive_rate": {
-   "exchange_wallets": 0.1533,
+   "exchange_wallets": 0.16,
    "other_tagged": 0.0
   },
-  "false_positives": 23,
-  "false_positives_naming_the_tagged_exchange": 23,
+  "false_positives": 24,
+  "false_positives_naming_the_tagged_exchange": 24,
   "missed": 234,
   "missed_by_reason": {
    "forwards under 90% of what it receives": 4,
@@ -35,7 +35,7 @@
   "negatives": 300,
   "positives": 300,
   "positives_with_stablecoin_activity": 70,
-  "precision_in_sample": 0.7416,
+  "precision_in_sample": 0.7333,
   "recall": 0.22,
   "recall_with_stablecoin_activity": 0.9429,
   "true_positives": 66,
@@ -4349,10 +4349,10 @@
   {
    "address": "0xcea4bf3c27b5b556d1e1b87e071d78232d1a8b27",
    "entity": "Deribit",
-   "gas": null,
-   "outcome": "true_negative",
-   "reason": "forwards under 90% of what it receives",
-   "rule": null,
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
    "tag": "Deribit",
    "truth": "exchange_wallet"
   },

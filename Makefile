@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels discover discover-eval test serve fetch trace demo mocks openapi types offline-check clean
+.PHONY: help setup labels discover discover-run discover-eval test serve fetch trace demo mocks openapi types offline-check clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -16,6 +16,11 @@ labels:           ## build data/labels.duckdb from the research label CSVs + der
 	$(PY) -m vaspfusion.cli labels --research "$(RESEARCH)" --db data/labels.duckdb
 
 discover:         ## derive Tron deposit addresses into derived/ (cached; OFFLINE=1 replays), then `make labels`
+	$(PY) -m vaspfusion.cli discover --chain tron
+	$(PY) -m vaspfusion.cli discover --chain tron --entities CoinDCX --since 2026-08-01 --name tron_coindcx_aug
+	$(PY) -m vaspfusion.cli discover --chain tron --entities CoinDCX --since 2025-05-25 --name tron_coindcx_2025
+
+discover-run:     ## one discovery run: ENTITIES="OKX,HTX" SINCE=2026-09-01 NAME=tron_sep
 	$(PY) -m vaspfusion.cli discover --chain tron $(if $(ENTITIES),--entities "$(ENTITIES)") \
 		$(if $(SINCE),--since $(SINCE)) $(if $(NAME),--name $(NAME))
 
