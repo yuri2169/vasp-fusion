@@ -91,6 +91,21 @@ def test_run_measures_by_time_and_by_exchange(result):
     json.dumps(m, allow_nan=False)
 
 
+def test_look_alike_negatives_are_measured_on_their_own(df, result):
+    """Positives forward 90% or more by construction, so the test that matters is on the
+    negatives that do the same."""
+    t = result.metrics["time_split"]
+    test_rows = df.sort("address")[time_split(df.sort("address"))["test"]]
+    alike = test_rows.filter((pl.col("y") == 0) & (pl.col("forward_ratio") >= 0.9))
+    assert t["look_alikes"]["negatives"] == alike.height > 0
+    assert 0 <= t["look_alikes"]["false_positive_rate"] <= 1
+    assert t["look_alikes"]["flagged"] == round(
+        t["look_alikes"]["false_positive_rate"] * alike.height)
+    pooled = result.metrics["leave_one_exchange_out"]["look_alikes"]
+    assert pooled["negatives"] == df.filter((pl.col("y") == 0)
+                                            & (pl.col("forward_ratio") >= 0.9)).height
+
+
 def test_every_address_is_scored_by_a_model_that_never_saw_its_exchange(df, result):
     oof = result.oof
     assert sorted(oof["address"].to_list()) == sorted(df["address"].to_list())

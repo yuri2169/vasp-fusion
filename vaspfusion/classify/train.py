@@ -144,6 +144,18 @@ def evaluate(y, pred: dict) -> dict:
     }
 
 
+def look_alikes(df: pl.DataFrame, p: np.ndarray, share: float = 0.9) -> dict:
+    """The negatives that behave like the positives were chosen to (they forward `share`
+    or more of what they receive to one wallet), and how many the model still calls a
+    deposit address. Every positive forwards that much by construction, so this is the
+    part of the negative class that the forwarding share alone cannot separate."""
+    alike = ((df["y"] == 0) & (df["forward_ratio"].fill_null(-1.0) >= share)).to_numpy()
+    flagged = int((p[alike] >= 0.5).sum())
+    n = int(alike.sum())
+    return {"forwarding_at_least": share, "negatives": n, "flagged": flagged,
+            "false_positive_rate": round(flagged / n, 4) if n else None}
+
+
 def hide_exchange(df: pl.DataFrame, exchange: str) -> pl.DataFrame:
     """The dataset as it would look if `exchange` had no labelled wallet: the label
     features that came from its labels are 0, for every row, on either side of a split."""
@@ -205,11 +217,15 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20) -> Result:
     split = time_split(df)
     final = fit(df, split["train"], split["calib"], FEATURES, seed)
     test = df[split["test"]]
+    test_pred = predict(final, test)
     by_time = {"sizes": _sizes(df, split),
                "from": {k: str(df["first_ts"].gather(v).min()) for k, v in split.items()},
-               "test": evaluate(y[split["test"]], predict(final, test))}
+               "test": evaluate(y[split["test"]], test_pred),
+               "look_alikes": look_alikes(test, test_pred["p"])}
     by_exchange, folds, oof = _by_exchange(df, FEATURES, seed, hide=False,
                                            min_positives=min_positives)
+    scored = df.join(oof.select("address", "p"), on="address", how="inner").sort("address")
+    by_exchange["look_alikes"] = look_alikes(scored, scored["p"].to_numpy())
 
     with_labels = FEATURES + LABEL_FEATURES
     ab_model = fit(df, split["train"], split["calib"], with_labels, seed)

@@ -9,7 +9,8 @@ What is real and what is demo, precisely:
     times and confidences. The addresses are valid in format (Tron base58check,
     EVM hex) but derived from sha256("vaspfusion-demo:<n>"), so they are
     unlabelled and belong to nobody we know of. Every file carries `"_demo": true`.
-  * NOT INVENTED: model metrics. /api/model is `not_measured` until B6.
+  * NOT INVENTED: model metrics. model.json is the measured Tron model from
+    artifacts/model_v1/tron/metrics.json (real numbers), or `not_measured` without it.
 
 Seeded (SEED) and deterministic: rerunning produces byte-identical files.
 """
@@ -360,6 +361,26 @@ def vasp(store: LabelStore, name: str, wallets: list[dict], requests: list[dict]
             "label_counts": counts, "wallets": wallets, "requests": requests}
 
 
+MODEL_NOTICE = ("UI fixture. Unlike the other mock files these figures are real: the "
+                "deposit-address model's measurements, copied from "
+                "artifacts/model_v1/tron/metrics.json when `make mocks` last ran. "
+                "/api/model serves the current ones.")
+
+
+def model_mock() -> dict:
+    """The measured Tron model (`make model`), exactly as /api/model serves it. These
+    numbers are real; without the metrics file the mock says so instead of inventing any."""
+    from vaspfusion.api.main import MODEL_DIR
+    from vaspfusion.classify.report import model_info, read_metrics
+    metrics = read_metrics(MODEL_DIR, "tron")
+    if metrics is None:
+        return {"status": "not_measured", "version": None, "trained_at": None,
+                "split": None, "metrics": {}, "reliability": [], "risk_coverage": [],
+                "feature_importance": [],
+                "notes": ["No model has been measured yet: run `make model`."]}
+    return model_info(metrics)
+
+
 def main() -> None:
     if not Path(DEFAULT_DB).exists():
         raise SystemExit("data/labels.duckdb missing - run `make labels` first")
@@ -416,11 +437,7 @@ def main() -> None:
                                            "address"}],
                 "label_coverage": {k: st[k] for k in ("total", "by_category", "by_tier",
                                                       "by_chain")}},
-            "model": {"status": "not_measured", "version": None, "trained_at": None,
-                      "split": None, "metrics": {}, "reliability": [], "risk_coverage": [],
-                      "feature_importance": [],
-                      "notes": ["The deposit classifier is trained and calibrated in B6; "
-                                "until then there are no numbers to show."]},
+            "model": model_mock(),
         }
 
     shutil.rmtree(MOCKS, ignore_errors=True)
@@ -428,8 +445,10 @@ def main() -> None:
         mock_model_for(rel).model_validate(body)  # fail before writing anything wrong
         path = MOCKS / f"{rel}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"_demo": True, "_notice": NOTICE, **body}, indent=2,
-                                   ensure_ascii=False) + "\n")
+        measured = rel == "model" and body["status"] == "measured"
+        path.write_text(json.dumps({"_demo": True,
+                                    "_notice": MODEL_NOTICE if measured else NOTICE, **body},
+                                   indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {len(files)} mock files to {MOCKS.relative_to(ROOT)}/")
 
 

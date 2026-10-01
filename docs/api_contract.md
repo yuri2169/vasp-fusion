@@ -39,7 +39,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | PATCH | `/api/requests/{id}` | `RequestPatch` | `RequestDetail` | applied to the mock, not persisted | mock | B8 |
 | GET | `/api/requests/{id}/pdf` | – | `application/pdf` | – | 501 until B8 | B8 |
 | GET | `/api/dashboard` | – | `Dashboard` | `dashboard.json` | **label_coverage live**, the rest mock | B7/B9 |
-| GET | `/api/model` | – | `ModelInfo` | `model.json` (`not_measured`) | mock | B6 |
+| GET | `/api/model` | `?chain=tron` (default) or `ethereum` | `ModelInfo` | `model.json` (the measured Tron model) | **live** from `artifacts/model_v1/<chain>/metrics.json` | B6 |
 
 ### Cases are live (B3)
 - `POST /api/cases` validates the address (base58check / EIP-55 / bech32), stores the case as `queued`, answers 202 at once, then traces in the background: `queued → running → done | failed`. **Poll `GET /api/cases/{id}`** until the status is `done` or `failed`. A real trace takes about 1–10 s live, and well under a second from the cache.
@@ -77,6 +77,27 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 - `label_coverage.by_tier` on the dashboard now has a `derived` count.
 - Conflicts (the two rules name different exchanges, or the address already has another label) are kept in `derived/<run>.csv` with `status: conflict`. They are not labels and the API does not serve them yet.
 
+### The deposit-address model (B6)
+All additive; `make mocks types` has been run.
+- **What the model is.** LightGBM on 14 behaviour features of one address (how much it forwards, to how many wallets, how fast, who pays its fees). It answers "is this an exchange deposit address?" and reads no label. Its probability is calibrated with Venn-Abers, which also gives a range.
+- **Labels (`LabelOut`).** A derived label the model scored has three more fields; they are `null` on every other label:
+  - `confidence_low`, `confidence_high`: the calibrated range of `confidence`.
+  - `reasons: ModelReason[]`: the model's strongest reasons, strongest first. Each has `feature` (a stable key), `text` (plain English, e.g. "forwards 100% of what it receives to one wallet") and `weight` (SHAP, in log-odds: above 0 speaks for a deposit address, below 0 against).
+  - `confidence` is then `weight of the exchange wallet's label × the model's probability`, and `evidence` ends with the model's sentence instead of "Rule confidence …, not calibrated". Show such a label as "confidence 0.83 (0.80 to 0.85)". A derived label without a range keeps B4's rule confidence: show it as "rule confidence".
+- **Cases (`Candidate`).**
+  - `confidence_interval: [low, high]` is set when the money reached a model-scored deposit address; `null` otherwise. **`null` means "rule confidence", a range means the label behind it was scored by the model.**
+  - `evidence` gains items of `kind: "model"`, one per reason, right after the label item. `weight` is the signed SHAP value; `text` starts "Deposit-address model, for: …" or "…, against: …". Draw them as signed bars.
+  - The narrative says "confidence 0.83 (range 0.80 to 0.85)" for such a case, and still says "rule confidence … (rule-based, not calibrated)" for the others.
+  - Only the model's probability is calibrated. The weight of the exchange wallet's label (0.95 published by the exchange, 0.85 curated), the hop decay (0.85 per hop) and the share factor are still rule-set, so a case confidence is not a calibrated probability end to end. Say so wherever the number is shown.
+- **`GET /api/model`** is live (`X-Data-Source: live`): `status: "measured"`, `version`, `trained_at`, `chain`, `split`, and
+  - `metrics`: PR-AUC, ECE, Brier and `n_test` on the latest 20% of addresses; `coverage` and `accuracy_when_answering` are the share of addresses the model is sure about (probability at least 0.9 either way) and how often it is right on those.
+  - `reliability[]`: `bin_mid`, `predicted`, `observed`, `count` (plot `observed` against `predicted`, with the diagonal).
+  - `risk_coverage[]`: accuracy when only the surest share (`coverage`) of addresses is answered.
+  - `feature_importance[]`: `feature` is already a plain-English name; `importance` sums to 1.
+  - `leave_one_exchange_out[]`: one row per exchange the model never saw (`exchange`, `n`, `n_positive`, `pr_auc`, `roc_auc`, `brier`, `ece`, `precision`, `recall`).
+  - `notes[]`: sentences that say what the numbers are and are not. Show them; they are part of the result.
+- Ready-made plots (SVG, light and dark): `artifacts/model_v1/<chain>/reliability.svg`, `reliability_by_exchange.svg`, `importance.svg`.
+
 ## Key shapes (see `types.ts` for every field)
 
 **`CaseDetail`** = `CaseSummary` plus:
@@ -90,7 +111,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 
 **`RequestDetail`**: `status` (drafted → approved → sent → acknowledged → answered | freeze_confirmed | refused), `status_history[]`, `letter` (reference, date, to, subject, numbered `paragraphs`, `wallets` table with tier, `asks` (kyc, transactions, freeze, preservation), `legal_basis` (§94 BNSS 2023 notice; §63 BSA 2023 certificate), `officer`, `watermark` (the draft watermark text; null once approved)), `pdf_url`, and `payload` (the SAHYOG JSON, specified in `docs/sahyog_contract.md` in B8).
 
-**`ModelInfo`**: `status: "not_measured"` until B6. Every metric is null and the lists are empty; the UI shows "not yet measured". There are no placeholder numbers anywhere.
+**`ModelInfo`**: `status: "measured"` once `make model` has run (see "The deposit-address model (B6)"). With no `metrics.json` for the chain the route answers `status: "not_measured"`: every metric is null and the lists are empty, and the UI shows "not yet measured". Every number is measured; there are no placeholders.
 
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
