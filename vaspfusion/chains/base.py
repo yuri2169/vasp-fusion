@@ -67,6 +67,17 @@ class Transfer:
         }
 
 
+@dataclass(frozen=True)
+class GasEvent:
+    """Someone else covering an address's network fee: the signal exchanges leave on
+    their deposit addresses just before a sweep (B4's gas-payer rule)."""
+    time: datetime                  # timezone-aware UTC
+    payer: str
+    kind: str                       # "energy" | "bandwidth" (Tron delegation) | "native" (top-up)
+    tx_hash: str
+    amount: Decimal | None = None   # native units for a top-up, else None
+
+
 class TransferList(list):
     """What `transfers()` returns: a list, plus whether it is the whole answer.
 
