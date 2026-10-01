@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 452" width="640" height="452" class="viz" role="img" aria-label="What the deposit-address model leans on: tron">
+<style>
+.viz{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;
+--axis:#c3c2b7;--series:#2a78d6;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){.viz{--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;
+--grid:#2c2c2a;--axis:#383835;--series:#3987e5}}
+.bg{fill:var(--surface)}.t{fill:var(--ink);font-size:15px;font-weight:600}
+.s{fill:var(--ink2);font-size:12px}.m{fill:var(--muted);font-size:11px}
+.v{fill:var(--ink);font-size:12px;font-variant-numeric:tabular-nums}
+.g{stroke:var(--grid);stroke-width:1}.a{stroke:var(--axis);stroke-width:1}
+.d{stroke:var(--axis);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.l{stroke:var(--series);stroke-width:2;fill:none;stroke-linejoin:round}
+.p{fill:var(--series);stroke:var(--surface);stroke-width:2}.b{fill:var(--series)}
+</style>
+<rect class="bg" width="640" height="452"/>
+<text class="t" x="24" y="28">What the model leans on: tron</text>
+<text class="s" x="24" y="48">Each feature's share of the average effect on a prediction (mean |SHAP|)</text>
+<line class="a" x1="300" x2="300" y1="62" y2="438"/>
+<text class="s" x="290" y="82" text-anchor="end">Time span of activity</text>
+<path class="b" d="M300,70 h276.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-276.0 z"><title>Time span of activity: 23.6%</title></path>
+<text class="v" x="588.0" y="83">24%</text>
+<text class="s" x="290" y="108" text-anchor="end">Share forwarded to one wallet</text>
+<path class="b" d="M300,96 h208.7 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-208.7 z"><title>Share forwarded to one wallet: 18.0%</title></path>
+<text class="v" x="520.7" y="109">18%</text>
+<text class="s" x="290" y="134" text-anchor="end">Incoming transfers</text>
+<path class="b" d="M300,122 h154.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-154.0 z"><title>Incoming transfers: 13.3%</title></path>
+<text class="v" x="466.0" y="135">13%</text>
+<text class="s" x="290" y="160" text-anchor="end">Outgoing transfers to one wallet</text>
+<path class="b" d="M300,148 h136.4 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-136.4 z"><title>Outgoing transfers to one wallet: 11.8%</title></path>
+<text class="v" x="448.4" y="161">12%</text>
+<text class="s" x="290" y="186" text-anchor="end">Time funds wait before moving on</text>
+<path class="b" d="M300,174 h124.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-124.6 z"><title>Time funds wait before moving on: 10.9%</title></path>
+<text class="v" x="436.6" y="187">11%</text>
+<text class="s" x="290" y="212" text-anchor="end">Outgoing transfers</text>
+<path class="b" d="M300,200 h55.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-55.0 z"><title>Outgoing transfers: 5.0%</title></path>
+<text class="s" x="290" y="238" text-anchor="end">Network fee covered by someone else</text>
+<path class="b" d="M300,226 h40.5 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-40.5 z"><title>Network fee covered by someone else: 3.8%</title></path>
+<text class="s" x="290" y="264" text-anchor="end">Number of outside fee payers</text>
+<path class="b" d="M300,252 h36.9 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-36.9 z"><title>Number of outside fee payers: 3.5%</title></path>
+<text class="s" x="290" y="290" text-anchor="end">Number of recipients</text>
+<path class="b" d="M300,278 h35.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-35.6 z"><title>Number of recipients: 3.3%</title></path>
+<text class="s" x="290" y="316" text-anchor="end">Share of funds still held</text>
+<path class="b" d="M300,304 h25.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-25.6 z"><title>Share of funds still held: 2.5%</title></path>
+<text class="s" x="290" y="342" text-anchor="end">Outgoing per incoming transfer</text>
+<path class="b" d="M300,330 h25.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-25.0 z"><title>Outgoing per incoming transfer: 2.5%</title></path>
+<text class="s" x="290" y="368" text-anchor="end">Number of senders</text>
+<path class="b" d="M300,356 h8.3 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-8.3 z"><title>Number of senders: 1.0%</title></path>
+<text class="s" x="290" y="394" text-anchor="end">Regularity of outgoing transfers</text>
+<path class="b" d="M300,382 h5.8 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-5.8 z"><title>Regularity of outgoing transfers: 0.8%</title></path>
+<text class="s" x="290" y="420" text-anchor="end">Share of stablecoin transfers</text>
+<path class="b" d="M300,408 h1.0 q1.0,0 1.0,1.0 v16.0 q0,1.0 -1.0,1.0 h-1.0 z"><title>Share of stablecoin transfers: 0.0%</title></path>
+</svg>

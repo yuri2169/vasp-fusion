@@ -1,7 +1,8 @@
 """Model scores for the derived deposit labels: `artifacts/model_v1/<chain>/scores.csv`.
 
-Each derived address is scored by the leave-one-exchange-out model that never saw
-its exchange (train.py), so no label is scored by a model that trained on it.
+Each derived address carries its cross-fit score (train.py): the probability from a
+model trained on other addresses, its own exchange's included, never on the address
+itself. So no label is scored by a model that trained on it.
 
     label confidence = weight of the label of the exchange wallet it sweeps to
                        x calibrated P(the address is an exchange deposit address)
@@ -25,7 +26,7 @@ from ..attribute.rules import TIER_WEIGHT
 from ..explain import fmt
 from .dataset import Run
 from .explain import reasons
-from .train import Result, hide_exchange
+from .train import Result
 
 COLUMNS = ["address", "chain", "entity", "p", "p_low", "p_high", "confidence",
            "confidence_low", "confidence_high", "scored_by", "reasons", "evidence"]
@@ -36,8 +37,8 @@ _RULE_CONFIDENCE = re.compile(r"Rule confidence \d\.\d+, not calibrated\.$")
 def _evidence(rule_text: str, entity: str, tier: str, row: dict) -> str:
     kept = _RULE_CONFIDENCE.sub("", rule_text).rstrip()
     return (f"{kept} Model: {row['p']:.2f} that this is an exchange deposit address (range "
-            f"{row['p_low']:.2f} to {row['p_high']:.2f}), from a model that was shown no "
-            f"{entity} address. Label confidence {row['confidence']:.2f} = "
+            f"{row['p_low']:.2f} to {row['p_high']:.2f}), from a model that did not train on "
+            f"this address. Label confidence {row['confidence']:.2f} = "
             f"{TIER_WEIGHT[tier]:.2f} for the {entity} wallet's label "
             f"({fmt.tier_words(tier)}) × {row['p']:.2f}.")
 
@@ -54,11 +55,9 @@ def score_labels(df: pl.DataFrame, result: Result, runs: list[Run], top: int = 3
     for fold in sorted(set(oof["fold"].to_list())):
         part = oof.filter(pl.col("fold") == fold)
         features = df.join(part.select("address"), on="address", how="inner").sort("address")
-        why = reasons(result.folds[fold], hide_exchange(features, fold), top=top)
+        why = reasons(result.folds[fold], features, top=top)
         for score, row_reasons in zip(part.to_dicts(), why):
             f = derived[score["address"]]
-            if f.entity != fold:
-                continue                      # scored only by the fold that held it out
             weight = TIER_WEIGHT[f.target_tier]
             row = {"address": f.address, "chain": f.chain, "entity": f.entity,
                    "p": round(score["p"], 4), "p_low": round(score["low"], 4),
@@ -66,7 +65,7 @@ def score_labels(df: pl.DataFrame, result: Result, runs: list[Run], top: int = 3
                    "confidence": round(weight * score["p"], 4),
                    "confidence_low": round(weight * score["low"], 4),
                    "confidence_high": round(weight * score["high"], 4),
-                   "scored_by": f"leave-out:{fold}",
+                   "scored_by": f"cross-fit:{fold}",
                    "reasons": json.dumps(row_reasons, ensure_ascii=False, sort_keys=True)}
             row["evidence"] = _evidence(f.evidence, f.entity, f.target_tier, row)
             rows.append(row)

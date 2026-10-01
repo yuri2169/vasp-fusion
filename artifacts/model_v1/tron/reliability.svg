@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 452" width="640" height="452" class="viz" role="img" aria-label="Reliability of the deposit-address model: tron, latest 1,839 addresses">
+<style>
+.viz{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;
+--axis:#c3c2b7;--series:#2a78d6;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){.viz{--surface:#1a1a19;--ink:#ffffff;--ink2:#c3c2b7;
+--grid:#2c2c2a;--axis:#383835;--series:#3987e5}}
+.bg{fill:var(--surface)}.t{fill:var(--ink);font-size:15px;font-weight:600}
+.s{fill:var(--ink2);font-size:12px}.m{fill:var(--muted);font-size:11px}
+.v{fill:var(--ink);font-size:12px;font-variant-numeric:tabular-nums}
+.g{stroke:var(--grid);stroke-width:1}.a{stroke:var(--axis);stroke-width:1}
+.d{stroke:var(--axis);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.l{stroke:var(--series);stroke-width:2;fill:none;stroke-linejoin:round}
+.p{fill:var(--series);stroke:var(--surface);stroke-width:2}.b{fill:var(--series)}
+</style>
+<rect class="bg" width="640" height="452"/>
+<text class="t" x="64" y="28">How well the probabilities hold: tron, latest 1,839 addresses</text>
+<text class="s" x="64" y="48">Share that really were deposit addresses, by predicted probability · ECE 0.053 · Brier 0.048</text>
+<line class="a" x1="64" x2="600" y1="316.0" y2="316.0"/>
+<text class="m" x="56" y="320.0" text-anchor="end">0%</text>
+<text class="m" x="64.0" y="334" text-anchor="middle">0%</text>
+<line class="g" x1="64" x2="600" y1="256.0" y2="256.0"/>
+<text class="m" x="56" y="260.0" text-anchor="end">25%</text>
+<text class="m" x="198.0" y="334" text-anchor="middle">25%</text>
+<line class="g" x1="64" x2="600" y1="196.0" y2="196.0"/>
+<text class="m" x="56" y="200.0" text-anchor="end">50%</text>
+<text class="m" x="332.0" y="334" text-anchor="middle">50%</text>
+<line class="g" x1="64" x2="600" y1="136.0" y2="136.0"/>
+<text class="m" x="56" y="140.0" text-anchor="end">75%</text>
+<text class="m" x="466.0" y="334" text-anchor="middle">75%</text>
+<line class="g" x1="64" x2="600" y1="76.0" y2="76.0"/>
+<text class="m" x="56" y="80.0" text-anchor="end">100%</text>
+<text class="m" x="600.0" y="334" text-anchor="middle">100%</text>
+<text class="m" x="600" y="352" text-anchor="end">predicted probability</text>
+<text class="m" x="64" y="66">observed share</text>
+<line class="d" x1="64.0" y1="316.0" x2="600.0" y2="76.0"/>
+<text class="m" x="449.9" y="124.0" text-anchor="end">perfect calibration</text>
+<polyline class="l" points="69.6,316.0 137.6,316.0 244.3,272.4 289.7,316.0 410.0,76.0 448.3,95.2 534.2,86.0 562.2,86.8"/>
+<circle class="p" cx="69.6" cy="316.0" r="5"><title>Predicted 1%, observed 0%, 333 addresses</title></circle>
+<circle class="p" cx="137.6" cy="316.0" r="5"><title>Predicted 14%, observed 0%, 13 addresses</title></circle>
+<circle class="p" cx="244.3" cy="272.4" r="5"><title>Predicted 34%, observed 18%, 22 addresses</title></circle>
+<circle class="p" cx="289.7" cy="316.0" r="5"><title>Predicted 42%, observed 0%, 1 addresses</title></circle>
+<circle class="p" cx="410.0" cy="76.0" r="5"><title>Predicted 65%, observed 100%, 2 addresses</title></circle>
+<circle class="p" cx="448.3" cy="95.2" r="5"><title>Predicted 72%, observed 92%, 262 addresses</title></circle>
+<circle class="p" cx="534.2" cy="86.0" r="5"><title>Predicted 88%, observed 96%, 72 addresses</title></circle>
+<circle class="p" cx="562.2" cy="86.8" r="5"><title>Predicted 93%, observed 96%, 1,134 addresses</title></circle>
+<text class="m" x="64" y="356">addresses per bin</text>
+<line class="a" x1="64" x2="600" y1="420" y2="420"/>
+<path class="b" d="M65.0,420.0 v-12.4 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v12.4 z"><title>333 addresses predicted near 5%</title></path>
+<path class="b" d="M118.6,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>13 addresses predicted near 15%</title></path>
+<path class="b" d="M225.8,420.0 v-0.0 q0,-1.1 1.1,-1.1 h49.4 q1.1,0 1.1,1.1 v0.0 z"><title>22 addresses predicted near 35%</title></path>
+<path class="b" d="M279.4,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>1 addresses predicted near 45%</title></path>
+<path class="b" d="M386.6,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>2 addresses predicted near 65%</title></path>
+<path class="b" d="M440.2,420.0 v-8.9 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v8.9 z"><title>262 addresses predicted near 75%</title></path>
+<path class="b" d="M493.8,420.0 v-0.0 q0,-3.6 3.6,-3.6 h44.5 q3.6,0 3.6,3.6 v0.0 z"><title>72 addresses predicted near 85%</title></path>
+<path class="b" d="M547.4,420.0 v-52.0 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v52.0 z"><title>1,134 addresses predicted near 95%</title></path>
+<text class="v" x="573.2" y="359.0" text-anchor="middle">1,134</text>
+</svg>

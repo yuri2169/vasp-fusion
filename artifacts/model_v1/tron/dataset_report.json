@@ -1,0 +1,49 @@
+{
+ "by_source": {
+  "customer": 3673,
+  "derived": 5497,
+  "labelled:exchange": 21
+ },
+ "config": {
+  "per_exchange": 700,
+  "runs": [
+   {
+    "limit": 50,
+    "name": "tron",
+    "since": "2026-09-17T00:00:00Z"
+   },
+   {
+    "limit": 50,
+    "name": "tron_coindcx_2025",
+    "since": "2025-05-18T00:00:00Z"
+   },
+   {
+    "limit": 50,
+    "name": "tron_coindcx_aug",
+    "since": "2026-07-25T00:00:00Z"
+   }
+  ],
+  "seed": 26182
+ },
+ "customers": {
+  "Bitfinex": 361,
+  "Bitget": 700,
+  "Bitrue": 117,
+  "CoinDCX": 395,
+  "Gate.io": 700,
+  "KuCoin": 700,
+  "OKX": 700
+ },
+ "customers_in_two_exchanges": 352,
+ "customers_seen": 7349,
+ "cutoff": {
+  "tron": "2026-10-01T07:51:33Z",
+  "tron_coindcx_2025": "2026-08-15T03:24:03Z",
+  "tron_coindcx_aug": "2026-09-20T05:53:36Z"
+ },
+ "empty": 372,
+ "errors": 0,
+ "examples": 9191,
+ "labelled": 393,
+ "positives": 5497
+}

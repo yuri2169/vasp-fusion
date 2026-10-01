@@ -38,15 +38,19 @@ def scored():
     return df, result, score_labels(df, result, runs)
 
 
-def test_every_derived_address_is_scored_once_by_the_model_that_never_saw_its_exchange(scored):
+def test_every_derived_address_is_scored_once_by_a_model_that_never_trained_on_it(scored):
     df, result, rows = scored
     positives = df.filter(pl.col("y") == 1)
     assert [r["address"] for r in rows] == sorted(positives["address"].to_list())
-    group = dict(zip(df["address"], df["group"]))
     oof = {r["address"]: r for r in result.oof.to_dicts()}
+    ordered = df.sort("address")["address"]
     for r in rows:
-        assert r["scored_by"] == f"leave-out:{group[r['address']]}" == f"leave-out:{r['entity']}"
+        fold = oof[r["address"]]["fold"]
+        assert r["scored_by"] == f"cross-fit:{fold}"
         assert r["p"] == round(oof[r["address"]]["p"], 4)
+        model = result.folds[fold]
+        assert r["address"] not in set(ordered.gather(model.train_idx).to_list())
+        assert r["address"] not in set(ordered.gather(model.calib_idx).to_list())
 
 
 def test_label_confidence_is_the_exchange_wallets_weight_times_the_probability(scored):
@@ -65,7 +69,7 @@ def test_the_evidence_keeps_the_rule_text_and_replaces_the_hand_set_confidence(s
     assert r["evidence"].startswith("Sweep rule: forwarded 100% of the 100 USDT")
     assert "not calibrated" not in r["evidence"] and "Rule confidence" not in r["evidence"]
     assert f"Model: {r['p']:.2f} that this is an exchange deposit address" in r["evidence"]
-    assert f"was shown no {r['entity']} address" in r["evidence"]
+    assert "from a model that did not train on this address" in r["evidence"]
     assert f"Label confidence {r['confidence']:.2f}" in r["evidence"]
 
 

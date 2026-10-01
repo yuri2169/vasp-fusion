@@ -21,6 +21,7 @@ def notes(m: dict) -> list[str]:
     """What the numbers are and are not, in sentences a reader can quote."""
     d, t = m["dataset"], m["time_split"]["test"]
     pooled = m["leave_one_exchange_out"]["pooled"]
+    cf = m["cross_fit"]["pooled"]
     ab = m["ablation_label_features"]
     ab_pooled = ab["leave_one_exchange_out"]["pooled"]
     return [
@@ -29,9 +30,13 @@ def notes(m: dict) -> list[str]:
         "(forwarding, timing, who pays its fees), never a label.",
         f"By time (latest {t['n']:,} addresses, unseen): PR-AUC {t['pr_auc']}, Brier "
         f"{t['brier']}, ECE {t['ece']}.",
-        f"By exchange: each exchange's {pooled['n']:,} addresses in total were scored by a "
+        f"By exchange: each exchange's addresses ({pooled['n']:,} in total) were scored by a "
         f"model that never saw that exchange. Pooled PR-AUC {pooled['pr_auc']}, recall "
         f"{pooled['at_0_5']['recall']} and precision {pooled['at_0_5']['precision']} at 0.5.",
+        f"The scores the labels carry are cross-fit: each address is scored by a model that "
+        f"never trained on it but knows its exchange from the exchange's other addresses. "
+        f"On all {cf['n']:,} addresses: PR-AUC {cf['pr_auc']}, Brier {cf['brier']}, ECE "
+        f"{cf['ece']}.",
         "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, "
         "at this dataset's class mix (the negatives are a capped sample), not at the mix of "
         "the chain at large.",
@@ -84,6 +89,9 @@ def build_model(chain: str, out_dir: Path | str, runs: list[Run], trained_at: st
     (out / "reliability_by_exchange.svg").write_text(reliability_svg(
         pooled["reliability"], f"{chain}, each exchange scored unseen", pooled["ece"],
         pooled["brier"]))
+    cf = m["cross_fit"]["pooled"]
+    (out / "reliability_labels.svg").write_text(reliability_svg(
+        cf["reliability"], f"{chain}, the scores the labels carry", cf["ece"], cf["brier"]))
     (out / "importance.svg").write_text(importance_svg(m["feature_importance"], chain))
     scores = score_labels(df, result, runs) if runs else []
     if scores:

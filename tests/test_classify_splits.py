@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import polars as pl
 import pytest
 
-from vaspfusion.classify.splits import exchange_folds, time_split
+from vaspfusion.classify.splits import crossfit_folds, exchange_folds, time_split
 
 T0 = datetime(2026, 9, 17, tzinfo=timezone.utc)
 
@@ -78,3 +78,41 @@ def test_one_address_twice_is_refused():
         time_split(df)
     with pytest.raises(ValueError, match="more than once"):
         exchange_folds(df)
+
+
+# ------------------------------------------------------------------ cross-fitting
+def test_cross_fitting_scores_every_address_once_by_a_model_that_did_not_see_it():
+    df = dataset()
+    folds = crossfit_folds(df, k=4)
+    assert [name for name, _ in folds] == ["block 1", "block 2", "block 3", "block 4"]
+    tested = [i for _, s in folds for i in s["test"].tolist()]
+    assert sorted(tested) == list(range(df.height))               # each address once
+    for _, s in folds:
+        parts = [set(s[k].tolist()) for k in ("train", "calib", "test")]
+        assert not (parts[0] & parts[1] or parts[0] & parts[2] or parts[1] & parts[2])
+        assert len(parts[0] | parts[1] | parts[2]) == df.height
+
+
+def test_cross_fitting_cuts_each_exchange_by_time_so_every_model_knows_every_exchange():
+    df = dataset()
+    for _, s in crossfit_folds(df, k=4):
+        for part in ("train", "calib", "test"):
+            assert set(df["group"].gather(s[part]).to_list()) == {"ExA", "ExB", "ExC", "other"}
+    # within one exchange the blocks follow each other in time
+    first = dict(crossfit_folds(df, k=4))
+    exa = pl.col("group") == "ExA"
+    rows = df.with_row_index("i").filter(exa)
+    ts = dict(zip(rows["i"].to_list(), rows["first_ts"].to_list()))
+    b1 = [ts[i] for i in first["block 1"]["test"].tolist() if i in ts]
+    b2 = [ts[i] for i in first["block 2"]["test"].tolist() if i in ts]
+    assert max(b1) <= min(b2)
+
+
+def test_cross_fitting_does_not_depend_on_the_order_of_the_rows():
+    df = dataset()
+    shuffled = df.sample(fraction=1.0, shuffle=True, seed=11)
+    for (_, a), (_, b) in zip(crossfit_folds(df), crossfit_folds(shuffled)):
+        for part in ("train", "calib", "test"):
+            assert addresses(df, a[part]) == addresses(shuffled, b[part])
+    with pytest.raises(ValueError, match="more than once"):
+        crossfit_folds(pl.concat([df, frame([("P00", 0, "ExB", 9)])]))

@@ -339,6 +339,7 @@ def cmd_model_data(args) -> None:
     out = Path(args.out) / args.chain
     path = write_dataset(out / "dataset.csv", examples)
     stats["config"] = {"per_exchange": cfg.per_exchange, "seed": cfg.seed,
+                       "horizon_days": cfg.horizon_days,
                        "runs": [{"name": r.name, "since": r.since.strftime("%Y-%m-%dT%H:%M:%SZ"),
                                  "limit": r.limit} for r in runs]}
     (out / "dataset_report.json").write_text(json.dumps(stats, indent=1, sort_keys=True) + "\n")

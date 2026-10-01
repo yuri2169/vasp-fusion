@@ -13,9 +13,11 @@ Three measurements, all on addresses the model did not train on:
   labels added. On a held-out exchange those labels are hidden, as they would be
   for an exchange nobody has labelled yet.
 
-Every address also gets an out-of-fold score: the probability from the model that
-never saw its exchange. Those are the scores the labels are given (score.py), so
-no address is ever scored by a model that trained on it.
+Every address also gets a cross-fit score: each exchange's addresses are cut into
+consecutive blocks by time, and a block is scored by a model trained on the other
+blocks. Those are the scores the labels are given (score.py), so no address is
+ever scored by a model that trained on it. The leave-one-exchange-out scores are
+not used for labels: an exchange we hold labels for is not an unknown exchange.
 
 Probabilities are calibrated at this dataset's class mix (the negatives are a
 capped sample), not at the mix of the chain at large.
@@ -37,7 +39,7 @@ from ..eval.calibration_report import _wilson, adaptive_ece
 from ..eval.leak_audit import audit
 from ..eval.selective import risk_coverage
 from .features import FEATURES, LABEL_FEATURES
-from .splits import exchange_folds, time_split
+from .splits import crossfit_folds, exchange_folds, time_split
 
 SEED = 26182
 VERSION = "model_v1"
@@ -58,8 +60,9 @@ class Fitted:
 class Result:
     metrics: dict
     final: Fitted                       # the time-split model: scores addresses found later
-    folds: dict[str, Fitted]            # exchange -> the model that never saw it
-    oof: pl.DataFrame                   # address, fold, raw, p, low, high
+    folds: dict[str, Fitted]            # cross-fit block -> the model that did not see it
+    oof: pl.DataFrame                   # address, fold, raw, p, low, high (cross-fit)
+    by_exchange: dict[str, Fitted] = field(default_factory=dict)   # exchange -> its fold
 
 
 def matrix(df: pl.DataFrame, features: list[str]) -> np.ndarray:
@@ -178,11 +181,7 @@ def _by_exchange(df: pl.DataFrame, features: list[str], seed: int, hide: bool,
         view = hide_exchange(df, exchange) if hide else df
         model = fit(view, split["train"], split["calib"], features, seed)
         pred = predict(model, view[split["test"]])
-        row = evaluate(y_all[split["test"]], pred)
-        table.append({"exchange": exchange, **{k: row[k] for k in (
-            "n", "n_positive", "pr_auc", "roc_auc", "brier", "ece", "interval_mean_width")},
-            "precision": row["at_0_5"]["precision"], "recall": row["at_0_5"]["recall"],
-            "train": int(len(split["train"])), "calib": int(len(split["calib"]))})
+        table.append(_table_row(exchange, evaluate(y_all[split["test"]], pred), split))
         models[exchange] = model
         parts.append(pl.DataFrame({
             "address": df["address"].gather(split["test"]),
@@ -192,6 +191,44 @@ def _by_exchange(df: pl.DataFrame, features: list[str], seed: int, hide: bool,
     pooled = evaluate(oof["y"].to_numpy(), {k: oof[k].to_numpy()
                                             for k in ("raw", "p", "low", "high")})
     return {"folds": table, "pooled": pooled}, models, oof.drop("y")
+
+
+def _table_row(name: str, row: dict, split: dict | None = None) -> dict:
+    out = {"exchange": name, **{k: row[k] for k in (
+        "n", "n_positive", "pr_auc", "roc_auc", "brier", "ece", "interval_mean_width")},
+        "precision": row["at_0_5"]["precision"], "recall": row["at_0_5"]["recall"]}
+    if split is not None:
+        out |= {"train": int(len(split["train"])), "calib": int(len(split["calib"]))}
+    return out
+
+
+def _cross_fit(df: pl.DataFrame, features: list[str], seed: int, k: int,
+               min_positives: int) -> tuple[dict, dict[str, Fitted], pl.DataFrame]:
+    """Every address scored once by a model that did not train on it (splits.py)."""
+    y_all = df["y"].to_numpy().astype(int)
+    models, parts = {}, []
+    for name, split in crossfit_folds(df, k=k):
+        model = fit(df, split["train"], split["calib"], features, seed)
+        pred = predict(model, df[split["test"]])
+        models[name] = model
+        parts.append(pl.DataFrame({
+            "address": df["address"].gather(split["test"]),
+            "fold": [name] * len(split["test"]), "y": y_all[split["test"]],
+            **{c: pred[c] for c in ("raw", "p", "low", "high")}}))
+    oof = pl.concat(parts).sort("address")
+    scored = df.join(oof.select("address", "p", "low", "high", "raw"), on="address",
+                     how="inner").sort("address")
+
+    def measure(rows: pl.DataFrame) -> dict:
+        return evaluate(rows["y"].to_numpy(), {c: rows[c].to_numpy()
+                                               for c in ("raw", "p", "low", "high")})
+
+    counts = dict(df.filter(pl.col("y") == 1).group_by("group").len().iter_rows())
+    table = [_table_row(g, measure(scored.filter(pl.col("group") == g)))
+             for g in sorted(counts) if counts[g] >= max(min_positives, 1)]
+    block = {"blocks": k, "pooled": measure(scored), "by_exchange": table,
+             "look_alikes": look_alikes(scored, scored["p"].to_numpy())}
+    return block, models, oof.drop("y")
 
 
 def _importance(model: Fitted, df: pl.DataFrame) -> list[dict]:
@@ -211,7 +248,8 @@ def _leak_audit(df: pl.DataFrame, seed: int) -> dict:
                                            "format": "%Y-%m-%d %H:%M:%S"}, [], seed=seed)
 
 
-def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20) -> Result:
+def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20,
+        blocks: int = 5) -> Result:
     df = df.sort("address")
     y = df["y"].to_numpy().astype(int)
     split = time_split(df)
@@ -222,10 +260,12 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20) -> Result:
                "from": {k: str(df["first_ts"].gather(v).min()) for k, v in split.items()},
                "test": evaluate(y[split["test"]], test_pred),
                "look_alikes": look_alikes(test, test_pred["p"])}
-    by_exchange, folds, oof = _by_exchange(df, FEATURES, seed, hide=False,
-                                           min_positives=min_positives)
-    scored = df.join(oof.select("address", "p"), on="address", how="inner").sort("address")
+    by_exchange, exchange_models, held_out = _by_exchange(df, FEATURES, seed, hide=False,
+                                                          min_positives=min_positives)
+    scored = df.join(held_out.select("address", "p"), on="address", how="inner") \
+        .sort("address")
     by_exchange["look_alikes"] = look_alikes(scored, scored["p"].to_numpy())
+    cross_fit, folds, oof = _cross_fit(df, FEATURES, seed, blocks, min_positives)
 
     with_labels = FEATURES + LABEL_FEATURES
     ab_model = fit(df, split["train"], split["calib"], with_labels, seed)
@@ -244,6 +284,7 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20) -> Result:
                     "by_group": by_group},
         "time_split": by_time,
         "leave_one_exchange_out": by_exchange,
+        "cross_fit": cross_fit,
         "ablation_label_features": {
             "features": with_labels,
             "time_split": {k: ab_time[k] for k in ("pr_auc", "roc_auc", "brier", "ece")}
@@ -256,7 +297,7 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20) -> Result:
         "feature_importance": _importance(final, test),
         "leak_audit": _leak_audit(df, seed),
     }
-    return Result(metrics, final, folds, oof)
+    return Result(metrics, final, folds, oof, exchange_models)
 
 
 # ------------------------------------------------------------------ persistence

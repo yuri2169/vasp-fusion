@@ -106,14 +106,33 @@ def test_look_alike_negatives_are_measured_on_their_own(df, result):
                                             & (pl.col("forward_ratio") >= 0.9)).height
 
 
-def test_every_address_is_scored_by_a_model_that_never_saw_its_exchange(df, result):
+def test_every_address_is_scored_once_by_a_model_that_never_trained_on_it(df, result):
     oof = result.oof
     assert sorted(oof["address"].to_list()) == sorted(df["address"].to_list())
-    joined = oof.join(df.select("address", "group"), on="address")
-    assert (joined["fold"] == joined["group"]).all()
-    for exchange, model in result.folds.items():
-        assert exchange not in set(df["group"].gather(model.train_idx).to_list())
-        assert exchange not in set(df["group"].gather(model.calib_idx).to_list())
+    assert sorted(result.folds) == [f"block {j}" for j in range(1, 6)]
+    by_address = dict(zip(oof["address"].to_list(), oof["fold"].to_list()))
+    ordered = df.sort("address")["address"]
+    for fold, model in result.folds.items():
+        seen = set(ordered.gather(model.train_idx).to_list()) \
+            | set(ordered.gather(model.calib_idx).to_list())
+        scored = {a for a, f in by_address.items() if f == fold}
+        assert scored and not scored & seen
+
+
+def test_each_exchange_table_row_comes_from_a_model_that_never_saw_the_exchange(df, result):
+    ordered = df.sort("address")
+    assert sorted(result.by_exchange) == list(GROUPS)
+    for exchange, model in result.by_exchange.items():
+        assert exchange not in set(ordered["group"].gather(model.train_idx).to_list())
+        assert exchange not in set(ordered["group"].gather(model.calib_idx).to_list())
+
+
+def test_the_cross_fit_scores_are_measured_too(result):
+    c = result.metrics["cross_fit"]
+    assert c["blocks"] == 5 and c["pooled"]["n"] == 240
+    assert [row["exchange"] for row in c["by_exchange"]] == list(GROUPS)
+    assert all(row["n_positive"] == 40 for row in c["by_exchange"])
+    assert c["look_alikes"]["negatives"] > 0
 
 
 def test_the_label_ablation_collapses_on_an_exchange_whose_labels_are_hidden(result):

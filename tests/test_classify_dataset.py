@@ -120,6 +120,19 @@ def test_nothing_after_the_runs_last_positive_transfer_is_read(tmp_path):
     assert ex["U2"]["n_out"] == 1 and ex["U2"]["n_rows"] == 1
 
 
+def test_every_address_is_judged_on_the_same_length_of_history(tmp_path):
+    # one discovery run looked back 16 months, the others two weeks: without a common
+    # horizon the time span of a listing would say which run an address came from
+    day = 24 * 60
+    rows = world() + [tx(60, "U2", "W", 5, 20 * day), tx(61, "X", "D2", 7, 20 * day),
+                      tx(62, "D2", "HOT", 7, 20 * day + 5)]
+    ex, _, _ = built(tmp_path, DatasetConfig(horizon_days=14), rows)
+    assert ex["U2"]["n_out"] == 1 and ex["U2"]["age_days"] == 0      # day 20 is not read
+    assert ex["D2"]["n_in"] == 1 and ex["D2"]["age_days"] < 14
+    whole, _, _ = built(tmp_path / "whole", DatasetConfig(horizon_days=None), rows)
+    assert whole["U2"]["n_out"] == 2 and whole["D2"]["n_in"] == 2
+
+
 def test_an_address_that_cannot_be_read_is_counted_not_guessed(tmp_path):
     ex, stats, _ = built(tmp_path, fail=("U3",))
     assert "U3" not in ex and stats["errors"] == 1

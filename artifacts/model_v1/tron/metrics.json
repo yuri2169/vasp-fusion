@@ -1,0 +1,1040 @@
+{
+ "version": "model_v1",
+ "chain": "tron",
+ "seed": 26182,
+ "backend": "lightgbm",
+ "features": [
+  "forward_ratio",
+  "top_recipient_share",
+  "dwell_median_s",
+  "left_share",
+  "n_senders",
+  "n_recipients",
+  "n_in",
+  "n_out",
+  "out_per_in",
+  "sweep_gap_cv",
+  "stable_share",
+  "gas_outside_share",
+  "gas_payers",
+  "age_days"
+ ],
+ "dataset": {
+  "addresses": 9191,
+  "positive": 5497,
+  "negative": 3694,
+  "by_source": {
+   "customer": 3673,
+   "derived": 5497,
+   "labelled:exchange": 21
+  },
+  "by_group": {
+   "Bitfinex": {
+    "positive": 217,
+    "negative": 363
+   },
+   "Bitget": {
+    "positive": 755,
+    "negative": 703
+   },
+   "Bitrue": {
+    "positive": 133,
+    "negative": 118
+   },
+   "CoinDCX": {
+    "positive": 558,
+    "negative": 396
+   },
+   "Gate.io": {
+    "positive": 1134,
+    "negative": 702
+   },
+   "HTX": {
+    "positive": 0,
+    "negative": 2
+   },
+   "KuCoin": {
+    "positive": 958,
+    "negative": 704
+   },
+   "OKX": {
+    "positive": 1742,
+    "negative": 706
+   }
+  }
+ },
+ "time_split": {
+  "sizes": {
+   "train": 5514,
+   "calib": 1838,
+   "test": 1839,
+   "train_positive": 2748,
+   "calib_positive": 1350,
+   "test_positive": 1399
+  },
+  "from": {
+   "train": "2025-05-18 00:00:00+00:00",
+   "calib": "2026-09-20 16:13:48+00:00",
+   "test": "2026-09-24 06:34:39+00:00"
+  },
+  "test": {
+   "n": 1839,
+   "n_positive": 1399,
+   "pr_auc": 0.9605,
+   "roc_auc": 0.9269,
+   "brier": 0.0476,
+   "ece": 0.0532,
+   "adaptive_ece": 0.0533,
+   "interval_mean_width": 0.0125,
+   "at_0_5": {
+    "tp": 1395,
+    "fp": 75,
+    "fn": 4,
+    "tn": 365,
+    "precision": 0.949,
+    "recall": 0.9971,
+    "f1": 0.9725,
+    "mcc": 0.8807,
+    "accuracy": 0.957,
+    "accuracy_all_negative_baseline": 0.2393
+   },
+   "confident": {
+    "threshold": 0.9,
+    "coverage": 0.7977,
+    "accuracy": 0.9652
+   },
+   "reliability": [
+    {
+     "bin_mid": 0.05,
+     "predicted": 0.0104,
+     "observed": 0.0,
+     "count": 333
+    },
+    {
+     "bin_mid": 0.15,
+     "predicted": 0.1374,
+     "observed": 0.0,
+     "count": 13
+    },
+    {
+     "bin_mid": 0.35,
+     "predicted": 0.3364,
+     "observed": 0.1818,
+     "count": 22
+    },
+    {
+     "bin_mid": 0.45,
+     "predicted": 0.4211,
+     "observed": 0.0,
+     "count": 1
+    },
+    {
+     "bin_mid": 0.65,
+     "predicted": 0.6456,
+     "observed": 1.0,
+     "count": 2
+    },
+    {
+     "bin_mid": 0.75,
+     "predicted": 0.7169,
+     "observed": 0.9198,
+     "count": 262
+    },
+    {
+     "bin_mid": 0.85,
+     "predicted": 0.8772,
+     "observed": 0.9583,
+     "count": 72
+    },
+    {
+     "bin_mid": 0.95,
+     "predicted": 0.9294,
+     "observed": 0.955,
+     "count": 1134
+    }
+   ],
+   "range_check": {
+    "groups": [
+     {
+      "count": 184,
+      "low": 0.0,
+      "high": 0.004,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0205
+      ],
+      "consistent": true
+     },
+     {
+      "count": 184,
+      "low": 0.0351,
+      "high": 0.0693,
+      "observed": 0.0217,
+      "observed_wilson_95": [
+       0.0085,
+       0.0546
+      ],
+      "consistent": true
+     },
+     {
+      "count": 184,
+      "low": 0.705,
+      "high": 0.7276,
+      "observed": 0.9565,
+      "observed_wilson_95": [
+       0.9166,
+       0.9778
+      ],
+      "consistent": false
+     },
+     {
+      "count": 184,
+      "low": 0.8089,
+      "high": 0.8456,
+      "observed": 0.9022,
+      "observed_wilson_95": [
+       0.8507,
+       0.9372
+      ],
+      "consistent": false
+     },
+     {
+      "count": 184,
+      "low": 0.9168,
+      "high": 0.919,
+      "observed": 0.9728,
+      "observed_wilson_95": [
+       0.938,
+       0.9883
+      ],
+      "consistent": false
+     },
+     {
+      "count": 184,
+      "low": 0.9168,
+      "high": 0.919,
+      "observed": 0.9457,
+      "observed_wilson_95": [
+       0.9029,
+       0.9702
+      ],
+      "consistent": true
+     },
+     {
+      "count": 184,
+      "low": 0.9168,
+      "high": 0.919,
+      "observed": 0.9565,
+      "observed_wilson_95": [
+       0.9166,
+       0.9778
+      ],
+      "consistent": true
+     },
+     {
+      "count": 184,
+      "low": 0.9168,
+      "high": 0.919,
+      "observed": 0.9293,
+      "observed_wilson_95": [
+       0.8829,
+       0.9582
+      ],
+      "consistent": true
+     },
+     {
+      "count": 184,
+      "low": 0.9279,
+      "high": 0.937,
+      "observed": 0.9402,
+      "observed_wilson_95": [
+       0.8961,
+       0.9663
+      ],
+      "consistent": true
+     },
+     {
+      "count": 183,
+      "low": 0.9816,
+      "high": 0.9919,
+      "observed": 0.9836,
+      "observed_wilson_95": [
+       0.9529,
+       0.9944
+      ],
+      "consistent": true
+     }
+    ],
+    "consistent": 7
+   },
+   "risk_coverage": [
+    {
+     "coverage": 0.0005,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0419,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0837,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.1251,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.1669,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.2083,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.2501,
+     "accuracy": 0.9957
+    },
+    {
+     "coverage": 0.292,
+     "accuracy": 0.9926
+    },
+    {
+     "coverage": 0.3333,
+     "accuracy": 0.9853
+    },
+    {
+     "coverage": 0.3752,
+     "accuracy": 0.9855
+    },
+    {
+     "coverage": 0.4165,
+     "accuracy": 0.9843
+    },
+    {
+     "coverage": 0.4584,
+     "accuracy": 0.9775
+    },
+    {
+     "coverage": 0.5003,
+     "accuracy": 0.975
+    },
+    {
+     "coverage": 0.5416,
+     "accuracy": 0.9749
+    },
+    {
+     "coverage": 0.5835,
+     "accuracy": 0.9758
+    },
+    {
+     "coverage": 0.6248,
+     "accuracy": 0.9739
+    },
+    {
+     "coverage": 0.6667,
+     "accuracy": 0.9706
+    },
+    {
+     "coverage": 0.708,
+     "accuracy": 0.9677
+    },
+    {
+     "coverage": 0.7499,
+     "accuracy": 0.9666
+    },
+    {
+     "coverage": 0.7917,
+     "accuracy": 0.9657
+    },
+    {
+     "coverage": 0.8331,
+     "accuracy": 0.9648
+    },
+    {
+     "coverage": 0.8749,
+     "accuracy": 0.9633
+    },
+    {
+     "coverage": 0.9163,
+     "accuracy": 0.9638
+    },
+    {
+     "coverage": 0.9581,
+     "accuracy": 0.9631
+    },
+    {
+     "coverage": 1.0,
+     "accuracy": 0.957
+    }
+   ]
+  },
+  "look_alikes": {
+   "forwarding_at_least": 0.9,
+   "negatives": 98,
+   "flagged": 64,
+   "false_positive_rate": 0.6531
+  }
+ },
+ "leave_one_exchange_out": {
+  "folds": [
+   {
+    "exchange": "Bitfinex",
+    "n": 580,
+    "n_positive": 217,
+    "pr_auc": 0.8999,
+    "roc_auc": 0.9682,
+    "brier": 0.0485,
+    "ece": 0.0447,
+    "interval_mean_width": 0.0134,
+    "precision": 0.875,
+    "recall": 1.0,
+    "train": 6458,
+    "calib": 2153
+   },
+   {
+    "exchange": "Bitget",
+    "n": 1458,
+    "n_positive": 755,
+    "pr_auc": 0.9818,
+    "roc_auc": 0.9896,
+    "brier": 0.0212,
+    "ece": 0.0212,
+    "interval_mean_width": 0.012,
+    "precision": 0.9618,
+    "recall": 1.0,
+    "train": 5799,
+    "calib": 1934
+   },
+   {
+    "exchange": "Bitrue",
+    "n": 251,
+    "n_positive": 133,
+    "pr_auc": 0.9812,
+    "roc_auc": 0.9877,
+    "brier": 0.0254,
+    "ece": 0.014,
+    "interval_mean_width": 0.007,
+    "precision": 0.9568,
+    "recall": 1.0,
+    "train": 6705,
+    "calib": 2235
+   },
+   {
+    "exchange": "CoinDCX",
+    "n": 954,
+    "n_positive": 558,
+    "pr_auc": 0.944,
+    "roc_auc": 0.9555,
+    "brier": 0.223,
+    "ece": 0.2969,
+    "interval_mean_width": 0.0344,
+    "precision": 0.9482,
+    "recall": 0.5573,
+    "train": 6177,
+    "calib": 2060
+   },
+   {
+    "exchange": "Gate.io",
+    "n": 1836,
+    "n_positive": 1134,
+    "pr_auc": 0.9776,
+    "roc_auc": 0.975,
+    "brier": 0.0309,
+    "ece": 0.0338,
+    "interval_mean_width": 0.0122,
+    "precision": 0.961,
+    "recall": 0.9991,
+    "train": 5516,
+    "calib": 1839
+   },
+   {
+    "exchange": "KuCoin",
+    "n": 1662,
+    "n_positive": 958,
+    "pr_auc": 0.9346,
+    "roc_auc": 0.9475,
+    "brier": 0.1125,
+    "ece": 0.1011,
+    "interval_mean_width": 0.0168,
+    "precision": 0.9241,
+    "recall": 0.8382,
+    "train": 5646,
+    "calib": 1883
+   },
+   {
+    "exchange": "OKX",
+    "n": 2448,
+    "n_positive": 1742,
+    "pr_auc": 0.9909,
+    "roc_auc": 0.9859,
+    "brier": 0.0229,
+    "ece": 0.0043,
+    "interval_mean_width": 0.0117,
+    "precision": 0.9683,
+    "recall": 0.9983,
+    "train": 5057,
+    "calib": 1686
+   }
+  ],
+  "pooled": {
+   "n": 9189,
+   "n_positive": 5497,
+   "pr_auc": 0.9697,
+   "roc_auc": 0.9694,
+   "brier": 0.0629,
+   "ece": 0.0524,
+   "adaptive_ece": 0.0596,
+   "interval_mean_width": 0.0151,
+   "at_0_5": {
+    "tp": 5091,
+    "fp": 253,
+    "fn": 406,
+    "tn": 3439,
+    "precision": 0.9527,
+    "recall": 0.9261,
+    "f1": 0.9392,
+    "mcc": 0.8523,
+    "accuracy": 0.9283,
+    "accuracy_all_negative_baseline": 0.4018
+   },
+   "confident": {
+    "threshold": 0.9,
+    "coverage": 0.903,
+    "accuracy": 0.9391
+   },
+   "reliability": [
+    {
+     "bin_mid": 0.05,
+     "predicted": 0.0145,
+     "observed": 0.0785,
+     "count": 3616
+    },
+    {
+     "bin_mid": 0.15,
+     "predicted": 0.1605,
+     "observed": 0.3906,
+     "count": 64
+    },
+    {
+     "bin_mid": 0.25,
+     "predicted": 0.2658,
+     "observed": 0.5765,
+     "count": 85
+    },
+    {
+     "bin_mid": 0.35,
+     "predicted": 0.3288,
+     "observed": 0.6286,
+     "count": 70
+    },
+    {
+     "bin_mid": 0.45,
+     "predicted": 0.4719,
+     "observed": 0.4,
+     "count": 10
+    },
+    {
+     "bin_mid": 0.55,
+     "predicted": 0.5841,
+     "observed": 0.8876,
+     "count": 89
+    },
+    {
+     "bin_mid": 0.65,
+     "predicted": 0.6791,
+     "observed": 0.85,
+     "count": 20
+    },
+    {
+     "bin_mid": 0.75,
+     "predicted": 0.7637,
+     "observed": 0.9673,
+     "count": 336
+    },
+    {
+     "bin_mid": 0.85,
+     "predicted": 0.8908,
+     "observed": 0.9631,
+     "count": 217
+    },
+    {
+     "bin_mid": 0.95,
+     "predicted": 0.9684,
+     "observed": 0.9528,
+     "count": 4682
+    }
+   ],
+   "range_check": {
+    "groups": [
+     {
+      "count": 919,
+      "low": 0.0,
+      "high": 0.003,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0042
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.0,
+      "high": 0.004,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0042
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.0,
+      "high": 0.0072,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0042
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.011,
+      "high": 0.0568,
+      "observed": 0.3362,
+      "observed_wilson_95": [
+       0.3064,
+       0.3674
+      ],
+      "consistent": false
+     },
+     {
+      "count": 919,
+      "low": 0.6765,
+      "high": 0.7274,
+      "observed": 0.8847,
+      "observed_wilson_95": [
+       0.8624,
+       0.9037
+      ],
+      "consistent": false
+     },
+     {
+      "count": 919,
+      "low": 0.9348,
+      "high": 0.9384,
+      "observed": 0.9053,
+      "observed_wilson_95": [
+       0.8847,
+       0.9226
+      ],
+      "consistent": false
+     },
+     {
+      "count": 919,
+      "low": 0.961,
+      "high": 0.9669,
+      "observed": 0.9293,
+      "observed_wilson_95": [
+       0.9108,
+       0.9441
+      ],
+      "consistent": false
+     },
+     {
+      "count": 919,
+      "low": 0.9715,
+      "high": 0.9859,
+      "observed": 0.9695,
+      "observed_wilson_95": [
+       0.9563,
+       0.9788
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9857,
+      "high": 0.9968,
+      "observed": 0.9739,
+      "observed_wilson_95": [
+       0.9614,
+       0.9824
+      ],
+      "consistent": false
+     },
+     {
+      "count": 918,
+      "low": 0.9935,
+      "high": 0.999,
+      "observed": 0.9837,
+      "observed_wilson_95": [
+       0.9732,
+       0.9901
+      ],
+      "consistent": false
+     }
+    ],
+    "consistent": 4
+   },
+   "risk_coverage": [
+    {
+     "coverage": 0.0001,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0417,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0834,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.125,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.1667,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.2084,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.2501,
+     "accuracy": 0.9991
+    },
+    {
+     "coverage": 0.2917,
+     "accuracy": 0.9985
+    },
+    {
+     "coverage": 0.3333,
+     "accuracy": 0.9971
+    },
+    {
+     "coverage": 0.375,
+     "accuracy": 0.9956
+    },
+    {
+     "coverage": 0.4167,
+     "accuracy": 0.9956
+    },
+    {
+     "coverage": 0.4584,
+     "accuracy": 0.9953
+    },
+    {
+     "coverage": 0.5001,
+     "accuracy": 0.9928
+    },
+    {
+     "coverage": 0.5416,
+     "accuracy": 0.9898
+    },
+    {
+     "coverage": 0.5833,
+     "accuracy": 0.9875
+    },
+    {
+     "coverage": 0.625,
+     "accuracy": 0.9866
+    },
+    {
+     "coverage": 0.6667,
+     "accuracy": 0.9869
+    },
+    {
+     "coverage": 0.7083,
+     "accuracy": 0.9848
+    },
+    {
+     "coverage": 0.75,
+     "accuracy": 0.9788
+    },
+    {
+     "coverage": 0.7916,
+     "accuracy": 0.9747
+    },
+    {
+     "coverage": 0.8333,
+     "accuracy": 0.9544
+    },
+    {
+     "coverage": 0.875,
+     "accuracy": 0.9534
+    },
+    {
+     "coverage": 0.9166,
+     "accuracy": 0.9397
+    },
+    {
+     "coverage": 0.9583,
+     "accuracy": 0.9378
+    },
+    {
+     "coverage": 1.0,
+     "accuracy": 0.9283
+    }
+   ]
+  },
+  "look_alikes": {
+   "forwarding_at_least": 0.9,
+   "negatives": 400,
+   "flagged": 228,
+   "false_positive_rate": 0.57
+  }
+ },
+ "ablation_label_features": {
+  "features": [
+   "forward_ratio",
+   "top_recipient_share",
+   "dwell_median_s",
+   "left_share",
+   "n_senders",
+   "n_recipients",
+   "n_in",
+   "n_out",
+   "out_per_in",
+   "sweep_gap_cv",
+   "stable_share",
+   "gas_outside_share",
+   "gas_payers",
+   "age_days",
+   "to_exchange_share",
+   "gas_from_exchange_share"
+  ],
+  "time_split": {
+   "pr_auc": 1.0,
+   "roc_auc": 1.0,
+   "brier": 0.0057,
+   "ece": 0.0345,
+   "recall": 1.0,
+   "precision": 0.9993
+  },
+  "leave_one_exchange_out": {
+   "folds": [
+    {
+     "exchange": "Bitfinex",
+     "n": 580,
+     "n_positive": 217,
+     "pr_auc": 0.9431,
+     "roc_auc": 0.9835,
+     "brier": 0.3259,
+     "ece": 0.3458,
+     "interval_mean_width": 0.0333,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 6458,
+     "calib": 2153
+    },
+    {
+     "exchange": "Bitget",
+     "n": 1458,
+     "n_positive": 755,
+     "pr_auc": 0.9852,
+     "roc_auc": 0.9903,
+     "brier": 0.4461,
+     "ece": 0.4776,
+     "interval_mean_width": 0.0439,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 5799,
+     "calib": 1934
+    },
+    {
+     "exchange": "Bitrue",
+     "n": 251,
+     "n_positive": 133,
+     "pr_auc": 0.9936,
+     "roc_auc": 0.9948,
+     "brier": 0.4503,
+     "ece": 0.4857,
+     "interval_mean_width": 0.0502,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 6705,
+     "calib": 2235
+    },
+    {
+     "exchange": "CoinDCX",
+     "n": 954,
+     "n_positive": 558,
+     "pr_auc": 0.9785,
+     "roc_auc": 0.9827,
+     "brier": 0.5293,
+     "ece": 0.5545,
+     "interval_mean_width": 0.0327,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 6177,
+     "calib": 2060
+    },
+    {
+     "exchange": "Gate.io",
+     "n": 1836,
+     "n_positive": 1134,
+     "pr_auc": 0.976,
+     "roc_auc": 0.9753,
+     "brier": 0.5717,
+     "ece": 0.5923,
+     "interval_mean_width": 0.0274,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 5516,
+     "calib": 1839
+    },
+    {
+     "exchange": "KuCoin",
+     "n": 1662,
+     "n_positive": 958,
+     "pr_auc": 0.8918,
+     "roc_auc": 0.9192,
+     "brier": 0.5154,
+     "ece": 0.5382,
+     "interval_mean_width": 0.0441,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 5646,
+     "calib": 1883
+    },
+    {
+     "exchange": "OKX",
+     "n": 2448,
+     "n_positive": 1742,
+     "pr_auc": 0.9888,
+     "roc_auc": 0.9816,
+     "brier": 0.59,
+     "ece": 0.6448,
+     "interval_mean_width": 0.0752,
+     "precision": 0.0,
+     "recall": 0.0,
+     "train": 5057,
+     "calib": 1686
+    }
+   ],
+   "pooled": {
+    "n": 9189,
+    "n_positive": 5497,
+    "pr_auc": 0.9658,
+    "roc_auc": 0.9699,
+    "brier": 0.5232,
+    "ece": 0.5558,
+    "at_0_5": {
+     "tp": 0,
+     "fp": 1,
+     "fn": 5497,
+     "tn": 3691,
+     "precision": 0.0,
+     "recall": 0.0,
+     "f1": 0.0,
+     "mcc": -0.0127,
+     "accuracy": 0.4017,
+     "accuracy_all_negative_baseline": 0.4018
+    }
+   }
+  }
+ },
+ "feature_importance": [
+  {
+   "feature": "age_days",
+   "importance": 0.2364
+  },
+  {
+   "feature": "forward_ratio",
+   "importance": 0.1796
+  },
+  {
+   "feature": "n_in",
+   "importance": 0.1334
+  },
+  {
+   "feature": "top_recipient_share",
+   "importance": 0.1185
+  },
+  {
+   "feature": "dwell_median_s",
+   "importance": 0.1086
+  },
+  {
+   "feature": "n_out",
+   "importance": 0.0498
+  },
+  {
+   "feature": "gas_outside_share",
+   "importance": 0.0376
+  },
+  {
+   "feature": "gas_payers",
+   "importance": 0.0345
+  },
+  {
+   "feature": "n_recipients",
+   "importance": 0.0334
+  },
+  {
+   "feature": "left_share",
+   "importance": 0.025
+  },
+  {
+   "feature": "out_per_in",
+   "importance": 0.0245
+  },
+  {
+   "feature": "n_senders",
+   "importance": 0.0104
+  },
+  {
+   "feature": "sweep_gap_cv",
+   "importance": 0.0083
+  },
+  {
+   "feature": "stable_share",
+   "importance": 0.0
+  }
+ ],
+ "leak_audit": {
+  "n": 9191,
+  "base_rate": 0.593546,
+  "fields": {
+   "row_position": {
+    "pr_auc": 0.5908,
+    "lift": 0.995,
+    "tier": "informative"
+   },
+   "address__rank": {
+    "pr_auc": 0.5908,
+    "lift": 0.995,
+    "tier": "strict"
+   },
+   "timestamp_minute": {
+    "pr_auc": 0.608,
+    "lift": 1.024,
+    "tier": "strict"
+   },
+   "timestamp_second": {
+    "pr_auc": 0.6102,
+    "lift": 1.028,
+    "tier": "strict"
+   }
+  },
+  "strict_over_gate": [],
+  "gate": 1.3
+ },
+ "notes": [
+  "Trained on 9,191 real tron addresses: 5,497 deposit addresses and 3,694 others. The model reads what an address does (forwarding, timing, who pays its fees), never a label.",
+  "By time (latest 1,839 addresses, unseen): PR-AUC 0.9605, Brier 0.0476, ECE 0.0532.",
+  "By exchange: each exchange's 9,189 addresses in total were scored by a model that never saw that exchange. Pooled PR-AUC 0.9697, recall 0.9261 and precision 0.9527 at 0.5.",
+  "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, at this dataset's class mix (the negatives are a capped sample), not at the mix of the chain at large.",
+  "The two features that read exchange labels were left out of the shipped model: with them it scores PR-AUC 1.0 by time, because the positives were picked by those labels, and recall 0.0 on an exchange whose labels are hidden.",
+  "A label's confidence is this probability times the weight of the exchange wallet's own label. That weight, the hop decay and the share factor are still rule-set."
+ ],
+ "trained_at": "2026-10-01T18:51:58Z"
+}

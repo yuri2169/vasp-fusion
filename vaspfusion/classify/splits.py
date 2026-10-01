@@ -11,6 +11,13 @@
 Both are built by `eval/splits.make_splits`, whose `verify` rejects an address on
 two sides, a test set that starts before training ends, and any row of the
 held-out group in training or calibration.
+
+* Cross-fitting (for the scores the labels carry, not for a headline metric): each
+  exchange's rows are cut into `k` consecutive blocks by time; fold j tests block j
+  of every exchange, calibrates on the next block and trains on the rest. Every
+  address is scored exactly once, by a model that never trained on it but does know
+  its exchange's habits from the exchange's other addresses. That is the question
+  for a label of an exchange we already know.
 """
 from __future__ import annotations
 
@@ -56,4 +63,26 @@ def exchange_folds(df: pl.DataFrame, min_positives: int = 20,
         folds.append((exchange, {"train": s["train"],
                                  "calib": np.concatenate([s["calib"], s["test"]]),
                                  "test": s["holdout_typology"]}))
+    return folds
+
+
+def crossfit_folds(df: pl.DataFrame, k: int = 5) -> list[tuple[str, dict[str, np.ndarray]]]:
+    """("block j", {train, calib, test}) for j = 1..k; the test sets partition `df`."""
+    if df["address"].n_unique() != df.height:
+        raise ValueError("an address is in the dataset more than once: it could land on "
+                         "both sides of a split")
+    order = (df.with_row_index("idx").sort(["group", "first_ts", "address"])
+             .with_columns(pl.int_range(pl.len()).over("group").alias("rank"),
+                           pl.len().over("group").alias("size")))
+    block = (order["rank"] * k // order["size"]).to_numpy()
+    idx = order["idx"].to_numpy()
+    folds = []
+    for j in range(k):
+        test, calib = block == j, block == (j + 1) % k
+        split = {"train": np.sort(idx[~test & ~calib]), "calib": np.sort(idx[calib]),
+                 "test": np.sort(idx[test])}
+        seen = np.concatenate(list(split.values()))
+        if len(seen) != df.height or len(np.unique(seen)) != df.height:
+            raise ValueError("cross-fitting folds do not partition the dataset")
+        folds.append((f"block {j + 1}", split))
     return folds

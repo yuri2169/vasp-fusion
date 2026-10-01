@@ -38,6 +38,7 @@ def test_the_notes_say_what_the_numbers_are_and_are_not(metrics):
     text = " ".join(notes(metrics))
     assert "calibrated" in text and "class mix" in text
     assert "never saw" in text                      # leave one exchange out, in words
+    assert "cross-fit" in text                      # how the labels' scores were made
     assert "left out of the shipped model" in text  # the label ablation
     assert "rule-set" in text                       # what is still not learned
 
@@ -50,7 +51,8 @@ def test_build_model_writes_every_artefact_and_reruns_to_the_same_files(tmp_path
     a, b = tmp_path / "a" / "toy", tmp_path / "b" / "toy"
     names = sorted(p.name for p in a.iterdir())
     assert names == ["calibration.json", "dataset.csv", "importance.svg", "metrics.json",
-                     "model.pkl", "reliability.svg", "reliability_by_exchange.svg"]
+                     "model.pkl", "reliability.svg", "reliability_by_exchange.svg",
+                     "reliability_labels.svg"]
     for name in names:
         if name != "model.pkl":
             assert (a / name).read_bytes() == (b / name).read_bytes(), name

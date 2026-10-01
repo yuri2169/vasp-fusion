@@ -9,9 +9,10 @@ Negatives:
     sanctioned addresses, ...) and the gas stations the discovery runs reported.
 
 Every address, of either class, is read with its discovery run's own protocol: the
-same listings, the same `since`, the same row limit, and nothing later than the
-run's last positive transfer. How an address was fetched therefore says nothing
-about its class. An address under test is judged without its own label.
+same listings, the same `since`, the same row limit, nothing later than the run's
+last positive transfer, and only the first `horizon_days` from its first transfer.
+How an address was fetched therefore says nothing about its class or its run. An
+address under test is judged without its own label.
 
 `group` is what leave-one-exchange-out holds out together: an exchange's deposit
 addresses, their customers and the exchange's own wallets ("other" for a labelled
@@ -77,6 +78,10 @@ class Listing:
 class DatasetConfig:
     per_exchange: int = 700          # customers sampled per exchange
     seed: int = SEED
+    # Only an address's first `horizon_days` of transfers are read. The discovery runs
+    # looked back over different spans (two weeks, two months, sixteen months); without
+    # one horizon, how long a listing runs would tell which run an address came from.
+    horizon_days: float | None = 14.0
     rules: DiscoverConfig = DiscoverConfig()
 
 
@@ -115,11 +120,16 @@ def _read(provider, address: str, run):
     return run.read(provider, address)
 
 
-def _example(address: str, run, read, labels, cutoff, rules: DiscoverConfig) -> dict | None:
+def _example(address: str, run, read, labels, cutoff, rules: DiscoverConfig,
+             horizon: timedelta | None = None) -> dict | None:
     rows, complete, events = read
     if cutoff is not None:
         rows = [t for t in rows if t.block_time <= cutoff]
         events = [e for e in events if e.time <= cutoff]
+    if horizon is not None and rows:
+        end = min(t.block_time for t in rows) + horizon
+        rows = [t for t in rows if t.block_time <= end]
+        events = [e for e in events if e.time <= end]
     near = {a for t in rows for a in (t.from_addr, t.to_addr, t.fee_payer) if a}
     near |= {e.payer for e in events}
     near.discard(address)                        # judged without its own label
@@ -140,7 +150,8 @@ def _pays(t, address: str, dust) -> bool:
 
 def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], not_ordinary,
               provider, extra_provider, labels, per_exchange: int, seed: int,
-              rules: DiscoverConfig, progress, workers: int) -> tuple[list[dict], dict]:
+              rules: DiscoverConfig, progress, workers: int,
+              horizon: timedelta | None = None) -> tuple[list[dict], dict]:
     """positives / known_negatives: (address, listing, group, source). Customers are found
     in the positives' own listings. `not_ordinary`: addresses that may not be customers."""
     stats = {"positives": 0, "customers_seen": 0, "customers_in_two_exchanges": 0,
@@ -211,7 +222,8 @@ def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], 
     for address, run, y, group, source, _ in todo:
         if address not in reads:
             continue
-        ex = _example(address, run, reads[address], labels, cutoff.get(run.name), rules)
+        ex = _example(address, run, reads[address], labels, cutoff.get(run.name), rules,
+                      horizon)
         if ex is None:
             stats["empty"] += 1
             continue
@@ -246,8 +258,9 @@ def build(runs: list[Run], provider, extra_provider, labels,
               f"labelled:{lab.category}") for lab in labels.non_deposit(chain)]
     known += [(s["address"], run, s["entity"], "gas_station")
               for run in runs for s in run.stations]
+    horizon = None if cfg.horizon_days is None else timedelta(days=cfg.horizon_days)
     return _assemble(chain, positives, known, fired, provider, extra_provider, labels,
-                     cfg.per_exchange, cfg.seed, cfg.rules, progress, workers)
+                     cfg.per_exchange, cfg.seed, cfg.rules, progress, workers, horizon)
 
 
 def build_tagged(provider, labels, cfg: TaggedConfig = TaggedConfig(), progress=None,

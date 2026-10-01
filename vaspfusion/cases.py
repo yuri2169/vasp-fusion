@@ -231,7 +231,8 @@ def case_headline(case: dict) -> dict:
         "outcome": case["outcome"], "top_vasp": case["top_vasp"], "confidence": case["confidence"],
         "asset": case["asset"], "total_sent": case["total_sent"],
         "candidates": [{k: c[k] for k in ("vasp", "direction", "proximity_rank", "confidence",
-                                          "hops", "share_of_funds", "deposit_address", "label_tier")}
+                                          "confidence_interval", "hops", "share_of_funds",
+                                          "deposit_address", "label_tier")}
                        for c in case["candidates"]],
         "where_funds_went": case["where_funds_went"],
         "nodes": len(case["graph"]["nodes"]), "edges": len(case["graph"]["edges"]),
