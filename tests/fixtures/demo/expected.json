@@ -56,6 +56,115 @@
   "edges": 5,
   "flags": []
  },
+ "eth-bridge": {
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 13705.0531,
+  "candidates": [],
+  "where_funds_went": [
+   {
+    "kind": "bridge",
+    "name": "Across Protocol",
+    "share": 0.602,
+    "amount": 8250.0
+   },
+   {
+    "kind": "other_label",
+    "name": "Uniswap V4",
+    "share": 0.2533,
+    "amount": 3471.123121
+   },
+   {
+    "kind": "not_followed",
+    "name": null,
+    "share": 0.0429,
+    "amount": 587.37486
+   },
+   {
+    "kind": "hub",
+    "name": null,
+    "share": 0.0414,
+    "amount": 567.877379
+   },
+   {
+    "kind": "bridge",
+    "name": "Optimism",
+    "share": 0.0365,
+    "amount": 500.0
+   },
+   {
+    "kind": "beyond_hop_limit",
+    "name": null,
+    "share": 0.0233,
+    "amount": 320.0
+   },
+   {
+    "kind": "returned",
+    "name": null,
+    "share": 0.0006,
+    "amount": 8.67774
+   }
+  ],
+  "nodes": 17,
+  "edges": 36,
+  "flags": [
+   [
+    "bridge_hop",
+    "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    {
+     "share": 0.602,
+     "amount": 8250.0,
+     "hops": 1.0
+    }
+   ],
+   [
+    "bridge_hop",
+    "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
+    {
+     "share": 0.0365,
+     "amount": 500.0,
+     "hops": 3.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "0x46c754ae7d9f172052c7a4093a217136670f6357",
+    {
+     "share": 1.0,
+     "amount": 3479.800861,
+     "seconds": 0.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "0xa000b020c290d000020aac04026b5306d60050f0",
+    {
+     "share": 1.0,
+     "amount": 3471.123121,
+     "seconds": 0.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+    {
+     "share": 1.0,
+     "amount": 1000.0,
+     "seconds": 216.0
+    }
+   ],
+   [
+    "fan_in",
+    "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    {
+     "senders": 5.0,
+     "amount": 13705.05228
+    }
+   ]
+  ]
+ },
  "tron-abstain": {
   "outcome": "INSUFFICIENT_EVIDENCE",
   "top_vasp": null,

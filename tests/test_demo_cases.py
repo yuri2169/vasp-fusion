@@ -247,6 +247,27 @@ def test_ethereum_wallets_are_not_scored_and_the_case_says_why(tmp_path):
         "seen."]
 
 
+def test_eth_wallet_whose_money_went_into_a_bridge_is_not_attributed_to_it(tmp_path):
+    case = run_demo("eth-bridge", tmp_path / "c.duckdb")
+    across = "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5"     # "Across Protocol: Ethereum Spoke Pool V2"
+    assert case["outcome"] == "INSUFFICIENT_EVIDENCE" and case["candidates"] == []
+    assert case["where_funds_went"][0] == {"kind": "bridge", "name": "Across Protocol",
+                                           "share": 0.602, "amount": 8250.0}
+    first, second = flags_of(case, "bridge_hop")
+    assert (first["wallet"], first["severity"], first["figures"]["hops"]) == (across, "warn", 1.0)
+    assert len(first["tx_hashes"]) == 2 and second["figures"]["amount"] == 500.0
+    node = next(n for n in case["graph"]["nodes"] if n["id"] == across)
+    assert node["role"] == "bridge" and node["cluster"] is None
+    assert "60% went into a bridge (Across Protocol)" in case["abstain_reason"]
+    assert case["what_would_change"][0] == ("Following the funds across the bridge (Across "
+                                            "Protocol) onto the destination chain")
+    assert case["next_steps"][0].startswith(
+        "Follow the 8,250 USDT that went into the Across Protocol bridge at 0x5c7b…ed35c5 onto "
+        "the destination chain: a bridge is not an exchange")
+    assert not any(s.startswith("Draft a request") for s in case["next_steps"])
+    assert case["hop_rail"][-1]["to_address"] == across      # the rail leads to the bridge
+
+
 # ---- adapters say whether a listing is the whole answer
 def test_a_listing_read_to_its_end_is_complete(tmp_path):
     tron = demo_provider("tron", demo_fetcher(tmp_path / "t.duckdb", "tron-coindcx"))

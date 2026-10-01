@@ -188,8 +188,9 @@ def _rapid(v: _View, cfg: TypologyConfig) -> list[dict]:
             continue
         flags.append(_flag("rapid_forwarding", "warn", wallet,
                            f"{fmt.short(wallet)} passed on {fmt.pct(passed / received)} of the "
-                           f"{fmt.amount(received, v.asset)} that reached it within "
-                           f"{fmt.duration(slowest)} of its arrival",
+                           f"{fmt.amount(received, v.asset)} that reached it "
+                           + ("in the same block" if slowest == 0 else
+                              f"within {fmt.duration(slowest)} of its arrival"),
                            {"share": round(float(passed / received), 4), "amount": received,
                             "seconds": slowest}, got + sent))
     return flags

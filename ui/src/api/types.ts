@@ -221,6 +221,80 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AbstainBar
+         * @description One candidate bar: what naming an exchange only at or above it does on the
+         *     validation wallets.
+         */
+        AbstainBar: {
+            /** Threshold */
+            threshold: number;
+            /**
+             * Claims Answered
+             * @description Claims made through unlabelled wallets
+             */
+            claims_answered: number;
+            /** Claims Wrong */
+            claims_wrong: number;
+            /**
+             * Risk
+             * @description claims_wrong / claims_answered
+             */
+            risk?: number | null;
+            /**
+             * Risk Upper Bound
+             * @description One-sided Clopper-Pearson bound, corrected for the number of bars tried
+             */
+            risk_upper_bound?: number | null;
+            /** Wallets Named */
+            wallets_named: number;
+            /** Wallets Wrong */
+            wallets_wrong: number;
+            /** Wallets Abstained */
+            wallets_abstained: number;
+        };
+        /**
+         * AbstainInfo
+         * @description How the abstain bar was measured (B7): real exchange customers traced with the
+         *     derived labels hidden. Not a calibration; read `notes`.
+         */
+        AbstainInfo: {
+            /** Chain */
+            chain: string;
+            /** Wallets */
+            wallets: number;
+            /**
+             * Claims
+             * @description Exchanges named through unlabelled wallets
+             */
+            claims: number;
+            /**
+             * Current Threshold
+             * @description The bar the cases use
+             */
+            current_threshold: number;
+            /**
+             * Measured Threshold
+             * @description Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when no bar on the grid does
+             */
+            measured_threshold?: number | null;
+            /** Target Risk */
+            target_risk: number;
+            /** Delta */
+            delta: number;
+            /** Bars */
+            bars: components["schemas"]["AbstainBar"][];
+            /**
+             * Risk Coverage
+             * @default []
+             */
+            risk_coverage: components["schemas"]["RiskCoveragePoint"][];
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+        };
         /** Alert */
         Alert: {
             /** Wallet */
@@ -969,6 +1043,8 @@ export interface components {
              * @default []
              */
             notes: string[];
+            /** @description How the bar below which no exchange is named was measured on this chain; null when it was not */
+            abstain?: components["schemas"]["AbstainInfo"] | null;
         };
         /** ModelMetrics */
         ModelMetrics: {

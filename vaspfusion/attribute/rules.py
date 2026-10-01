@@ -374,9 +374,11 @@ def _bridge_steps(tr: TraceResult, flags: list[dict]) -> list[str]:
             f"Follow the {fmt.amount(node.received, tr.asset)} that went into the "
             f"{node.label.entity} bridge at {fmt.short(node.address)} onto the destination "
             "chain: a bridge is not an exchange and holds no customer account, so no request "
-            f"is drafted for it. The bridge transaction{'s' if len(f['tx_hashes']) != 1 else ''} "
-            f"({', '.join(f['tx_hashes'][:3])}{', …' if len(f['tx_hashes']) > 3 else ''}) "
-            "name the destination chain and address")
+            "is drafted for it. The bridge "
+            + ("transaction" if len(f["tx_hashes"]) == 1 else "transactions")
+            + f" ({', '.join(f['tx_hashes'][:3])}{', …' if len(f['tx_hashes']) > 3 else ''}) "
+            + ("names" if len(f["tx_hashes"]) == 1 else "name")
+            + " the destination chain and address")
     return steps
 
 
@@ -423,6 +425,8 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
                 f"The wallet was funded from {c.vasp} ({fmt.pct(c.share)} of what it received): "
                 f"ask {c.vasp} which account withdrew to it")
     if att.outcome == "INSUFFICIENT_EVIDENCE":
-        att.next_steps = _abstain_steps(tr, cands) + att.next_steps
-    att.next_steps += _bridge_steps(tr, flags)
+        # with no exchange named, the bridge is where the trail goes on: say it first
+        att.next_steps = _bridge_steps(tr, flags) + _abstain_steps(tr, cands) + att.next_steps
+    else:
+        att.next_steps += _bridge_steps(tr, flags)
     return att

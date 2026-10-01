@@ -1,5 +1,5 @@
 {
-  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1 Oct 2026 from senders into labelled exchange and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
+  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1 and 2 Oct 2026 from senders into labelled exchange, bridge and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
   "cases": [
     {
       "id": "tron-coindcx",
@@ -53,6 +53,15 @@
       "chain": "ethereum",
       "max_hops": 3,
       "case_ref": "DEMO/2026/106",
+      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+    },
+    {
+      "id": "eth-bridge",
+      "title": "USDT on Ethereum, 60% into the Across bridge",
+      "address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+      "chain": "ethereum",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/107",
       "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
     }
   ]

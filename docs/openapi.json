@@ -658,6 +658,149 @@
   },
   "components": {
     "schemas": {
+      "AbstainBar": {
+        "properties": {
+          "threshold": {
+            "type": "number",
+            "title": "Threshold"
+          },
+          "claims_answered": {
+            "type": "integer",
+            "title": "Claims Answered",
+            "description": "Claims made through unlabelled wallets"
+          },
+          "claims_wrong": {
+            "type": "integer",
+            "title": "Claims Wrong"
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk",
+            "description": "claims_wrong / claims_answered"
+          },
+          "risk_upper_bound": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Upper Bound",
+            "description": "One-sided Clopper-Pearson bound, corrected for the number of bars tried"
+          },
+          "wallets_named": {
+            "type": "integer",
+            "title": "Wallets Named"
+          },
+          "wallets_wrong": {
+            "type": "integer",
+            "title": "Wallets Wrong"
+          },
+          "wallets_abstained": {
+            "type": "integer",
+            "title": "Wallets Abstained"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "threshold",
+          "claims_answered",
+          "claims_wrong",
+          "wallets_named",
+          "wallets_wrong",
+          "wallets_abstained"
+        ],
+        "title": "AbstainBar",
+        "description": "One candidate bar: what naming an exchange only at or above it does on the\nvalidation wallets."
+      },
+      "AbstainInfo": {
+        "properties": {
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "wallets": {
+            "type": "integer",
+            "title": "Wallets"
+          },
+          "claims": {
+            "type": "integer",
+            "title": "Claims",
+            "description": "Exchanges named through unlabelled wallets"
+          },
+          "current_threshold": {
+            "type": "number",
+            "title": "Current Threshold",
+            "description": "The bar the cases use"
+          },
+          "measured_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured Threshold",
+            "description": "Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when no bar on the grid does"
+          },
+          "target_risk": {
+            "type": "number",
+            "title": "Target Risk"
+          },
+          "delta": {
+            "type": "number",
+            "title": "Delta"
+          },
+          "bars": {
+            "items": {
+              "$ref": "#/components/schemas/AbstainBar"
+            },
+            "type": "array",
+            "title": "Bars"
+          },
+          "risk_coverage": {
+            "items": {
+              "$ref": "#/components/schemas/RiskCoveragePoint"
+            },
+            "type": "array",
+            "title": "Risk Coverage",
+            "default": []
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chain",
+          "wallets",
+          "claims",
+          "current_threshold",
+          "target_risk",
+          "delta",
+          "bars"
+        ],
+        "title": "AbstainInfo",
+        "description": "How the abstain bar was measured (B7): real exchange customers traced with the\nderived labels hidden. Not a calibration; read `notes`."
+      },
       "Alert": {
         "properties": {
           "wallet": {
@@ -2722,6 +2865,17 @@
             "type": "array",
             "title": "Notes",
             "default": []
+          },
+          "abstain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AbstainInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How the bar below which no exchange is named was measured on this chain; null when it was not"
           }
         },
         "additionalProperties": false,
