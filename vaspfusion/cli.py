@@ -426,6 +426,57 @@ def cmd_model(args) -> None:
     print(f"wrote {Path(args.out) / args.chain}/ (run `make labels` to merge the scores)")
 
 
+def cmd_abstain_eval(args) -> None:
+    """Measure the abstain threshold on label-hidden traces of real exchange customers."""
+    from . import chains
+    from .cases import trace_provider
+    from .classify.dataset import load_runs, read_dataset
+    from .eval import abstain as A
+    from .labels.lookup import LabelStore
+
+    cfg = A.AbstainConfig(per_exchange=args.per_exchange, seed=args.seed)
+    out = Path(args.out) / args.chain
+    if args.from_claims:
+        rows, stats = A.read_claims(out / "claims.csv"), None
+    else:
+        wallets = A.sample_wallets(read_dataset(Path(args.model) / args.chain / "dataset.csv"),
+                                   cfg)
+        caches = [chains.ChainCache(args.cache, hold=True), chains.ChainCache(hold=True)]
+        fetcher = chains.Fetcher(chains.LayeredCache(*caches), chains.UrllibTransport())
+        provider = trace_provider(args.chain, fetcher, cfg.trace)
+
+        def progress(stage: str, i: int, n: int) -> None:
+            if i == n or i % 20 == 0:
+                print(f"  {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr, flush=True)
+
+        since = {r.name: r.since for r in load_runs(args.derived) if r.chain == args.chain}
+        rows, stats = A.collect(wallets, args.chain, provider, lambda: LabelStore(args.labels_db),
+                                cfg, workers=args.workers, progress=progress, since=since)
+        for c in caches:
+            c.close()
+        A.write_claims(out / "claims.csv", rows)
+        print(f"{stats['wallets_read']} of {stats['wallets_sampled']} wallets traced twice "
+              f"({stats['errors']} could not be read) | {_pages(fetcher)}")
+    m = A.measure(rows, args.chain, cfg)
+    if stats:
+        m["collected"] = stats
+    elif (out / "validation.json").exists():
+        m["collected"] = json.loads((out / "validation.json").read_text()).get("collected")
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "validation.json").write_text(json.dumps(m, indent=1, allow_nan=False) + "\n")
+    (out / "risk_coverage.svg").write_text(A.risk_coverage_svg(m))
+    print(f"abstain threshold, {args.chain} (seed {m['seed']}):")
+    for note in m["notes"]:
+        print("  - " + note)
+    print(f"  {'bar':>5}{'claims':>8}{'wrong':>7}{'risk':>8}{'upper':>8}   "
+          f"{'named':>6}{'wrong':>7}{'abstain':>9}")
+    for g, c in zip(m["through_unlabelled"]["threshold"]["grid"], m["cases_by_threshold"]):
+        risk = "-" if g["risk"] is None else f"{g['risk']:.1%}"
+        print(f"  {g['threshold']:>5.2f}{g['n_answered']:>8}{g['errors']:>7}{risk:>8}"
+              f"{g['risk_upper_bound']:>8.1%}   {c['named']:>6}{c['wrong']:>7}{c['abstained']:>9}")
+    print(f"wrote {out}/")
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -624,6 +675,24 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--out", default=str(ROOT / "artifacts" / "model_v1"))
     s.add_argument("--seed", type=int, default=26182)
     s.set_defaults(fn=cmd_model)
+
+    s = sub.add_parser("abstain-eval", help="measure the abstain threshold on real exchange "
+                                            "customers traced with the derived labels hidden")
+    s.add_argument("--chain", default="tron")
+    s.add_argument("--model", default=str(ROOT / "artifacts" / "model_v1"),
+                   help="the deposit model's folder: its dataset.csv lists the customers")
+    s.add_argument("--derived", default=str(ROOT / "derived"),
+                   help="the discovery runs: each wallet is traced from its run's start")
+    s.add_argument("--out", default=str(ROOT / "artifacts" / "abstain_v1"))
+    s.add_argument("--cache", default=str(ROOT / "data" / "abstain_cache.duckdb"),
+                   help="the cache the traces are fetched into (the main cache is read too)")
+    s.add_argument("--per-exchange", type=int, default=40, help="wallets sampled per exchange")
+    s.add_argument("--seed", type=int, default=26182)
+    s.add_argument("--workers", type=int, default=6, help="wallets traced in parallel")
+    s.add_argument("--from-claims", action="store_true",
+                   help="no tracing: measure again from the tracked claims.csv")
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_abstain_eval)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))

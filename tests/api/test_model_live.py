@@ -42,3 +42,28 @@ def test_a_chain_without_a_model_falls_back_to_the_mock(client):
     r = client.get("/api/model")                      # tron: nothing in this folder
     assert r.status_code == 200 and r.headers["x-data-source"] == "mock"
     assert client.get("/api/model", params={"chain": "../etc"}).status_code == 404
+
+
+def test_the_abstain_measurement_rides_along_when_it_exists(client, tmp_path, monkeypatch):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from test_abstain import LABELS, ROWS
+    from tracekit import CHAIN, ToyLabels, ToyProvider
+    from vaspfusion.eval import abstain as A
+
+    monkeypatch.setattr(main, "ABSTAIN_DIR", tmp_path)
+    assert client.get("/api/model", params={"chain": "toy"}).json()["abstain"] is None
+    wallets = [("W1", "ExA", "r"), ("W2", "ExA", "r"), ("W3", "ExA", "r"), ("W4", "ExB", "r")]
+    rows, _ = A.collect(wallets, CHAIN, ToyProvider(ROWS), lambda: ToyLabels(LABELS))
+    m = A.measure(rows, "toy")
+    (tmp_path / "toy").mkdir()
+    (tmp_path / "toy" / "validation.json").write_text(json.dumps(m))
+    got = client.get("/api/model", params={"chain": "toy"}).json()["abstain"]
+    assert (got["wallets"], got["claims"], got["current_threshold"]) == (4, 4, 0.6)
+    assert got["measured_threshold"] is None and got["notes"] == m["notes"]
+    bar = next(b for b in got["bars"] if b["threshold"] == 0.6)
+    assert bar == {"threshold": 0.6, "claims_answered": 4, "claims_wrong": 1, "risk": 0.25,
+                   "risk_upper_bound": bar["risk_upper_bound"], "wallets_named": 3,
+                   "wallets_wrong": 0, "wallets_abstained": 1}
+    assert all(0 <= p["accuracy"] <= 1 for p in got["risk_coverage"])
+    svg = A.risk_coverage_svg(m)
+    assert svg.startswith("<svg") and "bar 0.60 in use" in svg

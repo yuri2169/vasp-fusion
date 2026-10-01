@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels discover discover-run discover-eval model-data model test serve fetch trace demo mocks openapi types offline-check clean
+.PHONY: help setup labels discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo mocks openapi types offline-check clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -33,6 +33,9 @@ model-data:       ## build the deposit model's training set into artifacts/model
 
 model:            ## train, calibrate and measure the deposit model on that set; score the derived labels, then `make labels`
 	$(PY) -m vaspfusion.cli model --chain $(MODEL_CHAIN)
+
+abstain-eval:     ## measure the abstain threshold on label-hidden traces of real customers (cached; OFFLINE=1 replays)
+	$(PY) -m vaspfusion.cli abstain-eval
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q

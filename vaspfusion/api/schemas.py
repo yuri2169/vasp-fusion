@@ -507,6 +507,37 @@ class RuleBaseline(_M):
     accuracy: float | None = None
 
 
+class AbstainBar(_M):
+    """One candidate bar: what naming an exchange only at or above it does on the
+    validation wallets."""
+    threshold: float
+    claims_answered: int = Field(description="Claims made through unlabelled wallets")
+    claims_wrong: int
+    risk: float | None = Field(None, description="claims_wrong / claims_answered")
+    risk_upper_bound: float | None = Field(None, description="One-sided Clopper-Pearson "
+                                           "bound, corrected for the number of bars tried")
+    wallets_named: int
+    wallets_wrong: int
+    wallets_abstained: int
+
+
+class AbstainInfo(_M):
+    """How the abstain bar was measured (B7): real exchange customers traced with the
+    derived labels hidden. Not a calibration; read `notes`."""
+    chain: str
+    wallets: int
+    claims: int = Field(description="Exchanges named through unlabelled wallets")
+    current_threshold: float = Field(description="The bar the cases use")
+    measured_threshold: float | None = Field(None, description=(
+        "Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when "
+        "no bar on the grid does"))
+    target_risk: float
+    delta: float
+    bars: list[AbstainBar]
+    risk_coverage: list[RiskCoveragePoint] = []
+    notes: list[str] = []
+
+
 class ModelInfo(_M):
     status: Literal["not_measured", "measured"]
     version: str | None = None
@@ -521,6 +552,9 @@ class ModelInfo(_M):
     baseline: RuleBaseline | None = None
     chain: str | None = Field(None, description="The chain the model was trained on")
     notes: list[str] = []
+    abstain: AbstainInfo | None = Field(None, description=(
+        "How the bar below which no exchange is named was measured on this chain; null "
+        "when it was not"))
 
 
 class Health(_M):

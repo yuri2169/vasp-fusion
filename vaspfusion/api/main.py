@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
 MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
+ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
@@ -394,4 +395,7 @@ def get_model(response: Response, chain: str = "tron"):
         _source(response, "mock")
         return load_mock("model")
     _source(response, "live")
-    return model_info(metrics)
+    from ..eval.abstain import abstain_info, read_validation
+    validation = read_validation(ABSTAIN_DIR, chain)
+    return {**model_info(metrics),
+            "abstain": abstain_info(validation) if validation else None}
