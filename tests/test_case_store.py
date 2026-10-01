@@ -84,3 +84,23 @@ def test_re_saving_a_case_does_not_duplicate_its_wallets(store, tmp_path):
     store.save(case)
     store.save(case)
     assert len(store.wallet_cases("TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c", "tron")) == 1
+
+
+def test_writers_on_several_threads_do_not_collide(store):
+    import threading
+    errors = []
+
+    def hammer(n):
+        try:
+            for i in range(25):
+                store.save({**queued(), "status": "running" if (n + i) % 2 else "queued"})
+        except Exception as e:  # noqa: BLE001
+            errors.append(e)
+
+    threads = [threading.Thread(target=hammer, args=(n,)) for n in range(4)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    assert errors == []
+    assert len(store.list()) == 1

@@ -105,6 +105,12 @@ def test_narrative_gives_the_hop_range_when_money_took_two_routes():
     assert "1,000 USDT (100%) reached ExB in 1 to 2 hops, at POR" in text
 
 
+def test_narrative_of_a_mixer_address_says_what_it_is_once():
+    text = story([tx(1, "S", "X", 5, 0)], labels={"S": ("Tornado.Cash", "mixer")})
+    assert text.count("labelled Tornado.Cash") == 1
+    assert "Nearest exchange" not in text
+
+
 def test_narrative_of_a_wallet_that_sent_nothing():
     assert "has not sent" in story([tx(1, "X", "S", 5, 0)])
 

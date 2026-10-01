@@ -69,7 +69,9 @@ def path_hashes(tr: TraceResult, att: Attribution) -> list[str]:
 
 def narrative(tr: TraceResult, att: Attribution, rules: RuleConfig = RuleConfig()) -> str:
     parts = [_opening(tr)]
-    alerts = [f["text"] + "." for f in att.flags if f["severity"] == "high"]
+    untraced_service = tr.asset is None and bool(tr.notes) and "not traced" in tr.notes[0]
+    alerts = [f["text"] + "." for f in att.flags if f["severity"] == "high"
+              and not (untraced_service and f["wallet"] == tr.address)]   # the opening said it
     out = [c for c in att.candidates if c.direction == "outbound" and c.hops > 0]
     reached = [_reached(tr, c) for c in out[:MAX_CANDIDATES]]
     if len(out) > MAX_CANDIDATES:

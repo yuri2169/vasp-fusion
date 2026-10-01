@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +22,10 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "data" / "case.duckdb"
 SUMMARY_KEYS = ("id", "address", "chain", "status", "outcome", "top_vasp", "confidence",
                 "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo", "error")
+
+# DuckDB aborts one of two transactions that rewrite the same row at once. Writers in
+# this process queue on a lock; a writer in another process is retried.
+_WRITE = threading.Lock()
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS cases (
@@ -46,7 +51,7 @@ class CaseStore:
     def __init__(self, path: Path | str | None = None):
         self.path = Path(path or os.environ.get("VASPFUSION_CASE_DB") or DEFAULT_DB)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with self._con() as con:
+        with _WRITE, self._con() as con:
             con.execute(_DDL)
 
     def _con(self, wait_s: float = 30.0):
@@ -65,17 +70,26 @@ class CaseStore:
         created = datetime.fromisoformat(str(detail["created_at"]).replace("Z", "+00:00"))
         wallets = [(detail["id"], n["id"], n["chain"], n["role"], n["hop"])
                    for n in detail.get("graph", {}).get("nodes", [])]
-        with self._con() as con:
-            con.execute("BEGIN")
-            con.execute("DELETE FROM cases WHERE id = ?", [detail["id"]])
-            con.execute("DELETE FROM case_wallets WHERE case_id = ?", [detail["id"]])
-            con.execute("INSERT INTO cases VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        [detail["id"], detail["address"], detail["chain"], detail["status"],
-                         detail.get("outcome"), created.replace(tzinfo=None),
-                         json.dumps(detail, sort_keys=True)])
-            if wallets:
-                con.executemany("INSERT INTO case_wallets VALUES (?, ?, ?, ?, ?)", wallets)
-            con.execute("COMMIT")
+        row = [detail["id"], detail["address"], detail["chain"], detail["status"],
+               detail.get("outcome"), created.replace(tzinfo=None),
+               json.dumps(detail, sort_keys=True)]
+        with _WRITE:
+            for attempt in range(5):
+                try:
+                    with self._con() as con:
+                        con.execute("BEGIN")
+                        con.execute("DELETE FROM cases WHERE id = ?", [detail["id"]])
+                        con.execute("DELETE FROM case_wallets WHERE case_id = ?", [detail["id"]])
+                        con.execute("INSERT INTO cases VALUES (?, ?, ?, ?, ?, ?, ?)", row)
+                        if wallets:
+                            con.executemany("INSERT INTO case_wallets VALUES (?, ?, ?, ?, ?)",
+                                            wallets)
+                        con.execute("COMMIT")
+                    return
+                except duckdb.TransactionException:
+                    if attempt == 4:
+                        raise
+                    time.sleep(0.05 * (attempt + 1))
 
     def set_status(self, case_id: str, status: str, error: str | None = None) -> None:
         detail = self.get(case_id)

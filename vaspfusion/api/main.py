@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -36,9 +37,10 @@ MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 VERSION = "0.1.0"
-# Chains a trace can run on today. BSC has no free data source, Solana and Avalanche
-# have no adapter yet (PROGRESS.md, B2).
-TRACEABLE = ("tron", "ethereum", "polygon", "arbitrum", "base", "optimism", "bitcoin")
+# Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
+# have no adapter yet (PROGRESS.md, B2); Bitcoin waits for B5 (a UTXO transaction is
+# not a wallet-to-wallet transfer, and the basic adapter would overstate what was sent).
+TRACEABLE = ("tron", "ethereum", "polygon", "arbitrum", "base", "optimism")
 
 app = FastAPI(title="VASP-FUSION",
               description="Nearest-VASP attribution for unknown crypto wallets, with "
@@ -164,12 +166,21 @@ def _resolve(body: S.CaseCreate) -> tuple[str, str]:
     return chain, address
 
 
-def _run_case(case_id: str, max_hops: int, incident: datetime | None) -> None:
-    """Trace the wallet and store the result. Runs after the POST has answered."""
-    store = _cases()
-    queued = store.get(case_id)
-    store.set_status(case_id, "running")
+# Cases this process is tracing right now. A stored case that says queued/running but
+# is not in here was orphaned (the server stopped mid-trace) and is run again on request.
+# One server process is assumed, as everywhere else in this single-workstation tool.
+_ACTIVE: set[str] = set()
+_ACTIVE_LOCK = threading.Lock()
+
+
+def _run_case(case_id: str, max_hops: int, incident: datetime | None,
+              previous: dict | None = None) -> None:
+    """Trace the wallet and store the result. Runs after the POST has answered.
+    `previous` is the finished case being refreshed: it is kept if the new run fails."""
     try:
+        store = _cases()
+        queued = store.get(case_id)
+        store.set_status(case_id, "running")
         fetcher = make_fetcher()
         cfg = TraceConfig(max_hops=max_hops, since=incident)
         provider = trace_provider(queued["chain"], fetcher, cfg)
@@ -180,7 +191,19 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None) -> None:
                 now=datetime.fromisoformat(queued["created_at"].replace("Z", "+00:00")))
         store.save(detail)
     except Exception as e:  # noqa: BLE001 - whatever went wrong, the case must say so
-        store.set_status(case_id, "failed", error=f"{type(e).__name__}: {e}"[:500])
+        why = f"{type(e).__name__}: {e}"[:500]
+        try:
+            if previous is not None:
+                _cases().save({**previous, "status": "done", "error":
+                               f"Refresh failed ({why}). Showing the result of "
+                               f"{previous['created_at']}."})
+            else:
+                _cases().set_status(case_id, "failed", error=why)
+        except Exception:  # noqa: BLE001 - the store itself is down; nothing more to record
+            pass
+    finally:
+        with _ACTIVE_LOCK:
+            _ACTIVE.discard(case_id)
 
 
 @app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
@@ -197,19 +220,39 @@ def create_case(body: S.CaseCreate, response: Response, background: BackgroundTa
     store = _cases()
     _source(response, "live")
     existing = store.find(chain, address)
-    if existing and existing["status"] != "failed" and not refresh:
-        return {k: existing.get(k) for k in SUMMARY_KEYS}
     cid = existing["id"] if existing else case_id_for(chain, address)
+    with _ACTIVE_LOCK:
+        tracing = cid in _ACTIVE
+        finished = existing is not None and existing["status"] == "done"
+        if existing and (tracing or (finished and not refresh)):
+            return {k: existing.get(k) for k in SUMMARY_KEYS}
+        _ACTIVE.add(cid)
+    # a re-run keeps the details the officer entered unless new ones are given
+    old = existing or {}
     summary = S.CaseSummary(
-        id=cid, address=address, chain=chain, status="queued", case_ref=body.case_ref,
-        complaint_no=body.complaint_no, amount_lost_inr=body.amount_lost_inr,
+        id=cid, address=address, chain=chain, status="queued",
+        case_ref=body.case_ref or old.get("case_ref"),
+        complaint_no=body.complaint_no or old.get("complaint_no"),
+        amount_lost_inr=body.amount_lost_inr if body.amount_lost_inr is not None
+        else old.get("amount_lost_inr"),
         created_at=datetime.now(timezone.utc)).model_dump(mode="json")
-    store.save(skeleton(summary))
+    try:
+        if finished:    # keep the finished result on screen (and on disk) while it re-runs
+            previous = {**existing, **{k: summary[k] for k in ("case_ref", "complaint_no",
+                                                               "amount_lost_inr")}, "error": None}
+            store.save({**previous, "status": "queued", "created_at": summary["created_at"]})
+        else:
+            previous = None
+            store.save(skeleton(summary))
+    except Exception:
+        with _ACTIVE_LOCK:
+            _ACTIVE.discard(cid)
+        raise
     incident = None
     if body.incident_date is not None:
         incident = datetime(body.incident_date.year, body.incident_date.month,
                             body.incident_date.day, tzinfo=timezone.utc)
-    background.add_task(_run_case, cid, body.max_hops, incident)
+    background.add_task(_run_case, cid, body.max_hops, incident, previous)
     return summary
 
 

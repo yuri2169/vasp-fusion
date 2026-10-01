@@ -70,7 +70,8 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 ```
 - **One asset is followed:** the stablecoin the wallet sent most of, else the native coin. Unknown tokens are never followed (this is what keeps address-poisoning spoofs out). Whatever else the wallet sent is listed as "not followed".
 - **Allocation, "first out after arrival":** money that reached a wallet at time *t* is assigned to that wallet's next outgoing transfers at or after *t*, in time order. So every unit the wallet sent ends in exactly one place, and the case says where: an exchange, a sanctioned address, a hub, past the hop limit, or not moved.
-- **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds.
+- **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
+- **Chains:** Tron and the EVM chains with a free data source (Ethereum, Polygon, Arbitrum, Base, Optimism). Bitcoin tracing arrives with B5.
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
 - **Confidence is rule-based and not calibrated** (B6 replaces it): the average over the traced money of *tier weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Tier weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75, derived 0.60. A VASP is named at 0.60 or more.
 - **Outcomes:** `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (with the reason and what would change it) · `SANCTIONED_OR_MIXER_REACHED` (1% or more of the funds reached a sanctioned or mixer label).

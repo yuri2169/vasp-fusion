@@ -91,11 +91,50 @@ def test_a_wallet_that_cannot_be_fetched_fails_with_a_readable_error(client, tmp
     assert client.get(f"/api/cases/{cid}").json()["status"] == "done"
 
 
+def test_a_refresh_that_fails_keeps_the_finished_case(client, tmp_path, monkeypatch):
+    first = client.post("/api/cases", json={"address": COINDCX, "case_ref": "FIR 12/2026",
+                                            "complaint_no": "315"}).json()
+    good = client.get(f"/api/cases/{first['id']}").json()
+    monkeypatch.setattr(main, "make_fetcher",
+                        lambda: demo_fetcher(tmp_path / "empty.duckdb", offline=True))
+    r = client.post("/api/cases", params={"refresh": "true"}, json={"address": COINDCX})
+    assert r.json()["status"] == "queued"
+    after = client.get(f"/api/cases/{first['id']}").json()
+    assert (after["status"], after["outcome"], after["top_vasp"]) == ("done", "ATTRIBUTED", "CoinDCX")
+    assert "Refresh failed" in after["error"] and "not cached" in after["error"]
+    assert (after["case_ref"], after["complaint_no"]) == ("FIR 12/2026", "315")
+    assert after["candidates"] == good["candidates"] and after["graph"] == good["graph"]
+
+
+def test_a_refresh_keeps_the_case_details_unless_new_ones_are_given(client):
+    first = client.post("/api/cases", json={"address": COINDCX, "case_ref": "FIR 12/2026",
+                                            "complaint_no": "315"}).json()
+    client.post("/api/cases", params={"refresh": "true"},
+                json={"address": COINDCX, "complaint_no": "999"})
+    case = client.get(f"/api/cases/{first['id']}").json()
+    assert (case["status"], case["case_ref"], case["complaint_no"]) == ("done", "FIR 12/2026", "999")
+
+
+@pytest.mark.parametrize("stuck", ["queued", "running"])
+def test_a_case_left_unfinished_by_a_restart_is_run_again(client, tmp_path, stuck):
+    from vaspfusion.cases import case_id_for, skeleton
+    from vaspfusion.store.cases import CaseStore
+    cid = case_id_for("tron", COINDCX)
+    CaseStore(tmp_path / "case.duckdb").save(skeleton({
+        "id": cid, "address": COINDCX, "chain": "tron", "status": stuck,
+        "created_at": "2026-10-01T00:00:00Z", "case_ref": "FIR 7/2026"}))
+    r = client.post("/api/cases", json={"address": COINDCX})
+    assert r.json()["id"] == cid
+    case = client.get(f"/api/cases/{cid}").json()
+    assert (case["status"], case["top_vasp"], case["case_ref"]) == ("done", "CoinDCX", "FIR 7/2026")
+
+
 @pytest.mark.parametrize("body,needle", [
     ({"address": "not-a-wallet"}, "chain"),
     ({"address": COINDCX, "chain": "ethereum"}, "not a valid ethereum address"),
     ({"address": "0x8894e0a0c962cb723c1976a4421c95949be2d4e3", "chain": "bsc"}, "bsc"),
     ({"address": "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"}, "solana"),
+    ({"address": "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"}, "bitcoin"),
 ])
 def test_addresses_we_cannot_trace_are_a_readable_422(client, body, needle):
     r = client.post("/api/cases", json=body)
