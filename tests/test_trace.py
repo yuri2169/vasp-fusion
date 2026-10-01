@@ -189,6 +189,66 @@ def test_every_unit_the_wallet_sent_is_accounted_for(transfers):
         + r.stopped.get("returned", D(0)) == r.total_out
 
 
+# ------------------------------------------------------------------ paths
+def test_the_path_follows_the_money_not_the_largest_transfer_into_a_wallet():
+    # the first deposit was swept on; the larger second one arrived later and stayed
+    r = run([tx(1, "S", "D", 1000, 1), tx(2, "D", "HOT", 1000, 2), tx(3, "S", "D", 2000, 10)])
+    path = r.path_to("outbound", "HOT")
+    assert [e.transfer.tx_hash for e in path] == ["tx1", "tx2"]
+    assert path[0].transfer.block_time <= path[1].transfer.block_time
+
+
+def test_the_path_to_a_wallet_reached_twice_is_its_nearest_route():
+    r = run([tx(1, "S", "M2", 500, 0), tx(2, "S", "M1", 500, 1), tx(3, "M1", "M2", 500, 2),
+             tx(4, "M2", "HOT", 600, 10)], max_hops=4)
+    assert [e.transfer.tx_hash for e in r.path_to("outbound", "HOT")] == ["tx1", "tx4"]
+    far = max((e for e in r.edges if e.transfer.tx_hash == "tx4"), key=lambda e: e.hop)
+    assert [e.transfer.tx_hash for e in r.path_of(far)] == ["tx2", "tx3", "tx4"]
+
+
+def _random_transfers(rng, n_wallets=7, n_tx=18):
+    names = ["S"] + [f"W{i}" for i in range(n_wallets)] + ["HOT", "HOT2"]
+    rows = []
+    for i in range(n_tx):
+        a, b = rng.sample(names, 2)
+        if a.startswith("HOT"):
+            a, b = b, a
+        rows.append(tx(i, a, b, rng.choice([5, 50, 100, 250, 1000]), rng.randrange(0, 40)))
+    return rows
+
+
+@pytest.mark.parametrize("seed", range(150))
+def test_properties_of_any_trace(seed):
+    """Whatever the transfers: nothing is created or lost, no transfer carries more than
+    its amount, money never leaves before it arrived, and every path is a real route."""
+    import random
+    rng = random.Random(26182 + seed)
+    r = run(_random_transfers(rng), labels={"HOT": ("ExA", "exchange"), "HOT2": ("ExB", "exchange")},
+            max_hops=rng.randint(1, 5), inbound_hops=rng.randint(1, 3),
+            fetch_limit=rng.choice([3, 100]), hub_degree=rng.choice([3, 30]))
+    assert sum(r.stopped.values(), D(0)) == r.total_out
+    assert sum(r.stopped_in.values(), D(0)) == r.total_in
+    carried: dict = {}
+    for e in r.edges:
+        carried[(e.side, e.transfer)] = carried.get((e.side, e.transfer), D(0)) + e.traced
+        assert e.traced > 0
+    assert all(total <= t.amount for (_, t), total in carried.items())
+    for (side, address), node in r.nodes.items():
+        if side == "origin":
+            continue
+        into = [e for e in r.edges if e.side == side
+                and (e.transfer.to_addr if side == "outbound" else e.transfer.from_addr) == address]
+        assert sum((e.traced for e in into), D(0)) == node.received
+        assert sum(node.holds.values(), D(0)) == node.held <= node.received
+        path = r.path_to(side, address)
+        assert len(path) == node.hop
+        times = [e.transfer.block_time for e in path]
+        assert times == sorted(times)                     # money-flow order, forward in time
+        ends = [(e.transfer.from_addr, e.transfer.to_addr) for e in path]
+        assert all(ends[i][1] == ends[i + 1][0] for i in range(len(ends) - 1))
+        assert (ends[0][0] if side == "outbound" else ends[-1][1]) == "S"
+
+
 # ------------------------------------------------------------------ which asset
 def test_the_stablecoin_with_the_largest_outflow_is_followed():
     r = run([tx(1, "S", "A", 100, 0, asset="USDC"), tx(2, "S", "B", 900, 1),
@@ -266,6 +326,33 @@ def test_two_hops_back_uses_the_latest_inflows_before_the_payment():
     assert (inn(r, "HOT").received, inn(r, "HOT").hop) == (D(200), 2)
     assert ("inbound", "LATE") not in r.nodes
     assert [e.transfer.tx_hash for e in r.path_to("inbound", "HOT")] == ["tx1", "tx3"]
+
+
+def test_trace_config_rejects_depths_it_cannot_walk():
+    with pytest.raises(ValueError):
+        TraceConfig(max_hops=0)
+    with pytest.raises(ValueError):
+        TraceConfig(inbound_hops=6)
+
+
+def test_inbound_can_be_switched_off():
+    r = run([tx(1, "F1", "S", 700, 0), tx(2, "S", "HOT", 700, 1)], inbound_hops=0)
+    assert not [k for k in r.nodes if k[0] == "inbound"] and r.total_in == D(0)
+    assert r.to_igraph().ecount() == 1
+
+
+def test_a_provider_that_says_its_listing_was_cut_is_believed():
+    """Adapters page with a cap; fewer rows than the limit does not mean 'that is all'."""
+    class Capped(ToyProvider):
+        def transfers(self, address, direction="both", since=None, limit=200, asset=None):
+            rows = super().transfers(address, direction, since, limit, asset)
+            from vaspfusion.chains.base import TransferList
+            return TransferList(rows, complete=address != "M1")
+
+    provider = Capped([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "A", 100, 5)])
+    r = trace("S", CHAIN, provider, ToyLabels(EX), TraceConfig())
+    assert out(r, "M1").holds == {"truncated": D(900)}
+    assert r.stopped == {"truncated": D(900), "unspent": D(100)}     # A's listing was whole
 
 
 def test_a_funder_with_an_incomplete_history_is_not_expanded():

@@ -24,7 +24,7 @@ from decimal import Decimal
 
 from .addresses import validate
 from .base import (ChainProvider, Direction, InvalidAddress, ProviderError, Transfer,
-                   sort_transfers, utc_from_s)
+                   TransferList, sort_transfers, utc_from_s)
 from .cache import Fetcher
 
 BASE = "https://mempool.space/api"
@@ -47,7 +47,7 @@ class BtcProvider(ChainProvider):
 
     def transfers(self, address: str, direction: Direction = "both",
                   since: datetime | None = None, limit: int = 200,
-                  asset: str | None = None) -> list[Transfer]:
+                  asset: str | None = None) -> TransferList:
         address = address.strip()
         if not validate(address, "bitcoin"):
             raise InvalidAddress(f"not a Bitcoin address: {address}")
@@ -55,6 +55,7 @@ class BtcProvider(ChainProvider):
         if address.lower().startswith("bc1"):
             address = address.lower()
         out: list[Transfer] = []
+        reached = False     # paged back to the start of the history, or to before `since`
         url = f"{BASE}/address/{address}/txs"
         for _ in range(self.max_pages):
             txs = self.fetcher.get_json("bitcoin", address, "both", url, {}, check=_check)
@@ -64,16 +65,20 @@ class BtcProvider(ChainProvider):
                         if direction == "both" or t.direction_for(address) == direction]
             oldest = min((t["status"]["block_time"] for t in confirmed), default=None)
             if len(confirmed) < LAST_PAGE_BELOW:
+                reached = True
                 break
             if since is not None and oldest is not None and oldest < since.timestamp():
+                reached = True
                 break
             if since is None and len(out) >= limit:
                 break
             url = f"{BASE}/address/{address}/txs/chain/{confirmed[-1]['txid']}"
         rows = sort_transfers(out)
         if since is not None:
-            return [t for t in rows if t.block_time >= since][:limit]
-        return rows[-limit:] if limit else []
+            rows = [t for t in rows if t.block_time >= since]
+            return TransferList(rows[:limit], complete=reached and len(rows) <= limit)
+        return TransferList(rows[-limit:] if limit else [],
+                            complete=reached and len(rows) <= limit)
 
     @staticmethod
     def _parse(tx: dict, address: str) -> list[Transfer]:

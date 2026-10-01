@@ -1,10 +1,11 @@
 """The real demo wallets, end to end, on recorded responses: each attributes as
 demo/cases.json expects, and replays identically with no transport at all."""
 import json
+from datetime import datetime, timezone
 
 import pytest
 
-from demokit import FIX, SPECS, run_demo
+from demokit import FIX, SPECS, demo_fetcher, demo_provider, run_demo
 from vaspfusion.api import schemas as S
 from vaspfusion.cases import case_headline
 from vaspfusion.chains.base import CacheMiss
@@ -129,4 +130,28 @@ def test_tron_wallet_with_a_weak_lead_abstains(tmp_path):
 def test_eth_wallet_whose_money_never_reached_a_label_abstains(tmp_path):
     case = run_demo("eth-abstain", tmp_path / "c.duckdb")
     assert [c for c in case["candidates"] if c["direction"] == "outbound"] == []
-    assert "has not moved on" in case["abstain_reason"]
+    # 10,000 USDT went into two wallets that each took 500+ incoming transfers in the next
+    # few days: the page cap is reached before any outflow could be seen, so "still there"
+    # is not claimed for them. The other 12,214.70 sits in a wallet whose listing is whole.
+    kinds = {s["kind"]: s["amount"] for s in case["where_funds_went"]}
+    assert kinds == {"not_moved": 12214.697568, "not_followed": 10000.0}
+    assert "more transfers than one fetch reads" in case["abstain_reason"]
+    assert any("0x6f48" in w and "full history" in w for w in case["what_would_change"])
+
+
+# ---- adapters say whether a listing is the whole answer
+def test_a_listing_read_to_its_end_is_complete(tmp_path):
+    tron = demo_provider("tron", demo_fetcher(tmp_path / "t.duckdb", "tron-coindcx"))
+    swept = tron.transfers("TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5", "out", limit=100, asset="USDT",
+                           since=datetime(2025, 5, 25, 3, 22, 15, tzinfo=timezone.utc))
+    assert len(swept) >= 1 and swept.complete is True
+    eth = demo_provider("ethereum", demo_fetcher(tmp_path / "e.duckdb", "eth-bitget"))
+    sent = eth.transfers(SPECS["eth-bitget"]["address"], "out", limit=100, asset="USDT")
+    assert len(sent) >= 2 and sent.complete is True
+
+
+def test_a_listing_cut_by_the_limit_is_not_complete(tmp_path):
+    tron = demo_provider("tron", demo_fetcher(tmp_path / "t.duckdb", "tron-coindcx"))
+    hub = tron.transfers("TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf", "out", limit=100, asset="USDT",
+                         since=datetime(2025, 7, 14, 16, 12, 48, tzinfo=timezone.utc))
+    assert len(hub) == 100 and hub.complete is False

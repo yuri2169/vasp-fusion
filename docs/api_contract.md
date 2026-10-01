@@ -16,7 +16,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 - **Every response carries `X-Data-Source`: `mock` | `live` | `mixed`.** The UI can show a "demo data" ribbon whenever it isn't `live`.
 - Errors come back as `{"detail": "<plain-English sentence saying what happened and what to do>"}`. Codes used: 404 (unknown id), 422 (bad input; `detail` is a string for our own checks, and a list for Pydantic validation errors), 403 (cross-origin write refused), 501 (not built yet).
 - Addresses are returned exactly as stored. EVM addresses are lowercase; Tron and BTC keep their case.
-- **Proximity and confidence are separate fields and are never blended.** `proximity_rank` (1 = nearest: hops, share of funds, time) and `confidence` (0–1, calibrated from B6).
+- **Proximity and confidence are separate fields and are never blended.** `proximity_rank` (1 = nearest: hops, share of funds, time) and `confidence` (0–1; rule-based in B3, calibrated from B6).
 - Outcomes: `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (then `abstain_reason` + `what_would_change` are set, and `top_vasp` is null) · `SANCTIONED_OR_MIXER_REACHED`.
 - Label tiers, strongest first: `published_por` (exchange's own proof-of-reserves list) › `curated` (OFAC, cex-list, MEW scam list, Dune spellbook, operator statements) › `explorer_tag` (Etherscan-style tags) › `derived` (inferred by VASP-FUSION, e.g. B4 sweep/gas-payer). UI names: *Published by exchange*, *Curated list*, *Explorer tag*, *Derived by VASP-FUSION*.
 - Categories: `exchange`, `custodial_wallet`, `swap_service` (all three are VASPs), plus `sanctioned`, `scam`, `mixer`, `bridge`, `defi`, `entity`.
@@ -27,10 +27,10 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | Method | Path | Request | Response model | Mock file | Status | Owner |
 |---|---|---|---|---|---|---|
 | GET | `/api/health` | – | `Health` | – | live | B1 |
-| POST | `/api/cases` | `CaseCreate` | `CaseSummary` (202) | returns a demo case if the address matches | mock | B3 |
-| GET | `/api/cases?outcome=&status=` | – | `CaseList` | `cases.json` | mock | B3 |
-| GET | `/api/cases/{id}` | – | `CaseDetail` | `cases/{id}.json` | mock | B3 (B4, B7 fill evidence/flags) |
-| GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` | **labels live**, the rest mock | B3/B6 |
+| POST | `/api/cases?refresh=` | `CaseCreate` | `CaseSummary` (202) | returns a mock demo case if the address is one of theirs | **live** | B3 |
+| GET | `/api/cases?outcome=&status=` | – | `CaseList` | `cases.json` (listed after the live cases) | **live** + mock | B3 |
+| GET | `/api/cases/{id}` | – | `CaseDetail` | `cases/{id}.json` (only for the mock ids) | **live** | B3 (B4, B7 fill evidence/flags) |
+| GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` | **labels and `cases` live**, the rest mock | B3/B6 |
 | GET | `/api/labels/search?q=&chain=&category=&tier=&limit=&offset=` | – | `LabelSearch` | `labels/search.json` (fallback) | **live** | B1 |
 | GET | `/api/desk` | – | `Desk` | `desk.json` | mock | B8 |
 | GET | `/api/vasps/{name}` | – | `VaspDetail` | `vasps/{name}.json` | mock | B8 |
@@ -41,7 +41,30 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | GET | `/api/dashboard` | – | `Dashboard` | `dashboard.json` | **label_coverage live**, the rest mock | B7/B9 |
 | GET | `/api/model` | – | `ModelInfo` | `model.json` (`not_measured`) | mock | B6 |
 
-`POST /api/cases`: `chain` is optional. The server guesses it from the address format (Tron `T…`, EVM `0x…` → `ethereum`, BTC `1…/3…/bc1…`, Solana base58). If it can't tell, it returns a 422 asking the officer to pick one. B2 replaces this guess with checksum validation.
+### Cases are live (B3)
+- `POST /api/cases` validates the address (base58check / EIP-55 / bech32), stores the case as `queued`, answers 202 at once, then traces in the background: `queued → running → done | failed`. **Poll `GET /api/cases/{id}`** until the status is `done` or `failed`. A real trace takes about 1–10 s live, and well under a second from the cache.
+- `chain` is optional: Tron, Bitcoin and Solana addresses are unambiguous, and an EVM address is taken as `ethereum` unless the officer picks another chain. EVM addresses are stored lowercase.
+- 422 with a plain-English `detail` when: the chain can't be told from the address; the address is not valid on the chosen chain; or the chain can't be traced yet (traceable today: tron, ethereum, polygon, arbitrum, base, optimism, bitcoin).
+- Posting a wallet that already has a case returns that case (same `id`, no second trace). `?refresh=true` traces it again; a `failed` case is always retried.
+- A `failed` case has `error` set (for example `CacheMiss: OFFLINE=1 and not cached: …`) and empty lists.
+- `max_hops` (1–5, default 3) is the outbound depth. `incident_date`, when given, limits the trace to the wallet's transfers from that day on.
+- Case ids are `c-` + 10 hex characters (stable per chain + address). The three mock cases keep their `demo-…` ids and are listed after the live ones; the list's `X-Data-Source` is `mixed` once a live case exists.
+- **Real demo cases:** `make demo` runs the six wallets in `demo/cases.json` into the store with ids `tron-coindcx`, `eth-bitget`, `tron-ofac`, `tron-htx-coindcx`, `tron-abstain`, `eth-abstain` and `demo: true`.
+
+### Fields added in B3 (all optional, so the mocks are unchanged)
+- `CaseSummary.error`.
+- `CaseDetail.asset`, `total_sent`, `total_received`: what was traced, in the traced asset.
+- `CaseDetail.where_funds_went: FundsSlice[]` (`kind`, `name`, `share`, `amount`), largest first, adding up to the whole of `total_sent`. Kinds: `vasp`, `sanctioned`, `mixer`, `bridge`, `other_label`, `hub`, `beyond_hop_limit`, `not_moved`, `not_followed`, `returned`. Meant for a single stacked bar: "where did the money end up?".
+- `Candidate.direction`: `outbound` (the wallet's money went there) or `inbound` (that VASP funded the wallet). Inbound candidates rank after outbound ones and never decide the outcome.
+- `Candidate.hops` may be `0`: the wallet itself is a labelled VASP address.
+- `Hop.traced_amount` and `GraphEdge.traced_amount`: the part of the on-chain `amount` that is the suspect wallet's money (a transfer of 11,000 may carry 5,800 of it).
+
+### What B3 fills, and what waits
+- `confidence` is **rule-based, not calibrated**, and `confidence_interval` and `counterfactual` are `null` until B6/B7. Show it as "rule confidence".
+- `top_vasp` is the nearest candidate (lowest `proximity_rank`) whose confidence is 0.60 or more. It can differ from the highest-confidence candidate; both numbers are on every candidate.
+- `deposit_address` is the labelled address the money entered the VASP by. On Tron that is usually a hot wallet; the customer's own deposit address is the hop before it (`path[-2]`), named in the evidence and the next steps. B4 turns that into a `derived` label.
+- `evidence` kinds used: `label`, `path`. `typology_flags` codes used: `sanctioned_contact`, `mixer_contact`, `bridge_hop`. The rest arrive with B4 and B7.
+- Node roles: an unlabelled wallet the trace walked through is `intermediary`; one it did not expand is `unknown`; `hub` is a high-activity wallet where the trail stops. A node seen both as a funder and as a destination appears once.
 
 ## Key shapes (see `types.ts` for every field)
 

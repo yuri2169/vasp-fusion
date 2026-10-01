@@ -67,6 +67,19 @@ class Transfer:
         }
 
 
+class TransferList(list):
+    """What `transfers()` returns: a list, plus whether it is the whole answer.
+
+    `complete` is True only when the adapter reached the end of every listing it
+    paged and returned every row it found. It is False when paging stopped at the
+    page cap or the rows were cut to `limit`: then "no further transfers" is not
+    something the caller may conclude."""
+
+    def __init__(self, rows=(), complete: bool = True):
+        super().__init__(rows)
+        self.complete = complete
+
+
 def _dec(d: Decimal) -> str:
     """Plain notation, no exponent, no trailing zeros: Decimal('1.500E+3') -> '1500'."""
     s = format(d, "f")

@@ -28,7 +28,7 @@ from decimal import Decimal
 
 from .addresses import tron_hex_to_base58, validate
 from .base import (ChainProvider, Direction, InvalidAddress, ProviderError, Transfer,
-                   sort_transfers, utc_from_ms)
+                   TransferList, sort_transfers, utc_from_ms)
 from .cache import Fetcher
 from .http import api_key
 
@@ -62,13 +62,14 @@ class TronProvider(ChainProvider):
 
     def transfers(self, address: str, direction: Direction = "both",
                   since: datetime | None = None, limit: int = 200,
-                  asset: str | None = None) -> list[Transfer]:
+                  asset: str | None = None) -> TransferList:
         address = address.strip()
         if not validate(address, "tron"):
             raise InvalidAddress(f"not a Tron address: {address}")
         self._check_asset(asset)
         signers: dict[str, str] = {}   # txID -> signer, per call (providers are shared)
         rows: list[Transfer] = []
+        ended: list[bool] = []          # per listing: did paging reach its end?
         tokens = self.tokens if self.tokens is not None else (None,)
         if asset == "TRX":
             tokens = ()
@@ -77,16 +78,19 @@ class TronProvider(ChainProvider):
         for token in tokens:
             extra = {"contract_address": token} if token else {}
             rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions/trc20", address,
-                                direction, since, limit, extra, self._parse_trc20)
+                                direction, since, limit, extra, self._parse_trc20, ended)
         if asset in (None, "TRX"):   # a token-only fetch skips the raw listing (no fee payer)
             rows += self._pages(f"{BASE}/v1/accounts/{address}/transactions", address,
-                                direction, since, limit, {}, partial(self._parse_trx, signers))
+                                direction, since, limit, {}, partial(self._parse_trx, signers),
+                                ended)
         rows = [replace(t, fee_payer=signers[t.tx_hash])
                 if t.fee_payer is None and t.tx_hash in signers else t for t in rows]
-        return sort_transfers(rows)[:limit]
+        return TransferList(sort_transfers(rows)[:limit],
+                            complete=all(ended) and len(rows) <= limit)
 
     # ------------------------------------------------------------------ paging
-    def _pages(self, url, address, direction, since, limit, extra, parse) -> list[Transfer]:
+    def _pages(self, url, address, direction, since, limit, extra, parse,
+               ended: list[bool]) -> list[Transfer]:
         params = {"limit": self.page_size, "only_confirmed": "true",
                   "order_by": "block_timestamp,asc", **extra}
         if since is not None:
@@ -104,9 +108,13 @@ class TronProvider(ChainProvider):
             out += [t for item in data if (t := parse(item)) is not None
                     and address in (t.from_addr, t.to_addr)]
             fp = (body.get("meta") or {}).get("fingerprint")
-            if not fp or len(data) < self.page_size or len(out) >= limit:
+            if not fp or len(data) < self.page_size:
+                ended.append(True)
+                return out
+            if len(out) >= limit:
                 break
             params = {**params, "fingerprint": fp}
+        ended.append(False)             # stopped at `limit` or at the page cap
         return out
 
     # ------------------------------------------------------------------ parsing

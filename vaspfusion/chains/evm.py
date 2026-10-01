@@ -20,7 +20,7 @@ from decimal import Decimal
 
 from .addresses import validate
 from .base import (ChainProvider, Direction, InvalidAddress, ProviderError, Retryable,
-                   Transfer, UnsupportedChain, sort_transfers, utc_from_s)
+                   Transfer, TransferList, UnsupportedChain, sort_transfers, utc_from_s)
 from .cache import Fetcher
 from .http import api_key
 
@@ -117,7 +117,7 @@ class EvmProvider(ChainProvider):
 
     def transfers(self, address: str, direction: Direction = "both",
                   since: datetime | None = None, limit: int = 200,
-                  asset: str | None = None) -> list[Transfer]:
+                  asset: str | None = None) -> TransferList:
         address = address.strip()
         if not validate(address, self.chain):
             raise InvalidAddress(f"not an EVM address: {address}")
@@ -126,17 +126,21 @@ class EvmProvider(ChainProvider):
         limit = min(limit, MAX_WINDOW)
         start = self.start_block(address, since) if since is not None else 0
         rows: list[Transfer] = []
+        ended: list[bool] = []          # per listing: did paging reach its end?
         if asset in (None, NATIVE[self.chain]):
-            rows += self._pages(address, direction, "txlist", start, limit, self._parse_native)
+            rows += self._pages(address, direction, "txlist", start, limit, self._parse_native,
+                                ended)
         if asset is None:
-            rows += self._pages(address, direction, "tokentx", start, limit, self._parse_token)
+            rows += self._pages(address, direction, "tokentx", start, limit, self._parse_token,
+                                ended)
         elif asset != NATIVE[self.chain]:
             contract = next(c for c, sym in STABLECOINS[self.chain].items() if sym == asset)
             rows += self._pages(address, direction, "tokentx", start, limit, self._parse_token,
-                                {"contractaddress": contract})
-        return sort_transfers(rows)[:limit]
+                                ended, {"contractaddress": contract})
+        return TransferList(sort_transfers(rows)[:limit],
+                            complete=all(ended) and len(rows) <= limit)
 
-    def _pages(self, address, direction, action, start, limit, parse,
+    def _pages(self, address, direction, action, start, limit, parse, ended: list[bool],
                extra: dict | None = None) -> list[Transfer]:
         out: list[Transfer] = []
         for page in range(1, self.max_pages + 1):
@@ -153,9 +157,12 @@ class EvmProvider(ChainProvider):
                         (direction == "out" and t.from_addr != address):
                     continue
                 out.append(t)
-            if len(result) < self.page_size or len(out) >= limit \
-                    or (page + 1) * self.page_size > MAX_WINDOW:
+            if len(result) < self.page_size:
+                ended.append(True)
+                return out
+            if len(out) >= limit or (page + 1) * self.page_size > MAX_WINDOW:
                 break
+        ended.append(False)             # stopped at `limit`, the page cap or the API window
         return out
 
     def _parse_native(self, item: dict) -> Transfer | None:

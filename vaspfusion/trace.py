@@ -51,6 +51,13 @@ class TraceConfig:
     max_nodes: int = 40          # wallets expanded per direction
     since: datetime | None = None
 
+    def __post_init__(self):
+        if not 1 <= self.max_hops <= 5:
+            raise ValueError(f"max_hops must be 1..5, not {self.max_hops}")
+        if not 0 <= self.inbound_hops <= 5:
+            raise ValueError(f"inbound_hops must be 0..5 (0 = do not look), not "
+                             f"{self.inbound_hops}")
+
 
 class LabelLookup(Protocol):
     def lookup_many(self, pairs: Iterable[tuple[str, str]]) -> dict[tuple[str, str], Label]: ...
@@ -74,7 +81,6 @@ class TraceNode:
     received: Decimal = ZERO     # traced money that reached it (outbound) / left it (inbound)
     held: Decimal = ZERO         # the part that stopped here
     holds: dict[str, Decimal] = field(default_factory=dict)   # ... and why: reason -> amount
-    pred: TraceEdge | None = None  # largest edge linking it to the previous hop
     note: str | None = None
 
 
@@ -96,15 +102,35 @@ class TraceResult:
     notes: list[str] = field(default_factory=list)
     config: TraceConfig = field(default_factory=TraceConfig)
 
+    def edges_into(self, side: str, address: str) -> list[TraceEdge]:
+        """Traced transfers that reach `address`, walking away from the origin."""
+        return [e for e in self.edges if e.side == side and _far(e) == address]
+
+    def path_of(self, edge: TraceEdge) -> list[TraceEdge]:
+        """The route the money on `edge` took between the origin and it, in the order
+        the money moved. Each step back takes the largest transfer that had already
+        delivered money to the wallet when the next one left it (mirrored for inbound),
+        so a path is always a real route and never runs backwards in time."""
+        sign = 1 if edge.side == "outbound" else -1
+        path = [edge]
+        while path[-1].hop > 1:
+            cur = path[-1]
+            when = sign * cur.transfer.block_time.timestamp()
+            feeders = [e for e in self.edges_into(cur.side, _near(cur))
+                       if e.hop == cur.hop - 1
+                       and sign * e.transfer.block_time.timestamp() <= when]
+            path.append(max(feeders, key=lambda e: (
+                e.traced, sign * e.transfer.block_time.timestamp(), e.transfer.tx_hash)))
+        return path[::-1] if edge.side == "outbound" else path
+
     def path_to(self, side: str, address: str) -> list[TraceEdge]:
-        """The transfers linking the origin and `address`, in the order the money moved."""
-        path: list[TraceEdge] = []
-        node = self.nodes.get((side, address))
-        while node is not None and node.pred is not None:
-            path.append(node.pred)
-            t = node.pred.transfer
-            node = self.nodes.get((side, t.from_addr if side == "outbound" else t.to_addr))
-        return path[::-1] if side == "outbound" else path
+        """The nearest route between the origin and `address` (the one carrying the most,
+        if several are equally short), in the order the money moved."""
+        into = self.edges_into(side, address)
+        if not into:
+            return []
+        return self.path_of(min(into, key=lambda e: (e.hop, -e.traced,
+                                                     e.transfer.block_time, e.transfer.tx_hash)))
 
     def to_igraph(self):
         """Directed graph of every traced transfer; vertex `name` is the address."""
@@ -132,6 +158,20 @@ class TraceResult:
         g.es["time"] = [e.transfer.block_time.timestamp() for e in self.edges]
         g.es["side"] = [e.side for e in self.edges]
         return g
+
+
+def _far(e: TraceEdge) -> str:
+    return e.transfer.to_addr if e.side == "outbound" else e.transfer.from_addr
+
+
+def _near(e: TraceEdge) -> str:
+    return e.transfer.from_addr if e.side == "outbound" else e.transfer.to_addr
+
+
+def _complete(raw, limit: int) -> bool:
+    """Did the adapter return the wallet's whole listing? Adapters say so themselves
+    (`TransferList.complete`); a plain list is complete if it came back under the limit."""
+    return len(raw) < limit and getattr(raw, "complete", True)
 
 
 def _is_dust(t: Transfer, cfg: TraceConfig) -> bool:
@@ -204,9 +244,7 @@ class _Walk:
                 continue
             node = self.r.nodes.get((self.side, addr))
             if node is None:
-                node = TraceNode(addr, hop, self.side, found.get((addr, chain)),
-                                 pred=max(edges, key=lambda e: (e.traced, -self.when(e.transfer),
-                                                                e.transfer.tx_hash)))
+                node = TraceNode(addr, hop, self.side, found.get((addr, chain)))
                 self.r.nodes[(self.side, addr)] = node
             node.received += got
             reason = self.why_not_expand(node, hop)
@@ -252,7 +290,7 @@ class _Walk:
         if cached is None or (since is not None and cached[0] is not None and since < cached[0]):
             raw = self.provider.transfers(addr, self.direction, since=since,
                                           limit=self.cfg.fetch_limit, asset=self.asset)
-            cached = (since, self.usable(raw, addr), len(raw) < self.cfg.fetch_limit)
+            cached = (since, self.usable(raw, addr), _complete(raw, self.cfg.fetch_limit))
             self.fetched[addr] = cached
         return cached[1], cached[2]
 
@@ -300,7 +338,7 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
         rows = [t for t in raw if not _is_dust(t, cfg) and t.from_addr != t.to_addr
                 and mine(t) == address]
         if rows:
-            per[asset] = (rows, len(raw) >= cfg.fetch_limit)
+            per[asset] = (rows, not _complete(raw, cfg.fetch_limit))
     stable = {a: sum((t.amount_usd for t in rows), ZERO)
               for a, (rows, _) in per.items() if rows[0].amount_usd is not None}
     order = list(provider.traceable_assets)
@@ -330,16 +368,18 @@ def trace(address: str, chain: str, provider, labels: LabelLookup,
     r.asset, r.untraced, r.truncated = asset, untraced, truncated
     r.total_out = sum((t.amount for t in rows), ZERO)
     if truncated:
-        r.notes.append(f"Only the first {cfg.fetch_limit} outgoing {asset} transfers were traced; "
+        r.notes.append(f"Only the first {len(rows)} outgoing {asset} transfers were traced; "
                        "the wallet has more.")
     if asset is not None:
         _Walk(r, provider, labels, cfg, "outbound").start(asset, rows, r.total_out)
 
+    if cfg.inbound_hops == 0:
+        return r
     in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
     r.in_asset = in_asset
     r.total_in = sum((t.amount for t in rows), ZERO)
     if truncated:
-        r.notes.append(f"Only the first {cfg.fetch_limit} incoming {in_asset} transfers were "
+        r.notes.append(f"Only the first {len(rows)} incoming {in_asset} transfers were "
                        "looked at; the wallet has more.")
     if in_asset is not None:
         _Walk(r, provider, labels, cfg, "inbound").start(in_asset, rows, r.total_in)
