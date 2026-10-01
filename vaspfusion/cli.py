@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -132,6 +133,60 @@ def _pages(fetcher) -> str:
             f"OFFLINE={1 if fetcher.offline else 0}")
 
 
+def cmd_discover(args) -> None:
+    """Derive deposit addresses from the chain's labelled exchange wallets (B4)."""
+    from math import ceil
+
+    from . import chains
+    from .discover.crawl import CrawlConfig, discover
+    from .discover.store import write_result
+    from .labels.lookup import LabelStore
+
+    base = CrawlConfig()
+    cfg = CrawlConfig(
+        window_start=_since(args.since) or base.window_start,
+        lookback_days=args.lookback_days, seed_limit=args.seed_limit,
+        candidate_limit=args.candidate_limit, max_candidates=args.max_candidates,
+        entities=tuple(e.strip() for e in args.entities.split(",")) if args.entities else None)
+    fetcher = chains.default_fetcher()
+    seed_page = min(200, cfg.seed_limit)
+    seed_provider = chains.get_provider(args.chain, fetcher, page_size=seed_page,
+                                        max_pages=ceil(cfg.seed_limit / seed_page))
+    candidate_provider = chains.get_provider(args.chain, fetcher,
+                                             page_size=cfg.candidate_limit, max_pages=1)
+
+    def progress(stage: str, i: int, n: int) -> None:
+        if i == n or i % 250 == 0:
+            print(f"  {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr, flush=True)
+
+    with LabelStore(args.labels_db) as labels:
+        result = discover(args.chain, seed_provider, candidate_provider, labels, cfg, progress)
+    csv_path, report_path = write_result(args.out, result)
+
+    print(f"discovery on {args.chain}: transfers into labelled exchange wallets since "
+          f"{cfg.window_text()} (rules: forward >= {cfg.rules.min_share:.0%} within "
+          f"{cfg.rules.max_hours:g} h; gas within {cfg.rules.gas_window_s // 60} min)")
+    print(f"{'exchange':<12}{'seeds':>6}{'active':>7}{'cand.':>7}{'fired':>7}{'derived':>8}"
+          f"{'both':>6}{'station':>8}{'sweep':>6}{'confl.':>7}{'known':>6}{'errors':>7}")
+    for entity, st in result.stats.items():
+        r = st["by_rule"]
+        print(f"{entity:<12}{st['seeds']:>6}{st['active_seeds']:>7}{st['candidates']:>7}"
+              f"{st['fired']:>7}{st['derived']:>8}{r.get('sweep+gas', 0):>6}"
+              f"{r.get('sweep+station', 0):>8}{r.get('sweep', 0):>6}{st['conflict']:>7}"
+              f"{st['known']:>6}{st['errors']:>7}")
+    t = result.totals
+    print(f"{'TOTAL':<12}{t['seeds']:>6}{t['active_seeds']:>7}{t['candidates']:>7}"
+          f"{t['fired']:>7}{t['derived']:>8}{'':>20}{t['conflict']:>7}{t['known']:>6}"
+          f"{t['errors']:>7}")
+    for s in result.stations:
+        print(f"gas station (reported, not a label): {s['address']} pays for {s['addresses']} "
+              f"{s['entity']} deposit addresses ({s['share']:.0%} of those it serves)")
+    print(f"wrote {csv_path} and {report_path}")
+    print("rule confidences are hand-set, not calibrated; run `make labels` to merge the "
+          "derived rows into the label DB")
+    print(_pages(fetcher))
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -258,6 +313,20 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--save", action="store_true", help="store the case (data/case.duckdb)")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_trace)
+
+    s = sub.add_parser("discover", help="derive deposit addresses from labelled exchange "
+                                        "wallets (sweep + gas-payer rules)")
+    s.add_argument("--chain", default="tron")
+    s.add_argument("--since", help="window start, ISO date/time (default 2026-09-24)")
+    s.add_argument("--lookback-days", type=int, default=7)
+    s.add_argument("--seed-limit", type=int, default=1000,
+                   help="inbound transfers read per exchange wallet")
+    s.add_argument("--candidate-limit", type=int, default=50)
+    s.add_argument("--max-candidates", type=int, help="per exchange wallet")
+    s.add_argument("--entities", help="comma-separated exchange names (default: all)")
+    s.add_argument("--out", default=str(ROOT / "data" / "derived"))
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_discover)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))

@@ -58,6 +58,15 @@ def test_search_by_entity_and_filters(store):
     assert total == 1 and items[0].chain == "tron"
 
 
+def test_seeds_are_the_chains_exchange_wallets_in_a_fixed_order(store):
+    seeds = store.seeds("tron")
+    assert [(l.entity, l.address) for l in seeds] == sorted((l.entity, l.address) for l in seeds)
+    assert {l.entity for l in seeds} >= {"Bitget", "CoinDCX"}
+    assert all(l.category == "exchange" and l.chain == "tron" for l in seeds)
+    assert "TA3941uFAvmVibSkQ6fMJXxmaSNovX86mz" not in {l.address for l in seeds}   # OFAC
+    assert store.seeds("dogecoin") == []
+
+
 def test_module_level_helpers_accept_a_db_path(fixture_db):
     db = fixture_db[0]
     assert lookup("TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR", "tron", db=db).entity == "CoinDCX"

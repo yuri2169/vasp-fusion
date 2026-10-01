@@ -61,6 +61,7 @@ class Sweep:
     entity: str | None = None
     target: str | None = None        # the seed wallet that took the most
     target_tier: str | None = None
+    target_category: str | None = None
     asset: str | None = None
     share: Decimal = ZERO
     received: Decimal = ZERO
@@ -148,6 +149,7 @@ def sweep_rule(address: str, rows: list[Transfer], labels: dict[str, Label],
     out.entity = entity
     out.target = min(by_target, key=lambda a: (-by_target[a], a))
     out.target_tier = labels[out.target].tier
+    out.target_category = labels[out.target].category
     out.sweeps = to_seed[entity]
     out.n_sweeps = len(out.sweeps)
     assets = {t.asset for t in out.sweeps}

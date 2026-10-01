@@ -107,6 +107,16 @@ class LabelStore:
             "LIMIT ? OFFSET ?", [*params, int(limit), int(offset)]).fetchall()
         return total, [Label(*r) for r in rows]
 
+    def seeds(self, chain: str) -> list[Label]:
+        """The chain's labelled exchange wallets that B4's discovery starts from: VASP
+        categories, not derived and not themselves deposit addresses."""
+        rows = self.con.execute(
+            f"SELECT {_COLS} FROM labels WHERE chain = ? AND category IN "
+            f"({', '.join('?' * len(VASP_CATEGORIES))}) AND tier <> 'derived' "
+            "AND kind <> 'deposit' ORDER BY entity, address",
+            [normalize_chain(chain), *sorted(VASP_CATEGORIES)]).fetchall()
+        return [Label(*r) for r in rows]
+
     def stats(self) -> dict:
         from .load import label_stats
         return label_stats(self.con)
