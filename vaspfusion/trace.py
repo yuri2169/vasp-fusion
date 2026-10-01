@@ -1,0 +1,344 @@
+"""Follow a wallet's money: forward to where it went, backward to who funded it.
+
+The walk is breadth-first over the chain adapters. One asset is followed: the
+stablecoin the wallet sent most of, or the native coin if it sent no stablecoin.
+Tokens the adapter does not recognise (`SYMBOL@contract`) are never followed,
+which is also what keeps address-poisoning spoofs out of the graph.
+
+Allocation rule ("first out after arrival"): traced money that reached a wallet
+at time t is assigned to that wallet's next outgoing transfers of the same asset
+at or after t, in time order, each taking min(what is left, the transfer amount).
+What is left has not moved on and is held at that wallet. A transfer's amount is
+used at most once, so a wallet reached by two routes cannot double-count. Every
+unit the wallet sent therefore ends in exactly one place, and `stopped` says why.
+
+A wallet is not expanded when it is labelled (an exchange, bridge, mixer, any
+named party), is a hub (many distinct counterparties: commingled funds), sits at
+the hop limit, holds too little of the funds, or the budget is spent.
+
+Backward is the mirror image (the latest inflows before a payment explain it),
+and a funder is only expanded when its whole inbound history came back, because
+the adapters page oldest-first and cannot ask for "the transfers before t".
+"""
+from __future__ import annotations
+
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from decimal import Decimal
+from typing import Iterable, Protocol
+
+from .chains.base import ProviderError, Transfer
+from .labels.lookup import Label
+from .labels.normalize import VASP_CATEGORIES
+
+ZERO = Decimal(0)
+# Native-coin transfers below this are dust (address poisoning, gas refunds).
+DUST_NATIVE = {"TRX": Decimal(1), "BTC": Decimal("0.00001")}
+# A wallet with one of these labels is a service: its transfers are not "its money".
+SERVICE_CATEGORIES = VASP_CATEGORIES | {"bridge", "mixer", "defi"}
+
+
+@dataclass(frozen=True)
+class TraceConfig:
+    max_hops: int = 3            # outbound depth
+    inbound_hops: int = 1        # who funded the wallet
+    fetch_limit: int = 100       # transfers fetched per wallet
+    hub_degree: int = 30         # distinct counterparties in one fetch -> hub
+    dust_usd: Decimal = Decimal(1)
+    dust_native: Decimal = Decimal("0.001")
+    min_share: Decimal = Decimal("0.01")
+    max_nodes: int = 40          # wallets expanded per direction
+    since: datetime | None = None
+
+
+class LabelLookup(Protocol):
+    def lookup_many(self, pairs: Iterable[tuple[str, str]]) -> dict[tuple[str, str], Label]: ...
+
+
+@dataclass(frozen=True)
+class TraceEdge:
+    transfer: Transfer
+    side: str                    # "outbound" | "inbound"
+    traced: Decimal              # the part of transfer.amount that is the wallet's money
+    hop: int                     # hop of the wallet this edge reaches, away from the origin
+
+
+@dataclass
+class TraceNode:
+    address: str
+    hop: int
+    side: str                    # "origin" | "outbound" | "inbound"
+    label: Label | None = None
+    state: str = "pending"
+    received: Decimal = ZERO     # traced money that reached it (outbound) / left it (inbound)
+    held: Decimal = ZERO         # the part that stopped here
+    pred: TraceEdge | None = None  # largest edge linking it to the previous hop
+    note: str | None = None
+
+
+@dataclass
+class TraceResult:
+    address: str
+    chain: str
+    asset: str | None = None
+    total_out: Decimal = ZERO
+    in_asset: str | None = None
+    total_in: Decimal = ZERO
+    nodes: dict[tuple[str, str], TraceNode] = field(default_factory=dict)
+    edges: list[TraceEdge] = field(default_factory=list)
+    stopped: dict[str, Decimal] = field(default_factory=dict)      # outbound: reason -> amount
+    stopped_in: dict[str, Decimal] = field(default_factory=dict)   # inbound
+    truncated: bool = False
+    untraced: dict[str, tuple[int, Decimal]] = field(default_factory=dict)
+    origin_label: Label | None = None
+    notes: list[str] = field(default_factory=list)
+    config: TraceConfig = field(default_factory=TraceConfig)
+
+    def path_to(self, side: str, address: str) -> list[TraceEdge]:
+        """The transfers linking the origin and `address`, in the order the money moved."""
+        path: list[TraceEdge] = []
+        node = self.nodes.get((side, address))
+        while node is not None and node.pred is not None:
+            path.append(node.pred)
+            t = node.pred.transfer
+            node = self.nodes.get((side, t.from_addr if side == "outbound" else t.to_addr))
+        return path[::-1] if side == "outbound" else path
+
+    def to_igraph(self):
+        """Directed graph of every traced transfer; vertex `name` is the address."""
+        import igraph as ig
+        names: dict[str, TraceNode] = {}
+        for side in ("origin", "outbound", "inbound"):   # an address seen both ways: outbound wins
+            for (s, addr), node in self.nodes.items():
+                if s == side:
+                    names.setdefault(addr, node)
+        order = list(names)
+        index = {a: i for i, a in enumerate(order)}
+        g = ig.Graph(directed=True)
+        g.add_vertices(len(order))
+        g.vs["name"] = order
+        g.vs["hop"] = [names[a].hop for a in order]
+        g.vs["side"] = [names[a].side for a in order]
+        g.vs["state"] = [names[a].state for a in order]
+        g.vs["entity"] = [names[a].label.entity if names[a].label else None for a in order]
+        g.vs["category"] = [names[a].label.category if names[a].label else None for a in order]
+        g.add_edges([(index[e.transfer.from_addr], index[e.transfer.to_addr])
+                     for e in self.edges])
+        g.es["tx_hash"] = [e.transfer.tx_hash for e in self.edges]
+        g.es["traced"] = [float(e.traced) for e in self.edges]
+        g.es["amount"] = [float(e.transfer.amount) for e in self.edges]
+        g.es["time"] = [e.transfer.block_time.timestamp() for e in self.edges]
+        g.es["side"] = [e.side for e in self.edges]
+        return g
+
+
+def _is_dust(t: Transfer, cfg: TraceConfig) -> bool:
+    if t.amount <= 0:
+        return True
+    if t.amount_usd is not None:
+        return t.amount_usd < cfg.dust_usd
+    return t.amount < DUST_NATIVE.get(t.asset, cfg.dust_native)
+
+
+class _Walk:
+    """One direction of the trace. `sign` = +1 forward in time (outbound), -1 backward."""
+
+    def __init__(self, result: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
+                 side: str):
+        self.r, self.provider, self.labels, self.cfg, self.side = result, provider, labels, cfg, side
+        self.sign = 1 if side == "outbound" else -1
+        self.direction = "out" if side == "outbound" else "in"
+        self.max_hops = cfg.max_hops if side == "outbound" else cfg.inbound_hops
+        self.stopped = result.stopped if side == "outbound" else result.stopped_in
+        self.used: dict[tuple[Transfer, int], Decimal] = defaultdict(lambda: ZERO)
+        self.fetched: dict[str, tuple[datetime | None, list[Transfer], bool]] = {}
+        self.expanded: set[str] = set()
+
+    # the wallet at the far end of a transfer, seen from the origin
+    def far(self, t: Transfer) -> str:
+        return t.to_addr if self.side == "outbound" else t.from_addr
+
+    def near(self, t: Transfer) -> str:
+        return t.from_addr if self.side == "outbound" else t.to_addr
+
+    def when(self, t: Transfer) -> float:
+        return self.sign * t.block_time.timestamp()
+
+    def usable(self, rows: list[Transfer], address: str) -> list[Transfer]:
+        return [t for t in rows if not _is_dust(t, self.cfg) and self.far(t) != self.near(t)
+                and self.near(t) == address]
+
+    def hold(self, node: TraceNode, amount: Decimal, reason: str) -> None:
+        if amount > 0:
+            node.held += amount
+            self.stopped[reason] = self.stopped.get(reason, ZERO) + amount
+
+    # ---------------------------------------------------------------- origin
+    def start(self, asset: str, rows: list[Transfer], total: Decimal) -> None:
+        self.asset, self.total = asset, total
+        arrivals: dict[str, list[TraceEdge]] = defaultdict(list)
+        for t in rows:
+            edge = TraceEdge(t, self.side, t.amount, 1)
+            self.r.edges.append(edge)
+            arrivals[self.far(t)].append(edge)
+        for hop in range(1, self.max_hops + 1):
+            if not arrivals:
+                break
+            arrivals = self.level(hop, arrivals)
+
+    # ---------------------------------------------------------------- one hop
+    def level(self, hop: int, arrivals: dict[str, list[TraceEdge]]) -> dict[str, list[TraceEdge]]:
+        chain = self.r.chain
+        new = [a for a in arrivals if (self.side, a) not in self.r.nodes and a != self.r.address]
+        found = self.labels.lookup_many([(a, chain) for a in sorted(new)])
+        nxt: dict[str, list[TraceEdge]] = defaultdict(list)
+        order = sorted(arrivals, key=lambda a: (-sum(e.traced for e in arrivals[a]), a))
+        for addr in order:
+            edges = arrivals[addr]
+            got = sum((e.traced for e in edges), ZERO)
+            if addr == self.r.address:           # the money came back to the wallet itself
+                self.stopped["returned"] = self.stopped.get("returned", ZERO) + got
+                continue
+            node = self.r.nodes.get((self.side, addr))
+            if node is None:
+                node = TraceNode(addr, hop, self.side, found.get((addr, chain)),
+                                 pred=max(edges, key=lambda e: (e.traced, -self.when(e.transfer),
+                                                                e.transfer.tx_hash)))
+                self.r.nodes[(self.side, addr)] = node
+            node.received += got
+            reason = self.why_not_expand(node, hop)
+            if reason is None:
+                try:
+                    rows, complete = self.fetch(addr, edges)
+                except ProviderError as e:
+                    reason, node.note = "error", str(e)
+                else:
+                    reason = self.check_fetched(node, rows, complete)
+            if reason is not None:
+                if node.state in ("pending", "expanded") and addr not in self.expanded:
+                    node.state = reason
+                self.hold(node, got, reason)
+                continue
+            node.state = "expanded"
+            self.expanded.add(addr)
+            left = self.allocate(addr, edges, rows, hop, nxt)
+            # behind a cut-off fetch the rest may well have moved on; we did not see it
+            self.hold(node, left, "unspent" if complete else "truncated")
+        return nxt
+
+    def why_not_expand(self, node: TraceNode, hop: int) -> str | None:
+        if node.label is not None:
+            return "labelled"
+        if node.state in ("hub", "error", "truncated"):
+            return node.state
+        if hop >= self.max_hops:
+            return "depth_limit"
+        if node.address in self.expanded:
+            return None
+        if self.total and node.received / self.total < self.cfg.min_share:
+            return "small"
+        if len(self.expanded) >= self.cfg.max_nodes:
+            return "budget"
+        return None
+
+    def fetch(self, addr: str, edges: list[TraceEdge]) -> tuple[list[Transfer], bool]:
+        """The wallet's transfers on the far side of the money: outflows since it
+        arrived (outbound), or its whole inbound history (inbound)."""
+        since = min(e.transfer.block_time for e in edges) if self.side == "outbound" else None
+        cached = self.fetched.get(addr)
+        if cached is None or (since is not None and cached[0] is not None and since < cached[0]):
+            raw = self.provider.transfers(addr, self.direction, since=since,
+                                          limit=self.cfg.fetch_limit, asset=self.asset)
+            cached = (since, self.usable(raw, addr), len(raw) < self.cfg.fetch_limit)
+            self.fetched[addr] = cached
+        return cached[1], cached[2]
+
+    def check_fetched(self, node: TraceNode, rows: list[Transfer], complete: bool) -> str | None:
+        if len({self.far(t) for t in rows}) >= self.cfg.hub_degree:
+            return "hub"
+        if self.side == "inbound" and not complete:
+            return "truncated"
+        return None
+
+    def allocate(self, addr: str, edges: list[TraceEdge], rows: list[Transfer], hop: int,
+                 nxt: dict[str, list[TraceEdge]]) -> Decimal:
+        """Hand the money that arrived over `edges` to the wallet's next transfers in
+        time order. Returns what was left over."""
+        arrived = sorted(edges, key=lambda e: (self.when(e.transfer), e.transfer.tx_hash))
+        rows = sorted(rows, key=lambda t: (self.when(t), t.tx_hash, self.far(t), t.amount))
+        seen: Counter = Counter()
+        pool, i = ZERO, 0
+        for t in rows:
+            key = (t, seen[t])
+            seen[t] += 1
+            while i < len(arrived) and self.when(arrived[i].transfer) <= self.when(t):
+                pool += arrived[i].traced
+                i += 1
+            take = min(pool, t.amount - self.used[key])
+            if take <= 0:
+                continue
+            self.used[key] += take
+            pool -= take
+            edge = TraceEdge(t, self.side, take, hop + 1)
+            self.r.edges.append(edge)
+            nxt[self.far(t)].append(edge)
+        return pool + sum((e.traced for e in arrived[i:]), ZERO)
+
+
+def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: str
+                ) -> tuple[str | None, list[Transfer], bool, dict[str, tuple[int, Decimal]]]:
+    """Fetch each traceable asset on its own and choose the one to follow: the
+    stablecoin with the largest total, else the native coin."""
+    per: dict[str, tuple[list[Transfer], bool]] = {}
+    for asset in provider.traceable_assets:
+        raw = provider.transfers(address, direction, since=cfg.since, limit=cfg.fetch_limit,
+                                 asset=asset)
+        mine = (lambda t: t.from_addr) if side == "outbound" else (lambda t: t.to_addr)
+        rows = [t for t in raw if not _is_dust(t, cfg) and t.from_addr != t.to_addr
+                and mine(t) == address]
+        if rows:
+            per[asset] = (rows, len(raw) >= cfg.fetch_limit)
+    stable = {a: sum((t.amount_usd for t in rows), ZERO)
+              for a, (rows, _) in per.items() if rows[0].amount_usd is not None}
+    order = list(provider.traceable_assets)
+    if stable:
+        chosen = max(stable, key=lambda a: (stable[a], -order.index(a)))
+    else:
+        chosen = next((a for a in order if a in per), None)
+    if chosen is None:
+        return None, [], False, {}
+    rows, truncated = per[chosen]
+    untraced = {a: (len(r), sum((t.amount for t in r), ZERO))
+                for a, (r, _) in per.items() if a != chosen}
+    return chosen, rows, truncated, untraced
+
+
+def trace(address: str, chain: str, provider, labels: LabelLookup,
+          cfg: TraceConfig = TraceConfig()) -> TraceResult:
+    r = TraceResult(address=address, chain=chain, config=cfg)
+    r.origin_label = labels.lookup_many([(address, chain)]).get((address, chain))
+    r.nodes[("origin", address)] = TraceNode(address, 0, "origin", r.origin_label, state="origin")
+    if r.origin_label is not None and r.origin_label.category in SERVICE_CATEGORIES:
+        r.notes.append(f"The address is itself labelled {r.origin_label.entity} "
+                       f"({r.origin_label.category}); a service wallet is not traced.")
+        return r
+
+    asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound")
+    r.asset, r.untraced, r.truncated = asset, untraced, truncated
+    r.total_out = sum((t.amount for t in rows), ZERO)
+    if truncated:
+        r.notes.append(f"Only the first {cfg.fetch_limit} outgoing {asset} transfers were traced; "
+                       "the wallet has more.")
+    if asset is not None:
+        _Walk(r, provider, labels, cfg, "outbound").start(asset, rows, r.total_out)
+
+    in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
+    r.in_asset = in_asset
+    r.total_in = sum((t.amount for t in rows), ZERO)
+    if truncated:
+        r.notes.append(f"Only the first {cfg.fetch_limit} incoming {in_asset} transfers were "
+                       "looked at; the wallet has more.")
+    if in_asset is not None:
+        _Walk(r, provider, labels, cfg, "inbound").start(in_asset, rows, r.total_in)
+    return r
