@@ -127,6 +127,17 @@ class ChainProvider(ABC):
         limits), at most `limit`. With `asset` (one of `traceable_assets`) only that
         asset is fetched, so `limit` is not used up by anything else."""
 
+    def gas_events(self, address: str, since: datetime | None = None,
+                   limit: int = 200) -> list[GasEvent]:
+        """Who covered `address`'s network fee. The default is what every chain has:
+        native-coin top-ups from someone else (an exchange funding a deposit address
+        before it sweeps it). Tron adds energy delegations, see tron.py."""
+        native = self.traceable_assets[-1]
+        rows = self.transfers(address, "both", since=since, limit=limit, asset=native)
+        return [GasEvent(t.block_time, t.from_addr, "native", t.tx_hash, t.amount)
+                for t in rows if t.to_addr != t.from_addr and t.to_addr.lower() == address.lower()
+                and t.amount > 0]
+
     def _check_asset(self, asset: str | None) -> None:
         if asset is not None and asset not in self.traceable_assets:
             raise ValueError(f"{self.chain} cannot fetch asset {asset!r} on its own "

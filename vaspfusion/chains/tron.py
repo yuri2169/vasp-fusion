@@ -27,7 +27,7 @@ from functools import partial
 from decimal import Decimal
 
 from .addresses import tron_hex_to_base58, validate
-from .base import (ChainProvider, Direction, InvalidAddress, ProviderError, Transfer,
+from .base import (ChainProvider, Direction, GasEvent, InvalidAddress, ProviderError, Transfer,
                    TransferList, sort_transfers, utc_from_ms)
 from .cache import Fetcher
 from .http import api_key
@@ -37,6 +37,7 @@ HOST = "api.trongrid.io"
 USDT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 USDC = "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8"
 STABLECOINS = {USDT: "USDT", USDC: "USDC"}
+MIN_TOP_UP = Decimal(1)      # TRX; smaller transfers are address-poisoning dust, not gas
 
 
 def _check(body) -> None:
@@ -87,6 +88,59 @@ class TronProvider(ChainProvider):
                 if t.fee_payer is None and t.tx_hash in signers else t for t in rows]
         return TransferList(sort_transfers(rows)[:limit],
                             complete=all(ended) and len(rows) <= limit)
+
+    def gas_events(self, address: str, since: datetime | None = None,
+                   limit: int | None = None) -> list[GasEvent]:
+        """Who covered `address`'s fees, from its raw transaction listing: energy or
+        bandwidth delegated to it, TRX top-ups of at least 1 TRX, and contract calls
+        that touch it but were signed by someone else (kind "signer", matched to a
+        sweep by transaction hash). At most `max_pages` pages, oldest first."""
+        address = address.strip()
+        if not validate(address, "tron"):
+            raise InvalidAddress(f"not a Tron address: {address}")
+        params = {"limit": self.page_size, "only_confirmed": "true",
+                  "order_by": "block_timestamp,asc"}
+        if since is not None:
+            params["min_timestamp"] = int(since.timestamp() * 1000)
+        headers = {"TRON-PRO-API-KEY": self.key} if self.key else {}
+        out: list[GasEvent] = []
+        for _ in range(self.max_pages):
+            body = self.fetcher.get_json("tron", address, "both",
+                                         f"{BASE}/v1/accounts/{address}/transactions",
+                                         params, headers, check=_check)
+            data = body.get("data") or []
+            out += [e for item in data if (e := self._parse_gas(address, item)) is not None]
+            fp = (body.get("meta") or {}).get("fingerprint")
+            if not fp or len(data) < self.page_size:
+                break
+            params = {**params, "fingerprint": fp}
+        out.sort(key=lambda e: (e.time, e.tx_hash, e.payer, e.kind))
+        return out if limit is None else out[:limit]
+
+    @staticmethod
+    def _parse_gas(address: str, item: dict) -> GasEvent | None:
+        contracts = (item.get("raw_data") or {}).get("contract") or []
+        if not contracts or (item.get("ret") or [{}])[0].get("contractRet") != "SUCCESS":
+            return None
+        kind, v = contracts[0].get("type"), contracts[0]["parameter"]["value"]
+        owner = tron_hex_to_base58(v["owner_address"])
+        if owner == address:
+            return None
+        when = utc_from_ms(item["block_timestamp"])
+        if kind == "DelegateResourceContract":
+            if tron_hex_to_base58(v["receiver_address"]) != address:
+                return None
+            # the node omits `resource` when it is the default, bandwidth
+            return GasEvent(when, owner, str(v.get("resource") or "BANDWIDTH").lower(),
+                            item["txID"])
+        if kind == "TransferContract":
+            amount = Decimal(int(v["amount"])).scaleb(-6)
+            if tron_hex_to_base58(v["to_address"]) != address or amount < MIN_TOP_UP:
+                return None
+            return GasEvent(when, owner, "native", item["txID"], amount)
+        if kind == "TriggerSmartContract":
+            return GasEvent(when, owner, "signer", item["txID"])
+        return None
 
     # ------------------------------------------------------------------ paging
     def _pages(self, url, address, direction, since, limit, extra, parse,

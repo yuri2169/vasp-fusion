@@ -188,6 +188,15 @@ def test_a_sweep_signed_by_someone_else_names_the_signer_as_payer():
     assert g.verdict == "confirmed" and g.kinds == ("signer",)
 
 
+def test_a_signer_event_counts_only_for_the_sweep_it_signed():
+    # another party's contract call near the sweep (a depositor's own transfer) is not gas
+    stray = GasEvent(time=T0 + timedelta(minutes=29), payer="HOT2", kind="signer", tx_hash="txX")
+    assert gas([stray]).verdict == "none"
+    signed = GasEvent(time=T0 + timedelta(minutes=30), payer="HOT2", kind="signer", tx_hash="tx2")
+    g = gas([signed])
+    assert g.verdict == "confirmed" and g.kinds == ("signer",) and g.n_paid == 1
+
+
 def test_a_derived_or_non_vasp_payer_counts_as_unlabelled():
     assert gas([gas_ev("DER", 29)]).verdict == "unlabelled"
     assert gas([gas_ev("OFAC", 29)]).verdict == "unlabelled"

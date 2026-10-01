@@ -181,7 +181,11 @@ def gas_rule(address: str, sweeps: list[Transfer], events: list[GasEvent],
             kinds[s.fee_payer].add("signer")
         for e in events:
             ahead = (s.block_time - e.time).total_seconds()
-            if e.payer != address and 0 <= ahead <= cfg.gas_window_s:
+            if e.kind == "signer":       # only the sweep's own signer paid for the sweep
+                paid = e.tx_hash == s.tx_hash
+            else:
+                paid = 0 <= ahead <= cfg.gas_window_s
+            if e.payer != address and paid:
                 found.add(e.payer)
                 kinds[e.payer].add(e.kind)
         n_paid += bool(found)
