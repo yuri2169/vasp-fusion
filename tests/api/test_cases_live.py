@@ -55,10 +55,11 @@ def test_an_evm_address_is_traced_on_ethereum_and_stored_lowercase(client):
 
 
 def test_max_hops_is_passed_to_the_trace(client):
-    cid = client.post("/api/cases", json={"address": COINDCX, "max_hops": 1}).json()["id"]
+    split = "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr"           # CoinDCX at 1 hop, HTX at 2 to 3
+    cid = client.post("/api/cases", json={"address": split, "max_hops": 1}).json()["id"]
     case = client.get(f"/api/cases/{cid}").json()
-    assert case["outcome"] == "INSUFFICIENT_EVIDENCE"      # CoinDCX is 2 hops away
-    assert "1 hop" in case["abstain_reason"]
+    assert [c["vasp"] for c in case["candidates"]] == ["CoinDCX"]
+    assert [s["kind"] for s in case["where_funds_went"]] == ["beyond_hop_limit", "vasp"]
 
 
 def test_posting_the_same_wallet_again_returns_the_same_case_without_rerunning(client):
@@ -161,8 +162,13 @@ def test_mock_demo_cases_still_answer(client):
 
 def test_the_wallet_page_lists_the_cases_a_wallet_appears_in(client):
     cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
-    r = client.get(f"/api/wallets/tron/{COINDCX_2}")
+    # the trace ends at the customer's deposit address, a label derived in B4
+    r = client.get("/api/wallets/tron/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5")
     assert r.status_code == 200
-    assert r.json()["cases"] == [{"case_id": cid, "role": "exchange", "hop": 2}]
-    assert r.json()["labels"][0]["entity"] == "CoinDCX"
+    assert r.json()["cases"] == [{"case_id": cid, "role": "exchange_deposit", "hop": 1}]
+    label = r.json()["labels"][0]
+    assert (label["entity"], label["tier"], label["kind"]) == ("CoinDCX", "derived", "deposit")
+    assert label["confidence"] == 0.8075
+    assert label["evidence"].startswith("Sweep rule: forwarded 100% of the 847,730 USDT")
+    assert client.get(f"/api/wallets/tron/{COINDCX_2}").json()["cases"] == []
 

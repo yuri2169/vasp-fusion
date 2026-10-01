@@ -65,11 +65,11 @@
     "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
-    "confidence": 0.2779,
-    "hops": 2,
+    "confidence": 0.3106,
+    "hops": 1,
     "share_of_funds": 0.0962,
-    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
-    "label_tier": "curated"
+    "deposit_address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+    "label_tier": "derived"
    }
   ],
   "where_funds_went": [
@@ -92,14 +92,14 @@
     "amount": 150.0
    }
   ],
-  "nodes": 18,
-  "edges": 24,
+  "nodes": 17,
+  "edges": 23,
   "flags": []
  },
  "tron-coindcx": {
   "outcome": "ATTRIBUTED",
   "top_vasp": "CoinDCX",
-  "confidence": 0.7225,
+  "confidence": 0.8075,
   "asset": "USDT",
   "total_sent": 2652.22,
   "candidates": [
@@ -107,11 +107,11 @@
     "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
-    "confidence": 0.7225,
-    "hops": 2,
+    "confidence": 0.8075,
+    "hops": 1,
     "share_of_funds": 0.5769,
-    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
-    "label_tier": "curated"
+    "deposit_address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
+    "label_tier": "derived"
    }
   ],
   "where_funds_went": [
@@ -128,36 +128,36 @@
     "amount": 1122.22
    }
   ],
-  "nodes": 8,
-  "edges": 9,
+  "nodes": 7,
+  "edges": 8,
   "flags": []
  },
  "tron-htx-coindcx": {
   "outcome": "ATTRIBUTED",
-  "top_vasp": "HTX",
-  "confidence": 0.7071,
+  "top_vasp": "CoinDCX",
+  "confidence": 0.8075,
   "asset": "USDT",
   "total_sent": 13000.0,
   "candidates": [
    {
-    "vasp": "HTX",
+    "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
+    "confidence": 0.8075,
+    "hops": 1,
+    "share_of_funds": 0.4615,
+    "deposit_address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+    "label_tier": "derived"
+   },
+   {
+    "vasp": "HTX",
+    "direction": "outbound",
+    "proximity_rank": 2,
     "confidence": 0.7071,
     "hops": 2,
     "share_of_funds": 0.5385,
     "deposit_address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
     "label_tier": "published_por"
-   },
-   {
-    "vasp": "CoinDCX",
-    "direction": "outbound",
-    "proximity_rank": 2,
-    "confidence": 0.7225,
-    "hops": 2,
-    "share_of_funds": 0.4615,
-    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
-    "label_tier": "curated"
    }
   ],
   "where_funds_went": [
@@ -174,8 +174,8 @@
     "amount": 6000.0
    }
   ],
-  "nodes": 7,
-  "edges": 8,
+  "nodes": 6,
+  "edges": 7,
   "flags": []
  },
  "tron-ofac": {

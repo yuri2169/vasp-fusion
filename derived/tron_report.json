@@ -161,7 +161,7 @@
    "inbound_rows": 2000,
    "known": 0,
    "labelled_senders": 0,
-   "median_sweep_delay_s": 13522.5,
+   "median_sweep_delay_s": 13348.5,
    "rejected": {
     "forwards under 90% of what it receives": 21,
     "no deposit seen before a sweep": 775
@@ -205,7 +205,7 @@
    "inbound_rows": 1027,
    "known": 0,
    "labelled_senders": 3,
-   "median_sweep_delay_s": 381.0,
+   "median_sweep_delay_s": 379.5,
    "rejected": {},
    "seed_errors": 0,
    "seeds": 24

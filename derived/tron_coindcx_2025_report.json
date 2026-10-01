@@ -17,46 +17,50 @@
    "station_share": 0.95
   },
   "seed_limit": 1000,
-  "window_start": "2026-08-01T00:00:00Z"
+  "window_start": "2025-05-25T00:00:00Z"
  },
  "note": "Derived by the sweep and gas-payer rules from labelled exchange wallets. Confidences are rule-based, not calibrated.",
  "stations": [],
  "stats": {
   "CoinDCX": {
-   "active_seeds": 1,
+   "active_seeds": 3,
    "by_gas": {
-    "confirmed": 34
+    "confirmed": 519,
+    "none": 1,
+    "unlabelled": 4
    },
    "by_rule": {
-    "sweep+gas": 34
+    "sweep": 5,
+    "sweep+gas": 519
    },
-   "candidates": 64,
+   "candidates": 544,
    "conflict": 0,
-   "derived": 34,
+   "derived": 524,
    "errors": 0,
-   "fired": 34,
-   "inbound_rows": 460,
+   "fired": 524,
+   "inbound_rows": 1165,
    "known": 0,
-   "labelled_senders": 0,
+   "labelled_senders": 1,
    "median_sweep_delay_s": 33.0,
    "rejected": {
-    "forwards under 90% of what it receives": 30
+    "forwards under 90% of what it receives": 19,
+    "sends nothing to a labelled exchange wallet": 1
    },
    "seed_errors": 0,
    "seeds": 13
   }
  },
  "totals": {
-  "active_seeds": 1,
-  "candidates": 64,
+  "active_seeds": 3,
+  "candidates": 544,
   "conflict": 0,
-  "derived": 34,
+  "derived": 524,
   "errors": 0,
-  "fired": 34,
-  "inbound_rows": 460,
+  "fired": 524,
+  "inbound_rows": 1165,
   "known": 0,
   "labels_by_exchange": {
-   "CoinDCX": 34
+   "CoinDCX": 524
   },
   "seed_errors": 0,
   "seeds": 13,

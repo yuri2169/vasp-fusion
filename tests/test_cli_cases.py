@@ -30,7 +30,7 @@ def test_trace_prints_the_case_for_an_officer(offline, capsys):
     cli.main(["trace", COINDCX, *offline])
     out = capsys.readouterr().out
     assert "ATTRIBUTED" in out and "CoinDCX" in out
-    assert "rule confidence 0.72" in out
+    assert "rule confidence 0.81" in out
     assert "58%" in out and "hub" in out
     assert "Draft a request to CoinDCX" in out
     assert "0 live" in out and "OFFLINE=1" in out

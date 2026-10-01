@@ -61,12 +61,17 @@ def test_tron_wallet_reaches_coindcx_through_a_deposit_address(tmp_path):
     case = run_demo("tron-coindcx", tmp_path / "c.duckdb")
     assert (case["asset"], case["total_sent"]) == ("USDT", 2652.22)
     c = by_vasp(case)[("CoinDCX", "outbound")]
-    assert (c["hops"], c["share_of_funds"], c["label_tier"]) == (2, 0.5769, "curated")
-    assert c["deposit_address"] == COINDCX_2
+    # the customer's own deposit address, derived in B4 (it sweeps to "CoinDCX 2" with
+    # gas from "CoinDCX 10"); before B4 the trace went one hop further, to CoinDCX 2
+    assert (c["hops"], c["share_of_funds"], c["label_tier"]) == (1, 0.5769, "derived")
+    assert c["deposit_address"] == "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5"
     assert c["path"] == ["TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
-                         "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5", COINDCX_2]
-    assert c["time_to_reach_s"] == 21
-    assert [h["tx_hash"][:10] for h in case["hop_rail"]] == ["54baf9710b", "1878e14b6c"]
+                         "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5"]
+    assert c["confidence"] == 0.8075
+    assert "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to " \
+           "CoinDCX wallet TU7BbA…vZbsFs" in c["evidence"][0]["text"]
+    assert "Both rules agree." in c["evidence"][0]["text"]
+    assert [h["tx_hash"][:10] for h in case["hop_rail"]] == ["54baf9710b"]
     assert [(s["kind"], s["name"], s["share"]) for s in case["where_funds_went"]] == \
         [("vasp", "CoinDCX", 0.5769), ("hub", None, 0.4231)]
     hub = next(n for n in case["graph"]["nodes"] if n["role"] == "hub")
@@ -107,14 +112,17 @@ def test_tron_wallet_split_between_two_exchanges_names_both(tmp_path):
     assert case["total_sent"] == 13000.0
     out = [c for c in case["candidates"] if c["direction"] == "outbound"]
     assert [(c["vasp"], c["proximity_rank"], c["hops"], c["share_of_funds"]) for c in out] == \
-        [("HTX", 1, 2, 0.5385), ("CoinDCX", 2, 2, 0.4615)]
-    assert out[0]["deposit_address"] == HTX_POR and out[1]["deposit_address"] == COINDCX_2
+        [("CoinDCX", 1, 1, 0.4615), ("HTX", 2, 2, 0.5385)]
+    # CoinDCX is nearer since B4: its deposit address is a derived label one hop away
+    assert out[0]["deposit_address"] == "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk"
+    assert out[0]["label_tier"] == "derived" and out[1]["deposit_address"] == HTX_POR
+    assert case["top_vasp"] == "CoinDCX"
     assert all(c["confidence"] >= 0.60 for c in out)
     assert {s["kind"] for s in case["where_funds_went"]} == {"vasp"}     # every unit accounted
     assert sum("Draft a request" in s for s in case["next_steps"]) == 2
     # 1,200 USDT took 2 hops to HTX and 5,800 took 3
     assert "7,000 USDT (54%) reached HTX in 2 to 3 hops" in case["narrative"]
-    assert "6,000 USDT (46%) reached CoinDCX in 2 hops within 24 seconds" in case["narrative"]
+    assert "6,000 USDT (46%) reached CoinDCX in 1 hop" in case["narrative"]
 
 
 def test_tron_wallet_with_a_weak_lead_abstains(tmp_path):

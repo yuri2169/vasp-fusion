@@ -35,7 +35,7 @@
       "chain": "tron",
       "max_hops": 3,
       "case_ref": "DEMO/2026/104",
-      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "HTX"}
+      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "CoinDCX"}
     },
     {
       "id": "tron-abstain",

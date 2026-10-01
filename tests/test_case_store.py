@@ -71,9 +71,11 @@ def test_the_file_survives_reopening(tmp_path):
 def test_wallets_point_back_to_their_cases(store, tmp_path):
     store.save(run_demo("tron-coindcx", tmp_path / "a.duckdb"))
     store.save(run_demo("tron-htx-coindcx", tmp_path / "b.duckdb"))
-    hot = store.wallet_cases("TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs", "tron")     # CoinDCX 2
-    assert hot == [{"case_id": "tron-coindcx", "role": "exchange", "hop": 2},
-                   {"case_id": "tron-htx-coindcx", "role": "exchange", "hop": 2}]
+    # each trace ends at a CoinDCX deposit address derived in B4, one hop from the suspect
+    dep = store.wallet_cases("TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5", "tron")
+    assert dep == [{"case_id": "tron-coindcx", "role": "exchange_deposit", "hop": 1}]
+    htx = store.wallet_cases("TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu", "tron")     # HTX reserves
+    assert htx == [{"case_id": "tron-htx-coindcx", "role": "exchange", "hop": 2}]
     suspect = store.wallet_cases("TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c", "tron")
     assert suspect == [{"case_id": "tron-coindcx", "role": "suspect", "hop": 0}]
     assert store.wallet_cases("TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs", "ethereum") == []

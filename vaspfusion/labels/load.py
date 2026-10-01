@@ -199,6 +199,9 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
         con.execute(f"INSERT INTO labels SELECT {', '.join(LABEL_COLUMNS)} FROM df")
         con.unregister("df")
         stats = label_stats(con)
+        stats["derived_exchange"] = con.execute(
+            "SELECT count(*) FROM labels WHERE tier = 'derived' AND category = 'exchange'"
+        ).fetchone()[0]
     os.replace(tmp, db_path)  # readers never see a half-built DB
     stats["raw_rows"] = len(rows)
     stats["derived_loaded"] = len(read)

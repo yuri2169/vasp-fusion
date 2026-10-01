@@ -1,11 +1,13 @@
 {
- "_source": "rows of data/labels.duckdb returned while tracing the demo wallets (real labels; see research/data)",
+ "_source": "rows of the label DB returned while tracing the demo wallets (real labels; derived rows come from derived/*.csv)",
  "labels": {
   "ethereum:0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24": {
    "address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
    "category": "exchange",
    "chain": "ethereum",
+   "confidence": null,
    "entity": "Bitget",
+   "evidence": null,
    "kind": "deposit",
    "label": "Bitget Dep: 0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24",
    "query_chain": "ethereum",
@@ -17,7 +19,9 @@
    "address": "0x1111111254fb6c44bac0bed2854e76f90643097d",
    "category": "defi",
    "chain": "ethereum",
+   "confidence": null,
    "entity": "1inch",
+   "evidence": null,
    "kind": "unknown",
    "label": "Aggregation Router V4",
    "query_chain": "ethereum",
@@ -25,11 +29,27 @@
    "source_url": "https://github.com/dawsbot/eth-labels",
    "tier": "explorer_tag"
   },
+  "tron:TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5": {
+   "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
+   "category": "exchange",
+   "chain": "tron",
+   "confidence": 0.8075,
+   "entity": "CoinDCX",
+   "evidence": "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 22 sweeps, typically 33 seconds after arrival. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 7 of 22 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "kind": "deposit",
+   "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+   "query_chain": "tron",
+   "source": "vaspfusion-discover",
+   "source_url": null,
+   "tier": "derived"
+  },
   "tron:TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu": {
    "address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
    "category": "exchange",
    "chain": "tron",
+   "confidence": null,
    "entity": "HTX",
+   "evidence": null,
    "kind": "reserve",
    "label": "HTX (Huobi) (proof-of-reserves)",
    "query_chain": "tron",
@@ -41,7 +61,9 @@
    "address": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
    "category": "sanctioned",
    "chain": "tron",
+   "confidence": null,
    "entity": "OFAC SDN",
+   "evidence": null,
    "kind": "unknown",
    "label": "OFAC sanctioned (USDT)",
    "query_chain": "tron",
@@ -49,17 +71,33 @@
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
    "tier": "curated"
   },
-  "tron:TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs": {
-   "address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
+  "tron:THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9": {
+   "address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
    "category": "exchange",
    "chain": "tron",
+   "confidence": 0.8075,
    "entity": "CoinDCX",
-   "kind": "unknown",
-   "label": "CoinDCX 2",
+   "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "kind": "deposit",
+   "label": "CoinDCX deposit address (derived: sweep + gas payer)",
    "query_chain": "tron",
-   "source": "dune-spellbook",
-   "source_url": "https://github.com/duneanalytics/spellbook",
-   "tier": "curated"
+   "source": "vaspfusion-discover",
+   "source_url": null,
+   "tier": "derived"
+  },
+  "tron:TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk": {
+   "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+   "category": "exchange",
+   "chain": "tron",
+   "confidence": 0.8075,
+   "entity": "CoinDCX",
+   "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "kind": "deposit",
+   "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+   "query_chain": "tron",
+   "source": "vaspfusion-discover",
+   "source_url": null,
+   "tier": "derived"
   }
  }
 }

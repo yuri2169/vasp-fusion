@@ -29,8 +29,10 @@ def cmd_labels(args) -> None:
     print(f"  unusable addresses dropped {stats['invalid_dropped']:,} (valid on no chain, e.g. "
           f"truncated upstream)  re-filed to their real chain {stats['chain_refiled']:,}")
     ex = stats["by_category"].get("exchange", 0)
-    print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted']:,} upstream + Dune "
-          f"exchange rows + {stats['exchange_tag_promoted']:,} promoted by Etherscan's Exchange tag")
+    derived_ex = stats["derived_exchange"]
+    print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted'] - derived_ex:,} upstream "
+          f"+ Dune exchange rows + {stats['exchange_tag_promoted']:,} promoted by Etherscan's "
+          f"Exchange tag + {derived_ex:,} derived deposit addresses")
     print(f"  derived deposit addresses merged from {args.derived}: "
           f"{stats['by_tier'].get('derived', 0):,} (of {stats['derived_loaded']:,} in the "
           f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
