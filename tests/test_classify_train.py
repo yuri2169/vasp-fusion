@@ -106,6 +106,29 @@ def test_look_alike_negatives_are_measured_on_their_own(df, result):
                                             & (pl.col("forward_ratio") >= 0.9)).height
 
 
+def test_the_one_rule_baseline_is_reported_next_to_the_model(df, result):
+    """Positives were chosen for forwarding 90% or more, so "forwards 90% or more" alone
+    already scores well. The model has to be read against that, not against chance."""
+    ordered = df.sort("address")
+    test_rows = ordered[time_split(ordered)["test"]]
+    b = result.metrics["time_split"]["baseline_forward_rule"]
+    says = (test_rows["forward_ratio"].fill_null(-1.0) >= 0.9).to_numpy()
+    y = test_rows["y"].to_numpy() == 1
+    assert b["rule"] == "forward_ratio >= 0.9"
+    assert b["tp"] == int((says & y).sum()) and b["fp"] == int((says & ~y).sum())
+    assert b["recall"] == round(float((says & y).sum() / y.sum()), 4)
+    for part in ("leave_one_exchange_out", "cross_fit"):
+        assert result.metrics[part]["baseline_forward_rule"]["rule"] == "forward_ratio >= 0.9"
+
+
+def test_fields_that_describe_the_fetch_are_probed_and_reported(result):
+    probes = result.metrics["protocol_fields"]
+    assert set(probes["roc_auc_alone"]) == {"first_seen_order", "n_rows", "complete"}
+    assert all(0.5 <= v <= 1 for v in probes["roc_auc_alone"].values())
+    assert probes["positive_share_by_run"] == {"toy": 0.5}
+    assert not set(probes["roc_auc_alone"]) & set(result.metrics["features"])
+
+
 def test_every_address_is_scored_once_by_a_model_that_never_trained_on_it(df, result):
     oof = result.oof
     assert sorted(oof["address"].to_list()) == sorted(df["address"].to_list())

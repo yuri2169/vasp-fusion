@@ -617,7 +617,20 @@
     "/api/model": {
       "get": {
         "summary": "Get Model",
+        "description": "The deposit-address model's measurements (`make model`). Tron is the model whose\nscores the labels carry; `?chain=ethereum` is the explorer-tagged benchmark.",
         "operationId": "get_model_api_model_get",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "tron",
+              "title": "Chain"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -625,6 +638,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ModelInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -730,7 +753,7 @@
             "maximum": 1.0,
             "minimum": 0.0,
             "title": "Confidence",
-            "description": "Calibrated; separate from proximity"
+            "description": "Separate from proximity. Label weight x hop decay x share factor. The label weight is the deposit-address model's calibrated probability where confidence_interval is set; otherwise every factor is rule-set"
           },
           "confidence_interval": {
             "anyOf": [
@@ -751,7 +774,8 @@
                 "type": "null"
               }
             ],
-            "title": "Confidence Interval"
+            "title": "Confidence Interval",
+            "description": "Set when the money reached a model-scored deposit address: the model's calibrated range, carried through the same formula. null = rule confidence only"
           },
           "direction": {
             "type": "string",
@@ -1685,6 +1709,99 @@
         ],
         "title": "EvidenceItem"
       },
+      "ExchangeFold": {
+        "properties": {
+          "exchange": {
+            "type": "string",
+            "title": "Exchange"
+          },
+          "n": {
+            "type": "integer",
+            "title": "N"
+          },
+          "n_positive": {
+            "type": "integer",
+            "title": "N Positive"
+          },
+          "pr_auc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pr Auc"
+          },
+          "roc_auc": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Roc Auc"
+          },
+          "brier": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brier"
+          },
+          "ece": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ece"
+          },
+          "precision": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precision",
+            "description": "At probability 0.5"
+          },
+          "recall": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recall",
+            "description": "At probability 0.5"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "exchange",
+          "n",
+          "n_positive"
+        ],
+        "title": "ExchangeFold",
+        "description": "One row of the leave-one-exchange-out table: the model never saw this exchange."
+      },
       "FeatureImportance": {
         "properties": {
           "feature": {
@@ -2272,7 +2389,7 @@
               }
             ],
             "title": "Confidence",
-            "description": "tier=derived only: rule confidence of the discovery rules. Not calibrated"
+            "description": "tier=derived only. With confidence_low/high set: the weight of the exchange wallet's label x the deposit-address model's calibrated probability (B6). Without them: the discovery rules' hand-set confidence, not calibrated"
           },
           "evidence": {
             "anyOf": [
@@ -2284,7 +2401,45 @@
               }
             ],
             "title": "Evidence",
-            "description": "tier=derived only: what the sweep and gas-payer rules saw, in plain English"
+            "description": "tier=derived only: what the sweep and gas-payer rules saw, and what the model said, in plain English"
+          },
+          "confidence_low": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Low",
+            "description": "Model-scored labels only: low end of the calibrated range (Venn-Abers)"
+          },
+          "confidence_high": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence High"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelScore"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Labels the deposit-address model scored: its own probability, range and reasons, whether or not the label's confidence is based on it"
           }
         },
         "additionalProperties": false,
@@ -2398,6 +2553,43 @@
         ],
         "title": "LetterWallet"
       },
+      "LookAlikes": {
+        "properties": {
+          "forwarding_at_least": {
+            "type": "number",
+            "title": "Forwarding At Least"
+          },
+          "negatives": {
+            "type": "integer",
+            "title": "Negatives"
+          },
+          "flagged": {
+            "type": "integer",
+            "title": "Flagged",
+            "description": "How many of them the model calls a deposit address"
+          },
+          "false_positive_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "False Positive Rate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "forwarding_at_least",
+          "negatives",
+          "flagged"
+        ],
+        "title": "LookAlikes",
+        "description": "The hard negatives: wallets that are not deposit addresses but forward as much."
+      },
       "ModelInfo": {
         "properties": {
           "status": {
@@ -2469,6 +2661,46 @@
             "type": "array",
             "title": "Feature Importance",
             "default": []
+          },
+          "leave_one_exchange_out": {
+            "items": {
+              "$ref": "#/components/schemas/ExchangeFold"
+            },
+            "type": "array",
+            "title": "Leave One Exchange Out",
+            "default": []
+          },
+          "look_alikes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LookAlikes"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuleBaseline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "The chain the model was trained on"
           },
           "notes": {
             "items": {
@@ -2560,6 +2792,97 @@
         "type": "object",
         "title": "ModelMetrics"
       },
+      "ModelReason": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature",
+            "description": "The model feature, as a stable key"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "What the address did, in plain English"
+          },
+          "weight": {
+            "type": "number",
+            "title": "Weight",
+            "description": "SHAP value in log-odds: above 0 speaks for a deposit address, below 0 against"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "feature",
+          "text",
+          "weight"
+        ],
+        "title": "ModelReason"
+      },
+      "ModelScore": {
+        "properties": {
+          "p": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "P",
+            "description": "Calibrated probability that an address behaving like this is an exchange deposit address"
+          },
+          "low": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Low",
+            "description": "Venn-Abers range of p"
+          },
+          "high": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "High"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "model",
+              "rule"
+            ],
+            "title": "Basis",
+            "description": "model: the label's confidence is the model's value. rule: the model did not raise it, and the discovery rules' confidence is kept"
+          },
+          "scored_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scored By",
+            "description": "Which cross-fit model scored it; never one that trained on this address"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ModelReason"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Strongest reasons, strongest first",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "p",
+          "low",
+          "high",
+          "basis"
+        ],
+        "title": "ModelScore",
+        "description": "What the deposit-address model said about one address (B6)."
+      },
       "Provenance": {
         "properties": {
           "seed": {
@@ -2628,6 +2951,18 @@
           "count": {
             "type": "integer",
             "title": "Count"
+          },
+          "predicted": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted",
+            "description": "Mean predicted probability in the bin"
           }
         },
         "additionalProperties": false,
@@ -3013,6 +3348,54 @@
         "additionalProperties": false,
         "type": "object",
         "title": "RiskInfo"
+      },
+      "RuleBaseline": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "precision": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precision"
+          },
+          "recall": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recall"
+          },
+          "accuracy": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accuracy"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule"
+        ],
+        "title": "RuleBaseline",
+        "description": "What one rule alone scores on the test addresses: the bar the model must clear."
       },
       "StatusEvent": {
         "properties": {

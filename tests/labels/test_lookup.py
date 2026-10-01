@@ -71,9 +71,13 @@ def test_a_label_survives_a_round_trip_through_its_dict():
     from vaspfusion.labels.lookup import Label
     scored = Label("TDEP", "tron", "OKX", "exchange", "deposit", "derived", "vaspfusion-discover",
                    None, "OKX deposit address", 0.9, "Sweep rule.", 0.88, 0.93,
-                   '[{"feature": "n_out", "text": "1 outgoing transfer", "weight": 0.2}]')
+                   '{"basis": "model", "high": 0.98, "low": 0.93, "p": 0.95, "reasons": '
+                   '[{"feature": "n_out", "text": "1 outgoing transfer", "weight": 0.2}], '
+                   '"scored_by": "cross-fit:block 1"}')
     d = scored.as_dict()
-    assert d["reasons"] == [{"feature": "n_out", "text": "1 outgoing transfer", "weight": 0.2}]
+    assert d["model"]["p"] == 0.95 and d["model"]["basis"] == "model"
+    assert d["model"]["reasons"] == [{"feature": "n_out", "text": "1 outgoing transfer",
+                                      "weight": 0.2}]
     assert Label.from_dict(d).as_dict() == d
     assert Label.from_dict({**d, "query_chain": "tron"}).confidence_low == 0.88
     plain = Label("T1", "tron", "OKX", "exchange", "hot", "curated", "x", None, None)

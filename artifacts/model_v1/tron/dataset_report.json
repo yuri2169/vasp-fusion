@@ -1,10 +1,11 @@
 {
  "by_source": {
-  "customer": 3673,
+  "customer": 3434,
   "derived": 5497,
   "labelled:exchange": 21
  },
  "config": {
+  "horizon_days": 14.0,
   "per_exchange": 700,
   "runs": [
    {
@@ -26,12 +27,12 @@
   "seed": 26182
  },
  "customers": {
-  "Bitfinex": 361,
-  "Bitget": 700,
-  "Bitrue": 117,
-  "CoinDCX": 395,
-  "Gate.io": 700,
-  "KuCoin": 700,
+  "Bitfinex": 302,
+  "Bitget": 620,
+  "Bitrue": 105,
+  "CoinDCX": 385,
+  "Gate.io": 631,
+  "KuCoin": 691,
   "OKX": 700
  },
  "customers_in_two_exchanges": 352,
@@ -43,7 +44,9 @@
  },
  "empty": 372,
  "errors": 0,
- "examples": 9191,
+ "examples": 8952,
  "labelled": 393,
- "positives": 5497
+ "positives": 5497,
+ "recipient_errors": 0,
+ "recipients_read": 2494
 }

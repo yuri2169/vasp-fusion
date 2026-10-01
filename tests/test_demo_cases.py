@@ -67,7 +67,14 @@ def test_tron_wallet_reaches_coindcx_through_a_deposit_address(tmp_path):
     assert c["deposit_address"] == "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5"
     assert c["path"] == ["TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
                          "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5"]
-    assert c["confidence"] == 0.8075
+    # B6: the model confirms this deposit address, so the label carries 0.85 (the weight of
+    # the curated CoinDCX wallet it sweeps to) x the model's probability, with its range;
+    # the rules' own confidence was 0.8075
+    assert c["confidence"] == 0.8491 and c["confidence_interval"] == [0.8491, 0.85]
+    assert [e["kind"] for e in c["evidence"]] == ["label", "model", "model", "model", "model",
+                                                  "path"]
+    assert c["evidence"][1]["text"].startswith("Deposit-address model: over 0.99 that an "
+                                               "address behaving like TCw8j3…LLcoV5")
     assert "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to " \
            "CoinDCX wallet TU7BbA…vZbsFs" in c["evidence"][0]["text"]
     assert "Both rules agree." in c["evidence"][0]["text"]

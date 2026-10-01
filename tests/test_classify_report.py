@@ -30,6 +30,9 @@ def test_model_info_is_the_api_contract_filled_from_the_metrics(metrics):
     assert {f.feature for f in info.feature_importance} <= set(FEATURE_NAMES.values())
     assert [f.exchange for f in info.leave_one_exchange_out] == ["ExA", "ExB", "ExC"]
     assert info.risk_coverage and info.risk_coverage[-1].coverage == 1.0
+    assert info.look_alikes.negatives == metrics["time_split"]["look_alikes"]["negatives"]
+    assert info.baseline.rule == "forward_ratio >= 0.9"
+    assert info.baseline.precision == metrics["time_split"]["baseline_forward_rule"]["precision"]
     assert 0 <= info.risk_coverage[0].accuracy <= 1
     assert info.trained_at.year == 2026
 
@@ -39,6 +42,8 @@ def test_the_notes_say_what_the_numbers_are_and_are_not(metrics):
     assert "calibrated" in text and "class mix" in text
     assert "never saw" in text                      # leave one exchange out, in words
     assert "cross-fit" in text                      # how the labels' scores were made
+    assert "alone" in text and "forward" in text    # the one-rule baseline
+    assert "not an accuracy" in text                # what cross-fit numbers are not
     assert "left out of the shipped model" in text  # the label ablation
     assert "rule-set" in text                       # what is still not learned
 
@@ -58,3 +63,5 @@ def test_build_model_writes_every_artefact_and_reruns_to_the_same_files(tmp_path
             assert (a / name).read_bytes() == (b / name).read_bytes(), name
     m = json.loads((a / "metrics.json").read_text())
     assert m["trained_at"] == "2026-10-02T00:00:00Z" and m["notes"]
+    import hashlib
+    assert m["dataset"]["sha256"] == hashlib.sha256((a / "dataset.csv").read_bytes()).hexdigest()

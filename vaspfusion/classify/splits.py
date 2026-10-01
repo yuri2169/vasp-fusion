@@ -14,10 +14,13 @@ held-out group in training or calibration.
 
 * Cross-fitting (for the scores the labels carry, not for a headline metric): each
   exchange's rows are cut into `k` consecutive blocks by time; fold j tests block j
-  of every exchange, calibrates on the next block and trains on the rest. Every
-  address is scored exactly once, by a model that never trained on it but does know
-  its exchange's habits from the exchange's other addresses. That is the question
-  for a label of an exchange we already know.
+  of every exchange, calibrates on the rows next to it in time (the class mix drifts
+  with time, so the newest block must not be calibrated on the oldest rows) and
+  trains on the rest. Every address is scored exactly once, by a model that never
+  trained on it but does know its exchange's habits from the exchange's other
+  addresses. That is the question for a label of an exchange we already know. Most
+  blocks are trained on later addresses too, so its numbers describe the scores,
+  not how the model would do on tomorrow's addresses (the time split says that).
 """
 from __future__ import annotations
 
@@ -71,14 +74,21 @@ def crossfit_folds(df: pl.DataFrame, k: int = 5) -> list[tuple[str, dict[str, np
     if df["address"].n_unique() != df.height:
         raise ValueError("an address is in the dataset more than once: it could land on "
                          "both sides of a split")
+    if k < 3:
+        raise ValueError("cross-fitting needs at least three blocks")
     order = (df.with_row_index("idx").sort(["group", "first_ts", "address"])
              .with_columns(pl.int_range(pl.len()).over("group").alias("rank"),
                            pl.len().over("group").alias("size")))
-    block = (order["rank"] * k // order["size"]).to_numpy()
+    # every block is two half-blocks; the half-blocks on either side of a test block
+    # calibrate it (both on the far side for the first and the last block)
+    half = (order["rank"] * 2 * k // order["size"]).to_numpy()
     idx = order["idx"].to_numpy()
     folds = []
     for j in range(k):
-        test, calib = block == j, block == (j + 1) % k
+        left, right = 2 * j - 1, 2 * j + 2
+        near = ((right, right + 1) if j == 0 else (left - 1, left) if j == k - 1
+                else (left, right))
+        test, calib = (half == 2 * j) | (half == 2 * j + 1), np.isin(half, near)
         split = {"train": np.sort(idx[~test & ~calib]), "calib": np.sort(idx[calib]),
                  "test": np.sort(idx[test])}
         seen = np.concatenate(list(split.values()))

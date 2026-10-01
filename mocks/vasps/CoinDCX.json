@@ -10,18 +10,18 @@
     "source_urls": []
   },
   "label_counts": {
+    "tron": 571,
     "evm": 53,
     "avalanche": 52,
     "worldchain": 52,
     "ethereum": 30,
     "bitcoin": 26,
-    "tron": 13,
     "xrp": 5,
     "bsc": 3
   },
   "wallets": [
     {
-      "address": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+      "address": "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe",
       "chain": "tron",
       "case_id": "demo-tron-sanctioned",
       "direction": "outbound",

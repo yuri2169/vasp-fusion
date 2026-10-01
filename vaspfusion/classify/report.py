@@ -6,6 +6,7 @@ on every run (`trained_at` aside), so a number in a report can be traced to a fi
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -24,28 +25,58 @@ def notes(m: dict) -> list[str]:
     cf = m["cross_fit"]["pooled"]
     ab = m["ablation_label_features"]
     ab_pooled = ab["leave_one_exchange_out"]["pooled"]
+    by_rules = "derived" in d["by_source"]
+    truth = ("The deposit addresses are the ones the discovery rules derived, so these numbers "
+             "say how well behaviour alone recovers what rules and labels found; they are not "
+             "an accuracy against an outside truth."
+             if by_rules else
+             "The deposit addresses are the ones a block explorer tagged, a truth our rules "
+             "never saw.")
+    la = m["time_split"]["look_alikes"]
+    base = m["time_split"]["baseline_forward_rule"]
+    customers = d["by_source"].get("customer", 0)
     return [
         f"Trained on {d['addresses']:,} real {m['chain']} addresses: {d['positive']:,} deposit "
         f"addresses and {d['negative']:,} others. The model reads what an address does "
-        "(forwarding, timing, who pays its fees), never a label.",
-        f"By time (latest {t['n']:,} addresses, unseen): PR-AUC {t['pr_auc']}, Brier "
-        f"{t['brier']}, ECE {t['ece']}.",
+        f"(forwarding, timing, who pays its fees), never a label. {truth}",
+        f"By time (latest {t['n']:,} addresses by first transfer, unseen): PR-AUC "
+        f"{t['pr_auc']}, Brier {t['brier']}, ECE {t['ece']}, precision "
+        f"{t['at_0_5']['precision']} and recall {t['at_0_5']['recall']} at 0.5. The rule "
+        f"\"forwards 90% or more to one wallet\" alone gives precision {base['precision']} "
+        f"and recall {base['recall']} on the same addresses: that, not chance, is the bar.",
         f"By exchange: each exchange's addresses ({pooled['n']:,} in total) were scored by a "
         f"model that never saw that exchange. Pooled PR-AUC {pooled['pr_auc']}, recall "
         f"{pooled['at_0_5']['recall']} and precision {pooled['at_0_5']['precision']} at 0.5.",
         f"The scores the labels carry are cross-fit: each address is scored by a model that "
         f"never trained on it but knows its exchange from the exchange's other addresses. "
         f"On all {cf['n']:,} addresses: PR-AUC {cf['pr_auc']}, Brier {cf['brier']}, ECE "
-        f"{cf['ece']}.",
+        f"{cf['ece']}. Most of those models also trained on later addresses, so this "
+        "describes the scores; it is not an accuracy to expect on new addresses.",
         "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, "
         "at this dataset's class mix (the negatives are a capped sample), not at the mix of "
         "the chain at large.",
+        f"The hard case, by time: of the {la['negatives']:,} other wallets that also forward "
+        f"{la['forwarding_at_least']:.0%} or more of what they receive to one wallet, the model "
+        f"still calls {la['flagged']:,} a deposit address "
+        f"({m['leave_one_exchange_out']['look_alikes']['flagged']:,} of "
+        f"{m['leave_one_exchange_out']['look_alikes']['negatives']:,} by exchange, "
+        f"{m['cross_fit']['look_alikes']['flagged']:,} of "
+        f"{m['cross_fit']['look_alikes']['negatives']:,} cross-fit).",
+        f"{customers:,} of the {d['negative']:,} others are wallets that paid into the deposit "
+        "addresses; the rest are labelled wallets that are not deposit addresses. A wallet "
+        "that never dealt with an exchange is not in this sample, so how often the model "
+        "would take such a wallet for a deposit address is not measured here.",
         "The two features that read exchange labels were left out of the shipped model: with "
-        f"them it scores PR-AUC {ab['time_split']['pr_auc']} by time, because the positives "
-        "were picked by those labels, and recall "
-        f"{ab_pooled['at_0_5']['recall']} on an exchange whose labels are hidden.",
-        "A label's confidence is this probability times the weight of the exchange wallet's "
-        "own label. That weight, the hop decay and the share factor are still rule-set.",
+        f"them it scores PR-AUC {ab['time_split']['pr_auc']} by time"
+        + (", because the positives were picked by those labels," if by_rules else "")
+        + f" and recall {ab_pooled['at_0_5']['recall']} on an exchange whose labels are hidden"
+        + (" (near zero by construction: without the labels those features say nothing)."
+           if by_rules else "."),
+        "A derived label carries the model's value (the weight of the exchange wallet's own "
+        "label times this probability, with its range) when that is at least what the "
+        "discovery rules gave it; otherwise the rules' confidence is kept. The model can "
+        "confirm a label; it cannot overrule label evidence it does not see. The label "
+        "weights, the hop decay and the share factor are still rule-set.",
     ]
 
 
@@ -63,6 +94,9 @@ def model_info(m: dict) -> dict:
         "feature_importance": [{"feature": FEATURE_NAMES[f["feature"]],
                                 "importance": f["importance"]}
                                for f in m["feature_importance"]],
+        "look_alikes": m["time_split"]["look_alikes"],
+        "baseline": {k: m["time_split"]["baseline_forward_rule"][k]
+                     for k in ("rule", "precision", "recall", "accuracy")},
         "leave_one_exchange_out": [
             {k: row[k] for k in ("exchange", "n", "n_positive", "pr_auc", "roc_auc", "brier",
                                  "ece", "precision", "recall")}
@@ -78,6 +112,9 @@ def build_model(chain: str, out_dir: Path | str, runs: list[Run], trained_at: st
     out = Path(out_dir) / chain
     df = read_dataset(out / "dataset.csv")
     result = run(df, seed=seed)
+    # which dataset these numbers and scores were made from
+    result.metrics["dataset"]["sha256"] = hashlib.sha256(
+        (out / "dataset.csv").read_bytes()).hexdigest()
     result.metrics["notes"] = notes(result.metrics)
     result.metrics["trained_at"] = trained_at
     save(result, out)

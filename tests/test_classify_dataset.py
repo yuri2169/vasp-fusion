@@ -108,9 +108,12 @@ def test_the_customer_sample_is_capped_per_exchange_and_seeded(tmp_path):
 
 def test_both_classes_are_read_with_the_same_calls(tmp_path):
     _, _, chain = built(tmp_path)
+    ex, _, chain = built(tmp_path / "again")
     shapes = {address: (direction, since, asset) for address, direction, since, asset in chain.calls}
     assert len(set(shapes.values())) == 1                  # one protocol for every address
-    assert set(chain.gas_calls) == set(shapes)             # and a gas listing for each
+    assert set(chain.gas_calls) == set(ex)                 # and a gas listing for each example
+    # the wallets they pay most are read the same way, without a gas listing
+    assert set(shapes) - set(ex) and set(shapes) - set(ex) <= {"Y", "Z", "W", "P"}
 
 
 def test_nothing_after_the_runs_last_positive_transfer_is_read(tmp_path):
@@ -127,15 +130,48 @@ def test_every_address_is_judged_on_the_same_length_of_history(tmp_path):
     rows = world() + [tx(60, "U2", "W", 5, 20 * day), tx(61, "X", "D2", 7, 20 * day),
                       tx(62, "D2", "HOT", 7, 20 * day + 5)]
     ex, _, _ = built(tmp_path, DatasetConfig(horizon_days=14), rows)
-    assert ex["U2"]["n_out"] == 1 and ex["U2"]["age_days"] == 0      # day 20 is not read
-    assert ex["D2"]["n_in"] == 1 and ex["D2"]["age_days"] < 14
+    assert ex["U2"]["n_out"] == 1 and ex["U2"]["n_rows"] == 1        # day 20 is not read
+    assert ex["D2"]["n_in"] == 1 and ex["D2"]["n_rows"] == 3
     whole, _, _ = built(tmp_path / "whole", DatasetConfig(horizon_days=None), rows)
     assert whole["U2"]["n_out"] == 2 and whole["D2"]["n_in"] == 2
 
 
+def test_the_horizon_starts_at_the_first_real_transfer_not_at_dust(tmp_path):
+    day = 24 * 60
+    rows = world() + [tx(70, "SPAM", "U2", "0.01", -6 * day), tx(71, "U2", "W", 5, 12 * day)]
+    ex, _, _ = built(tmp_path, DatasetConfig(horizon_days=14),
+                     rows + [tx(72, "Q", "D2", 3, 13 * day), tx(73, "D2", "HOT", 3, 13 * day + 1)])
+    assert ex["U2"]["n_out"] == 2          # day 12 is inside 14 days of its first real transfer
+
+
+def test_the_wallet_an_address_pays_most_is_read_and_described(tmp_path):
+    ex, stats, _ = built(tmp_path)
+    # D1 pays HOT, which keeps what it collects
+    assert ex["D1"]["recipient_forwards_on"] == 0.0
+    # U3 pays E1, which forwards everything on: a deposit address
+    assert ex["U3"]["recipient_forwards_on"] == 1.0
+    assert stats["recipient_errors"] == 0 and stats["recipients_read"] >= 3
+
+
+def test_a_recipient_that_cannot_be_read_leaves_its_features_empty(tmp_path):
+    ex, stats, _ = built(tmp_path, fail=("HOT",))
+    assert stats["recipient_errors"] >= 1
+    assert ex["D1"]["recipient_forwards_on"] != ex["D1"]["recipient_forwards_on"]   # NaN
+    assert ex["D1"]["forward_ratio"] == 1.0                                    # the rest stands
+
+
+def test_a_customer_of_two_exchanges_is_left_out(tmp_path):
+    # it would sit in the training set of a model that is said never to have seen one of them
+    rows = world() + [tx(80, "V", "D1", 6, 43), tx(81, "D1", "HOT", 6, 44),
+                      tx(82, "V", "E1", 6, 45), tx(83, "E1", "BHOT", 6, 46)]
+    ex, stats, _ = built(tmp_path, rows=rows)
+    assert "V" not in ex and stats["customers_in_two_exchanges"] == 1
+    assert stats["customers_seen"] == 5
+
+
 def test_an_address_that_cannot_be_read_is_counted_not_guessed(tmp_path):
     ex, stats, _ = built(tmp_path, fail=("U3",))
-    assert "U3" not in ex and stats["errors"] == 1
+    assert "U3" not in ex and stats["errors"] == 1 and stats["recipient_errors"] == 0
 
 
 def test_the_csv_round_trips_and_rewrites_to_the_same_bytes(tmp_path):
@@ -223,9 +259,10 @@ def test_tagged_wallets_that_are_not_deposit_addresses_and_customers_are_the_neg
 
 
 def test_tagged_addresses_are_all_read_with_one_protocol():
-    _, _, chain = tagged()
+    ex, _, chain = tagged()
     assert {(d, since, asset) for _, d, since, asset in chain.calls} == {("both", None, None)}
-    assert set(chain.gas_calls) == {a for a, *_ in chain.calls}
+    assert set(chain.gas_calls) == set(ex)        # the wallets they pay most need no gas listing
+    assert set(ex) < {a for a, *_ in chain.calls}
 
 
 def test_the_tagged_sample_is_seeded():

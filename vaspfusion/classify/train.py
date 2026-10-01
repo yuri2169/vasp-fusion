@@ -159,6 +159,38 @@ def look_alikes(df: pl.DataFrame, p: np.ndarray, share: float = 0.9) -> dict:
             "false_positive_rate": round(flagged / n, 4) if n else None}
 
 
+def forward_rule(df: pl.DataFrame, share: float = 0.9) -> dict:
+    """The one-rule baseline: call an address a deposit address when it forwards `share`
+    or more of what it receives to one wallet. The positives were chosen for exactly
+    that, so this is the bar the model has to clear, not chance."""
+    y = df["y"].to_numpy() == 1
+    says = (df["forward_ratio"].fill_null(-1.0) >= share).to_numpy()
+    tp, fp = int((says & y).sum()), int((says & ~y).sum())
+    fn, tn = int((~says & y).sum()), int((~says & ~y).sum())
+    return {"rule": f"forward_ratio >= {share}", "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+            "precision": round(tp / (tp + fp), 4) if tp + fp else None,
+            "recall": round(tp / (tp + fn), 4) if tp + fn else None,
+            "accuracy": round((tp + tn) / len(y), 4) if len(y) else None}
+
+
+def protocol_fields(df: pl.DataFrame) -> dict:
+    """How well fields that describe the fetch, not the behaviour, separate the classes
+    on their own. None of them is a feature; they are reported so a reader can see how
+    much of the class mix follows from when and how an address was read."""
+    y = df["y"].to_numpy().astype(int)
+    order = df.select(pl.struct("first_ts", "address").rank("ordinal")).to_series().to_numpy()
+
+    def alone(values) -> float:
+        a = M.roc_auc(y, np.asarray(values, dtype=float))
+        return round(max(a, 1 - a), 4)
+
+    return {"roc_auc_alone": {"first_seen_order": alone(order),
+                              "n_rows": alone(df["n_rows"].to_numpy()),
+                              "complete": alone(df["complete"].to_numpy())},
+            "positive_share_by_run": {run: round(float(share), 4) for run, share in sorted(
+                df.group_by("run").agg(pl.col("y").mean()).iter_rows())}}
+
+
 def hide_exchange(df: pl.DataFrame, exchange: str) -> pl.DataFrame:
     """The dataset as it would look if `exchange` had no labelled wallet: the label
     features that came from its labels are 0, for every row, on either side of a split."""
@@ -259,13 +291,16 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20,
     by_time = {"sizes": _sizes(df, split),
                "from": {k: str(df["first_ts"].gather(v).min()) for k, v in split.items()},
                "test": evaluate(y[split["test"]], test_pred),
-               "look_alikes": look_alikes(test, test_pred["p"])}
+               "look_alikes": look_alikes(test, test_pred["p"]),
+               "baseline_forward_rule": forward_rule(test)}
     by_exchange, exchange_models, held_out = _by_exchange(df, FEATURES, seed, hide=False,
                                                           min_positives=min_positives)
     scored = df.join(held_out.select("address", "p"), on="address", how="inner") \
         .sort("address")
     by_exchange["look_alikes"] = look_alikes(scored, scored["p"].to_numpy())
+    by_exchange["baseline_forward_rule"] = forward_rule(scored)
     cross_fit, folds, oof = _cross_fit(df, FEATURES, seed, blocks, min_positives)
+    cross_fit["baseline_forward_rule"] = forward_rule(df)
 
     with_labels = FEATURES + LABEL_FEATURES
     ab_model = fit(df, split["train"], split["calib"], with_labels, seed)
@@ -296,6 +331,7 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20,
                                      "at_0_5")}}},
         "feature_importance": _importance(final, test),
         "leak_audit": _leak_audit(df, seed),
+        "protocol_fields": protocol_fields(df),
     }
     return Result(metrics, final, folds, oof, exchange_models)
 

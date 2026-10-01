@@ -65,8 +65,9 @@ def demo_label_db(path) -> Path:
     rows = json.loads((FIX / "labels.json").read_text())["labels"].values()
     con = duckdb.connect(str(path))
     con.execute(_DDL)
+    labels = [Label.from_dict(r) for r in rows]        # rows of any vintage, model as JSON
     con.executemany(f"INSERT INTO labels VALUES ({', '.join('?' * len(LABEL_COLUMNS))})",
-                    [[r.get(c) for c in LABEL_COLUMNS] for r in rows])   # recorded before B4
+                    [[getattr(l, c) for c in LABEL_COLUMNS] for l in labels])
     con.close()
     return Path(path)
 

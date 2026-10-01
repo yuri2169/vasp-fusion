@@ -203,7 +203,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Model */
+        /**
+         * Get Model
+         * @description The deposit-address model's measurements (`make model`). Tron is the model whose
+         *     scores the labels carry; `?chain=ethereum` is the explorer-tagged benchmark.
+         */
         get: operations["get_model_api_model_get"];
         put?: never;
         post?: never;
@@ -257,10 +261,13 @@ export interface components {
             proximity_rank: number;
             /**
              * Confidence
-             * @description Calibrated; separate from proximity
+             * @description Separate from proximity. Label weight x hop decay x share factor. The label weight is the deposit-address model's calibrated probability where confidence_interval is set; otherwise every factor is rule-set
              */
             confidence: number;
-            /** Confidence Interval */
+            /**
+             * Confidence Interval
+             * @description Set when the money reached a model-scored deposit address: the model's calibrated range, carried through the same formula. null = rule confidence only
+             */
             confidence_interval?: [
                 number,
                 number
@@ -568,6 +575,36 @@ export interface components {
              */
             weight?: number | null;
         };
+        /**
+         * ExchangeFold
+         * @description One row of the leave-one-exchange-out table: the model never saw this exchange.
+         */
+        ExchangeFold: {
+            /** Exchange */
+            exchange: string;
+            /** N */
+            n: number;
+            /** N Positive */
+            n_positive: number;
+            /** Pr Auc */
+            pr_auc?: number | null;
+            /** Roc Auc */
+            roc_auc?: number | null;
+            /** Brier */
+            brier?: number | null;
+            /** Ece */
+            ece?: number | null;
+            /**
+             * Precision
+             * @description At probability 0.5
+             */
+            precision?: number | null;
+            /**
+             * Recall
+             * @description At probability 0.5
+             */
+            recall?: number | null;
+        };
         /** FeatureImportance */
         FeatureImportance: {
             /** Feature */
@@ -808,14 +845,23 @@ export interface components {
             label?: string | null;
             /**
              * Confidence
-             * @description tier=derived only: rule confidence of the discovery rules. Not calibrated
+             * @description tier=derived only. With confidence_low/high set: the weight of the exchange wallet's label x the deposit-address model's calibrated probability (B6). Without them: the discovery rules' hand-set confidence, not calibrated
              */
             confidence?: number | null;
             /**
              * Evidence
-             * @description tier=derived only: what the sweep and gas-payer rules saw, in plain English
+             * @description tier=derived only: what the sweep and gas-payer rules saw, and what the model said, in plain English
              */
             evidence?: string | null;
+            /**
+             * Confidence Low
+             * @description Model-scored labels only: low end of the calibrated range (Venn-Abers)
+             */
+            confidence_low?: number | null;
+            /** Confidence High */
+            confidence_high?: number | null;
+            /** @description Labels the deposit-address model scored: its own probability, range and reasons, whether or not the label's confidence is based on it */
+            model?: components["schemas"]["ModelScore"] | null;
         };
         /** LabelSearch */
         LabelSearch: {
@@ -851,6 +897,23 @@ export interface components {
              */
             tx_hashes: string[];
         };
+        /**
+         * LookAlikes
+         * @description The hard negatives: wallets that are not deposit addresses but forward as much.
+         */
+        LookAlikes: {
+            /** Forwarding At Least */
+            forwarding_at_least: number;
+            /** Negatives */
+            negatives: number;
+            /**
+             * Flagged
+             * @description How many of them the model calls a deposit address
+             */
+            flagged: number;
+            /** False Positive Rate */
+            false_positive_rate?: number | null;
+        };
         /** ModelInfo */
         ModelInfo: {
             /**
@@ -884,6 +947,18 @@ export interface components {
              */
             feature_importance: components["schemas"]["FeatureImportance"][];
             /**
+             * Leave One Exchange Out
+             * @default []
+             */
+            leave_one_exchange_out: components["schemas"]["ExchangeFold"][];
+            look_alikes?: components["schemas"]["LookAlikes"] | null;
+            baseline?: components["schemas"]["RuleBaseline"] | null;
+            /**
+             * Chain
+             * @description The chain the model was trained on
+             */
+            chain?: string | null;
+            /**
              * Notes
              * @default []
              */
@@ -903,6 +978,59 @@ export interface components {
             coverage?: number | null;
             /** N Test */
             n_test?: number | null;
+        };
+        /** ModelReason */
+        ModelReason: {
+            /**
+             * Feature
+             * @description The model feature, as a stable key
+             */
+            feature: string;
+            /**
+             * Text
+             * @description What the address did, in plain English
+             */
+            text: string;
+            /**
+             * Weight
+             * @description SHAP value in log-odds: above 0 speaks for a deposit address, below 0 against
+             */
+            weight: number;
+        };
+        /**
+         * ModelScore
+         * @description What the deposit-address model said about one address (B6).
+         */
+        ModelScore: {
+            /**
+             * P
+             * @description Calibrated probability that an address behaving like this is an exchange deposit address
+             */
+            p: number;
+            /**
+             * Low
+             * @description Venn-Abers range of p
+             */
+            low: number;
+            /** High */
+            high: number;
+            /**
+             * Basis
+             * @description model: the label's confidence is the model's value. rule: the model did not raise it, and the discovery rules' confidence is kept
+             * @enum {string}
+             */
+            basis: "model" | "rule";
+            /**
+             * Scored By
+             * @description Which cross-fit model scored it; never one that trained on this address
+             */
+            scored_by?: string | null;
+            /**
+             * Reasons
+             * @description Strongest reasons, strongest first
+             * @default []
+             */
+            reasons: components["schemas"]["ModelReason"][];
         };
         /** Provenance */
         Provenance: {
@@ -933,6 +1061,11 @@ export interface components {
             observed: number;
             /** Count */
             count: number;
+            /**
+             * Predicted
+             * @description Mean predicted probability in the bin
+             */
+            predicted?: number | null;
         };
         /** RequestCreate */
         RequestCreate: {
@@ -1067,6 +1200,20 @@ export interface components {
              * @default []
              */
             reasons: string[];
+        };
+        /**
+         * RuleBaseline
+         * @description What one rule alone scores on the test addresses: the bar the model must clear.
+         */
+        RuleBaseline: {
+            /** Rule */
+            rule: string;
+            /** Precision */
+            precision?: number | null;
+            /** Recall */
+            recall?: number | null;
+            /** Accuracy */
+            accuracy?: number | null;
         };
         /** StatusEvent */
         StatusEvent: {
@@ -1629,7 +1776,9 @@ export interface operations {
     };
     get_model_api_model_get: {
         parameters: {
-            query?: never;
+            query?: {
+                chain?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1643,6 +1792,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

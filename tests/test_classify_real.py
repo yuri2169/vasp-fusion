@@ -35,8 +35,11 @@ def replayed(tmp_path_factory):
                   CFG.candidate_limit, tuple(result.findings))
         provider = TronProvider(fetcher, page_size=50, max_pages=1)
         labels = FixtureLabels("crawl_tron")
-        rows = {f.address: _example(f.address, run, run.read(provider, f.address), labels, None,
-                                    DiscoverConfig()) for f in result.findings}
+        rows = {}
+        for f in result.findings:
+            listing, complete, events = run.read(provider, f.address)
+            rows[f.address] = _example(f.address, run, (listing, events), complete, labels,
+                                       DiscoverConfig())
         yield result.findings, rows
     finally:
         mp.undo()
@@ -80,6 +83,12 @@ def test_the_tracked_metrics_describe_the_tracked_dataset(tron):
     assert sizes["train"] + sizes["calib"] + sizes["test"] == df.height
     assert m["cross_fit"]["pooled"]["n"] == df.height
     assert m["seed"] == 26182 and m["backend"] == "lightgbm" and m["features"] == FEATURES
+    # the metrics, the scores and the dataset in git belong together
+    import hashlib
+    assert d["sha256"] == hashlib.sha256((MODEL / "dataset.csv").read_bytes()).hexdigest()
+    report = json.loads((MODEL / "dataset_report.json").read_text())
+    assert report["config"]["horizon_days"] == 14.0 and report["examples"] == df.height
+    assert report["errors"] == 0
 
 
 def test_no_real_address_is_in_the_dataset_twice_or_on_two_sides_of_a_split(tron):
@@ -97,17 +106,25 @@ def test_no_real_address_is_in_the_dataset_twice_or_on_two_sides_of_a_split(tron
 
 def test_every_derived_label_has_exactly_one_score_and_no_other_address_has_one(tron):
     df, _, scores = tron
-    derived = {f.address: f for run in load_runs(ROOT / "derived") if run.chain == "tron"
-               for f in run.findings if f.status == "derived"}
+    from vaspfusion.classify.score import label_findings
+    derived = label_findings([r for r in load_runs(ROOT / "derived") if r.chain == "tron"])
     in_dataset = set(df.filter(pl.col("y") == 1)["address"].to_list())
     assert in_dataset == set(derived)                 # every derived address could be read
     assert {a for a, _ in scores} == set(derived)
     for (address, chain), s in scores.items():
         assert chain == "tron" and s["entity"] == derived[address].entity
         assert s["scored_by"].startswith("cross-fit:block ")
-        assert 0 <= s["confidence_low"] <= s["confidence"] <= s["confidence_high"] <= 1
-        assert len(json.loads(s["reasons"])) == 3
-        assert "not calibrated" not in s["evidence"] and "Model: " in s["evidence"]
+        model = json.loads(s["model"])
+        assert len(model["reasons"]) == 3 and model["p"] == s["p"] and "Model: " in s["evidence"]
+        assert s["rule_confidence"] == derived[address].confidence
+        if s["basis"] == "model":             # the model confirms: its value, with a range
+            assert s["rule_confidence"] <= s["confidence_low"] <= s["confidence"] \
+                <= s["confidence_high"] <= 1
+            assert "not calibrated" not in s["evidence"]
+        else:                                 # it does not: the rules' confidence stands
+            assert s["basis"] == "rule" and s["confidence"] == s["rule_confidence"]
+            assert s["confidence_low"] is None and s["confidence_high"] is None
+            assert "is kept (hand-set, not calibrated)" in s["evidence"]
 
 
 def test_the_negatives_are_not_labelled_deposit_addresses_and_not_findings(tron):

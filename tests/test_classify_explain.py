@@ -50,6 +50,10 @@ def test_phrases_read_like_an_officers_note():
     assert phrase("dwell_median_s", 180) == "moves funds on about 3 minutes after they arrive"
     assert phrase("dwell_median_s", float("nan")) == \
         "no deposit was seen moving on, so the waiting time is unknown"
+    assert phrase("recipient_forwards_on", 1.0) == \
+        "the wallet it pays most forwards everything on in turn, as a deposit address does"
+    assert phrase("recipient_forwards_on", 0.0) == \
+        "the wallet it pays most keeps or spreads what it receives, as a collecting wallet does"
     assert all(phrase(f, v) for f in FEATURES for v in (0, 1, 3.5, float("nan")))
 
 

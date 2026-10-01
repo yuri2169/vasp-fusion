@@ -1,0 +1,38 @@
+{
+ "by_source": {
+  "customer": 597,
+  "explorer_tag": 599,
+  "labelled:bridge": 2,
+  "labelled:custodial_wallet": 5,
+  "labelled:defi": 25,
+  "labelled:entity": 94,
+  "labelled:exchange": 145
+ },
+ "config": {
+  "entities": [
+   "Bitget",
+   "Bilaxy"
+  ],
+  "limit": 200,
+  "n_negative": 300,
+  "n_positive": 300,
+  "per_exchange": 300,
+  "seed": 26182
+ },
+ "customers": {
+  "Bilaxy": 297,
+  "Bitget": 300
+ },
+ "customers_in_two_exchanges": 11,
+ "customers_seen": 1413,
+ "cutoff": {
+  "tagged_ethereum": "2026-09-30T23:38:11Z"
+ },
+ "empty": 30,
+ "errors": 0,
+ "examples": 1467,
+ "labelled": 300,
+ "positives": 600,
+ "recipient_errors": 0,
+ "recipients_read": 535
+}

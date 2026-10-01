@@ -54,6 +54,20 @@ class ModelReason(_M):
                                       "address, below 0 against")
 
 
+class ModelScore(_M):
+    """What the deposit-address model said about one address (B6)."""
+    p: float = Field(ge=0, le=1, description="Calibrated probability that an address "
+                     "behaving like this is an exchange deposit address")
+    low: float = Field(ge=0, le=1, description="Venn-Abers range of p")
+    high: float = Field(ge=0, le=1)
+    basis: Literal["model", "rule"] = Field(description=(
+        "model: the label's confidence is the model's value. rule: the model did not "
+        "raise it, and the discovery rules' confidence is kept"))
+    scored_by: str | None = Field(None, description="Which cross-fit model scored it; "
+                                  "never one that trained on this address")
+    reasons: list[ModelReason] = Field([], description="Strongest reasons, strongest first")
+
+
 class LabelOut(_M):
     address: str
     chain: str = Field(description="Chain slug as stored; 'evm' = any EVM chain")
@@ -74,8 +88,9 @@ class LabelOut(_M):
     confidence_low: float | None = Field(None, ge=0, le=1, description=(
         "Model-scored labels only: low end of the calibrated range (Venn-Abers)"))
     confidence_high: float | None = Field(None, ge=0, le=1)
-    reasons: list[ModelReason] | None = Field(None, description=(
-        "Model-scored labels only: the model's strongest reasons, strongest first"))
+    model: ModelScore | None = Field(None, description=(
+        "Labels the deposit-address model scored: its own probability, range and reasons, "
+        "whether or not the label's confidence is based on it"))
 
 
 class LabelSearch(_M):
@@ -464,6 +479,22 @@ class ExchangeFold(_M):
     recall: float | None = Field(None, description="At probability 0.5")
 
 
+class LookAlikes(_M):
+    """The hard negatives: wallets that are not deposit addresses but forward as much."""
+    forwarding_at_least: float
+    negatives: int
+    flagged: int = Field(description="How many of them the model calls a deposit address")
+    false_positive_rate: float | None = None
+
+
+class RuleBaseline(_M):
+    """What one rule alone scores on the test addresses: the bar the model must clear."""
+    rule: str
+    precision: float | None = None
+    recall: float | None = None
+    accuracy: float | None = None
+
+
 class ModelInfo(_M):
     status: Literal["not_measured", "measured"]
     version: str | None = None
@@ -474,6 +505,8 @@ class ModelInfo(_M):
     risk_coverage: list[RiskCoveragePoint] = []
     feature_importance: list[FeatureImportance] = []
     leave_one_exchange_out: list[ExchangeFold] = []
+    look_alikes: LookAlikes | None = None
+    baseline: RuleBaseline | None = None
     chain: str | None = Field(None, description="The chain the model was trained on")
     notes: list[str] = []
 

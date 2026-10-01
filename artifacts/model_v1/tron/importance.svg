@@ -16,37 +16,37 @@
 <text class="t" x="24" y="28">What the model leans on: tron</text>
 <text class="s" x="24" y="48">Each feature's share of the average effect on a prediction (mean |SHAP|)</text>
 <line class="a" x1="300" x2="300" y1="62" y2="438"/>
-<text class="s" x="290" y="82" text-anchor="end">Time span of activity</text>
-<path class="b" d="M300,70 h276.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-276.0 z"><title>Time span of activity: 23.6%</title></path>
-<text class="v" x="588.0" y="83">24%</text>
-<text class="s" x="290" y="108" text-anchor="end">Share forwarded to one wallet</text>
-<path class="b" d="M300,96 h208.7 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-208.7 z"><title>Share forwarded to one wallet: 18.0%</title></path>
-<text class="v" x="520.7" y="109">18%</text>
-<text class="s" x="290" y="134" text-anchor="end">Incoming transfers</text>
-<path class="b" d="M300,122 h154.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-154.0 z"><title>Incoming transfers: 13.3%</title></path>
-<text class="v" x="466.0" y="135">13%</text>
-<text class="s" x="290" y="160" text-anchor="end">Outgoing transfers to one wallet</text>
-<path class="b" d="M300,148 h136.4 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-136.4 z"><title>Outgoing transfers to one wallet: 11.8%</title></path>
-<text class="v" x="448.4" y="161">12%</text>
-<text class="s" x="290" y="186" text-anchor="end">Time funds wait before moving on</text>
-<path class="b" d="M300,174 h124.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-124.6 z"><title>Time funds wait before moving on: 10.9%</title></path>
-<text class="v" x="436.6" y="187">11%</text>
-<text class="s" x="290" y="212" text-anchor="end">Outgoing transfers</text>
-<path class="b" d="M300,200 h55.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-55.0 z"><title>Outgoing transfers: 5.0%</title></path>
-<text class="s" x="290" y="238" text-anchor="end">Network fee covered by someone else</text>
-<path class="b" d="M300,226 h40.5 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-40.5 z"><title>Network fee covered by someone else: 3.8%</title></path>
-<text class="s" x="290" y="264" text-anchor="end">Number of outside fee payers</text>
-<path class="b" d="M300,252 h36.9 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-36.9 z"><title>Number of outside fee payers: 3.5%</title></path>
-<text class="s" x="290" y="290" text-anchor="end">Number of recipients</text>
-<path class="b" d="M300,278 h35.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-35.6 z"><title>Number of recipients: 3.3%</title></path>
-<text class="s" x="290" y="316" text-anchor="end">Share of funds still held</text>
-<path class="b" d="M300,304 h25.6 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-25.6 z"><title>Share of funds still held: 2.5%</title></path>
-<text class="s" x="290" y="342" text-anchor="end">Outgoing per incoming transfer</text>
-<path class="b" d="M300,330 h25.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-25.0 z"><title>Outgoing per incoming transfer: 2.5%</title></path>
-<text class="s" x="290" y="368" text-anchor="end">Number of senders</text>
-<path class="b" d="M300,356 h8.3 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-8.3 z"><title>Number of senders: 1.0%</title></path>
-<text class="s" x="290" y="394" text-anchor="end">Regularity of outgoing transfers</text>
-<path class="b" d="M300,382 h5.8 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-5.8 z"><title>Regularity of outgoing transfers: 0.8%</title></path>
+<text class="s" x="290" y="82" text-anchor="end">Share forwarded to one wallet</text>
+<path class="b" d="M300,70 h276.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-276.0 z"><title>Share forwarded to one wallet: 22.8%</title></path>
+<text class="v" x="588.0" y="83">23%</text>
+<text class="s" x="290" y="108" text-anchor="end">Outgoing transfers to one wallet</text>
+<path class="b" d="M300,96 h237.2 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-237.2 z"><title>Outgoing transfers to one wallet: 19.6%</title></path>
+<text class="v" x="549.2" y="109">20%</text>
+<text class="s" x="290" y="134" text-anchor="end">The wallet it pays most forwards everything on</text>
+<path class="b" d="M300,122 h222.7 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-222.7 z"><title>The wallet it pays most forwards everything on: 18.4%</title></path>
+<text class="v" x="534.7" y="135">18%</text>
+<text class="s" x="290" y="160" text-anchor="end">Incoming transfers</text>
+<path class="b" d="M300,148 h104.0 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-104.0 z"><title>Incoming transfers: 8.8%</title></path>
+<text class="v" x="416.0" y="161">9%</text>
+<text class="s" x="290" y="186" text-anchor="end">Share of funds still held</text>
+<path class="b" d="M300,174 h94.7 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-94.7 z"><title>Share of funds still held: 8.0%</title></path>
+<text class="v" x="406.7" y="187">8%</text>
+<text class="s" x="290" y="212" text-anchor="end">Number of recipients</text>
+<path class="b" d="M300,200 h60.5 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-60.5 z"><title>Number of recipients: 5.2%</title></path>
+<text class="s" x="290" y="238" text-anchor="end">Outgoing per incoming transfer</text>
+<path class="b" d="M300,226 h58.3 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-58.3 z"><title>Outgoing per incoming transfer: 5.1%</title></path>
+<text class="s" x="290" y="264" text-anchor="end">Time funds wait before moving on</text>
+<path class="b" d="M300,252 h54.1 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-54.1 z"><title>Time funds wait before moving on: 4.7%</title></path>
+<text class="s" x="290" y="290" text-anchor="end">Regularity of outgoing transfers</text>
+<path class="b" d="M300,278 h25.2 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-25.2 z"><title>Regularity of outgoing transfers: 2.4%</title></path>
+<text class="s" x="290" y="316" text-anchor="end">Network fee covered by someone else</text>
+<path class="b" d="M300,304 h15.9 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-15.9 z"><title>Network fee covered by someone else: 1.6%</title></path>
+<text class="s" x="290" y="342" text-anchor="end">Outgoing transfers</text>
+<path class="b" d="M300,330 h12.8 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-12.8 z"><title>Outgoing transfers: 1.4%</title></path>
+<text class="s" x="290" y="368" text-anchor="end">Number of outside fee payers</text>
+<path class="b" d="M300,356 h12.7 q4.0,0 4.0,4.0 v10.0 q0,4.0 -4.0,4.0 h-12.7 z"><title>Number of outside fee payers: 1.4%</title></path>
+<text class="s" x="290" y="394" text-anchor="end">Number of senders</text>
+<path class="b" d="M300,382 h3.3 q3.3,0 3.3,3.3 v11.5 q0,3.3 -3.3,3.3 h-3.3 z"><title>Number of senders: 0.5%</title></path>
 <text class="s" x="290" y="420" text-anchor="end">Share of stablecoin transfers</text>
 <path class="b" d="M300,408 h1.0 q1.0,0 1.0,1.0 v16.0 q0,1.0 -1.0,1.0 h-1.0 z"><title>Share of stablecoin transfers: 0.0%</title></path>
 </svg>

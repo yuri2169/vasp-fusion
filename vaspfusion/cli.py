@@ -39,8 +39,9 @@ def cmd_labels(args) -> None:
           f"source or named by two runs; {stats['derived_conflicting']:,} left out because two "
           "runs name different exchanges). Run `make discover` to produce them.")
     print(f"  of those, {stats['derived_model_scored']:,} carry the deposit-address model's "
-          f"calibrated confidence and range (from {args.model}; `make model` writes it); the "
-          "rest keep the rules' hand-set confidence")
+          f"calibrated confidence and range (from {args.model}; `make model` writes it); "
+          f"{stats['derived_model_unconfirmed']:,} keep the rules' confidence because the "
+          "model did not confirm them; the rest were not scored")
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -302,7 +303,9 @@ def _model_data_tagged(args) -> None:
         print(f"  {source:<22}{n:>7}")
     print(f"customers seen {stats['customers_seen']} (sampled up to {cfg.per_exchange} per "
           f"exchange: {stats['customers']})")
-    print(f"no usable transfers: {stats['empty']}; could not be read: {stats['errors']}")
+    print(f"no usable transfers: {stats['empty']}; could not be read: {stats['errors']}; "
+          f"wallets they pay most: {stats['recipients_read']} read, "
+          f"{stats['recipient_errors']} could not be read")
     print(f"wrote {path}")
     print(_pages(fetcher))
 
@@ -322,7 +325,11 @@ def cmd_model_data(args) -> None:
     if any(r.limit != limit for r in runs):
         sys.exit("the discovery runs were read with different row limits")
     caches = [chains.ChainCache(path, hold=True) for path in (args.crawl_cache, args.cache)]
-    fetchers = [chains.Fetcher(c, chains.UrllibTransport()) for c in caches]
+    # the negatives and the recipients go into our own cache; a recipient that is itself
+    # a derived deposit address is already in the crawl's
+    fetchers = [chains.Fetcher(caches[0], chains.UrllibTransport()),
+                chains.Fetcher(chains.LayeredCache(caches[1], caches[0]),
+                               chains.UrllibTransport())]
     # the crawl's candidate protocol: one page of `limit` rows per listing
     crawl, extra = (chains.get_provider(args.chain, f, page_size=limit, max_pages=1)
                     for f in fetchers)
@@ -350,7 +357,8 @@ def cmd_model_data(args) -> None:
           f"exchange: {stats['customers']}); {stats['customers_in_two_exchanges']} paid into "
           "two exchanges")
     print(f"no usable transfers in the window: {stats['empty']}; could not be read: "
-          f"{stats['errors']}")
+          f"{stats['errors']}; wallets they pay most: {stats['recipients_read']} read, "
+          f"{stats['recipient_errors']} could not be read")
     print(f"wrote {path}")
     print(_pages(fetchers[1]))
 
@@ -412,8 +420,10 @@ def cmd_model(args) -> None:
     audit = m["leak_audit"]
     print(f"leak audit (address order, minute, second of first transfer): "
           f"{'none over the gate' if not audit['strict_over_gate'] else audit['strict_over_gate']}")
-    print(f"scored {len(scores):,} derived labels; wrote {Path(args.out) / args.chain}/ "
-          "(run `make labels` to merge the scores)")
+    confirmed = sum(1 for s in scores if s["basis"] == "model")
+    print(f"scored {len(scores):,} derived labels: the model confirms {confirmed:,} (they carry "
+          f"its confidence and range); {len(scores) - confirmed:,} keep the rules' confidence")
+    print(f"wrote {Path(args.out) / args.chain}/ (run `make labels` to merge the scores)")
 
 
 def cmd_trace(args) -> None:
@@ -436,9 +446,16 @@ def cmd_trace(args) -> None:
         return
 
     asset = case["asset"] or ""
-    print(f"{case['chain']}  {case['address']}  ->  {case['outcome']}"
-          + (f"  {case['top_vasp']}  rule confidence {case['confidence']:.2f}"
-             if case["top_vasp"] else ""))
+    top = next((c for c in case["candidates"] if c["vasp"] == case["top_vasp"]
+                and c["confidence"] == case["confidence"]), None)
+    if top is not None and top["confidence_interval"]:
+        said = (f"  {case['top_vasp']}  confidence {case['confidence']:.2f} "
+                f"({fmt.prob_range(*top['confidence_interval'])})")
+    elif case["top_vasp"]:
+        said = f"  {case['top_vasp']}  rule confidence {case['confidence']:.2f}"
+    else:
+        said = ""
+    print(f"{case['chain']}  {case['address']}  ->  {case['outcome']}{said}")
     print()
     print(textwrap.fill(case["narrative"], width=100))
     if case["candidates"]:

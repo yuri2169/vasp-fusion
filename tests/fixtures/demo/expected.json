@@ -36,6 +36,7 @@
     "direction": "outbound",
     "proximity_rank": 1,
     "confidence": 0.75,
+    "confidence_interval": null,
     "hops": 1,
     "share_of_funds": 1.0,
     "deposit_address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
@@ -65,7 +66,11 @@
     "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
-    "confidence": 0.3106,
+    "confidence": 0.3266,
+    "confidence_interval": [
+     0.3266,
+     0.3269
+    ],
     "hops": 1,
     "share_of_funds": 0.0962,
     "deposit_address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
@@ -99,7 +104,7 @@
  "tron-coindcx": {
   "outcome": "ATTRIBUTED",
   "top_vasp": "CoinDCX",
-  "confidence": 0.8075,
+  "confidence": 0.8491,
   "asset": "USDT",
   "total_sent": 2652.22,
   "candidates": [
@@ -107,7 +112,11 @@
     "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
-    "confidence": 0.8075,
+    "confidence": 0.8491,
+    "confidence_interval": [
+     0.8491,
+     0.85
+    ],
     "hops": 1,
     "share_of_funds": 0.5769,
     "deposit_address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
@@ -135,7 +144,7 @@
  "tron-htx-coindcx": {
   "outcome": "ATTRIBUTED",
   "top_vasp": "CoinDCX",
-  "confidence": 0.8075,
+  "confidence": 0.8492,
   "asset": "USDT",
   "total_sent": 13000.0,
   "candidates": [
@@ -143,7 +152,11 @@
     "vasp": "CoinDCX",
     "direction": "outbound",
     "proximity_rank": 1,
-    "confidence": 0.8075,
+    "confidence": 0.8492,
+    "confidence_interval": [
+     0.8492,
+     0.85
+    ],
     "hops": 1,
     "share_of_funds": 0.4615,
     "deposit_address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
@@ -154,6 +167,7 @@
     "direction": "outbound",
     "proximity_rank": 2,
     "confidence": 0.7071,
+    "confidence_interval": null,
     "hops": 2,
     "share_of_funds": 0.5385,
     "deposit_address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",

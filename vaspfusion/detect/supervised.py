@@ -54,6 +54,8 @@ class SupervisedDetector:
                 min_child_samples=30, subsample=0.85, subsample_freq=1,
                 colsample_bytree=0.8, reg_lambda=1.0,
                 scale_pos_weight=scale, random_state=self.seed,
+                # the same trees whatever the machine's thread count
+                deterministic=True, force_row_wise=True,
                 n_jobs=-1, verbose=-1)
             # No early stopping: the only set at hand here is the training set, and
             # LightGBM ignores an early-stopping callback that has nothing else to watch.

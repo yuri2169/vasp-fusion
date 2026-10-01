@@ -73,28 +73,57 @@
           "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
           "label": "OFAC sanctioned (USDT)",
           "confidence": null,
-          "evidence": null
+          "evidence": null,
+          "confidence_low": null,
+          "confidence_high": null,
+          "model": null
         },
         "cluster": null,
         "is_hub": false
       },
       {
-        "id": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+        "id": "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe",
         "chain": "tron",
         "role": "exchange",
         "hop": 2,
         "label": {
-          "address": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+          "address": "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe",
           "chain": "tron",
           "entity": "CoinDCX",
           "category": "exchange",
-          "kind": "unknown",
-          "tier": "curated",
-          "source": "dune-spellbook",
-          "source_url": "https://github.com/duneanalytics/spellbook",
-          "label": "CoinDCX 11",
-          "confidence": null,
-          "evidence": null
+          "kind": "deposit",
+          "tier": "derived",
+          "source": "vaspfusion-discover",
+          "source_url": null,
+          "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+          "confidence": 0.8492,
+          "evidence": "Sweep rule: forwarded 100% of the 100 USDT it received from 1 sender to CoinDCX wallet TU7BbA…vZbsFs (curated list) in 2 sweeps, typically 31 seconds after arrival. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 2 of 2 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability.",
+          "confidence_low": 0.8492,
+          "confidence_high": 0.85,
+          "model": {
+            "basis": "model",
+            "high": 1.0,
+            "low": 0.9991,
+            "p": 0.9991,
+            "reasons": [
+              {
+                "feature": "forward_ratio",
+                "text": "forwards 100% of what it receives to one wallet",
+                "weight": 2.3134
+              },
+              {
+                "feature": "dwell_median_s",
+                "text": "moves funds on about 31 seconds after they arrive",
+                "weight": 2.1092
+              },
+              {
+                "feature": "top_recipient_share",
+                "text": "every outgoing transfer goes to one wallet",
+                "weight": 1.9835
+              }
+            ],
+            "scored_by": "cross-fit:block 3"
+          }
         },
         "cluster": "CoinDCX",
         "is_hub": false
@@ -126,7 +155,7 @@
       {
         "id": "e3",
         "source": "TYp4CYqKjUSyRAMZQBeGF7g13EnjmnDArj",
-        "target": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+        "target": "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe",
         "tx_hash": "b9a636e392c3139b47661ab634e374046a10a5e202df8a7e4a6624729314bf41",
         "asset": "USDT",
         "amount": 990.0,
@@ -150,11 +179,11 @@
       "share_of_funds": 0.08,
       "time_to_reach_s": 360,
       "label_tier": "curated",
-      "deposit_address": "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR",
+      "deposit_address": "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe",
       "path": [
         "TLoXu5WereZCDVGXtmiCd9TNbfjuF4krPi",
         "TYp4CYqKjUSyRAMZQBeGF7g13EnjmnDArj",
-        "TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR"
+        "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe"
       ],
       "evidence": [
         {

@@ -116,3 +116,28 @@ def test_cross_fitting_does_not_depend_on_the_order_of_the_rows():
             assert addresses(df, a[part]) == addresses(shuffled, b[part])
     with pytest.raises(ValueError, match="more than once"):
         crossfit_folds(pl.concat([df, frame([("P00", 0, "ExB", 9)])]))
+
+
+def in_group(df, idx, group="ExA"):
+    rows = df.with_row_index("i").filter(pl.col("group") == group)
+    ts = dict(zip(rows["i"].to_list(), rows["first_ts"].to_list()))
+    return [ts[i] for i in idx.tolist() if i in ts]
+
+
+def test_a_block_is_calibrated_on_the_rows_next_to_it_in_time_never_across_the_whole_span():
+    """The class mix drifts with time, so calibrating the newest block on the oldest rows
+    would calibrate it for a different population."""
+    df = dataset(120)
+    folds = dict(crossfit_folds(df, k=5))
+    newest, oldest, middle = folds["block 5"], folds["block 1"], folds["block 3"]
+    # newest: its calibration rows are the latest rows that are not in the block itself
+    assert max(in_group(df, newest["train"])) <= min(in_group(df, newest["calib"]))
+    assert max(in_group(df, newest["calib"])) <= min(in_group(df, newest["test"]))
+    # oldest: the mirror image
+    assert max(in_group(df, oldest["test"])) <= min(in_group(df, oldest["calib"]))
+    assert max(in_group(df, oldest["calib"])) <= min(in_group(df, oldest["train"]))
+    # a middle block is calibrated on its neighbours on both sides
+    calib, test = in_group(df, middle["calib"]), in_group(df, middle["test"])
+    assert min(calib) <= min(test) and max(calib) >= max(test)
+    before = [t for t in in_group(df, middle["train"]) if t < min(test)]
+    assert max(before) <= min(calib)

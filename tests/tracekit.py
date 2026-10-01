@@ -64,7 +64,7 @@ class ToyLabels:
                                       evidence=spec[5] if len(spec) > 5 else None,
                                       confidence_low=spec[6] if len(spec) > 6 else None,
                                       confidence_high=spec[7] if len(spec) > 7 else None,
-                                      reasons=spec[8] if len(spec) > 8 else None)
+                                      model=spec[8] if len(spec) > 8 else None)
 
     def lookup_many(self, pairs):
         return {(a, c): self.labels[a] for a, c in pairs if a in self.labels}

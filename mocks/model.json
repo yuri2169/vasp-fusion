@@ -1,15 +1,329 @@
 {
   "_demo": true,
-  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
-  "status": "not_measured",
-  "version": null,
-  "trained_at": null,
-  "split": null,
-  "metrics": {},
-  "reliability": [],
-  "risk_coverage": [],
-  "feature_importance": [],
+  "_notice": "UI fixture. Unlike the other mock files these figures are real: the deposit-address model's measurements, copied from artifacts/model_v1/tron/metrics.json when `make mocks` last ran. /api/model serves the current ones.",
+  "status": "measured",
+  "version": "model_v1",
+  "trained_at": "2026-10-01T19:38:34Z",
+  "split": "by time, and by exchange (leave one exchange out)",
+  "chain": "tron",
+  "metrics": {
+    "pr_auc": 1.0,
+    "ece": 0.0093,
+    "brier": 0.0026,
+    "accuracy_when_answering": 1.0,
+    "coverage": 0.986,
+    "n_test": 1791
+  },
+  "reliability": [
+    {
+      "bin_mid": 0.05,
+      "predicted": 0.0092,
+      "observed": 0.0,
+      "count": 413
+    },
+    {
+      "bin_mid": 0.15,
+      "predicted": 0.125,
+      "observed": 0.0,
+      "count": 2
+    },
+    {
+      "bin_mid": 0.25,
+      "predicted": 0.2,
+      "observed": 0.0,
+      "count": 1
+    },
+    {
+      "bin_mid": 0.35,
+      "predicted": 0.3636,
+      "observed": 0.0,
+      "count": 2
+    },
+    {
+      "bin_mid": 0.55,
+      "predicted": 0.5309,
+      "observed": 0.25,
+      "count": 8
+    },
+    {
+      "bin_mid": 0.65,
+      "predicted": 0.6639,
+      "observed": 0.8182,
+      "count": 11
+    },
+    {
+      "bin_mid": 0.75,
+      "predicted": 0.75,
+      "observed": 1.0,
+      "count": 1
+    },
+    {
+      "bin_mid": 0.95,
+      "predicted": 0.9945,
+      "observed": 1.0,
+      "count": 1353
+    }
+  ],
+  "risk_coverage": [
+    {
+      "coverage": 0.0006,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.0419,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.0838,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.1251,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.1669,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.2083,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.2501,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.292,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.3333,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.3752,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.4165,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.4584,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.5003,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.5416,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.5835,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.6248,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.6667,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.708,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.7499,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.7917,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.8331,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.8749,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.9162,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 0.9581,
+      "accuracy": 1.0
+    },
+    {
+      "coverage": 1.0,
+      "accuracy": 0.9955
+    }
+  ],
+  "feature_importance": [
+    {
+      "feature": "Share forwarded to one wallet",
+      "importance": 0.2279
+    },
+    {
+      "feature": "Outgoing transfers to one wallet",
+      "importance": 0.1963
+    },
+    {
+      "feature": "The wallet it pays most forwards everything on",
+      "importance": 0.1845
+    },
+    {
+      "feature": "Incoming transfers",
+      "importance": 0.0879
+    },
+    {
+      "feature": "Share of funds still held",
+      "importance": 0.0803
+    },
+    {
+      "feature": "Number of recipients",
+      "importance": 0.0525
+    },
+    {
+      "feature": "Outgoing per incoming transfer",
+      "importance": 0.0507
+    },
+    {
+      "feature": "Time funds wait before moving on",
+      "importance": 0.0473
+    },
+    {
+      "feature": "Regularity of outgoing transfers",
+      "importance": 0.0238
+    },
+    {
+      "feature": "Network fee covered by someone else",
+      "importance": 0.0162
+    },
+    {
+      "feature": "Outgoing transfers",
+      "importance": 0.0137
+    },
+    {
+      "feature": "Number of outside fee payers",
+      "importance": 0.0136
+    },
+    {
+      "feature": "Number of senders",
+      "importance": 0.0053
+    },
+    {
+      "feature": "Share of stablecoin transfers",
+      "importance": 0.0
+    }
+  ],
+  "look_alikes": {
+    "forwarding_at_least": 0.9,
+    "negatives": 97,
+    "flagged": 5,
+    "false_positive_rate": 0.0515
+  },
+  "baseline": {
+    "rule": "forward_ratio >= 0.9",
+    "precision": 0.9337,
+    "recall": 1.0,
+    "accuracy": 0.9458
+  },
+  "leave_one_exchange_out": [
+    {
+      "exchange": "Bitfinex",
+      "n": 521,
+      "n_positive": 217,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0035,
+      "ece": 0.0097,
+      "precision": 0.9909,
+      "recall": 1.0
+    },
+    {
+      "exchange": "Bitget",
+      "n": 1378,
+      "n_positive": 755,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0012,
+      "ece": 0.0073,
+      "precision": 1.0,
+      "recall": 0.9974
+    },
+    {
+      "exchange": "Bitrue",
+      "n": 239,
+      "n_positive": 133,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0001,
+      "ece": 0.0036,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    {
+      "exchange": "CoinDCX",
+      "n": 944,
+      "n_positive": 558,
+      "pr_auc": 0.9802,
+      "roc_auc": 0.9824,
+      "brier": 0.112,
+      "ece": 0.1925,
+      "precision": 0.9869,
+      "recall": 0.9427
+    },
+    {
+      "exchange": "Gate.io",
+      "n": 1767,
+      "n_positive": 1134,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0026,
+      "ece": 0.0246,
+      "precision": 1.0,
+      "recall": 0.9991
+    },
+    {
+      "exchange": "KuCoin",
+      "n": 1653,
+      "n_positive": 958,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0056,
+      "ece": 0.04,
+      "precision": 0.999,
+      "recall": 1.0
+    },
+    {
+      "exchange": "OKX",
+      "n": 2448,
+      "n_positive": 1742,
+      "pr_auc": 1.0,
+      "roc_auc": 1.0,
+      "brier": 0.0007,
+      "ece": 0.0046,
+      "precision": 1.0,
+      "recall": 0.9994
+    }
+  ],
   "notes": [
-    "The deposit classifier is trained and calibrated in B6; until then there are no numbers to show."
+    "Trained on 8,952 real tron addresses: 5,497 deposit addresses and 3,455 others. The model reads what an address does (forwarding, timing, who pays its fees), never a label. The deposit addresses are the ones the discovery rules derived, so these numbers say how well behaviour alone recovers what rules and labels found; they are not an accuracy against an outside truth.",
+    "By time (latest 1,791 addresses by first transfer, unseen): PR-AUC 1.0, Brier 0.0026, ECE 0.0093, precision 0.9942 and recall 1.0 at 0.5. The rule \"forwards 90% or more to one wallet\" alone gives precision 0.9337 and recall 1.0 on the same addresses: that, not chance, is the bar.",
+    "By exchange: each exchange's addresses (8,950 in total) were scored by a model that never saw that exchange. Pooled PR-AUC 0.9989, recall 0.9935 and precision 0.9982 at 0.5.",
+    "The scores the labels carry are cross-fit: each address is scored by a model that never trained on it but knows its exchange from the exchange's other addresses. On all 8,952 addresses: PR-AUC 0.9995, Brier 0.0044, ECE 0.0076. Most of those models also trained on later addresses, so this describes the scores; it is not an accuracy to expect on new addresses.",
+    "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, at this dataset's class mix (the negatives are a capped sample), not at the mix of the chain at large.",
+    "The hard case, by time: of the 97 other wallets that also forward 90% or more of what they receive to one wallet, the model still calls 5 a deposit address (10 of 418 by exchange, 7 of 419 cross-fit).",
+    "3,434 of the 3,455 others are wallets that paid into the deposit addresses; the rest are labelled wallets that are not deposit addresses. A wallet that never dealt with an exchange is not in this sample, so how often the model would take such a wallet for a deposit address is not measured here.",
+    "The two features that read exchange labels were left out of the shipped model: with them it scores PR-AUC 1.0 by time, because the positives were picked by those labels, and recall 0.0395 on an exchange whose labels are hidden (near zero by construction: without the labels those features say nothing).",
+    "A derived label carries the model's value (the weight of the exchange wallet's own label times this probability, with its range) when that is at least what the discovery rules gave it; otherwise the rules' confidence is kept. The model can confirm a label; it cannot overrule label evidence it does not see. The label weights, the hop decay and the share factor are still rule-set."
   ]
 }

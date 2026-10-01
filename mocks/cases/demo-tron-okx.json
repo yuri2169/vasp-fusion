@@ -97,22 +97,48 @@
         "is_hub": false
       },
       {
-        "id": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+        "id": "T9zbp5mErdqtcV38NPAnwBXypkWEa4EbXs",
         "chain": "tron",
         "role": "exchange",
         "hop": 4,
         "label": {
-          "address": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+          "address": "T9zbp5mErdqtcV38NPAnwBXypkWEa4EbXs",
           "chain": "tron",
           "entity": "OKX",
           "category": "exchange",
-          "kind": "reserve",
-          "tier": "published_por",
-          "source": "defillama-cex",
-          "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
-          "label": "OKX (OKEx) (proof-of-reserves)",
-          "confidence": null,
-          "evidence": null
+          "kind": "deposit",
+          "tier": "derived",
+          "source": "vaspfusion-discover",
+          "source_url": null,
+          "label": "OKX deposit address (derived: sweep + gas station)",
+          "confidence": 0.9483,
+          "evidence": "Sweep rule: forwarded 100% of the 62,425.90 USDT it received from 1 sender to OKX wallet TBwBJw…WRbBzS (published by the exchange itself) in 1 sweep, typically 16 minutes after arrival. Gas rule: TQQBRm…7ZXVL3, derived as a OKX gas station, paid the energy for 1 of 1 sweep. The payer serves this exchange's deposit addresses. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.95 = 0.95 for the OKX wallet's label (published by the exchange itself) × the model's probability.",
+          "confidence_low": 0.9483,
+          "confidence_high": 0.95,
+          "model": {
+            "basis": "model",
+            "high": 1.0,
+            "low": 0.9982,
+            "p": 0.9982,
+            "reasons": [
+              {
+                "feature": "forward_ratio",
+                "text": "forwards 100% of what it receives to one wallet",
+                "weight": 3.0826
+              },
+              {
+                "feature": "top_recipient_share",
+                "text": "every outgoing transfer goes to one wallet",
+                "weight": 2.3992
+              },
+              {
+                "feature": "recipient_forwards_on",
+                "text": "the wallet it pays most keeps or spreads what it receives, as a collecting wallet does",
+                "weight": 1.6197
+              }
+            ],
+            "scored_by": "cross-fit:block 5"
+          }
         },
         "cluster": "OKX",
         "is_hub": false
@@ -151,7 +177,10 @@
           "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
           "label": "HTX (Huobi) (proof-of-reserves)",
           "confidence": null,
-          "evidence": null
+          "evidence": null,
+          "confidence_low": null,
+          "confidence_high": null,
+          "model": null
         },
         "cluster": "HTX",
         "is_hub": false
@@ -194,7 +223,7 @@
       {
         "id": "e4",
         "source": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
-        "target": "TBREsCfBdPyD612xZnwvGPux7osbXvtzLh",
+        "target": "T9zbp5mErdqtcV38NPAnwBXypkWEa4EbXs",
         "tx_hash": "5da20346cafdc0636acc497c37f3b1d8b51749a019d3bf9ca145ed00f24619ad",
         "asset": "USDT",
         "amount": 41150.0,

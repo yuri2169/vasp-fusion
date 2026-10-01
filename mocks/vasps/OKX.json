@@ -10,12 +10,12 @@
     "source_urls": []
   },
   "label_counts": {
+    "tron": 1763,
     "worldchain": 271,
     "avalanche": 269,
     "ethereum": 238,
     "litecoin": 168,
     "solana": 40,
-    "tron": 21,
     "zksync": 20,
     "xrp": 14,
     "arbitrum": 12,

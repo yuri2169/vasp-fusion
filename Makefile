@@ -60,7 +60,7 @@ types: openapi    ## generate ui/src/api/types.ts from the OpenAPI schema
 
 offline-check:    ## fail if code outside vaspfusion/chains/ can reach the network
 	@! grep -rnE "https?://" --include=*.py --exclude-dir=chains vaspfusion/ \
-		| grep -vE "#|\"\"\"|docs|example\.com|source_url|SOURCE_URL" \
+		| grep -vE "#|\"\"\"|docs|example\.com|source_url|SOURCE_URL|xmlns=" \
 		|| (echo "FAIL: a runtime URL is present outside vaspfusion/chains/" && exit 1)
 	@! grep -rnE "^\s*(import|from) (urllib\.request|http\.client|socket|requests|httpx)" \
 		--include=*.py --exclude=http.py vaspfusion/ \

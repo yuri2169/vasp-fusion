@@ -378,9 +378,12 @@ def test_the_request_names_the_derived_deposit_address_itself():
 
 
 # ------------------------------------------------------------------ model-scored labels (B6)
-WHY = ('[{"feature": "forward_ratio", "text": "forwards 100% of what it receives to one wallet", '
-       '"weight": 1.9}, {"feature": "gas_outside_share", "text": "pays its own network fees", '
-       '"weight": -0.4}]')
+WHY = ('{"p": 0.94, "low": 0.89, "high": 0.99, "basis": "model", "scored_by": "cross-fit:block 2", '
+       '"reasons": [{"feature": "forward_ratio", "text": "forwards 100% of what it receives to '
+       'one wallet", "weight": 1.9}, {"feature": "gas_outside_share", "text": "pays its own '
+       'network fees", "weight": -0.4}]}')
+UNSURE = WHY.replace('"p": 0.94, "low": 0.89, "high": 0.99, "basis": "model"',
+                     '"p": 0.2, "low": 0.1, "high": 0.3, "basis": "rule"')
 SCORED = {**DERIVED,
           "MDEP": ("ExA", "exchange", "deposit", "derived", 0.80,
                    "Sweep rule: forwarded 100%. Model: 0.94 that this is an exchange deposit "
@@ -420,11 +423,24 @@ def test_the_models_reasons_are_evidence_with_signed_weights():
     c = run([tx(1, "S", "MDEP", 1000, 0)], labels=SCORED).candidates[0]
     model = [e for e in c.evidence if e["kind"] == "model"]
     assert [(e["weight"], e["text"]) for e in model] == [
-        (1.9, "Deposit-address model, for: MDEP forwards 100% of what it receives to one wallet"),
-        (-0.4, "Deposit-address model, against: MDEP pays its own network fees")]
+        (None, "Deposit-address model: 0.94 that an address behaving like MDEP is an exchange "
+               "deposit address (range 0.89 to 0.99)"),
+        (1.9, "Deposit-address model, for: it forwards 100% of what it receives to one wallet"),
+        (-0.4, "Deposit-address model, against: it pays its own network fees")]
     assert [e["kind"] for e in c.evidence[:2]] == ["label", "model"]
     assert not [e for e in run([tx(1, "S", "HOT", 1000, 0)]).candidates[0].evidence
                 if e["kind"] == "model"]
+
+
+def test_a_label_the_model_did_not_confirm_shows_the_models_doubt_but_keeps_its_weight():
+    labels = {**DERIVED, "QDEP": ("ExA", "exchange", "deposit", "derived", 0.8075,
+                                  "Sweep rule. Model: 0.20. The rule confidence is kept.",
+                                  None, None, UNSURE)}
+    c = run([tx(1, "S", "QDEP", 1000, 0)], labels=labels).candidates[0]
+    assert c.confidence == approx(0.8075) and c.confidence_interval is None
+    first = [e for e in c.evidence if e["kind"] == "model"][0]
+    assert first["text"].startswith("Deposit-address model: 0.20 that an address behaving like "
+                                    "QDEP")
 
 
 def test_a_wallet_that_is_itself_a_model_scored_deposit_address_carries_the_range():

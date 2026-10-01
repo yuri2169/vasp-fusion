@@ -6,10 +6,13 @@
    "category": "exchange",
    "chain": "ethereum",
    "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
    "entity": "Bitget",
    "evidence": null,
    "kind": "deposit",
    "label": "Bitget Dep: 0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24",
+   "model": null,
    "query_chain": "ethereum",
    "source": "eth-labels",
    "source_url": "https://github.com/dawsbot/eth-labels",
@@ -20,10 +23,13 @@
    "category": "defi",
    "chain": "ethereum",
    "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
    "entity": "1inch",
    "evidence": null,
    "kind": "unknown",
    "label": "Aggregation Router V4",
+   "model": null,
    "query_chain": "ethereum",
    "source": "eth-labels",
    "source_url": "https://github.com/dawsbot/eth-labels",
@@ -33,11 +39,37 @@
    "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
    "category": "exchange",
    "chain": "tron",
-   "confidence": 0.8075,
+   "confidence": 0.8491,
+   "confidence_high": 0.85,
+   "confidence_low": 0.8491,
    "entity": "CoinDCX",
-   "evidence": "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 22 sweeps, typically 33 seconds after arrival. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 7 of 22 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "evidence": "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 22 sweeps, typically 33 seconds after arrival. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 7 of 22 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
    "kind": "deposit",
    "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+   "model": {
+    "basis": "model",
+    "high": 1.0,
+    "low": 0.9989,
+    "p": 0.9989,
+    "reasons": [
+     {
+      "feature": "forward_ratio",
+      "text": "forwards 100% of what it receives to one wallet",
+      "weight": 2.2923
+     },
+     {
+      "feature": "top_recipient_share",
+      "text": "every outgoing transfer goes to one wallet",
+      "weight": 1.9244
+     },
+     {
+      "feature": "dwell_median_s",
+      "text": "moves funds on about 21 seconds after they arrive",
+      "weight": 1.6002
+     }
+    ],
+    "scored_by": "cross-fit:block 3"
+   },
    "query_chain": "tron",
    "source": "vaspfusion-discover",
    "source_url": null,
@@ -48,10 +80,13 @@
    "category": "exchange",
    "chain": "tron",
    "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
    "entity": "HTX",
    "evidence": null,
    "kind": "reserve",
    "label": "HTX (Huobi) (proof-of-reserves)",
+   "model": null,
    "query_chain": "tron",
    "source": "defillama-cex",
    "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
@@ -62,10 +97,13 @@
    "category": "sanctioned",
    "chain": "tron",
    "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
    "entity": "OFAC SDN",
    "evidence": null,
    "kind": "unknown",
    "label": "OFAC sanctioned (USDT)",
+   "model": null,
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
@@ -75,11 +113,37 @@
    "address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
    "category": "exchange",
    "chain": "tron",
-   "confidence": 0.8075,
+   "confidence": 0.8491,
+   "confidence_high": 0.85,
+   "confidence_low": 0.8491,
    "entity": "CoinDCX",
-   "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
    "kind": "deposit",
    "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+   "model": {
+    "basis": "model",
+    "high": 1.0,
+    "low": 0.999,
+    "p": 0.999,
+    "reasons": [
+     {
+      "feature": "dwell_median_s",
+      "text": "moves funds on about 37 seconds after they arrive",
+      "weight": 2.6612
+     },
+     {
+      "feature": "forward_ratio",
+      "text": "forwards 100% of what it receives to one wallet",
+      "weight": 2.1536
+     },
+     {
+      "feature": "top_recipient_share",
+      "text": "every outgoing transfer goes to one wallet",
+      "weight": 0.9885
+     }
+    ],
+    "scored_by": "cross-fit:block 1"
+   },
    "query_chain": "tron",
    "source": "vaspfusion-discover",
    "source_url": null,
@@ -89,11 +153,37 @@
    "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
    "category": "exchange",
    "chain": "tron",
-   "confidence": 0.8075,
+   "confidence": 0.8492,
+   "confidence_high": 0.85,
+   "confidence_low": 0.8492,
    "entity": "CoinDCX",
-   "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Rule confidence 0.81, not calibrated.",
+   "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
    "kind": "deposit",
    "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+   "model": {
+    "basis": "model",
+    "high": 1.0,
+    "low": 0.9991,
+    "p": 0.9991,
+    "reasons": [
+     {
+      "feature": "forward_ratio",
+      "text": "forwards 100% of what it receives to one wallet",
+      "weight": 2.8617
+     },
+     {
+      "feature": "top_recipient_share",
+      "text": "every outgoing transfer goes to one wallet",
+      "weight": 2.5259
+     },
+     {
+      "feature": "recipient_forwards_on",
+      "text": "the wallet it pays most keeps or spreads what it receives, as a collecting wallet does",
+      "weight": 1.6913
+     }
+    ],
+    "scored_by": "cross-fit:block 5"
+   },
    "query_chain": "tron",
    "source": "vaspfusion-discover",
    "source_url": null,

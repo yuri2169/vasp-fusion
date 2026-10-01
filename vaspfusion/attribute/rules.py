@@ -57,14 +57,27 @@ def label_range(label) -> tuple[float, float] | None:
     return None
 
 
+def _it(text: str) -> str:
+    """A reason as a sentence about the address: "forwards 100% ..." -> "it forwards 100% ..."."""
+    first = text.split(" ", 1)[0]
+    verbs = {"forwards", "moves", "receives", "pays", "keeps", "still"}
+    return f"it {text}" if first in verbs else text
+
+
 def _model_items(address: str, label) -> list[dict]:
-    """The model's reasons for a scored deposit address, as evidence with signed weights."""
-    if not label.reasons:
+    """What the deposit-address model said about a scored address: its probability, then
+    its reasons as evidence with signed weights."""
+    if not label.model:
         return []
-    return [{"kind": "model", "tier": None, "tx_hashes": [], "weight": r["weight"],
-             "text": f"Deposit-address model, {'for' if r['weight'] >= 0 else 'against'}: "
-                     f"{fmt.short(address)} {r['text']}"}
-            for r in json.loads(label.reasons)]
+    m = json.loads(label.model)
+    said = {"kind": "model", "tier": None, "tx_hashes": [], "weight": None,
+            "text": f"Deposit-address model: {fmt.prob(m['p'])} that an address behaving like "
+                    f"{fmt.short(address)} is an exchange deposit address "
+                    f"({fmt.prob_range(m['low'], m['high'])})"}
+    return [said] + [
+        {"kind": "model", "tier": None, "tx_hashes": [], "weight": r["weight"],
+         "text": f"Deposit-address model, {'for' if r['weight'] >= 0 else 'against'}: "
+                 f"{_it(r['text'])}"} for r in m["reasons"]]
 
 
 def _label_words(label) -> str:

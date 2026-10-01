@@ -8,7 +8,8 @@ import pytest
 
 from tracekit import T0, ToyLabels, tx
 from vaspfusion.chains.base import GasEvent
-from vaspfusion.classify.features import FEATURES, LABEL_FEATURES, address_features
+from vaspfusion.classify.features import (FEATURES, LABEL_FEATURES, address_features,
+                                          top_recipient)
 
 A = "DEP"
 LABELS = ToyLabels({
@@ -43,7 +44,8 @@ def test_a_deposit_address_forwards_everything_to_one_wallet_on_someone_elses_ga
     assert f["dwell_median_s"] == 180            # waits of 3, 2 and 5 minutes
     assert f["sweep_gap_cv"] == pytest.approx(2 / 11)   # gaps of 9 and 13 minutes
     assert f["stable_share"] == 1.0
-    assert f["age_days"] == pytest.approx(25 / 1440)
+    assert "age_days" not in f          # a listing's time span is the fetch window's, not
+    assert "age_days" not in FEATURES   # the address's: it is not a feature
     assert f["first_ts"] == T0
     assert f["n_rows"] == 6
 
@@ -136,3 +138,62 @@ def test_behaviour_features_never_read_a_label():
     without = address_features(A, rows, events)
     assert {k: with_labels[k] for k in FEATURES} == {k: without[k] for k in FEATURES}
     assert not set(FEATURES) & set(LABEL_FEATURES)
+
+
+# ------------------------------------------------------------------ the wallet it pays most
+def collector():
+    """HOT's own listing: it collects from many deposit addresses and pays out now and then."""
+    return [tx(100 + i, f"D{i}", "HOT", 50, i) for i in range(12)] + \
+        [tx(200, "HOT", "COLD", 400, 30), tx(201, A, "HOT", 100, 3)]
+
+
+def test_the_top_recipient_is_the_wallet_that_took_the_most_outgoing_transfers():
+    rows, _ = deposit_address()
+    assert top_recipient(A, rows) == "HOT"
+    assert top_recipient(A, [tx(1, "X", A, 5, 0)]) is None                 # it sent nothing
+    split = [tx(1, A, "R2", 5, 0), tx(2, A, "R1", 5, 1), tx(3, A, "R2", 0, 2, asset="F@0x1")]
+    assert top_recipient(A, split) == "R1"          # a tie: first by address; dust is no vote
+
+
+def test_a_deposit_address_forwards_into_a_wallet_that_many_wallets_pay():
+    rows, events = deposit_address()
+    f = address_features(A, rows, events, recipient_rows=collector())
+    assert f["recipient_forwards_on"] == 0.0        # HOT keeps most of what it collects
+
+
+def test_a_customer_that_forwards_everything_pays_a_wallet_few_others_pay():
+    # the look-alike: forwards 100% to one wallet too, but that wallet is a deposit address
+    rows = [tx(1, "X", A, 100, 0), tx(2, A, "DEP2", 100, 5)]
+    deposit = [tx(2, A, "DEP2", 100, 5), tx(3, "DEP2", "HOT", 100, 9)]
+    f = address_features(A, rows, [], recipient_rows=deposit)
+    assert f["forward_ratio"] == 1.0                # the same as a deposit address...
+    assert f["recipient_forwards_on"] == 1.0        # ...but what it pays forwards it all on
+
+
+def test_without_the_recipients_listing_its_features_are_empty_not_zero():
+    rows, events = deposit_address()
+    f = address_features(A, rows, events)
+    assert math.isnan(f["recipient_forwards_on"])
+    g = address_features(A, [tx(1, "X", A, 5, 0)], [], recipient_rows=[])
+    assert math.isnan(g["recipient_forwards_on"])
+
+
+def test_the_recipient_feature_cannot_tell_one_collector_from_another():
+    """Every deposit address of an exchange pays the same collector. A number that
+    described the collector exactly would be the same for all of them and would let the
+    model memorise which collector it is, which is reading the label by the back door."""
+    rows, events = deposit_address()
+    other = [tx(300 + i, f"Z{i}", "HOT", 9, i) for i in range(40)] + [tx(400, "HOT", "C", 5, 50)]
+    a = address_features(A, rows, events, recipient_rows=collector())
+    b = address_features(A, rows, events, recipient_rows=other)
+    assert a["recipient_forwards_on"] == b["recipient_forwards_on"] == 0.0
+    assert {k: a[k] for k in FEATURES} == {k: b[k] for k in FEATURES}
+    assert set(FEATURES) & {"recipient_senders", "recipient_forward_ratio"} == set()
+
+
+def test_the_recipient_features_read_no_label():
+    rows, events = deposit_address()
+    with_labels = address_features(A, rows, events, LABELS, recipient_rows=collector())
+    without = address_features(A, rows, events, recipient_rows=collector())
+    assert {k: with_labels[k] for k in FEATURES} == {k: without[k] for k in FEATURES}
+    assert "recipient_forwards_on" in FEATURES

@@ -54,6 +54,19 @@ def test_durations(seconds, text):
     assert fmt.duration(seconds) == text
 
 
+@pytest.mark.parametrize("p,text", [(0.97, "0.97"), (0.9989, "over 0.99"), (1.0, "over 0.99"),
+                                    (0.994, "0.99"), (0.004, "under 0.01"), (0.0, "under 0.01"),
+                                    (0.5, "0.50")])
+def test_a_probability_is_never_written_as_certain(p, text):
+    assert fmt.prob(p) == text
+
+
+def test_a_range_too_narrow_to_show_is_said_in_words():
+    assert fmt.prob_range(0.89, 0.99) == "range 0.89 to 0.99"
+    assert fmt.prob_range(0.8491, 0.85) == "range narrower than 0.01"
+    assert fmt.prob_range(0.9989, 1.0) == "range narrower than 0.01"
+
+
 def test_long_addresses_are_shortened_in_the_middle():
     assert fmt.short("TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR") == "TVZpWt…KjUtzR"
 
@@ -220,8 +233,10 @@ def test_a_skeleton_is_a_valid_empty_case_detail():
 
 # ------------------------------------------------------------------ model-scored labels (B6)
 SCORED = {**LABELS, "MDEP": ("ExA", "exchange", "deposit", "derived", 0.80, "Sweep rule. Model.",
-                             0.76, 0.84, '[{"feature": "forward_ratio", "text": "forwards 100% '
-                             'of what it receives to one wallet", "weight": 1.9}]')}
+                             0.76, 0.84, '{"p": 0.94, "low": 0.89, "high": 0.99, "basis": '
+                             '"model", "scored_by": "cross-fit:block 1", "reasons": [{"feature": '
+                             '"forward_ratio", "text": "forwards 100% of what it receives to one '
+                             'wallet", "weight": 1.9}]}')}
 
 
 def test_a_case_through_a_model_scored_label_carries_the_range_and_says_what_is_calibrated():
@@ -229,10 +244,14 @@ def test_a_case_through_a_model_scored_label_carries_the_range_and_says_what_is_
     cand = c["candidates"][0]
     assert cand["confidence"] == 0.8 and cand["confidence_interval"] == [0.76, 0.84]
     assert any(e["kind"] == "model" and e["weight"] == 1.9 for e in cand["evidence"])
-    assert "Nearest exchange: ExA, confidence 0.80 (range 0.76 to 0.84)." in c["narrative"]
+    assert ("Nearest exchange: ExA, confidence 0.80 (range 0.76 to 0.84). The range comes "
+            "from the deposit-address model, which is calibrated against the addresses the "
+            "discovery rules derived; the weight of the exchange wallet's label and the hop "
+            "decay are rule-set.") in c["narrative"]
     assert "rule-based, not calibrated" not in c["narrative"]
     node = [n for n in c["graph"]["nodes"] if n["id"] == "MDEP"][0]
-    assert node["label"]["reasons"][0]["feature"] == "forward_ratio"
+    assert node["label"]["model"]["reasons"][0]["feature"] == "forward_ratio"
+    assert node["label"]["model"]["p"] == 0.94 and node["label"]["model"]["basis"] == "model"
     assert node["label"]["confidence_low"] == 0.76
 
 

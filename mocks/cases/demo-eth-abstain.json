@@ -122,7 +122,10 @@
           "source_url": "https://github.com/dawsbot/eth-labels",
           "label": "ChangeNOW: Hot Wallet 1",
           "confidence": null,
-          "evidence": null
+          "evidence": null,
+          "confidence_low": null,
+          "confidence_high": null,
+          "model": null
         },
         "cluster": "ChangeNOW",
         "is_hub": false

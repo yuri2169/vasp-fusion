@@ -129,16 +129,17 @@ def test_a_label_db_built_before_b4_is_still_readable(tmp_path):
 
 # ------------------------------------------------------------------ model scores (B6)
 MODEL_TEXT = "Sweep rule: forwarded 100%. Model: 0.93 that this is an exchange deposit address."
-REASONS = ('[{"feature": "forward_ratio", "text": "forwards 100% of what it receives to one '
-           'wallet", "weight": 1.2}]')
+REASONS = ('{"basis": "model", "high": 0.96, "low": 0.9, "p": 0.93, "reasons": [{"feature": '
+           '"forward_ratio", "text": "forwards 100% of what it receives to one wallet", '
+           '"weight": 1.2}], "scored_by": "cross-fit:block 1"}')
 
 
 def scored(tmp_path, findings, entity="CoinDCX"):
     from vaspfusion.classify.score import write_scores
     write_scores(tmp_path / "model" / "tron" / "scores.csv", [{
         "address": DEP, "chain": "tron", "entity": entity, "p": 0.93, "p_low": 0.9,
-        "p_high": 0.96, "confidence": 0.7905, "confidence_low": 0.765, "confidence_high": 0.816,
-        "scored_by": "leave-out:CoinDCX", "reasons": REASONS, "evidence": MODEL_TEXT}])
+        "p_high": 0.96, "rule_confidence": 0.68, "basis": "model", "confidence": 0.7905, "confidence_low": 0.765, "confidence_high": 0.816,
+        "scored_by": "cross-fit:block 1", "model": REASONS, "evidence": MODEL_TEXT}])
     write_result(tmp_path / "derived", DiscoveryResult("tron", {}, findings))
     db = tmp_path / "labels.duckdb"
     return db, build_labels(db, FIX / "wa", FIX / "dune.csv", derived_dir=tmp_path / "derived",
@@ -153,13 +154,34 @@ def test_a_model_score_replaces_the_rule_confidence_and_adds_a_range(tmp_path, f
         others = [l for l in store.by_tier("tron", "derived") if l.address != DEP]
     assert (hit.confidence, hit.confidence_low, hit.confidence_high) == (0.7905, 0.765, 0.816)
     assert hit.evidence == MODEL_TEXT and hit.tier == "derived" and hit.entity == "CoinDCX"
-    assert hit.as_dict()["reasons"] == [{"feature": "forward_ratio", "weight": 1.2, "text":
-                                         "forwards 100% of what it receives to one wallet"}]
+    assert hit.as_dict()["model"]["p"] == 0.93
+    assert hit.as_dict()["model"]["reasons"] == [{
+        "feature": "forward_ratio", "weight": 1.2,
+        "text": "forwards 100% of what it receives to one wallet"}]
     # an address the model did not score keeps what the rules said
     assert len(others) == 9
-    assert all(l.confidence_low is None and l.reasons is None
+    assert all(l.confidence_low is None and l.model is None
                and l.evidence.endswith("not calibrated.") for l in others)
-    assert all(l.as_dict()["reasons"] is None for l in others)
+    assert all(l.as_dict()["model"] is None for l in others)
+
+
+def test_a_label_the_model_did_not_confirm_keeps_the_rule_confidence_and_has_no_range(
+        tmp_path, findings):
+    from vaspfusion.classify.score import write_scores
+    write_scores(tmp_path / "model" / "tron" / "scores.csv", [{
+        "address": DEP, "chain": "tron", "entity": "CoinDCX", "p": 0.04, "p_low": 0.0,
+        "p_high": 0.04, "rule_confidence": 0.8075, "basis": "rule", "confidence": 0.8075,
+        "confidence_low": None, "confidence_high": None, "scored_by": "cross-fit:block 1",
+        "model": REASONS, "evidence": "Sweep rule. Model: 0.04. The rule confidence is kept."}])
+    write_result(tmp_path / "derived", DiscoveryResult("tron", {}, findings))
+    db = tmp_path / "labels.duckdb"
+    stats = build_labels(db, FIX / "wa", FIX / "dune.csv", derived_dir=tmp_path / "derived",
+                         model_dir=tmp_path / "model")
+    assert stats["derived_model_scored"] == 0 and stats["derived_model_unconfirmed"] == 1
+    with LabelStore(db) as store:
+        hit = store.lookup(DEP, "tron")
+    assert hit.confidence == 0.8075 and hit.confidence_low is None
+    assert hit.evidence.endswith("The rule confidence is kept.") and hit.model == REASONS
 
 
 def test_a_score_made_for_another_exchange_is_not_used(tmp_path, findings):
@@ -175,7 +197,7 @@ def test_without_model_scores_the_rules_confidence_stays(tmp_path, findings):
     assert stats["derived_model_scored"] == 0
     with LabelStore(db) as store:
         hit = store.lookup(DEP, "tron")
-    assert hit.confidence == 0.8075 and hit.confidence_low is None and hit.reasons is None
+    assert hit.confidence == 0.8075 and hit.confidence_low is None and hit.model is None
 
 
 def test_a_label_db_built_before_b6_is_still_readable(tmp_path):
@@ -189,4 +211,4 @@ def test_a_label_db_built_before_b6_is_still_readable(tmp_path):
                     "'derived', 'vaspfusion-discover', NULL, 'x', 0.81, 'Sweep rule')", [DEP])
     with LabelStore(db) as store:
         hit = store.lookup(DEP, "tron")
-    assert hit.confidence == 0.81 and hit.confidence_low is None and hit.reasons is None
+    assert hit.confidence == 0.81 and hit.confidence_low is None and hit.model is None

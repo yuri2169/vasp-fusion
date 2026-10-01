@@ -32,7 +32,7 @@ FEATURE_NAMES = {
     "stable_share": "Share of stablecoin transfers",
     "gas_outside_share": "Network fee covered by someone else",
     "gas_payers": "Number of outside fee payers",
-    "age_days": "Time span of activity",
+    "recipient_forwards_on": "The wallet it pays most forwards everything on",
     "to_exchange_share": "Sends straight to a labelled exchange wallet",
     "gas_from_exchange_share": "Fee covered by a labelled exchange wallet",
 }
@@ -91,8 +91,13 @@ def phrase(feature: str, value) -> str:
     if feature == "gas_payers":
         return "no outside wallet covered its fees" if missing or v < 1 else \
             f"{_n(v, 'outside wallet')} covered its fees"
-    if feature == "age_days":
-        return f"its transfers in the listing span {fmt.duration((0 if missing else v) * 86400)}"
+    if feature == "recipient_forwards_on":
+        if missing:
+            return "the wallet it pays most could not be read, or it sent nothing"
+        return ("the wallet it pays most forwards everything on in turn, as a deposit address "
+                "does" if v >= 0.5 else
+                "the wallet it pays most keeps or spreads what it receives, as a collecting "
+                "wallet does")
     if feature == "to_exchange_share":
         return (f"{fmt.pct(0 if missing else v)} of its outgoing transfers go straight to a "
                 "labelled exchange wallet")

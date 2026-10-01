@@ -44,6 +44,24 @@ def pct(share) -> str:
     return f"{whole}%"
 
 
+def prob(p) -> str:
+    """A probability to two decimals, never written as certain: 0.97, over 0.99, under 0.01."""
+    p = float(p)
+    if p > 0.995:
+        return "over 0.99"
+    if p < 0.005:
+        return "under 0.01"
+    return f"{p:.2f}"
+
+
+def prob_range(low, high) -> str:
+    """"range 0.89 to 0.99", or that it is too narrow to show at two decimals."""
+    low, high = float(low), float(high)
+    if high - low < 0.01:
+        return "range narrower than 0.01"
+    return f"range {prob(low)} to {prob(high)}"
+
+
 def duration(seconds: int | float | None) -> str:
     if seconds is None:
         return "an unknown time"

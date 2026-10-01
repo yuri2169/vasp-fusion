@@ -14,7 +14,7 @@
 </style>
 <rect class="bg" width="640" height="452"/>
 <text class="t" x="64" y="28">How well the probabilities hold: tron, the scores the labels carry</text>
-<text class="s" x="64" y="48">Share that really were deposit addresses, by predicted probability · ECE 0.022 · Brier 0.029</text>
+<text class="s" x="64" y="48">Share that really were deposit addresses, by predicted probability · ECE 0.008 · Brier 0.004</text>
 <line class="a" x1="64" x2="600" y1="316.0" y2="316.0"/>
 <text class="m" x="56" y="320.0" text-anchor="end">0%</text>
 <text class="m" x="64.0" y="334" text-anchor="middle">0%</text>
@@ -34,28 +34,28 @@
 <text class="m" x="64" y="66">observed share</text>
 <line class="d" x1="64.0" y1="316.0" x2="600.0" y2="76.0"/>
 <text class="m" x="449.9" y="124.0" text-anchor="end">perfect calibration</text>
-<polyline class="l" points="68.1,315.2 141.2,239.1 189.4,163.8 246.8,166.9 327.6,99.4 374.8,112.9 421.4,83.7 458.4,160.0 537.6,107.8 587.9,79.9"/>
-<circle class="p" cx="68.1" cy="315.2" r="5"><title>Predicted 1%, observed 0%, 3,421 addresses</title></circle>
-<circle class="p" cx="141.2" cy="239.1" r="5"><title>Predicted 14%, observed 32%, 78 addresses</title></circle>
-<circle class="p" cx="189.4" cy="163.8" r="5"><title>Predicted 23%, observed 63%, 82 addresses</title></circle>
-<circle class="p" cx="246.8" cy="166.9" r="5"><title>Predicted 34%, observed 62%, 66 addresses</title></circle>
-<circle class="p" cx="327.6" cy="99.4" r="5"><title>Predicted 49%, observed 90%, 41 addresses</title></circle>
-<circle class="p" cx="374.8" cy="112.9" r="5"><title>Predicted 58%, observed 85%, 52 addresses</title></circle>
-<circle class="p" cx="421.4" cy="83.7" r="5"><title>Predicted 67%, observed 97%, 156 addresses</title></circle>
-<circle class="p" cx="458.4" cy="160.0" r="5"><title>Predicted 74%, observed 65%, 40 addresses</title></circle>
-<circle class="p" cx="537.6" cy="107.8" r="5"><title>Predicted 88%, observed 87%, 521 addresses</title></circle>
-<circle class="p" cx="587.9" cy="79.9" r="5"><title>Predicted 98%, observed 98%, 4,734 addresses</title></circle>
+<polyline class="l" points="67.9,315.0 141.9,205.7 179.3,298.9 243.1,228.7 301.9,316.0 352.6,76.0 402.7,196.0 459.2,91.0 526.6,79.4 596.9,76.1"/>
+<circle class="p" cx="67.9" cy="315.0" r="5"><title>Predicted 1%, observed 0%, 3,420 addresses</title></circle>
+<circle class="p" cx="141.9" cy="205.7" r="5"><title>Predicted 15%, observed 46%, 37 addresses</title></circle>
+<circle class="p" cx="179.3" cy="298.9" r="5"><title>Predicted 22%, observed 7%, 14 addresses</title></circle>
+<circle class="p" cx="243.1" cy="228.7" r="5"><title>Predicted 33%, observed 36%, 11 addresses</title></circle>
+<circle class="p" cx="301.9" cy="316.0" r="5"><title>Predicted 44%, observed 0%, 2 addresses</title></circle>
+<circle class="p" cx="352.6" cy="76.0" r="5"><title>Predicted 54%, observed 100%, 3 addresses</title></circle>
+<circle class="p" cx="402.7" cy="196.0" r="5"><title>Predicted 63%, observed 50%, 6 addresses</title></circle>
+<circle class="p" cx="459.2" cy="91.0" r="5"><title>Predicted 74%, observed 94%, 16 addresses</title></circle>
+<circle class="p" cx="526.6" cy="79.4" r="5"><title>Predicted 86%, observed 99%, 71 addresses</title></circle>
+<circle class="p" cx="596.9" cy="76.1" r="5"><title>Predicted 99%, observed 100%, 5,372 addresses</title></circle>
 <text class="m" x="64" y="356">addresses per bin</text>
 <line class="a" x1="64" x2="600" y1="420" y2="420"/>
-<path class="b" d="M65.0,420.0 v-36.5 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v36.5 z"><title>3,421 addresses predicted near 5%</title></path>
-<path class="b" d="M118.6,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>78 addresses predicted near 15%</title></path>
-<path class="b" d="M172.2,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>82 addresses predicted near 25%</title></path>
-<path class="b" d="M225.8,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>66 addresses predicted near 35%</title></path>
-<path class="b" d="M279.4,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>41 addresses predicted near 45%</title></path>
-<path class="b" d="M333.0,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>52 addresses predicted near 55%</title></path>
-<path class="b" d="M386.6,420.0 v-0.0 q0,-1.8 1.8,-1.8 h47.9 q1.8,0 1.8,1.8 v0.0 z"><title>156 addresses predicted near 65%</title></path>
-<path class="b" d="M440.2,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>40 addresses predicted near 75%</title></path>
-<path class="b" d="M493.8,420.0 v-2.2 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v2.2 z"><title>521 addresses predicted near 85%</title></path>
-<path class="b" d="M547.4,420.0 v-52.0 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v52.0 z"><title>4,734 addresses predicted near 95%</title></path>
-<text class="v" x="573.2" y="359.0" text-anchor="middle">4,734</text>
+<path class="b" d="M65.0,420.0 v-31.7 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v31.7 z"><title>3,420 addresses predicted near 5%</title></path>
+<path class="b" d="M118.6,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>37 addresses predicted near 15%</title></path>
+<path class="b" d="M172.2,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>14 addresses predicted near 25%</title></path>
+<path class="b" d="M225.8,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>11 addresses predicted near 35%</title></path>
+<path class="b" d="M279.4,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>2 addresses predicted near 45%</title></path>
+<path class="b" d="M333.0,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>3 addresses predicted near 55%</title></path>
+<path class="b" d="M386.6,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>6 addresses predicted near 65%</title></path>
+<path class="b" d="M440.2,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>16 addresses predicted near 75%</title></path>
+<path class="b" d="M493.8,420.0 v-0.0 q0,-1.0 1.0,-1.0 h49.6 q1.0,0 1.0,1.0 v0.0 z"><title>71 addresses predicted near 85%</title></path>
+<path class="b" d="M547.4,420.0 v-52.0 q0,-4.0 4.0,-4.0 h43.6 q4.0,0 4.0,4.0 v52.0 z"><title>5,372 addresses predicted near 95%</title></path>
+<text class="v" x="573.2" y="359.0" text-anchor="middle">5,372</text>
 </svg>

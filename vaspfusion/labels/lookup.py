@@ -30,7 +30,8 @@ class Label:
     evidence: str | None = None         # derived labels only: what the rules saw
     confidence_low: float | None = None   # model-scored labels only: the calibrated range
     confidence_high: float | None = None
-    reasons: str | None = None          # model-scored labels only: JSON list of top reasons
+    # labels the deposit-address model scored: JSON {p, low, high, basis, scored_by, reasons}
+    model: str | None = None
 
     @property
     def is_vasp(self) -> bool:
@@ -38,7 +39,7 @@ class Label:
 
     def as_dict(self) -> dict:
         d = asdict(self)
-        d["reasons"] = json.loads(self.reasons) if self.reasons else None
+        d["model"] = json.loads(self.model) if self.model else None
         return d
 
     @classmethod
@@ -46,8 +47,8 @@ class Label:
         """The inverse of `as_dict` (keys that are not label fields are ignored)."""
         names = {f.name for f in fields(cls)}
         d = {k: v for k, v in row.items() if k in names}
-        if d.get("reasons") is not None and not isinstance(d["reasons"], str):
-            d["reasons"] = json.dumps(d["reasons"], ensure_ascii=False, sort_keys=True)
+        if d.get("model") is not None and not isinstance(d["model"], str):
+            d["model"] = json.dumps(d["model"], ensure_ascii=False, sort_keys=True)
         return cls(**d)
 
 
@@ -65,7 +66,7 @@ class LabelStore:
             raise FileNotFoundError(f"{path} not found - run `make labels`")
         self.con = duckdb.connect(str(path), read_only=True)
         # a DB built before B4 has no confidence / evidence columns, one built before B6
-        # no range / reasons: read them as NULL
+        # no range / model score: read them as NULL
         have = {r[0] for r in self.con.execute("DESCRIBE labels").fetchall()}
         self._select = [c if c in have else f"NULL AS {c}" for c in LABEL_COLUMNS]
         self._cols = ", ".join(self._select)

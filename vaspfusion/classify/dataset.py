@@ -12,7 +12,8 @@ Every address, of either class, is read with its discovery run's own protocol: t
 same listings, the same `since`, the same row limit, nothing later than the run's
 last positive transfer, and only the first `horizon_days` from its first transfer.
 How an address was fetched therefore says nothing about its class or its run. An
-address under test is judged without its own label.
+address under test is judged without its own label. The wallet each address pays
+most is read with the same listing call, for `recipient_forwards_on`.
 
 `group` is what leave-one-exchange-out holds out together: an exchange's deposit
 addresses, their customers and the exchange's own wallets ("other" for a labelled
@@ -34,13 +35,14 @@ from ..discover.crawl import Finding, _stable_rows, _warm
 from ..discover.evaluate import EvalConfig, sample
 from ..discover.rules import DiscoverConfig, is_seed
 from ..discover.store import read_findings
-from .features import FEATURES, LABEL_FEATURES, address_features
+from .features import FEATURES, LABEL_FEATURES, address_features, top_recipient, usable
 
 SEED = 26182
 META = ["address", "chain", "y", "group", "source", "run", "first_ts", "n_rows", "complete",
         "label_entity"]
 COLUMNS = META + FEATURES + LABEL_FEATURES
-_COUNTS = {"n_senders", "n_recipients", "n_in", "n_out", "gas_payers"}
+_COUNTS = {"n_senders", "n_recipients", "n_in", "n_out", "gas_payers",
+           "recipient_forwards_on"}
 
 
 @dataclass(frozen=True)
@@ -59,6 +61,10 @@ class Run:
         rows, complete = _stable_rows(provider, address, "both", self.since, self.limit)
         return rows, complete, provider.gas_events(address, since=self.since)
 
+    def read_rows(self, provider, address: str):
+        """The transfers alone (for the wallet an address pays most)."""
+        return _stable_rows(provider, address, "both", self.since, self.limit)[0]
+
 
 @dataclass(frozen=True)
 class Listing:
@@ -72,6 +78,9 @@ class Listing:
         rows = provider.transfers(address, "both", limit=self.limit)
         complete = getattr(rows, "complete", len(rows) < self.limit)
         return rows, complete, provider.gas_events(address, limit=self.limit)
+
+    def read_rows(self, provider, address: str):
+        return provider.transfers(address, "both", limit=self.limit)
 
 
 @dataclass(frozen=True)
@@ -120,21 +129,29 @@ def _read(provider, address: str, run):
     return run.read(provider, address)
 
 
-def _example(address: str, run, read, labels, cutoff, rules: DiscoverConfig,
-             horizon: timedelta | None = None) -> dict | None:
-    rows, complete, events = read
+def _window(address: str, rows, events, cutoff, horizon: timedelta | None,
+            rules: DiscoverConfig):
+    """What of a listing is read: nothing after the run's cutoff, and only the first
+    `horizon` from the address's first real (non-dust) transfer."""
     if cutoff is not None:
         rows = [t for t in rows if t.block_time <= cutoff]
         events = [e for e in events if e.time <= cutoff]
-    if horizon is not None and rows:
-        end = min(t.block_time for t in rows) + horizon
+    real = usable(address, rows, rules.dust) if horizon is not None else []
+    if real:
+        end = real[0].block_time + horizon
         rows = [t for t in rows if t.block_time <= end]
         events = [e for e in events if e.time <= end]
+    return rows, events
+
+
+def _example(address: str, run, window, complete, labels, rules: DiscoverConfig,
+             recipient_rows=None) -> dict | None:
+    rows, events = window
     near = {a for t in rows for a in (t.from_addr, t.to_addr, t.fee_payer) if a}
     near |= {e.payer for e in events}
     near.discard(address)                        # judged without its own label
     lab = {a: l for (a, _), l in labels.lookup_many({(a, run.chain) for a in near}).items()}
-    f = address_features(address, rows, events, lab, cfg=rules)
+    f = address_features(address, rows, events, lab, cfg=rules, recipient_rows=recipient_rows)
     if f is None:
         return None
     return {"address": address, "chain": run.chain, "run": run.name, "complete": int(complete),
@@ -155,7 +172,8 @@ def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], 
     """positives / known_negatives: (address, listing, group, source). Customers are found
     in the positives' own listings. `not_ordinary`: addresses that may not be customers."""
     stats = {"positives": 0, "customers_seen": 0, "customers_in_two_exchanges": 0,
-             "customers": {}, "labelled": 0, "errors": 0, "empty": 0}
+             "customers": {}, "labelled": 0, "errors": 0, "empty": 0, "recipients_read": 0,
+             "recipient_errors": 0}
     todo: list[tuple] = []                        # address, listing, y, group, source, provider
     taken: set[str] = set()
 
@@ -207,6 +225,9 @@ def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], 
         pool = by_exchange[exchange]
         rng = random.Random(f"{seed}:{exchange}")
         picked = sorted(rng.sample(pool, min(per_exchange, len(pool))))
+        # a customer of two exchanges would train a model that is said never to have
+        # seen one of them: left out (after sampling, so the sample itself is unchanged)
+        picked = [a for a in picked if len(paid_into[a]) == 1]
         stats["customers"][exchange] = len(picked)
         for a in picked:
             add(a, first_run[a], 0, exchange, "customer", extra_provider)
@@ -218,12 +239,40 @@ def _assemble(chain: str, positives: list[tuple], known_negatives: list[tuple], 
     stats["positives"] = n_positive
     read_all(todo[n_positive:], "negatives")
 
+    # what of each listing is read, and the wallet each address pays most
+    windows: dict[str, tuple] = {}
+    pays_most: dict[str, tuple] = {}              # address -> (recipient, listing)
+    for address, run, *_ in todo:
+        if address in reads:
+            rows, _, events = reads[address]
+            windows[address] = _window(address, rows, events, cutoff.get(run.name), horizon,
+                                       rules)
+            top = top_recipient(address, windows[address][0], rules.dust)
+            if top is not None:
+                pays_most[address] = (top, run)
+    wanted = sorted({(top, run.name): (top, run) for top, run in pays_most.values()}.items())
+    recipient_rows: dict[tuple[str, str], list] = {}
+    _warm(workers, [v for _, v in wanted],
+          lambda it: it[1].read_rows(extra_provider, it[0]), "recipients", progress)
+    for i, (key, (top, run)) in enumerate(wanted):
+        if progress:
+            progress("recipients (features)", i + 1, len(wanted))
+        try:
+            rows = run.read_rows(extra_provider, top)
+        except ProviderError:
+            stats["recipient_errors"] += 1
+            continue
+        limit = cutoff.get(run.name)
+        recipient_rows[key] = [t for t in rows if limit is None or t.block_time <= limit]
+    stats["recipients_read"] = len(recipient_rows)
+
     examples = []
     for address, run, y, group, source, _ in todo:
         if address not in reads:
             continue
-        ex = _example(address, run, reads[address], labels, cutoff.get(run.name), rules,
-                      horizon)
+        top = pays_most.get(address, (None, run))[0]
+        ex = _example(address, run, windows[address], reads[address][1], labels, rules,
+                      recipient_rows.get((top, run.name)))
         if ex is None:
             stats["empty"] += 1
             continue

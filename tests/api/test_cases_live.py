@@ -168,7 +168,9 @@ def test_the_wallet_page_lists_the_cases_a_wallet_appears_in(client):
     assert r.json()["cases"] == [{"case_id": cid, "role": "exchange_deposit", "hop": 1}]
     label = r.json()["labels"][0]
     assert (label["entity"], label["tier"], label["kind"]) == ("CoinDCX", "derived", "deposit")
-    assert label["confidence"] == 0.8075
+    assert (label["confidence"], label["confidence_low"], label["confidence_high"]) == \
+        (0.8491, 0.8491, 0.85)
+    assert label["model"]["basis"] == "model" and len(label["model"]["reasons"]) == 3
     assert label["evidence"].startswith("Sweep rule: forwarded 100% of the 847,730 USDT")
     assert client.get(f"/api/wallets/tron/{COINDCX_2}").json()["cases"] == []
 
