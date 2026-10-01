@@ -327,3 +327,51 @@ def test_evidence_notes_a_last_hop_that_passed_everything_on():
     assert att.candidates[0].passed_all is True
     partial = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "HOT", 500, 1), tx(3, "M1", "X", 500, 2)])
     assert not any("passed on all" in e["text"] for e in partial.candidates[0].evidence)
+
+
+# ------------------------------------------------------------------ derived labels (B4)
+DERIVED = {**LABELS,
+           "DEP": ("ExA", "exchange", "deposit", "derived", 0.8075,
+                   "Sweep rule: forwarded 100% of the 500 USDT it received. Both rules agree."),
+           "OLDDEP": ("ExA", "exchange", "deposit", "derived")}
+
+
+def test_a_derived_deposit_address_weighs_its_own_rule_confidence():
+    att = run([tx(1, "S", "DEP", 1000, 0)], labels=DERIVED)
+    c = att.candidates[0]
+    assert (c.vasp, c.hops, c.deposit_address, c.label_tier) == ("ExA", 1, "DEP", "derived")
+    assert c.confidence == approx(0.8075)
+    assert att.outcome == "ATTRIBUTED"
+
+
+def test_a_derived_label_two_hops_away_decays_like_any_other():
+    att = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "DEP", 1000, 1)], labels=DERIVED)
+    assert att.candidates[0].confidence == approx(0.8075 * 0.85)
+
+
+def test_a_derived_label_shows_what_the_discovery_rules_saw():
+    att = run([tx(1, "S", "DEP", 1000, 0)], labels=DERIVED)
+    label_item = att.candidates[0].evidence[0]
+    assert label_item["weight"] == 0.8075 and label_item["tier"] == "derived"
+    assert label_item["text"].endswith(
+        "derived by VASP-FUSION, source toy. Sweep rule: forwarded 100% of the 500 USDT "
+        "it received. Both rules agree.")
+    path_item = att.candidates[0].evidence[1]
+    assert path_item["weight"] == approx(1.0)
+
+
+def test_a_derived_label_without_a_confidence_keeps_the_flat_tier_weight():
+    att = run([tx(1, "S", "OLDDEP", 1000, 0)], labels=DERIVED)
+    assert att.candidates[0].confidence == approx(TIER_WEIGHT["derived"])
+
+
+def test_a_wallet_that_is_itself_a_derived_deposit_address():
+    tr = trace("DEP", CHAIN, ToyProvider([tx(1, "DEP", "HOT", 10, 0)]), ToyLabels(DERIVED),
+               TraceConfig())
+    own = [c for c in attribute(tr).candidates if c.hops == 0][0]
+    assert own.confidence == approx(0.8075)
+
+
+def test_the_request_names_the_derived_deposit_address_itself():
+    att = run([tx(1, "S", "DEP", 1000, 0)], labels=DERIVED)
+    assert any("freeze on the account behind DEP" in step for step in att.next_steps)

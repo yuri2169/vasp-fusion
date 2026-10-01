@@ -12,6 +12,8 @@ data/*.duckdb.tmp
 data/case.duckdb
 # Chain API responses (B2). Rebuilt by fetching live; OFFLINE=1 replays from it.
 data/chain_cache.duckdb
+# The discovery crawl's own cache (B4). `make discover` refills it; derived/ is tracked.
+data/discover_cache.duckdb
 data/uploads/
 data/exports/
 ui/dist/

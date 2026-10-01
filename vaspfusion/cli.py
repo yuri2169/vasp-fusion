@@ -153,7 +153,10 @@ def cmd_discover(args) -> None:
         lookback_days=args.lookback_days, seed_limit=args.seed_limit,
         candidate_limit=args.candidate_limit, max_candidates=args.max_candidates,
         entities=tuple(e.strip() for e in args.entities.split(",")) if args.entities else None)
-    fetcher = chains.default_fetcher()
+    # its own cache file, held open for the whole run: thousands of small pages would
+    # otherwise each reopen the main cache, and would bloat what the demo has to ship
+    cache = chains.ChainCache(args.cache, hold=True)
+    fetcher = chains.Fetcher(cache, chains.UrllibTransport())
     seed_page = min(200, cfg.seed_limit)
     seed_provider = chains.get_provider(args.chain, fetcher, page_size=seed_page,
                                         max_pages=ceil(cfg.seed_limit / seed_page))
@@ -161,11 +164,13 @@ def cmd_discover(args) -> None:
                                              page_size=cfg.candidate_limit, max_pages=1)
 
     def progress(stage: str, i: int, n: int) -> None:
-        if i == n or i % 250 == 0:
+        if i == n or i % 500 == 0:
             print(f"  {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr, flush=True)
 
     with LabelStore(args.labels_db) as labels:
-        result = discover(args.chain, seed_provider, candidate_provider, labels, cfg, progress)
+        result = discover(args.chain, seed_provider, candidate_provider, labels, cfg, progress,
+                          workers=args.workers)
+    cache.close()
     csv_path, report_path = write_result(args.out, result)
 
     print(f"discovery on {args.chain}: transfers into labelled exchange wallets since "
@@ -293,7 +298,7 @@ def main(argv: list[str] | None = None) -> None:
     s = sub.add_parser("labels", help="build the label DB and print its stats")
     s.add_argument("--research", default=str(ROOT.parent / "research" / "data"))
     s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
-    s.add_argument("--derived", default=str(ROOT / "data" / "derived"),
+    s.add_argument("--derived", default=str(ROOT / "derived"),
                    help="folder of discovery CSVs (`discover` writes them); merged as tier=derived")
     s.set_defaults(fn=cmd_labels)
 
@@ -331,7 +336,11 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--candidate-limit", type=int, default=50)
     s.add_argument("--max-candidates", type=int, help="per exchange wallet")
     s.add_argument("--entities", help="comma-separated exchange names (default: all)")
-    s.add_argument("--out", default=str(ROOT / "data" / "derived"))
+    s.add_argument("--out", default=str(ROOT / "derived"),
+                   help="folder for <chain>.csv and <chain>_report.json (tracked in git)")
+    s.add_argument("--cache", default=str(ROOT / "data" / "discover_cache.duckdb"),
+                   help="the crawl's own chain cache (OFFLINE=1 replays from it)")
+    s.add_argument("--workers", type=int, default=6, help="parallel fetches")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover)
 

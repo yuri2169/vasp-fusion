@@ -12,8 +12,8 @@ from .cache import ChainCache, Fetcher
 from .http import UrllibTransport
 
 __all__ = ["CacheMiss", "ChainCache", "ChainProvider", "Direction", "Fetcher", "InvalidAddress",
-           "ProviderError", "Transfer", "UnsupportedChain", "default_fetcher", "detect_chain",
-           "get_provider", "validate"]
+           "ProviderError", "Transfer", "UnsupportedChain", "UrllibTransport", "default_fetcher",
+           "detect_chain", "get_provider", "validate"]
 
 
 def default_fetcher() -> Fetcher:

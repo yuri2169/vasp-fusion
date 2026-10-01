@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
 import time
 import urllib.parse
 from datetime import datetime, timezone
@@ -53,13 +54,37 @@ def request_key(url: str, params: dict) -> str:
 
 
 class ChainCache:
-    """DuckDB file; a connection is opened per call so the lock is held briefly."""
+    """DuckDB file; a connection is opened per call so the file lock is held briefly.
 
-    def __init__(self, path: Path | str | None = None):
+    `hold=True` keeps one connection open until `close()`: a long batch job (the
+    discovery crawl) then pays the open/close cost once instead of per page. No
+    other process can use the file meanwhile, so give such a job its own file.
+    Calls are serialised by a lock, so worker threads may share one cache."""
+
+    def __init__(self, path: Path | str | None = None, hold: bool = False):
         self.path = Path(path or os.environ.get("VASPFUSION_CHAIN_CACHE") or DEFAULT_CACHE)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
+        self._held = None
         with self._con() as con:
             con.execute(_DDL)
+        if hold:
+            self._held = self._con()
+
+    def close(self) -> None:
+        with self._lock:
+            if self._held is not None:
+                self._held.close()
+                self._held = None
+
+    def _exec(self, sql: str, params: list, fetch: bool = False):
+        with self._lock:
+            if self._held is not None:
+                cur = self._held.execute(sql, params)
+                return cur.fetchone() if fetch else None
+            with self._con() as con:
+                cur = con.execute(sql, params)
+                return cur.fetchone() if fetch else None
 
     def _con(self, read_only: bool = False, wait_s: float = 30.0):
         """DuckDB allows one writing process per file. If the API server and a CLI
@@ -74,23 +99,20 @@ class ChainCache:
                 time.sleep(0.05)
 
     def get(self, chain: str, address: str, direction: str, query: str) -> tuple[str, str] | None:
-        with self._con() as con:
-            row = con.execute(
-                "SELECT raw_json, sha256 FROM chain_cache WHERE chain=? AND address=? "
-                "AND direction=? AND query=?", [chain, address, direction, query]).fetchone()
+        row = self._exec(
+            "SELECT raw_json, sha256 FROM chain_cache WHERE chain=? AND address=? "
+            "AND direction=? AND query=?", [chain, address, direction, query], fetch=True)
         return (row[0], row[1]) if row else None
 
     def put(self, chain: str, address: str, direction: str, query: str, raw: bytes) -> str:
         sha = hashlib.sha256(raw).hexdigest()
-        with self._con() as con:
-            con.execute("INSERT OR REPLACE INTO chain_cache VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        [chain, address, direction, query,
-                         datetime.now(timezone.utc).replace(tzinfo=None), sha, raw.decode()])
+        self._exec("INSERT OR REPLACE INTO chain_cache VALUES (?, ?, ?, ?, ?, ?, ?)",
+                   [chain, address, direction, query,
+                    datetime.now(timezone.utc).replace(tzinfo=None), sha, raw.decode()])
         return sha
 
     def count(self) -> int:
-        with self._con() as con:
-            return con.execute("SELECT count(*) FROM chain_cache").fetchone()[0]
+        return self._exec("SELECT count(*) FROM chain_cache", [], fetch=True)[0]
 
 
 class Fetcher:
@@ -107,6 +129,7 @@ class Fetcher:
         self.min_interval = dict(min_interval or {})
         self.max_retries, self.backoff = max_retries, backoff
         self._last_call: dict[str, float] = {}
+        self._lock = threading.Lock()   # worker threads share one fetcher (discovery crawl)
         self.stats = {"hits": 0, "live": 0, "retries": 0}
         self.trail: list[dict] = []   # per page: query, sha256, source (for provenance)
 
@@ -116,12 +139,17 @@ class Fetcher:
 
     def _throttle(self, host: str) -> None:
         gap = self.min_interval.get(host, 0.0)
-        last = self._last_call.get(host)
-        if gap and last is not None:
-            wait = last + gap - self.clock()
-            if wait > 0:
-                self.sleep(wait)
-        self._last_call[host] = self.clock()
+        with self._lock:                # each caller books the next free slot, then waits
+            now = self.clock()
+            last = self._last_call.get(host)
+            at = now if not gap or last is None else max(now, last + gap)
+            self._last_call[host] = at
+        if at > now:
+            self.sleep(at - now)
+
+    def _count(self, key: str) -> None:
+        with self._lock:
+            self.stats[key] += 1
 
     def get_json(self, chain: str, address: str, direction: str, url: str, params: dict,
                  headers: dict | None = None, check: Callable[[Any], None] | None = None,
@@ -133,7 +161,7 @@ class Fetcher:
                 raw, sha = hit
                 if hashlib.sha256(raw.encode()).hexdigest() != sha:
                     raise ProviderError(f"cache row failed its sha256 check: {query}")
-                self.stats["hits"] += 1
+                self._count("hits")
                 self.trail.append({"query": query, "sha256": sha, "source": "cache"})
                 return json.loads(raw)
         if self.offline:
@@ -160,11 +188,11 @@ class Fetcher:
             except Retryable as e:
                 if attempt == self.max_retries:
                     raise ProviderError(f"gave up on {host} after {attempt + 1} tries: {e}") from e
-                self.stats["retries"] += 1
+                self._count("retries")
                 self.sleep(self.backoff * 2 ** attempt)
                 continue
             sha = self.cache.put(chain, address, direction, query, body)
-            self.stats["live"] += 1
+            self._count("live")
             self.trail.append({"query": query, "sha256": sha, "source": "live"})
             return data
         raise AssertionError("unreachable")

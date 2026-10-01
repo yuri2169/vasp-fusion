@@ -59,7 +59,9 @@ class ToyLabels:
             tier = spec[3] if len(spec) > 3 else "curated"
             self.labels[addr] = Label(address=addr, chain=CHAIN, entity=entity, category=category,
                                       kind=kind, tier=tier, source="toy", source_url=None,
-                                      label=f"{entity} toy label")
+                                      label=f"{entity} toy label",
+                                      confidence=spec[4] if len(spec) > 4 else None,
+                                      evidence=spec[5] if len(spec) > 5 else None)
 
     def lookup_many(self, pairs):
         return {(a, c): self.labels[a] for a, c in pairs if a in self.labels}

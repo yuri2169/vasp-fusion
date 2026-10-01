@@ -38,6 +38,20 @@ ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"
 UNROUTABLE = "Unidentified exchange"
 
 
+def label_weight(label) -> float:
+    """How far a label is trusted. A derived label (B4) carries its own rule
+    confidence, which already includes the weight of the exchange wallet it was
+    derived from; every other label weighs what its tier weighs."""
+    if label.tier == "derived" and label.confidence is not None:
+        return label.confidence
+    return TIER_WEIGHT[label.tier]
+
+
+def _label_words(label) -> str:
+    text = f"{fmt.tier_words(label.tier)}, source {label.source}"
+    return f"{text}. {label.evidence}" if label.evidence else text
+
+
 @dataclass(frozen=True)
 class RuleConfig:
     hop_decay: float = 0.85
@@ -95,7 +109,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     weighted, route_hops = 0.0, []
     for n in entries:
         for e in tr.edges_into(side, n.address):
-            weighted += TIER_WEIGHT[n.label.tier] * cfg.hop_decay ** (e.hop - 1) * float(e.traced)
+            weighted += label_weight(n.label) * cfg.hop_decay ** (e.hop - 1) * float(e.traced)
             route_hops.append(e.hop)
     hops_min, hops_max = min(route_hops), max(route_hops)
     confidence = min(1.0, float(share) / cfg.share_full) * weighted / float(amount)
@@ -112,13 +126,13 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     verb = "reached it" if side == "outbound" else "came from it"
     evidence = [{
         "kind": "label", "tier": main.label.tier, "tx_hashes": [],
-        "weight": TIER_WEIGHT[main.label.tier],
+        "weight": label_weight(main.label),
         "text": f"{fmt.short(main.address)} is labelled {main.label.entity}"
                 + (f" (\"{main.label.label}\")" if main.label.label else "")
-                + f": {fmt.tier_words(main.label.tier)}, source {main.label.source}",
+                + f": {_label_words(main.label)}",
     }, {
         "kind": "path", "tier": None, "tx_hashes": [e.transfer.tx_hash for e in edges],
-        "weight": round(confidence / TIER_WEIGHT[main.label.tier], 4),
+        "weight": round(confidence / label_weight(main.label), 4),
         "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, asset)}) {verb} "
                 f"in {fmt.hops(hops_min, hops_max)}"
                 + (f" within {fmt.duration(took)}" if len(edges) > 1 and hops_max == hops_min
@@ -154,14 +168,14 @@ def _self_candidate(tr: TraceResult) -> Candidate:
     lab = tr.origin_label
     return Candidate(
         vasp=lab.entity, category=lab.category, direction="outbound",
-        confidence=TIER_WEIGHT[lab.tier], hops=0, share=Decimal(1), amount=ZERO,
+        confidence=label_weight(lab), hops=0, share=Decimal(1), amount=ZERO,
         time_to_reach_s=None, label=lab, deposit_address=tr.address, path=[tr.address],
         path_edges=[], entries=[tr.nodes[("origin", tr.address)]], last_hop=None,
         evidence=[{"kind": "label", "tier": lab.tier, "tx_hashes": [],
-                   "weight": TIER_WEIGHT[lab.tier],
+                   "weight": label_weight(lab),
                    "text": f"The address itself is labelled {lab.entity}"
                            + (f" (\"{lab.label}\")" if lab.label else "")
-                           + f": {fmt.tier_words(lab.tier)}, source {lab.source}"}])
+                           + f": {_label_words(lab)}"}])
 
 
 def _candidates(tr: TraceResult, cfg: RuleConfig) -> list[Candidate]:

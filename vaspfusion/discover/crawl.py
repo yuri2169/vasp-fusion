@@ -12,11 +12,15 @@
    energy-rental service would look the same from here.
 
 Every request goes through the cache, candidates are processed in sorted order and
-findings are sorted, so `OFFLINE=1` replays to the same result.
+findings are sorted, so `OFFLINE=1` replays to the same result. With `workers` > 1
+the listings are first fetched by a thread pool, which only warms the cache; the
+rules then run in one thread over cached pages, so the result is the same.
 """
 from __future__ import annotations
 
+import threading
 from collections import Counter, defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timedelta, timezone
 from statistics import median
@@ -144,15 +148,40 @@ def _with_station(sweep: Sweep, gas: Gas, stations: dict[str, dict]) -> Gas:
                    payer_entity=stations[payer]["entity"])
 
 
+def _warm(workers: int, items: list, fetch: Callable, stage: str, progress) -> None:
+    """Fetch every item's listing with a thread pool so the pass that follows reads
+    the cache. Failures are left for that pass to meet again and count."""
+    if workers <= 1 or not items:
+        return
+    done, lock = [0], threading.Lock()
+
+    def one(item) -> None:
+        try:
+            fetch(item)
+        except ProviderError:
+            pass
+        with lock:
+            done[0] += 1
+            if progress:
+                progress(stage, done[0], len(items))
+
+    with ThreadPoolExecutor(workers) as pool:
+        list(pool.map(one, items))
+
+
 def discover(chain: str, seed_provider, candidate_provider, labels,
              cfg: CrawlConfig = CrawlConfig(),
-             progress: Callable[[str, int, int], None] | None = None) -> DiscoveryResult:
+             progress: Callable[[str, int, int], None] | None = None,
+             workers: int = 1) -> DiscoveryResult:
     """`seed_provider` pages deep into a busy wallet's inbound listing;
     `candidate_provider` reads one short page per candidate. `labels` answers
     `seeds(chain)` and `lookup_many(pairs)`."""
     result = DiscoveryResult(chain, cfg.as_dict())
     seeds = [s for s in labels.seeds(chain)
              if cfg.entities is None or s.entity in cfg.entities]
+    _warm(workers, seeds, lambda s: _stable_rows(seed_provider, s.address, "in",
+                                                 cfg.window_start, cfg.seed_limit),
+          "fetching seed wallets", progress)
     stats: dict[str, dict] = {}
     found_by: dict[str, str] = {}                 # candidate -> exchange whose seed saw it
     for i, seed in enumerate(seeds):
@@ -179,21 +208,37 @@ def discover(chain: str, seed_provider, candidate_provider, labels,
         stats[entity]["candidates"] = sum(1 for e in found_by.values() if e == entity)
 
     since = cfg.window_start - timedelta(days=cfg.lookback_days)
-    fired: dict[str, tuple[Sweep, Gas, object, bool]] = {}
-    for i, address in enumerate(sorted(found_by)):
+    candidates = sorted(found_by)
+    _warm(workers, candidates, lambda a: _stable_rows(candidate_provider, a, "both", since,
+                                                      cfg.candidate_limit),
+          "fetching candidates", progress)
+    swept: dict[str, tuple[Sweep, dict, bool]] = {}
+    for i, address in enumerate(candidates):
         st = stats[found_by[address]]
         if progress:
-            progress("candidates", i + 1, len(found_by))
+            progress("sweep rule", i + 1, len(candidates))
         try:
             rows, complete = _stable_rows(candidate_provider, address, "both", since,
                                           cfg.candidate_limit)
-            near = {a for t in rows for a in (t.from_addr, t.to_addr)}
-            lab = {a: l for (a, _), l in
-                   labels.lookup_many({(a, chain) for a in near}).items()}
-            sweep = sweep_rule(address, rows, lab, cfg.rules)
-            if not sweep.fired:
-                st["rejected"][sweep.reason] = st["rejected"].get(sweep.reason, 0) + 1
-                continue
+        except ProviderError:
+            st["errors"] += 1
+            continue
+        near = {a for t in rows for a in (t.from_addr, t.to_addr)}
+        lab = {a: l for (a, _), l in labels.lookup_many({(a, chain) for a in near}).items()}
+        sweep = sweep_rule(address, rows, lab, cfg.rules)
+        if sweep.fired:
+            swept[address] = (sweep, lab, complete)
+        else:
+            st["rejected"][sweep.reason] = st["rejected"].get(sweep.reason, 0) + 1
+
+    _warm(workers, list(swept), lambda a: candidate_provider.gas_events(a, since=since),
+          "fetching gas listings", progress)
+    fired: dict[str, tuple[Sweep, Gas, object, bool]] = {}
+    for i, (address, (sweep, lab, complete)) in enumerate(swept.items()):
+        st = stats[found_by[address]]
+        if progress:
+            progress("gas rule", i + 1, len(swept))
+        try:
             events = candidate_provider.gas_events(address, since=since)
             payers = {e.payer for e in events} | {t.fee_payer for t in sweep.sweeps
                                                   if t.fee_payer}
