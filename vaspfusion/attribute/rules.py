@@ -232,10 +232,10 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
     said: list[str] = []
     change: list[str] = []
 
-    def nodes(state: str) -> list[TraceNode]:
+    def nodes(reason: str) -> list[TraceNode]:
         return sorted((n for (side, _), n in tr.nodes.items()
-                       if side == "outbound" and n.state == state and n.held > 0),
-                      key=lambda n: (-n.held, n.address))
+                       if side == "outbound" and n.holds.get(reason, ZERO) > 0),
+                      key=lambda n: (-n.holds[reason], n.address))
 
     other: dict[str, Decimal] = {}
     for (side, _), n in tr.nodes.items():
@@ -276,7 +276,8 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
         said.append(f"{fmt.pct(held / total)} {text}")
         if hint:
             for n in nodes(reason)[:2]:
-                change.append(hint.format(a=fmt.short(n.address), p=fmt.pct(n.held / total),
+                change.append(hint.format(a=fmt.short(n.address),
+                                          p=fmt.pct(n.holds[reason] / total),
                                           h=fmt.hops(tr.config.max_hops)))
     return said, change
 
@@ -297,8 +298,9 @@ def _abstain(tr: TraceResult, cands: list[Candidate], cfg: RuleConfig) -> tuple[
                   f"({best.vasp}), {fmt.hops(best.hops)} away; rule confidence "
                   f"{best.confidence:.2f} is below the {cfg.attribute_min:.2f} needed to name one.")
         if best.share < Decimal(str(cfg.share_full)):
-            change.insert(0, f"A larger share reaching {best.vasp}: {fmt.pct(cfg.share_full)} "
-                             f"or more counts in full")
+            change.insert(0, f"A larger part of the funds reaching {best.vasp} (now "
+                             f"{fmt.pct(best.share)}; {fmt.pct(cfg.share_full)} or more counts "
+                             "in full)")
         if best.label.tier != "published_por":
             change.append(f"A stronger label for {fmt.short(best.deposit_address)} "
                           f"(now: {fmt.tier_words(best.label.tier)})")
@@ -307,10 +309,28 @@ def _abstain(tr: TraceResult, cands: list[Candidate], cfg: RuleConfig) -> tuple[
                   f"labelled exchange within {fmt.hops(tr.config.max_hops)}.")
     if said:
         reason += " " + "; ".join(said) + "."
-    if tr.config.max_hops < 5 and not any("deeper" in c for c in change) \
-            and tr.stopped.get("depth_limit", ZERO) > 0:
-        change.append("Tracing deeper")
     return reason, list(dict.fromkeys(change))
+
+
+def _abstain_steps(tr: TraceResult, cands: list[Candidate]) -> list[str]:
+    """What an officer can do when no exchange is named."""
+    steps = []
+    if tr.total_out:
+        hubs = sorted((n for (side, _), n in tr.nodes.items()
+                       if side == "outbound" and n.holds.get("hub", ZERO) > 0),
+                      key=lambda n: (-n.holds["hub"], n.address))
+        for n in hubs[:2]:
+            steps.append(f"Identify {fmt.short(n.address)}: {fmt.pct(n.holds['hub'] / tr.total_out)}"
+                         " of the funds stopped there and it behaves like a service wallet "
+                         "(check other label sources and block explorers)")
+    for c in cands:
+        if c.direction == "outbound" and c.hops > 0:
+            steps.append(f"{c.vasp} did receive {fmt.pct(c.share)} of the funds "
+                         f"({fmt.amount(c.amount, tr.asset)}) at {fmt.short(c.deposit_address)}; "
+                         "a request limited to that deposit can still be drafted")
+    if tr.stopped.get("depth_limit", ZERO) > 0 and tr.config.max_hops < 5:
+        steps.append(f"Run the trace again with more than {fmt.hops(tr.config.max_hops)}")
+    return steps
 
 
 # ------------------------------------------------------------------ outcome
@@ -350,5 +370,5 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
                 f"The wallet was funded from {c.vasp} ({fmt.pct(c.share)} of what it received): "
                 f"ask {c.vasp} which account withdrew to it")
     if att.outcome == "INSUFFICIENT_EVIDENCE":
-        att.next_steps += att.what_would_change[:3]
+        att.next_steps = _abstain_steps(tr, cands) + att.next_steps
     return att

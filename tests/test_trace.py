@@ -139,6 +139,16 @@ def test_a_wallet_reached_twice_does_not_double_count_its_outflow():
     assert out(r, "M2").hop == 1              # nearest route wins
 
 
+def test_each_wallet_records_why_its_money_stopped():
+    # 300 comes back round to M1 at the hop limit, after M1 was already expanded
+    r = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "M2", 300, 1), tx(3, "M1", "HOT", 500, 2),
+             tx(4, "M2", "M1", 300, 3)], max_hops=3)
+    m1 = out(r, "M1")
+    assert m1.state == "expanded"
+    assert m1.holds == {"unspent": D(200), "depth_limit": D(300)}
+    assert out(r, "HOT").holds == {"labelled": D(500)}
+
+
 def test_wallets_holding_too_little_are_not_expanded():
     r = run([tx(1, "S", "BIG", 995, 0), tx(2, "S", "TINY", 5, 1), tx(3, "TINY", "HOT", 5, 2),
              tx(4, "BIG", "HOT", 995, 3)], min_share=D("0.01"))

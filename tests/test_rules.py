@@ -158,6 +158,23 @@ def test_abstain_says_where_the_money_stopped():
     assert any("HUB" in w for w in att.what_would_change)
 
 
+def test_what_would_change_names_the_wallet_at_the_hop_limit_even_if_it_was_expanded():
+    att = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "M2", 1000, 1), tx(3, "M2", "M1", 1000, 2)],
+              max_hops=3)
+    assert att.outcome == "INSUFFICIENT_EVIDENCE"
+    assert "Tracing deeper than 3 hops from M1 (100% of the funds)" in att.what_would_change
+    assert "Tracing deeper" not in att.what_would_change       # no vaguer duplicate
+
+
+def test_abstain_next_steps_are_actions_not_a_repeat_of_what_would_change():
+    fan = [tx(10 + i, "HUB", f"U{i}", 10, 5 + i) for i in range(6)]
+    att = run([tx(1, "S", "HUB", 900, 0), *fan, tx(2, "S", "TAG", 100, 1)], hub_degree=5)
+    assert att.outcome == "INSUFFICIENT_EVIDENCE"
+    assert not set(att.next_steps) & set(att.what_would_change)
+    assert any("HUB" in s and "Identify" in s for s in att.next_steps)
+    assert any("ExC" in s and "10%" in s for s in att.next_steps)
+
+
 def test_a_wallet_that_sent_nothing_abstains_with_that_reason():
     att = run([tx(1, "X", "S", 100, 0)])
     assert att.outcome == "INSUFFICIENT_EVIDENCE"

@@ -73,6 +73,7 @@ class TraceNode:
     state: str = "pending"
     received: Decimal = ZERO     # traced money that reached it (outbound) / left it (inbound)
     held: Decimal = ZERO         # the part that stopped here
+    holds: dict[str, Decimal] = field(default_factory=dict)   # ... and why: reason -> amount
     pred: TraceEdge | None = None  # largest edge linking it to the previous hop
     note: str | None = None
 
@@ -172,6 +173,7 @@ class _Walk:
     def hold(self, node: TraceNode, amount: Decimal, reason: str) -> None:
         if amount > 0:
             node.held += amount
+            node.holds[reason] = node.holds.get(reason, ZERO) + amount
             self.stopped[reason] = self.stopped.get(reason, ZERO) + amount
 
     # ---------------------------------------------------------------- origin

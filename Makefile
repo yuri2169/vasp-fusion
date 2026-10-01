@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels test serve fetch mocks openapi types offline-check clean
+.PHONY: help setup labels test serve fetch trace demo mocks openapi types offline-check clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -13,7 +13,7 @@ setup:            ## create the venv and install everything (needs network ONCE)
 	uv pip install -e ".[dev]"
 
 labels:           ## build data/labels.duckdb from the research label CSVs, print stats
-	$(PY) -m vaspfusion.cli labels --research $(RESEARCH) --db data/labels.duckdb
+	$(PY) -m vaspfusion.cli labels --research "$(RESEARCH)" --db data/labels.duckdb
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q
@@ -23,6 +23,12 @@ serve:            ## run the API on :$(PORT)
 
 fetch:            ## transfers for ADDR=<address> [CHAIN=..] (cached; OFFLINE=1 = cache only)
 	$(PY) -m vaspfusion.cli fetch "$(ADDR)" $(if $(CHAIN),--chain $(CHAIN))
+
+trace:            ## trace ADDR=<address> [CHAIN=..] [HOPS=3] to its nearest exchange(s)
+	$(PY) -m vaspfusion.cli trace "$(ADDR)" $(if $(CHAIN),--chain $(CHAIN)) $(if $(HOPS),--max-hops $(HOPS))
+
+demo:             ## run the demo wallets (demo/cases.json) into the case store; OFFLINE=1 replays
+	$(PY) -m vaspfusion.cli demo
 
 mocks:            ## regenerate mocks/*.json (seeded, validated against the schemas)
 	$(PY) scripts/make_mocks.py

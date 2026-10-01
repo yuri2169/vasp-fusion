@@ -98,6 +98,121 @@ def cmd_fetch(args) -> None:
           f"OFFLINE={1 if fetcher.offline else 0} | cache {fetcher.cache.path}")
 
 
+def _since(text: str | None):
+    from datetime import datetime, timezone
+    if not text:
+        return None
+    since = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    return since if since.tzinfo else since.replace(tzinfo=timezone.utc)
+
+
+def _run_case(address: str, chain: str | None, max_hops: int, labels_db: str, since=None,
+              **kw) -> tuple[dict, object]:
+    """Trace one wallet through the shared cache-first fetcher. Returns (case, fetcher)."""
+    from . import chains
+    from .cases import file_sha256, run_case, trace_provider
+    from .labels.lookup import LabelStore
+    from .trace import TraceConfig
+
+    chain = chain or chains.detect_chain(address)
+    address = address.strip()
+    if chain in chains.EVM_FAMILY or address.lower().startswith("bc1"):
+        address = address.lower()
+    fetcher = chains.default_fetcher()
+    cfg = TraceConfig(max_hops=max_hops, since=since)
+    with LabelStore(labels_db) as labels:
+        case = run_case(address, chain, trace_provider(chain, fetcher, cfg), labels, cfg=cfg,
+                        fetcher=fetcher, label_db_sha256=file_sha256(labels_db), **kw)
+    return case, fetcher
+
+
+def _pages(fetcher) -> str:
+    s = fetcher.stats
+    return (f"pages: {s['live']} live, {s['hits']} cached, {s['retries']} retries | "
+            f"OFFLINE={1 if fetcher.offline else 0}")
+
+
+def cmd_trace(args) -> None:
+    import sys
+    import textwrap
+
+    from . import chains
+    from .explain import fmt
+    try:
+        case, fetcher = _run_case(args.address, args.chain, args.max_hops, args.labels_db,
+                                  since=_since(args.since))
+    except (chains.InvalidAddress, chains.ProviderError, FileNotFoundError, ValueError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+    if args.save:
+        from .store.cases import CaseStore
+        CaseStore().save(case)
+    if args.json:
+        print(json.dumps(case, indent=2, sort_keys=True))
+        return
+
+    asset = case["asset"] or ""
+    print(f"{case['chain']}  {case['address']}  ->  {case['outcome']}"
+          + (f"  {case['top_vasp']}  rule confidence {case['confidence']:.2f}"
+             if case["top_vasp"] else ""))
+    print()
+    print(textwrap.fill(case["narrative"], width=100))
+    if case["candidates"]:
+        print(f"\n  {'rank':<5}{'VASP':<24}{'dir':<5}{'conf':>6}{'hops':>6}{'share':>8}  "
+              f"{'label tier':<15}entry address")
+        for c in case["candidates"]:
+            print(f"  {c['proximity_rank']:<5}{c['vasp'][:23]:<24}{c['direction'][:3]:<5}"
+                  f"{c['confidence']:>6.2f}{c['hops']:>6}{fmt.pct(c['share_of_funds']):>8}  "
+                  f"{c['label_tier']:<15}{c['deposit_address']}")
+    if case["where_funds_went"]:
+        print("\n  where the funds went")
+        for w in case["where_funds_went"]:
+            what = f"{w['kind'].replace('_', ' ')}" + (f": {w['name']}" if w["name"] else "")
+            print(f"    {fmt.pct(w['share']):>8}  {fmt.amount(str(w['amount']), asset):>22}  {what}")
+    for title, key in (("flags", "typology_flags"), ("what would change this", "what_would_change"),
+                       ("next steps", "next_steps")):
+        if case[key]:
+            print(f"\n  {title}")
+            for item in case[key]:
+                print(textwrap.fill(item["text"] if isinstance(item, dict) else item, width=100,
+                                    initial_indent="    - ", subsequent_indent="      "))
+    g = case["graph"]
+    print(f"\n{len(g['nodes'])} wallets, {len(g['edges'])} transfers | {_pages(fetcher)} | "
+          f"case id {case['id']}" + (" (saved)" if args.save else ""))
+
+
+def cmd_demo(args) -> None:
+    """Run every wallet in demo/cases.json into the case store and check the results."""
+    import sys
+
+    from . import chains
+    from .store.cases import CaseStore
+    specs = json.loads(Path(args.file).read_text())["cases"]
+    store = CaseStore()
+    ok = 0
+    print(f"  {'id':<19}{'chain':<10}{'outcome':<29}{'top VASP':<10}{'conf':>5}  pages")
+    for spec in specs:
+        try:
+            case, fetcher = _run_case(spec["address"], spec["chain"], spec.get("max_hops", 3),
+                                      args.labels_db, case_id=spec["id"], demo=True,
+                                      meta={"case_ref": spec.get("case_ref")})
+        except (chains.InvalidAddress, chains.ProviderError, FileNotFoundError) as e:
+            print(f"  {spec['id']:<19}{spec['chain']:<10}FAILED: {e}", file=sys.stdout)
+            continue
+        store.save(case)
+        want = (spec["expect"]["outcome"], spec["expect"]["top_vasp"])
+        good = (case["outcome"], case["top_vasp"]) == want
+        ok += good
+        conf = f"{case['confidence']:.2f}" if case["confidence"] is not None else "-"
+        s = fetcher.stats
+        print(f"  {spec['id']:<19}{spec['chain']:<10}{case['outcome']:<29}"
+              f"{case['top_vasp'] or '-':<10}{conf:>5}  {s['live']} live, {s['hits']} cached"
+              + ("" if good else f"   !! expected {want[0]} / {want[1]}"))
+    print(f"{ok}/{len(specs)} as expected | cases stored in {store.path}")
+    if ok != len(specs):
+        raise SystemExit(1)
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     uvicorn.run("vaspfusion.api.main:app", host=args.host, port=args.port)
@@ -133,6 +248,21 @@ def main(argv: list[str] | None = None) -> None:
                    help="name labelled counterparties from the label DB")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_fetch)
+
+    s = sub.add_parser("trace", help="trace a wallet to its nearest exchange(s) and print the case")
+    s.add_argument("address")
+    s.add_argument("--chain", help="default: auto-detect (EVM -> ethereum)")
+    s.add_argument("--max-hops", type=int, default=3, choices=range(1, 6))
+    s.add_argument("--since", help="only the wallet's transfers from this ISO date/time on")
+    s.add_argument("--json", action="store_true", help="print the CaseDetail JSON")
+    s.add_argument("--save", action="store_true", help="store the case (data/case.duckdb)")
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_trace)
+
+    s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
+    s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_demo)
 
     s = sub.add_parser("serve", help="run the API")
     s.add_argument("--host", default="127.0.0.1")
