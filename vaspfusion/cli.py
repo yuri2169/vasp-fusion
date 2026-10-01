@@ -389,6 +389,20 @@ def cmd_model(args) -> None:
         print(row(r["exchange"], r, r["precision"], r["recall"]))
     p = m["leave_one_exchange_out"]["pooled"]
     print(row("POOLED", p, p["at_0_5"]["precision"], p["at_0_5"]["recall"]))
+    la = m["leave_one_exchange_out"]["look_alikes"]
+    print(f"  negatives that forward {la['forwarding_at_least']:.0%} or more to one wallet, like "
+          f"a deposit address: {la['flagged']} of {la['negatives']} called one")
+    c = m["cross_fit"]
+    print(f"cross-fit ({c['blocks']} time blocks per exchange; each address scored by a model "
+          "that did not train on it; these are the labels' scores):")
+    for r in c["by_exchange"]:
+        print(row(r["exchange"], r, r["precision"], r["recall"]))
+    p = c["pooled"]
+    print(row("POOLED", p, p["at_0_5"]["precision"], p["at_0_5"]["recall"]))
+    print(f"  range width {p['interval_mean_width']}; ranges consistent with the observed rate "
+          f"in {p['range_check']['consistent']} of {len(p['range_check']['groups'])} groups; "
+          f"look-alike negatives called a deposit address: {c['look_alikes']['flagged']} of "
+          f"{c['look_alikes']['negatives']}")
     ab = m["ablation_label_features"]
     print(f"with the two label features (not shipped): by time PR-AUC "
           f"{ab['time_split']['pr_auc']}; on an exchange whose labels are hidden, pooled "

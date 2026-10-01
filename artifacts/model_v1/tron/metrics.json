@@ -792,6 +792,407 @@
    "false_positive_rate": 0.57
   }
  },
+ "cross_fit": {
+  "blocks": 5,
+  "pooled": {
+   "n": 9191,
+   "n_positive": 5497,
+   "pr_auc": 0.9908,
+   "roc_auc": 0.9898,
+   "brier": 0.029,
+   "ece": 0.0216,
+   "adaptive_ece": 0.0205,
+   "interval_mean_width": 0.0224,
+   "at_0_5": {
+    "tp": 5330,
+    "fp": 173,
+    "fn": 167,
+    "tn": 3521,
+    "precision": 0.9686,
+    "recall": 0.9696,
+    "f1": 0.9691,
+    "mcc": 0.923,
+    "accuracy": 0.963,
+    "accuracy_all_negative_baseline": 0.4019
+   },
+   "confident": {
+    "threshold": 0.9,
+    "coverage": 0.8873,
+    "accuracy": 0.9891
+   },
+   "reliability": [
+    {
+     "bin_mid": 0.05,
+     "predicted": 0.0076,
+     "observed": 0.0035,
+     "count": 3421
+    },
+    {
+     "bin_mid": 0.15,
+     "predicted": 0.1441,
+     "observed": 0.3205,
+     "count": 78
+    },
+    {
+     "bin_mid": 0.25,
+     "predicted": 0.234,
+     "observed": 0.6341,
+     "count": 82
+    },
+    {
+     "bin_mid": 0.35,
+     "predicted": 0.3411,
+     "observed": 0.6212,
+     "count": 66
+    },
+    {
+     "bin_mid": 0.45,
+     "predicted": 0.4918,
+     "observed": 0.9024,
+     "count": 41
+    },
+    {
+     "bin_mid": 0.55,
+     "predicted": 0.5798,
+     "observed": 0.8462,
+     "count": 52
+    },
+    {
+     "bin_mid": 0.65,
+     "predicted": 0.6668,
+     "observed": 0.9679,
+     "count": 156
+    },
+    {
+     "bin_mid": 0.75,
+     "predicted": 0.7358,
+     "observed": 0.65,
+     "count": 40
+    },
+    {
+     "bin_mid": 0.85,
+     "predicted": 0.8836,
+     "observed": 0.8676,
+     "count": 521
+    },
+    {
+     "bin_mid": 0.95,
+     "predicted": 0.9775,
+     "observed": 0.9837,
+     "count": 4734
+    }
+   ],
+   "range_check": {
+    "groups": [
+     {
+      "count": 920,
+      "low": 0.0,
+      "high": 0.0018,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0042
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.0,
+      "high": 0.0029,
+      "observed": 0.0,
+      "observed_wilson_95": [
+       0.0,
+       0.0042
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.0,
+      "high": 0.006,
+      "observed": 0.0011,
+      "observed_wilson_95": [
+       0.0002,
+       0.0061
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.0261,
+      "high": 0.1138,
+      "observed": 0.1708,
+      "observed_wilson_95": [
+       0.1479,
+       0.1965
+      ],
+      "consistent": false
+     },
+     {
+      "count": 919,
+      "low": 0.8028,
+      "high": 0.8747,
+      "observed": 0.8749,
+      "observed_wilson_95": [
+       0.8519,
+       0.8947
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9468,
+      "high": 0.9747,
+      "observed": 0.9684,
+      "observed_wilson_95": [
+       0.955,
+       0.9779
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9803,
+      "high": 0.9864,
+      "observed": 0.9804,
+      "observed_wilson_95": [
+       0.9693,
+       0.9876
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9844,
+      "high": 0.9931,
+      "observed": 0.9956,
+      "observed_wilson_95": [
+       0.9889,
+       0.9983
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9889,
+      "high": 0.9962,
+      "observed": 0.9924,
+      "observed_wilson_95": [
+       0.9844,
+       0.9963
+      ],
+      "consistent": true
+     },
+     {
+      "count": 919,
+      "low": 0.9962,
+      "high": 1.0,
+      "observed": 0.9978,
+      "observed_wilson_95": [
+       0.9921,
+       0.9994
+      ],
+      "consistent": true
+     }
+    ],
+    "consistent": 9
+   },
+   "risk_coverage": [
+    {
+     "coverage": 0.0001,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0417,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.0833,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.125,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.1667,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.2084,
+     "accuracy": 1.0
+    },
+    {
+     "coverage": 0.25,
+     "accuracy": 0.9996
+    },
+    {
+     "coverage": 0.2917,
+     "accuracy": 0.9993
+    },
+    {
+     "coverage": 0.3334,
+     "accuracy": 0.9993
+    },
+    {
+     "coverage": 0.375,
+     "accuracy": 0.9994
+    },
+    {
+     "coverage": 0.4167,
+     "accuracy": 0.999
+    },
+    {
+     "coverage": 0.4584,
+     "accuracy": 0.9986
+    },
+    {
+     "coverage": 0.5001,
+     "accuracy": 0.9978
+    },
+    {
+     "coverage": 0.5416,
+     "accuracy": 0.9978
+    },
+    {
+     "coverage": 0.5833,
+     "accuracy": 0.9976
+    },
+    {
+     "coverage": 0.625,
+     "accuracy": 0.9976
+    },
+    {
+     "coverage": 0.6666,
+     "accuracy": 0.9964
+    },
+    {
+     "coverage": 0.7083,
+     "accuracy": 0.9959
+    },
+    {
+     "coverage": 0.75,
+     "accuracy": 0.9954
+    },
+    {
+     "coverage": 0.7916,
+     "accuracy": 0.9948
+    },
+    {
+     "coverage": 0.8333,
+     "accuracy": 0.9932
+    },
+    {
+     "coverage": 0.875,
+     "accuracy": 0.9907
+    },
+    {
+     "coverage": 0.9167,
+     "accuracy": 0.9855
+    },
+    {
+     "coverage": 0.9583,
+     "accuracy": 0.976
+    },
+    {
+     "coverage": 1.0,
+     "accuracy": 0.963
+    }
+   ]
+  },
+  "by_exchange": [
+   {
+    "exchange": "Bitfinex",
+    "n": 580,
+    "n_positive": 217,
+    "pr_auc": 0.9718,
+    "roc_auc": 0.9869,
+    "brier": 0.0343,
+    "ece": 0.0325,
+    "interval_mean_width": 0.0247,
+    "precision": 0.9238,
+    "recall": 0.9493
+   },
+   {
+    "exchange": "Bitget",
+    "n": 1458,
+    "n_positive": 755,
+    "pr_auc": 0.9874,
+    "roc_auc": 0.9906,
+    "brier": 0.029,
+    "ece": 0.028,
+    "interval_mean_width": 0.0264,
+    "precision": 0.9664,
+    "recall": 0.9523
+   },
+   {
+    "exchange": "Bitrue",
+    "n": 251,
+    "n_positive": 133,
+    "pr_auc": 0.995,
+    "roc_auc": 0.995,
+    "brier": 0.0269,
+    "ece": 0.0403,
+    "interval_mean_width": 0.033,
+    "precision": 0.9767,
+    "recall": 0.9474
+   },
+   {
+    "exchange": "CoinDCX",
+    "n": 954,
+    "n_positive": 558,
+    "pr_auc": 0.9956,
+    "roc_auc": 0.9955,
+    "brier": 0.0156,
+    "ece": 0.0096,
+    "interval_mean_width": 0.0132,
+    "precision": 0.9822,
+    "recall": 0.9892
+   },
+   {
+    "exchange": "Gate.io",
+    "n": 1836,
+    "n_positive": 1134,
+    "pr_auc": 0.9947,
+    "roc_auc": 0.9937,
+    "brier": 0.0196,
+    "ece": 0.0347,
+    "interval_mean_width": 0.0222,
+    "precision": 0.9831,
+    "recall": 0.9762
+   },
+   {
+    "exchange": "KuCoin",
+    "n": 1662,
+    "n_positive": 958,
+    "pr_auc": 0.977,
+    "roc_auc": 0.9736,
+    "brier": 0.0679,
+    "ece": 0.0688,
+    "interval_mean_width": 0.0308,
+    "precision": 0.9244,
+    "recall": 0.9322
+   },
+   {
+    "exchange": "OKX",
+    "n": 2448,
+    "n_positive": 1742,
+    "pr_auc": 0.9965,
+    "roc_auc": 0.9938,
+    "brier": 0.0135,
+    "ece": 0.0176,
+    "interval_mean_width": 0.0165,
+    "precision": 0.9857,
+    "recall": 0.9914
+   }
+  ],
+  "look_alikes": {
+   "forwarding_at_least": 0.9,
+   "negatives": 401,
+   "flagged": 168,
+   "false_positive_rate": 0.419
+  }
+ },
  "ablation_label_features": {
   "features": [
    "forward_ratio",
@@ -1031,10 +1432,11 @@
  "notes": [
   "Trained on 9,191 real tron addresses: 5,497 deposit addresses and 3,694 others. The model reads what an address does (forwarding, timing, who pays its fees), never a label.",
   "By time (latest 1,839 addresses, unseen): PR-AUC 0.9605, Brier 0.0476, ECE 0.0532.",
-  "By exchange: each exchange's 9,189 addresses in total were scored by a model that never saw that exchange. Pooled PR-AUC 0.9697, recall 0.9261 and precision 0.9527 at 0.5.",
+  "By exchange: each exchange's addresses (9,189 in total) were scored by a model that never saw that exchange. Pooled PR-AUC 0.9697, recall 0.9261 and precision 0.9527 at 0.5.",
+  "The scores the labels carry are cross-fit: each address is scored by a model that never trained on it but knows its exchange from the exchange's other addresses. On all 9,191 addresses: PR-AUC 0.9908, Brier 0.029, ECE 0.0216.",
   "Probabilities are calibrated with Venn-Abers on addresses the trees did not train on, at this dataset's class mix (the negatives are a capped sample), not at the mix of the chain at large.",
   "The two features that read exchange labels were left out of the shipped model: with them it scores PR-AUC 1.0 by time, because the positives were picked by those labels, and recall 0.0 on an exchange whose labels are hidden.",
   "A label's confidence is this probability times the weight of the exchange wallet's own label. That weight, the hop decay and the share factor are still rule-set."
  ],
- "trained_at": "2026-10-01T18:51:58Z"
+ "trained_at": "2026-10-01T18:58:25Z"
 }
