@@ -223,7 +223,8 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
 
 
 def case_headline(case: dict) -> dict:
-    """The parts of a case that must not change between a live run and its replay."""
+    """The figures of a case: what a replay, or a later code change, must reproduce.
+    (The wording of the narrative is free to improve, so it is not part of this.)"""
     return {
         "outcome": case["outcome"], "top_vasp": case["top_vasp"], "confidence": case["confidence"],
         "asset": case["asset"], "total_sent": case["total_sent"],
@@ -233,5 +234,4 @@ def case_headline(case: dict) -> dict:
         "where_funds_went": case["where_funds_went"],
         "nodes": len(case["graph"]["nodes"]), "edges": len(case["graph"]["edges"]),
         "flags": [[f["code"], f["wallet"]] for f in case["typology_flags"]],
-        "narrative": case["narrative"],
     }

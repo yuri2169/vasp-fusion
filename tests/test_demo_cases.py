@@ -97,6 +97,7 @@ def test_tron_wallet_that_paid_an_ofac_listed_address(tmp_path):
     assert case["where_funds_went"][0] == {"kind": "sanctioned", "name": "OFAC SDN",
                                            "share": 0.9894, "amount": 100008.0}
     assert case["hop_rail"][-1]["to_address"] == OFAC
+    assert "No labelled exchange was reached." in case["narrative"]
     assert case["next_steps"][0].startswith("Escalate")
 
 
@@ -110,6 +111,9 @@ def test_tron_wallet_split_between_two_exchanges_names_both(tmp_path):
     assert all(c["confidence"] >= 0.60 for c in out)
     assert {s["kind"] for s in case["where_funds_went"]} == {"vasp"}     # every unit accounted
     assert sum("Draft a request" in s for s in case["next_steps"]) == 2
+    # 1,200 USDT took 2 hops to HTX and 5,800 took 3
+    assert "7,000 USDT (54%) reached HTX in 2 to 3 hops" in case["narrative"]
+    assert "6,000 USDT (46%) reached CoinDCX in 2 hops within 24 seconds" in case["narrative"]
 
 
 def test_tron_wallet_with_a_weak_lead_abstains(tmp_path):
