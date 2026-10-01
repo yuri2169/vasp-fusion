@@ -104,7 +104,31 @@ def record_crawl() -> None:
         print(f"  {f.entity:<8} {f.address} {f.status:<8} {f.rule:<10} {f.confidence}")
 
 
+def record_holdout() -> None:
+    """A tiny real hold-out run on Ethereum: 6 tagged Bitget deposit addresses and
+    6 tagged non-deposit addresses (seed 26182), read through Etherscan."""
+    from vaspfusion.chains.evm import EvmProvider
+    from vaspfusion.discover.evaluate import EvalConfig, evaluate, sample
+    from vaspfusion.labels.lookup import LabelStore
+
+    cfg = EvalConfig(n_positive=6, n_negative=6, limit=50)
+    rec = RecordingTransport()
+    with tempfile.TemporaryDirectory() as d, LabelStore() as store:
+        fetcher = Fetcher(ChainCache(Path(d) / "c.duckdb"), rec, offline=False)
+        groups = sample(store, cfg)
+        labels = RecordingLabels(store)
+        report = evaluate(EvmProvider("ethereum", fetcher, page_size=cfg.limit, max_pages=1),
+                          labels, *groups, cfg)
+    _write("holdout_eth", "evaluate() on Ethereum: 6 Etherscan-tagged Bitget deposit addresses "
+           "and 6 tagged non-deposit addresses (seed 26182), live Etherscan v2", rec,
+           labels=dict(sorted(labels.seen.items())),
+           groups={"positives": groups[0], "neg_exchange": groups[1], "neg_other": groups[2]},
+           expected={"metrics": report.metrics, "rows": report.rows})
+    for r in report.rows:
+        print(f"  {r['truth']:<16}{r['address']} {r['outcome']:<14}{r['entity']} {r['reason']}")
+
+
 if __name__ == "__main__":
     wanted = sys.argv[1:] or ["gas"]
     for name in wanted:
-        {"gas": record_gas, "crawl": record_crawl}[name]()
+        {"gas": record_gas, "crawl": record_crawl, "holdout": record_holdout}[name]()

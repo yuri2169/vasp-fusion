@@ -67,6 +67,13 @@ def test_seeds_are_the_chains_exchange_wallets_in_a_fixed_order(store):
     assert store.seeds("dogecoin") == []
 
 
+def test_by_tier_lists_one_tier_of_one_chain_by_address(store):
+    por = store.by_tier("tron", "published_por")
+    assert [l.address for l in por] == ["TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz"]
+    assert all(l.tier == "curated" and l.chain == "tron" for l in store.by_tier("tron", "curated"))
+    assert store.by_tier("tron", "derived") == []
+
+
 def test_module_level_helpers_accept_a_db_path(fixture_db):
     db = fixture_db[0]
     assert lookup("TAWK8YMnn7yAfnQRyvjiBv9ksocFt9qNdR", "tron", db=db).entity == "CoinDCX"

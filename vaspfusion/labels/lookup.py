@@ -124,6 +124,14 @@ class LabelStore:
             [normalize_chain(chain), *sorted(VASP_CATEGORIES)]).fetchall()
         return [Label(*r) for r in rows]
 
+    def by_tier(self, chain: str, tier: str) -> list[Label]:
+        """Every label of one tier on a chain, by address (the hold-out test samples
+        its ground truth from the explorer-tagged ones)."""
+        rows = self.con.execute(
+            f"SELECT {self._cols} FROM labels WHERE chain = ? AND tier = ? ORDER BY address",
+            [normalize_chain(chain), tier]).fetchall()
+        return [Label(*r) for r in rows]
+
     def stats(self) -> dict:
         from .load import label_stats
         return label_stats(self.con)

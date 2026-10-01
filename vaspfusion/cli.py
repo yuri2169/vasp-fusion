@@ -197,6 +197,59 @@ def cmd_discover(args) -> None:
     print(_pages(fetcher))
 
 
+def cmd_discover_eval(args) -> None:
+    """Measure the discovery rules on held-out explorer-tagged addresses (RQ1)."""
+    from . import chains
+    from .discover.evaluate import EvalConfig, evaluate, sample
+    from .labels.lookup import LabelStore
+
+    cfg = EvalConfig(chain=args.chain, entity=args.entity, n_positive=args.positives,
+                     n_negative=args.negatives, seed=args.seed, limit=args.limit)
+    fetcher = chains.default_fetcher()
+    provider = chains.get_provider(cfg.chain, fetcher, page_size=cfg.limit, max_pages=1)
+
+    def progress(stage: str, i: int, n: int) -> None:
+        if i == n or i % 50 == 0:
+            print(f"  {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr, flush=True)
+
+    with LabelStore(args.labels_db) as labels:
+        groups = sample(labels, cfg)
+        report = evaluate(provider, labels, *groups, cfg, progress)
+    out = Path(args.out) / f"holdout_{cfg.chain}_{cfg.entity.lower()}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"config": report.config, "metrics": report.metrics,
+                               "rows": report.rows}, indent=1, sort_keys=True) + "\n")
+
+    m = report.metrics
+
+    def pct(x) -> str:
+        return "n/a" if x is None else f"{100 * x:.1f}%"
+
+    print(f"hold-out test of the discovery rules: {cfg.entity} on {cfg.chain}, "
+          f"explorer-tagged addresses, seed {cfg.seed}")
+    print(f"  positives (tagged {cfg.entity} deposit addresses, labels hidden): {m['positives']}")
+    print(f"    rediscovered for {cfg.entity}: {m['true_positives']}  -> recall {pct(m['recall'])}")
+    print(f"    with stablecoin activity: {m['positives_with_stablecoin_activity']}  -> recall "
+          f"{pct(m['recall_with_stablecoin_activity'])}")
+    print(f"    by rule: {m['true_positives_by_rule']}")
+    print(f"    named another exchange: {m['wrong_entity']}  conflicts: {m['conflicts']}  "
+          f"-> entity precision {pct(m['entity_precision'])}")
+    for reason, n in m["missed_by_reason"].items():
+        print(f"    missed, {reason}: {n}")
+    fpr = m["false_positive_rate"]
+    print(f"  negatives (tagged, not deposit addresses): {m['negatives']}")
+    print(f"    rule fired on {m['false_positives']} "
+          f"({m['false_positives_naming_the_tagged_exchange']} of them named the exchange "
+          "the tag names)")
+    print(f"    false-positive rate: exchange wallets {pct(fpr['exchange_wallets'])}, "
+          f"other tagged addresses {pct(fpr['other_tagged'])}")
+    print(f"  precision in this sample: {pct(m['precision_in_sample'])} "
+          "(depends on the sample mix)")
+    print(f"  fetch errors: {m['errors']}")
+    print(f"wrote {out}")
+    print(_pages(fetcher))
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -343,6 +396,18 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--workers", type=int, default=6, help="parallel fetches")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover)
+
+    s = sub.add_parser("discover-eval", help="measure the discovery rules on held-out "
+                                             "explorer-tagged deposit addresses")
+    s.add_argument("--chain", default="ethereum")
+    s.add_argument("--entity", default="Bitget")
+    s.add_argument("--positives", type=int, default=300)
+    s.add_argument("--negatives", type=int, default=300)
+    s.add_argument("--seed", type=int, default=26182)
+    s.add_argument("--limit", type=int, default=200, help="transfers read per address")
+    s.add_argument("--out", default=str(ROOT / "derived"))
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_discover_eval)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))

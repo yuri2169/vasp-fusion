@@ -53,6 +53,11 @@ class FixtureLabels:
                        if key.startswith(f"{chain}:") and is_seed(l)),
                       key=lambda l: (l.entity, l.address))
 
+    def by_tier(self, chain, tier):
+        return sorted((l for key, l in self.rows.items()
+                       if key.startswith(f"{chain}:") and l.tier == tier),
+                      key=lambda l: l.address)
+
     def lookup_many(self, pairs):
         return {(a, c): self.rows[f"{c}:{a}"] for a, c in pairs if f"{c}:{a}" in self.rows}
 
