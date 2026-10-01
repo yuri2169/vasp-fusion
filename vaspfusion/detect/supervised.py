@@ -55,8 +55,9 @@ class SupervisedDetector:
                 colsample_bytree=0.8, reg_lambda=1.0,
                 scale_pos_weight=scale, random_state=self.seed,
                 n_jobs=-1, verbose=-1)
-            self.model.fit(X, y, eval_set=[(X, y)],
-                           callbacks=[__import__("lightgbm").early_stopping(20, verbose=False)])
+            # No early stopping: the only set at hand here is the training set, and
+            # LightGBM ignores an early-stopping callback that has nothing else to watch.
+            self.model.fit(X, y)
         else:
             from sklearn.ensemble import HistGradientBoostingClassifier
             # class_weight="balanced" is the sklearn equivalent of scale_pos_weight.
