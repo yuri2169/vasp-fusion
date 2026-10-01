@@ -338,8 +338,10 @@ def run(df: pl.DataFrame, seed: int = SEED, min_positives: int = 20,
 
 # ------------------------------------------------------------------ persistence
 def save(result: Result, out_dir: Path | str) -> Path:
-    """metrics.json (tracked), calibration.json (tracked: the calibration fold's scores)
-    and model.pkl (rebuilt by `make model`, not tracked)."""
+    """metrics.json, calibration.json (the calibration fold's scores) and model.txt
+    (LightGBM's own text dump of the trees): all tracked, all the same on a rerun. With
+    those three the model scores an address at runtime (classify/runtime.py). model.pkl
+    is also written for a backend that has no text dump; it is not tracked."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     (out / "metrics.json").write_text(
@@ -347,15 +349,29 @@ def save(result: Result, out_dir: Path | str) -> Path:
     va = result.final.va
     (out / "calibration.json").write_text(json.dumps(
         {"scores": [float(s) for s in va.s], "labels": [int(v) for v in va.y]}) + "\n")
+    detector = result.final.detector
+    if detector.backend == "lightgbm":
+        (out / "model.txt").write_text(detector.model.booster_.model_to_string())
+        (out / "model_features.json").write_text(json.dumps(result.final.features) + "\n")
     with (out / "model.pkl").open("wb") as fh:
-        pickle.dump({"detector": result.final.detector, "features": result.final.features}, fh)
+        pickle.dump({"detector": detector, "features": result.final.features}, fh)
     return out / "metrics.json"
 
 
 def load_model(out_dir: Path | str) -> Fitted:
+    """The time-split model with its calibration: from model.txt when it is there (the
+    tracked form), else from model.pkl. FileNotFoundError when neither is."""
     out = Path(out_dir)
-    with (out / "model.pkl").open("rb") as fh:
-        d = pickle.load(fh)
+    if (out / "model.txt").exists():
+        import lightgbm as lgb
+        features = json.loads((out / "model_features.json").read_text())
+        detector = SupervisedDetector(backend="lightgbm")
+        detector.model = lgb.Booster(model_str=(out / "model.txt").read_text())
+        detector.feature_names = list(features)
+    else:
+        with (out / "model.pkl").open("rb") as fh:
+            d = pickle.load(fh)
+        detector, features = d["detector"], d["features"]
     calib = json.loads((out / "calibration.json").read_text())
     va = VennAbers().fit(calib["scores"], calib["labels"])
-    return Fitted(d["detector"], va, d["features"])
+    return Fitted(detector, va, list(features))

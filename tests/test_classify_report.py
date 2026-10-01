@@ -61,7 +61,7 @@ def test_build_model_writes_every_artefact_and_reruns_to_the_same_files(tmp_path
     a, b = tmp_path / "a" / "toy", tmp_path / "b" / "toy"
     names = sorted(p.name for p in a.iterdir())
     assert names == ["calibration.json", "dataset.csv", "importance.svg", "metrics.json",
-                     "model.pkl", "reliability.svg", "reliability_by_exchange.svg",
+                     "model.pkl", "model.txt", "model_features.json", "reliability.svg", "reliability_by_exchange.svg",
                      "reliability_labels.svg"]
     for name in names:
         if name != "model.pkl":

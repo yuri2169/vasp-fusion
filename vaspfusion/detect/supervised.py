@@ -103,7 +103,9 @@ class SupervisedDetector:
         return self
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
-        p = self.model.predict_proba(X)
+        # a model loaded from LightGBM's text dump is a Booster: predict() is the probability
+        p = self.model.predict_proba(X) if hasattr(self.model, "predict_proba") \
+            else self.model.predict(X)
         return p[:, 1] if p.ndim == 2 else p
 
     def shap_values(self, X: np.ndarray) -> np.ndarray:
