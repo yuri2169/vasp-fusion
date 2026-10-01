@@ -23,6 +23,8 @@ Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` rege
 | `vaspfusion/chains/` | Chain adapters (Tron, EVM, BTC basic, Solana stub) behind a cache-first fetcher; the only code that reaches the network |
 | `vaspfusion/trace.py` | Bidirectional trace: follows the wallet's money hop by hop, allocating by amount |
 | `vaspfusion/attribute/rules.py` | Candidates, proximity rank, rule confidence, the three outcomes |
+| `vaspfusion/discover/` | Deposit-address discovery: the sweep and gas-payer rules, the crawler, the hold-out evaluation |
+| `derived/` | What discovery found (`<run>.csv`, `<run>_report.json`) and the hold-out result; `make labels` merges the CSVs |
 | `vaspfusion/explain/case_narrative.py` | The paragraph an officer reads |
 | `vaspfusion/cases.py`, `vaspfusion/store/cases.py` | `run_case` → the API's `CaseDetail`; cases in `data/case.duckdb` |
 | `vaspfusion/api/` | `schemas.py` (the contract) and `main.py` (routes; cases and labels are live, the rest answer from mocks until their phase lands) |
@@ -33,8 +35,8 @@ Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` rege
 | `mocks/` | Demo fixtures for the UI track (labelled addresses real, the rest synthetic, all marked `_demo`) |
 
 ## Label store
-One row per `(address, chain)`: `entity, category, kind, tier, source, source_url, label`.
-- Tier priority: `published_por > curated > explorer_tag > derived`.
+One row per `(address, chain)`: `entity, category, kind, tier, source, source_url, label`, plus `confidence` and `evidence` on `derived` rows.
+- Tier priority: `published_por > curated > explorer_tag > derived`. A derived row never replaces a label from another source.
 - EVM addresses are lowercased; Tron and BTC keep their case.
 - Dune "EVM" rows are stored as chain `evm` and match any EVM chain on lookup.
 

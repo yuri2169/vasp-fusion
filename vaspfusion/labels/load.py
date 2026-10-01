@@ -145,8 +145,10 @@ def _dedupe(rows: list[dict]) -> pl.DataFrame:
         pl.col("tier").replace_strict(TIER_RANK).alias("_tr"),
         pl.col("category").replace_strict(CATEGORY_RANK).alias("_cr"),
     )
-    df = df.sort(["address", "chain", "_tr", "_cr", "source"],
-                 descending=[False, False, True, True, False])
+    # the last two keys only matter between derived rows of two discovery runs:
+    # the more confident one wins
+    df = df.sort(["address", "chain", "_tr", "_cr", "source", "confidence", "evidence"],
+                 descending=[False, False, True, True, False, True, False], nulls_last=True)
     return df.unique(subset=["address", "chain"], keep="first", maintain_order=True) \
              .select([*LABEL_COLUMNS, "_promoted"])
 

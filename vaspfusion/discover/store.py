@@ -1,7 +1,8 @@
-"""Where a discovery run is kept: `data/derived/<chain>.csv` (one row per address the
-sweep rule fired on, conflicts included) and `<chain>_report.json` (config, stats
-per exchange, gas stations). `make labels` reads the CSVs and adds the rows with
-status `derived` to the label DB as tier `derived`; nothing else in them is a label.
+"""Where a discovery run is kept: `derived/<name>.csv` (one row per address the sweep
+rule fired on, conflicts included) and `<name>_report.json` (config, stats per
+exchange, gas stations). The name is the chain unless the run is given another.
+`make labels` reads every CSV in the folder and adds the rows with status `derived`
+to the label DB as tier `derived`; nothing else in them is a label.
 """
 from __future__ import annotations
 
@@ -20,17 +21,19 @@ _OPTIONAL = {"confidence", "conflict", "median_delay_s", "gas_payer", "gas_payer
 COLUMNS = [f.name for f in fields(Finding)]
 
 
-def write_result(out_dir: Path | str, result: DiscoveryResult) -> tuple[Path, Path]:
+def write_result(out_dir: Path | str, result: DiscoveryResult,
+                 name: str | None = None) -> tuple[Path, Path]:
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = out_dir / f"{result.chain}.csv"
+    name = name or result.chain
+    csv_path = out_dir / f"{name}.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh, lineterminator="\n")
         w.writerow(COLUMNS)
         for f in result.findings:
             row = asdict(f)
             w.writerow(["" if row[c] is None else row[c] for c in COLUMNS])
-    report_path = out_dir / f"{result.chain}_report.json"
+    report_path = out_dir / f"{name}_report.json"
     report = {"chain": result.chain, "note": NOTE, "config": result.config,
               "totals": result.totals, "stats": result.stats, "stations": result.stations}
     report_path.write_text(json.dumps(report, indent=1, sort_keys=True, default=str) + "\n")

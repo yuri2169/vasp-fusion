@@ -34,7 +34,7 @@ def cmd_labels(args) -> None:
     print(f"  derived deposit addresses merged from {args.derived}: "
           f"{stats['by_tier'].get('derived', 0):,} (of {stats['derived_loaded']:,} in the "
           f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
-          "source). Run `make discover` to produce them.")
+          "source or named by two runs). Run `make discover` to produce them.")
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -171,7 +171,7 @@ def cmd_discover(args) -> None:
         result = discover(args.chain, seed_provider, candidate_provider, labels, cfg, progress,
                           workers=args.workers)
     cache.close()
-    csv_path, report_path = write_result(args.out, result)
+    csv_path, report_path = write_result(args.out, result, name=args.name)
 
     print(f"discovery on {args.chain}: transfers into labelled exchange wallets since "
           f"{cfg.window_text()} (rules: forward >= {cfg.rules.min_share:.0%} within "
@@ -394,6 +394,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--cache", default=str(ROOT / "data" / "discover_cache.duckdb"),
                    help="the crawl's own chain cache (OFFLINE=1 replays from it)")
     s.add_argument("--workers", type=int, default=6, help="parallel fetches")
+    s.add_argument("--name", help="output file name (default: the chain); a second run "
+                                  "with another window keeps its own files")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover)
 

@@ -16,7 +16,8 @@ labels:           ## build data/labels.duckdb from the research label CSVs + der
 	$(PY) -m vaspfusion.cli labels --research "$(RESEARCH)" --db data/labels.duckdb
 
 discover:         ## derive Tron deposit addresses into derived/ (cached; OFFLINE=1 replays), then `make labels`
-	$(PY) -m vaspfusion.cli discover --chain tron $(if $(ENTITIES),--entities "$(ENTITIES)")
+	$(PY) -m vaspfusion.cli discover --chain tron $(if $(ENTITIES),--entities "$(ENTITIES)") \
+		$(if $(SINCE),--since $(SINCE)) $(if $(NAME),--name $(NAME))
 
 discover-eval:    ## measure the discovery rules on held-out explorer-tagged deposit addresses
 	$(PY) -m vaspfusion.cli discover-eval

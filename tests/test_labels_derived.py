@@ -77,6 +77,19 @@ def test_a_derived_row_never_replaces_a_label_of_a_higher_tier(tmp_path, finding
     assert stats["by_tier"]["derived"] == 9 and stats["derived_loaded"] == 10
 
 
+def test_two_runs_naming_the_same_address_keep_the_more_confident_row(tmp_path, findings):
+    weaker = replace(findings[0], rule="sweep", confidence=0.68, evidence="Sweep rule only.")
+    write_result(tmp_path / "derived", DiscoveryResult("tron", {}, [weaker]), name="a_first")
+    write_result(tmp_path / "derived", DiscoveryResult("tron", {}, findings), name="b_second")
+    db = tmp_path / "labels.duckdb"
+    stats = build_labels(db, FIX / "wa", FIX / "dune.csv", derived_dir=tmp_path / "derived")
+    with LabelStore(db) as store:
+        hit = store.lookup(findings[0].address, "tron")
+    assert hit.confidence == findings[0].confidence and hit.evidence == findings[0].evidence
+    assert stats["by_tier"]["derived"] == 10 and stats["derived_loaded"] == 11
+    assert (tmp_path / "derived" / "a_first_report.json").exists()
+
+
 def test_derived_labels_are_not_seeds(tmp_path, findings):
     db, _ = build(tmp_path, findings)
     with LabelStore(db) as store:
