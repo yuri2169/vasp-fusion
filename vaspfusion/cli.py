@@ -468,12 +468,13 @@ def cmd_abstain_eval(args) -> None:
     print(f"abstain threshold, {args.chain} (seed {m['seed']}):")
     for note in m["notes"]:
         print("  - " + note)
-    print(f"  {'bar':>5}{'claims':>8}{'wrong':>7}{'risk':>8}{'upper':>8}   "
-          f"{'named':>6}{'wrong':>7}{'abstain':>9}")
-    for g, c in zip(m["through_unlabelled"]["threshold"]["grid"], m["cases_by_threshold"]):
-        risk = "-" if g["risk"] is None else f"{g['risk']:.1%}"
-        print(f"  {g['threshold']:>5.2f}{g['n_answered']:>8}{g['errors']:>7}{risk:>8}"
-              f"{g['risk_upper_bound']:>8.1%}   {c['named']:>6}{c['wrong']:>7}{c['abstained']:>9}")
+    print(f"  {'bar':>5}{'named':>7}{'wrong':>7}{'risk':>8}{'upper':>8}{'abstain':>9}   "
+          f"{'claims':>7}{'wrong':>7}")
+    for b in m["bars"]:
+        risk = "-" if b["risk"] is None else f"{b['risk']:.1%}"
+        print(f"  {b['threshold']:>5.2f}{b['named']:>7}{b['wrong']:>7}{risk:>8}"
+              f"{b['risk_upper_bound']:>8.1%}{b['abstained']:>9}   "
+              f"{b['claims_answered']:>7}{b['claims_wrong']:>7}")
     print(f"wrote {out}/")
 
 

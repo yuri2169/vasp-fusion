@@ -61,7 +61,7 @@ def test_the_abstain_measurement_rides_along_when_it_exists(client, tmp_path, mo
     assert (got["wallets"], got["claims"], got["current_threshold"]) == (4, 4, 0.6)
     assert got["measured_threshold"] is None and got["notes"] == m["notes"]
     bar = next(b for b in got["bars"] if b["threshold"] == 0.6)
-    assert bar == {"threshold": 0.6, "claims_answered": 4, "claims_wrong": 1, "risk": 0.25,
+    assert bar == {"threshold": 0.6, "claims_answered": 4, "claims_wrong": 1, "risk": 0.0,
                    "risk_upper_bound": bar["risk_upper_bound"], "wallets_named": 3,
                    "wallets_wrong": 0, "wallets_abstained": 1}
     assert all(0 <= p["accuracy"] <= 1 for p in got["risk_coverage"])

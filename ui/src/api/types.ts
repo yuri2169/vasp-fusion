@@ -237,21 +237,24 @@ export interface components {
             /** Claims Wrong */
             claims_wrong: number;
             /**
-             * Risk
-             * @description claims_wrong / claims_answered
+             * Wallets Named
+             * @description Wallets that get an exchange named at this bar
              */
-            risk?: number | null;
-            /**
-             * Risk Upper Bound
-             * @description One-sided Clopper-Pearson bound, corrected for the number of bars tried
-             */
-            risk_upper_bound?: number | null;
-            /** Wallets Named */
             wallets_named: number;
             /** Wallets Wrong */
             wallets_wrong: number;
             /** Wallets Abstained */
             wallets_abstained: number;
+            /**
+             * Risk
+             * @description wallets_wrong / wallets_named
+             */
+            risk?: number | null;
+            /**
+             * Risk Upper Bound
+             * @description One-sided Clopper-Pearson bound on that risk, over wallets, corrected for the number of bars tried
+             */
+            risk_upper_bound?: number | null;
         };
         /**
          * AbstainInfo
@@ -275,7 +278,7 @@ export interface components {
             current_threshold: number;
             /**
              * Measured Threshold
-             * @description Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when no bar on the grid does
+             * @description Lowest bar whose wallet-level risk bound stays under target_risk; null when no bar on the grid does
              */
             measured_threshold?: number | null;
             /** Target Risk */

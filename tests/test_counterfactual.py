@@ -86,3 +86,35 @@ def test_hidden_labels_hide_only_what_they_are_told_to():
 def test_a_second_trace_that_cannot_run_leaves_the_candidate_as_it_was():
     att = case([tx(1, "S", "TAG", 1000, 0)], fail={"S"})
     assert att.top.counterfactual is None and att.top.counterfactual_holds is None
+
+
+# ---- review: "not reached" is only said when the second trace could look
+def test_a_listing_that_fails_behind_the_hidden_label_is_not_reported_as_not_reached():
+    att = case([tx(1, "S", "DEP", 1000, 0), tx(2, "DEP", "HOT", 1000, 5)], fail={"DEP"})
+    c = att.top
+    assert c.counterfactual_holds is None
+    assert c.counterfactual == ("Not checked: without the label on DEP the trace could not "
+                                "follow the money further (a listing could not be read).")
+    assert [e["kind"] for e in c.evidence] == ["label", "path"]
+
+
+def test_the_hop_limit_behind_the_hidden_label_is_not_reported_as_not_reached():
+    att = case([tx(1, "S", "DEP", 1000, 0), tx(2, "DEP", "HOT", 1000, 5)], max_hops=1)
+    assert att.top.counterfactual_holds is None
+    assert "could not follow the money further (the hop limit was reached)" in att.top.counterfactual
+
+
+def test_money_that_really_stayed_put_behind_the_label_is_reported_as_not_reached():
+    att = case([tx(1, "S", "TAG", 1000, 0), tx(2, "S", "DEP", 1000, 1),
+                tx(3, "DEP", "HOT", 1000, 5)])
+    by = {c.vasp: c for c in att.candidates}
+    assert by["ExB"].counterfactual_holds is False and "not reached at all" in by["ExB"].counterfactual
+
+
+def test_two_unowned_exchange_tags_are_not_one_exchange():
+    labels = {"U1": ("Unidentified exchange", "exchange", "unknown", "curated"),
+              "U2": ("Unidentified exchange", "exchange", "unknown", "curated")}
+    att = case([tx(1, "S", "U1", 500, 0), tx(2, "S", "U2", 500, 1)], labels=labels)
+    assert len(att.candidates) == 2
+    assert all(c.counterfactual is None and c.counterfactual_holds is None
+               for c in att.candidates)

@@ -271,6 +271,7 @@
      "p": 0.9972,
      "low": 0.9972,
      "high": 1.0,
+     "transfers_read": 2.0,
      "share": 0.2532,
      "amount": 395.0
     }
@@ -282,6 +283,7 @@
      "p": 0.9983,
      "low": 0.9983,
      "high": 1.0,
+     "transfers_read": 2.0,
      "share": 0.1545,
      "amount": 241.0
     }
@@ -335,6 +337,7 @@
      "p": 0.9989,
      "low": 0.9989,
      "high": 1.0,
+     "transfers_read": 20.0,
      "share": 0.4231,
      "amount": 1122.22
     }
@@ -409,6 +412,7 @@
      "p": 0.9983,
      "low": 0.9983,
      "high": 1.0,
+     "transfers_read": 2.0,
      "share": 0.5385,
      "amount": 7000.0
     }

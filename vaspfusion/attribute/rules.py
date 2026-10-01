@@ -366,10 +366,13 @@ def _bridge_steps(tr: TraceResult, flags: list[dict]) -> list[str]:
     """A bridge is where the trail leaves this chain, not where it ends: say so, and say
     which transactions carry the destination."""
     steps = []
-    for f in flags:
-        node = tr.nodes.get(("outbound", f["wallet"]))
-        if f["code"] != "bridge_hop" or node is None:
-            continue
+    bridges = sorted((n for (side, _), n in tr.nodes.items()
+                      if side == "outbound" and n.label is not None
+                      and n.label.category == "bridge" and n.received > 0),
+                     key=lambda n: (-n.received, n.address))
+    for node in bridges:
+        f = {"tx_hashes": sorted({e.transfer.tx_hash
+                                  for e in tr.edges_into("outbound", node.address)})}
         steps.append(
             f"Follow the {fmt.amount(node.received, tr.asset)} that went into the "
             f"{node.label.entity} bridge at {fmt.short(node.address)} onto the destination "

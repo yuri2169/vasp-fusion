@@ -6,7 +6,9 @@ traced and attributed again, with the same settings:
 
 * holds:  X still clears the bar (usually one hop further, at X's own wallet);
 * weaker: X is still reached, but below the bar that names an exchange;
-* gone:   X is not reached at all, so the answer rests on that one label.
+* gone:   X is not reached at all, so the answer rests on that one label;
+* not checked: the second trace could not look as far as the first (a listing failed,
+  the hop limit or the budget was reached behind the hidden label). Nothing is claimed.
 
 It is run for the candidates that were named (outbound, at or above the bar). The
 second trace reads through the same cache-first fetcher, so its pages are recorded
@@ -20,9 +22,20 @@ from dataclasses import replace
 from ..chains.base import ProviderError
 from ..explain import fmt
 from ..trace import TraceConfig, TraceResult, trace
-from .rules import Attribution, Candidate, RuleConfig, attribute
+from ..trace import ZERO
+from .rules import UNROUTABLE, Attribution, Candidate, RuleConfig, attribute
 
 MAX_CHECKED = 3
+# why traced money stopped without the trace having seen where it went
+_BLIND = {"error": "a listing could not be read", "depth_limit": "the hop limit was reached",
+          "budget": "the trace budget was spent", "truncated": "a listing was cut short",
+          "small": "the parts became too small to follow"}
+
+
+def _blind_spots(first: TraceResult, second: TraceResult) -> list[str]:
+    """Reasons the second trace left more money unseen than the first did."""
+    return [words for reason, words in _BLIND.items()
+            if second.stopped.get(reason, ZERO) > first.stopped.get(reason, ZERO)]
 
 
 class HiddenLabels:
@@ -62,6 +75,12 @@ def check(c: Candidate, tr: TraceResult, provider, labels, cfg: TraceConfig,
         return c
     again = next((x for x in attribute(tr2, rules).candidates
                   if x.direction == "outbound" and x.vasp == c.vasp and x.hops > 0), None)
+    blind = _blind_spots(tr, tr2) if again is None else []
+    if blind:
+        # "not reached" would be a guess: the money behind the hidden label was not followed
+        text = (f"Not checked: without the label on {fmt.short(c.deposit_address)} the trace "
+                f"could not follow the money further ({'; '.join(blind)}).")
+        return replace(c, counterfactual=text, counterfactual_holds=None)
     holds, text = _verdict(c, again, rules)
     item = {"kind": "counterfactual", "tier": None, "text": text,
             "tx_hashes": [e.transfer.tx_hash for e in again.path_edges] if again else [],
@@ -75,8 +94,9 @@ def add_counterfactuals(tr: TraceResult, att: Attribution, provider, labels,
                         rules: RuleConfig = RuleConfig()) -> None:
     """Fill in the counterfactual of every named candidate (at most MAX_CHECKED, nearest
     first). Nothing else about the attribution changes."""
+    # a wallet tagged "exchange" with no owner has no exchange to be "still" reached
     named = [c for c in att.candidates if c.direction == "outbound" and c.hops > 0
-             and c.confidence >= rules.attribute_min][:MAX_CHECKED]
+             and c.vasp != UNROUTABLE and c.confidence >= rules.attribute_min][:MAX_CHECKED]
     done = {id(c): check(c, tr, provider, labels, cfg, rules) for c in named}
     if att.top is not None:
         att.top = done.get(id(att.top), att.top)

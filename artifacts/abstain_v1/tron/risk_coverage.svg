@@ -40,7 +40,7 @@
 <circle class="p" cx="352.3" cy="227.7" r="4"><title>Bar 0.50: 163 claims answered, 18 wrong (11.0%)</title></circle>
 <circle class="p" cx="348.8" cy="231.5" r="4"><title>Bar 0.55: 161 claims answered, 17 wrong (10.6%)</title></circle>
 <circle class="p" cx="345.3" cy="230.5" r="6"><title>Bar 0.60: 159 claims answered, 17 wrong (10.7%)</title></circle>
-<text class="v" x="355.3" y="252.5">bar 0.60 in use: 10.7% wrong</text>
+<text class="v" x="355.3" y="252.5">bar 0.60 in use: 10.7% of claims wrong</text>
 <circle class="p" cx="336.4" cy="232.9" r="4"><title>Bar 0.65: 154 claims answered, 16 wrong (10.4%)</title></circle>
 <circle class="p" cx="331.1" cy="236.6" r="4"><title>Bar 0.70: 151 claims answered, 15 wrong (9.9%)</title></circle>
 <circle class="p" cx="306.3" cy="245.9" r="4"><title>Bar 0.75: 137 claims answered, 12 wrong (8.8%)</title></circle>

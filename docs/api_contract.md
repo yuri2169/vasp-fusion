@@ -117,22 +117,24 @@ All additive; `make mocks types` has been run. `provenance.code_version` is `b7-
   | `fan_out` | info | `recipients`, `amount`, `hours` | one wallet paid the money to 5+ wallets inside 24 hours |
   | `fan_in` | info | `senders`, `amount` | the wallet was funded by 5+ senders, or split money merged again at one wallet (3+ senders) |
   | `round_amounts` | info | `round_transfers`, `transfers`, `amount` | 3+ and at least half of the wallet's stablecoin payments are whole hundreds |
-  | **`deposit_like`** (new code) | info | `p`, `low`, `high`, `share`, `amount` | a lead, see below |
+
+  `rapid_forwarding` times each part from the oldest arrival it drew on; `peel_chain` needs two peeling wallets after the traced wallet.
+  | **`deposit_like`** (new code) | info | `p`, `low`, `high`, `transfers_read`, `share`, `amount` | a lead, see below |
 
   Flags read the traced money only. None of them decides the outcome, except that money at a sanctioned or mixer label sets `SANCTIONED_OR_MIXER_REACHED` (as since B3). Order: severity, then the table's order, then share and amount.
 - **Counterfactual (`Candidate`).** For every named candidate (outbound, at or above the bar) the label on its `deposit_address` is hidden and the wallet is traced again:
   - `counterfactual`: the sentence, e.g. "Still CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85)."
-  - `counterfactual_holds` (new): `true` the same VASP is still named; `false` it falls under the bar or is not reached ("rests on that one label"); `null` not checked (the candidate was not named, or is inbound).
+  - `counterfactual_holds` (new): `true` the same VASP is still named; `false` it falls under the bar or is not reached ("rests on that one label"); `null` not checked: the candidate was not named, is inbound, is an exchange tag with no owner, or (with a sentence starting "Not checked:") the second trace could not follow the money behind the hidden label.
   - `evidence` ends with an item of `kind: "counterfactual"`; its `weight` is the change in confidence (negative), its `tx_hashes` the path of the second trace.
   - A tick or a warning next to the confidence is enough; the sentence is the tooltip.
 - **Leads (`deposit_like`).** On Tron, up to five unlabelled wallets that received 5% or more of the funds (hubs excluded) are scored by the deposit-address model. At 0.90 or more the case gets a `deposit_like` flag: "behaves like an exchange deposit address … Neither it nor <collector>, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding …".
   - **A lead never changes `outcome`, `candidates` or any confidence.** Show it apart from the answer, as something to look into.
-  - `what_would_change` (abstain) and `next_steps` gain "A label for <collector> …" / "Identify <collector> …". When the collector is a labelled exchange wallet the text says "it may be a deposit address of <exchange> that the discovery rules have not derived".
+  - `what_would_change` (abstain) and `next_steps` gain "A label for <collector> …" / "Identify <collector> …". When the collector is a labelled exchange wallet the text says "it may be a deposit address of <exchange> that the discovery rules have not derived". A wallet that pays a bridge, a mixer or any other named non-exchange is not a lead.
   - Ethereum wallets are not scored (the model did not carry over to unseen exchanges there).
   - `provenance.notes[]` (new) says how many wallets were scored, or why none were.
 - **Bridges.** A bridge label stops the trace, the node's `role` is `bridge`, it is never a candidate, `where_funds_went` has a `bridge` slice, and `next_steps` says to follow the funds on the destination chain and lists the bridge transactions. Demo case `eth-bridge` shows it.
 - **`GET /api/model` gains `abstain`** (`null` when not measured for that chain): how the 0.60 bar was checked on real wallets.
-  - `wallets`, `claims`, `current_threshold`, `measured_threshold` (lowest bar that keeps the risk under `target_risk` with confidence 1 − `delta`; `null` if none does), `bars[]` (per candidate bar: `claims_answered`, `claims_wrong`, `risk`, `risk_upper_bound`, `wallets_named`, `wallets_wrong`, `wallets_abstained`), `risk_coverage[]` (`coverage`, `accuracy`), `notes[]`.
+  - `wallets`, `claims`, `current_threshold`, `measured_threshold` (lowest bar that keeps the risk under `target_risk` with confidence 1 − `delta`; `null` if none does), `bars[]` (per candidate bar: `wallets_named`, `wallets_wrong`, `wallets_abstained`, `risk` = wrong / named, `risk_upper_bound` over wallets, and `claims_answered`, `claims_wrong`), `risk_coverage[]` (`coverage`, `accuracy`), `notes[]`.
   - **It is a label hold-out, not a calibration.** Show `notes`; they say how the set was built and what it does not measure.
   - Plot: `artifacts/abstain_v1/tron/risk_coverage.svg`.
 - The demo set has a 7th wallet, `eth-bridge`.

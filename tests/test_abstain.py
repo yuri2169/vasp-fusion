@@ -99,13 +99,50 @@ def test_the_measurement_counts_claims_and_cases():
     assert m["wallets_by_exchange"] == {"ExA": 3, "ExB": 1}
     assert {k: m["through_unlabelled"][k] for k in ("claims", "right", "wrong")} == \
         {"claims": 4, "right": 3, "wrong": 1}
-    assert m["all_claims"] == {"claims": 5, "right": 4, "wrong": 1}
+    # W3 paid ExB directly: that claim rests on a label that was not hidden, so it is
+    # counted apart and decides nothing below
+    assert m["direct_claims"] == {"claims": 1, "wallets": 1}
     at = m["at_current"]
-    assert m["current_threshold"] == 0.60 and at["claims"]["n_answered"] == 4
-    assert at["cases"] == {"threshold": 0.6, "wallets": 4, "named": 3, "right": 3, "wrong": 0,
-                           "abstained": 1, "coverage": 0.75, "risk": 0.0}
-    assert m["through_unlabelled"]["threshold"]["attainable"] is False     # four claims
-    assert any("Not calibrated" in n for n in m["notes"])
+    assert m["current_threshold"] == 0.60
+    assert {k: at[k] for k in ("claims_answered", "claims_wrong", "wallets", "named", "right",
+                               "wrong", "abstained", "coverage", "risk")} == \
+        {"claims_answered": 4, "claims_wrong": 1, "wallets": 4, "named": 3, "right": 3,
+         "wrong": 0, "abstained": 1, "coverage": 0.75, "risk": 0.0}
+    assert m["measured_threshold"] is None                # three wallets cannot show under 5%
+    assert any("not calibrated" in n for n in m["notes"])
+
+
+def claim(wallet, vasp, rank, conf, direct, correct):
+    return {"wallet": wallet, "exchange": "ExA", "run": "r", "known": "ExA", "vasp": vasp,
+            "rank": rank, "hops": 1 if direct else 2, "share": 0.5, "confidence": conf,
+            "direct": direct, "correct": correct}
+
+
+def test_a_direct_claim_cannot_hide_a_wrong_claim_made_through_an_unlabelled_wallet():
+    rows = [r for i in range(10) for r in (claim(f"W{i}", "ExA", 1, 0.85, 1, 1),
+                                           claim(f"W{i}", "ExB", 2, 0.7225, 0, 0))]
+    at = measure(rows, CHAIN)["at_current"]
+    assert (at["named"], at["wrong"], at["risk"]) == (10, 10, 1.0)
+
+
+def test_the_bound_counts_wallets_not_claims():
+    # three wallets with forty right claims each are three trials, not 120
+    rows = [claim(f"W{i}", f"Ex{j}", j + 1, 0.8, 0, 1) for i in range(3) for j in range(40)]
+    m = measure(rows, CHAIN)
+    assert m["at_current"]["named"] == 3 and m["at_current"]["risk_upper_bound"] > 0.5
+    assert m["measured_threshold"] is None
+    many = [claim(f"W{i}", "ExA", 1, 0.8, 0, 1) for i in range(200)]
+    assert measure(many, CHAIN)["measured_threshold"] == 0.30
+
+
+def test_a_bar_off_the_grid_and_an_unsorted_grid_are_measured_all_the_same():
+    rows = [claim(f"W{i}", "ExA", 1, 0.61 + i / 100, 0, 1) for i in range(5)]
+    m = measure(rows, CHAIN, AbstainConfig(grid=(0.8, 0.6, 0.3)), current=0.62)
+    assert [b["threshold"] for b in m["bars"]] == [0.3, 0.6, 0.8]
+    assert (m["at_current"]["threshold"], m["at_current"]["named"]) == (0.62, 4)
+    from vaspfusion.eval.abstain import abstain_info, risk_coverage_svg
+    assert [b["wallets_named"] for b in abstain_info(m)["bars"]] == [5, 5, 0]
+    assert "bar 0.62 in use" in risk_coverage_svg(m)
 
 
 # ------------------------------------------------------------------ the tracked artefacts

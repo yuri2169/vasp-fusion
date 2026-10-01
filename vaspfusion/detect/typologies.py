@@ -43,7 +43,7 @@ class TypologyConfig:
     rapid_share: float = 0.90          # passed on at least this much ...
     rapid_seconds: int = 600           # ... each part within this long of arriving
     peel_main_share: float = 0.70      # sent on to one wallet; the rest is peeled
-    peel_wallets: int = 2              # consecutive peeling wallets
+    peel_wallets: int = 2              # consecutive peeling wallets, the traced wallet not counted
     round_unit: int = 100              # stablecoin units
     round_transfers: int = 3
     round_share: float = 0.5
@@ -155,6 +155,8 @@ def _fan_in(v: _View, cfg: TypologyConfig) -> list[dict]:
                            f"({fmt.amount(amount, tr.in_asset)} in all)",
                            {"senders": len(senders), "amount": amount}, funders))
     for wallet, edges in v.got.items():
+        # the traced wallet paying it directly is not money "split and merged again"
+        edges = [e for e in edges if e.transfer.from_addr != tr.address]
         senders = {e.transfer.from_addr for e in edges}
         if wallet == tr.address or len(senders) < cfg.merge_senders:
             continue
@@ -177,13 +179,22 @@ def _rapid(v: _View, cfg: TypologyConfig) -> list[dict]:
         passed = sum((e.traced for e in sent), ZERO)
         if received <= 0 or float(passed / received) < cfg.rapid_share:
             continue
+        # the trace hands money on first in, first out: each part that left is timed from
+        # the oldest arrival it drew on, so money that sat for hours is never called rapid
+        queue = [[_when(a), a.traced] for a in got]
         slowest = 0.0
-        for e in sent:                       # timed from the latest arrival before it left
-            before = [_when(a) for a in got if _when(a) <= _when(e)]
-            if not before:
+        for e in sent:
+            left = e.traced
+            while left > 0 and queue and queue[0][0] <= _when(e):
+                slowest = max(slowest, _when(e) - queue[0][0])
+                part = min(left, queue[0][1])
+                queue[0][1] -= part
+                left -= part
+                if queue[0][1] <= 0:
+                    queue.pop(0)
+            if left > 0:                     # left before anything we traced had arrived
                 slowest = float("inf")
                 break
-            slowest = max(slowest, _when(e) - before[-1])
         if slowest > cfg.rapid_seconds:
             continue
         flags.append(_flag("rapid_forwarding", "warn", wallet,
@@ -214,17 +225,22 @@ def _peel_chain(v: _View, cfg: TypologyConfig) -> list[dict]:
     peel = {w: p for w in v.sent if (p := _peels(v, w, cfg)) is not None}
     continued = {main for main, _ in peel.values()}
     flags = []
-    for start in peel:
-        if start in continued and start != v.tr.address:
-            continue                                   # the middle of a chain, not its start
-        chain, peeled, seen = [], ZERO, set()
+    # chains start at a wallet nobody peels into; wallets that only peel into each other
+    # (a loop) are picked up afterwards, in address order
+    starts = [w for w in peel if w not in continued or w == v.tr.address]
+    seen: set[str] = set()
+    for start in starts + sorted(peel):
+        if start in seen:
+            continue
+        chain, peeled = [], ZERO
         w = start
         while w in peel and w not in seen:
             seen.add(w)
             chain.append(w)
             peeled += peel[w][1]
             w = peel[w][0]
-        if len(chain) < cfg.peel_wallets:
+        # the traced wallet paying two parties is not a chain: count the wallets after it
+        if len([a for a in chain if a != v.tr.address]) < cfg.peel_wallets:
             continue
         amount = v.received(start)
         flags.append(_flag("peel_chain", "warn", start,

@@ -72,15 +72,17 @@ def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
             notes.append(f"{fmt.short(node.address)} could not be scored by the "
                          f"deposit-address model ({e}).")
             continue
+        if score is None:                    # no usable transfer in the window: nothing to score
+            continue
         scored += 1
-        if score is None or score.p < cfg.min_p:
+        collector = score.collector
+        if score.p < cfg.min_p or collector is None or collector == tr.address:
             continue
         who, share = fmt.short(node.address), node.received / tr.total_out
-        collector = score.collector
-        lab = None
-        if collector is not None:
-            lab = labels.lookup_many([(collector, tr.chain)]).get((collector, tr.chain))
-        named = lab is not None and lab.category in VASP_CATEGORIES and lab.entity != UNROUTABLE
+        lab = labels.lookup_many([(collector, tr.chain)]).get((collector, tr.chain))
+        if lab is not None and lab.category not in VASP_CATEGORIES:
+            continue        # it pays a bridge, a mixer, a named non-exchange: not a deposit address
+        named = lab is not None and lab.entity != UNROUTABLE
         said = (f"{who} behaves like an exchange deposit address: {fmt.pct(share)} of the funds "
                 f"({fmt.amount(node.received, tr.asset)}) reached it, and the deposit-address "
                 f"model gives {fmt.prob(score.p)} ({fmt.prob_range(score.low, score.high)})."
@@ -92,7 +94,13 @@ def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
             steps.append(f"Ask {lab.entity} whether {who} is one of its deposit addresses: it "
                          f"behaves like one and pays into {fmt.short(collector)} "
                          f"({fmt.pct(share)} of the funds reached it)")
-        elif collector is not None:
+        elif lab is not None:
+            said += (f" The wallet it pays most, {fmt.short(collector)}, is tagged as an "
+                     "exchange but the source names no owner, so the exchange cannot be named.")
+            steps.append(f"Identify the exchange behind {fmt.short(collector)}: {who}, which "
+                         f"received {fmt.pct(share)} of the funds, behaves like a deposit "
+                         "address and pays into it")
+        else:
             said += (f" Neither it nor {fmt.short(collector)}, the wallet it sweeps into, is "
                      "labelled, so the exchange cannot be named.")
             change.append(f"A label for {fmt.short(collector)}, the wallet {who} sweeps into: if "
@@ -105,6 +113,7 @@ def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
                  "and deposit addresses only.")
         flags.append({"code": CODE, "severity": "info", "wallet": node.address, "text": said,
                       "figures": {"p": score.p, "low": score.low, "high": score.high,
+                                  "transfers_read": float(score.n_rows),
                                   "share": round(float(share), 4),
                                   "amount": float(node.received)},
                       "tx_hashes": sorted({e.transfer.tx_hash for e in into})})

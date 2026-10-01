@@ -673,6 +673,19 @@
             "type": "integer",
             "title": "Claims Wrong"
           },
+          "wallets_named": {
+            "type": "integer",
+            "title": "Wallets Named",
+            "description": "Wallets that get an exchange named at this bar"
+          },
+          "wallets_wrong": {
+            "type": "integer",
+            "title": "Wallets Wrong"
+          },
+          "wallets_abstained": {
+            "type": "integer",
+            "title": "Wallets Abstained"
+          },
           "risk": {
             "anyOf": [
               {
@@ -683,7 +696,7 @@
               }
             ],
             "title": "Risk",
-            "description": "claims_wrong / claims_answered"
+            "description": "wallets_wrong / wallets_named"
           },
           "risk_upper_bound": {
             "anyOf": [
@@ -695,19 +708,7 @@
               }
             ],
             "title": "Risk Upper Bound",
-            "description": "One-sided Clopper-Pearson bound, corrected for the number of bars tried"
-          },
-          "wallets_named": {
-            "type": "integer",
-            "title": "Wallets Named"
-          },
-          "wallets_wrong": {
-            "type": "integer",
-            "title": "Wallets Wrong"
-          },
-          "wallets_abstained": {
-            "type": "integer",
-            "title": "Wallets Abstained"
+            "description": "One-sided Clopper-Pearson bound on that risk, over wallets, corrected for the number of bars tried"
           }
         },
         "additionalProperties": false,
@@ -753,7 +754,7 @@
               }
             ],
             "title": "Measured Threshold",
-            "description": "Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when no bar on the grid does"
+            "description": "Lowest bar whose wallet-level risk bound stays under target_risk; null when no bar on the grid does"
           },
           "target_risk": {
             "type": "number",

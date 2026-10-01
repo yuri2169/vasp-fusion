@@ -142,9 +142,9 @@ python -m vaspfusion.cli abstain-eval --from-claims   # measure again from the t
 ```
 No exchange is named below confidence 0.60. There is no labelled set of "wallet → exchange" cases to pick that bar on, so one is built by hiding labels (`vaspfusion/eval/abstain.py`):
 - **Wallets:** 280 real Tron wallets (40 per exchange, seed 26182) that paid an address the discovery rules derived as a deposit address. **Known answer:** the exchanges each paid directly, from the full label store.
-- **Test:** each is traced with all 5,497 derived labels hidden, so the exchange must be found through an unlabelled wallet. Each exchange reached is a claim; it is right if it is in the known answer. Strict: a claim through a wallet the rules did not derive counts as wrong, so the risk is an upper bound.
-- **Result** (`artifacts/abstain_v1/tron/validation.json`): 303 claims, 224 right. At 0.60: 159 claims answered, 17 wrong (10.7%; 95% upper bound 18.4%); 155 of 280 wallets get an exchange named, 15 of them wrong, 125 abstain. Raising the bar to 0.80 gives 7.3% (9 of 123). **No bar on the grid brings the strict risk under 5%.** Claims three hops away are right 2 times in 20.
-- **Not calibrated.** The confidence is rule-set, and every wallet in the set is an exchange customer. Plot: `artifacts/abstain_v1/tron/risk_coverage.svg`.
+- **Test:** each is traced from the start of its discovery window with all 5,497 derived labels hidden, so the exchange must be found through an unlabelled wallet. Each exchange reached is a claim; it is right if it is in the known answer. A claim through a wallet the rules did not derive counts as wrong, although that wallet may be a deposit address the rules missed.
+- **Result** (`artifacts/abstain_v1/tron/validation.json`): 303 claims, 224 right. At 0.60, 155 of the 280 wallets get an exchange named, 15 of them wrong (9.7%; upper bound 17.3%, one-sided Clopper-Pearson over wallets, corrected for the nine bars tried), and 125 abstain. At 0.80: 121 named, 8 wrong (6.6%; bound 14.6%). **No bar on the grid brings the bound under 5%**, so the measurement does not single out a bar and 0.60 stays a rule-set value. Claims three hops away are right 2 times in 20.
+- **What it is not.** The wallets were picked by the pattern the label-hidden trace walks (which favours right claims), the known answer includes the tool's own derived labels, every wallet is an exchange customer, and the confidence is rule-set. The bar is checked, not calibrated. Plot: `artifacts/abstain_v1/tron/risk_coverage.svg`.
 
 ## Trace and attribution
 ```bash

@@ -144,3 +144,32 @@ def test_label_flags_come_first_and_keep_their_figures():
 
 def test_a_quiet_wallet_has_no_flags():
     assert flags([tx(1, "S", "HOT", 1234.5, 0)]) == []
+
+
+# ---- review: regressions
+def test_money_that_sat_for_hours_is_not_rapid_because_a_later_arrival_left_fast():
+    # 100 waited 1,001 minutes; only the 1 that came later left within a minute
+    rows = [tx(1, "S", "M", 100, 0), tx(2, "S", "M", 1, 1000), tx(3, "M", "X", 100, 1001),
+            tx(4, "M", "X", 1, 1002)]
+    assert "rapid_forwarding" not in codes(flags(rows))
+    pooled = [tx(1, "S", "M", 100, 0), tx(2, "S", "M", 100, 5000), tx(3, "M", "X", 200, 5001)]
+    assert "rapid_forwarding" not in codes(flags(pooled))
+
+
+def test_the_traced_wallet_plus_one_peeling_wallet_is_not_a_peel_chain():
+    rows = [tx(1, "S", "A", 80, 0), tx(2, "S", "B", 20, 1), tx(3, "A", "C", 60, 5),
+            tx(4, "A", "D", 20, 6)]
+    assert "peel_chain" not in codes(flags(rows))
+
+
+def test_a_peel_chain_that_does_not_start_at_the_traced_wallet_is_still_found():
+    rows = [tx(1, "S", "A", 1000, 0), tx(2, "A", "P1", 100, 10), tx(3, "A", "B", 900, 11),
+            tx(4, "B", "P2", 100, 70), tx(5, "B", "HOT", 800, 71)]
+    f = one(flags(rows), "peel_chain")
+    assert f["wallet"] == "A" and f["figures"] == {"wallets": 2.0, "amount": 1000.0, "peeled": 200.0}
+
+
+def test_the_traced_wallet_is_not_one_of_the_wallets_its_money_was_split_across():
+    rows = [tx(1, "S", "A", 100, 0), tx(2, "S", "B", 100, 1), tx(3, "S", "W", 100, 2),
+            tx(4, "A", "W", 100, 30), tx(5, "B", "W", 100, 31)]
+    assert "fan_in" not in codes(flags(rows))

@@ -266,6 +266,12 @@ def test_a_bridge_abstain_says_where_to_follow():
     assert any(s.startswith("Follow the 1,000 USDT") for s in att.next_steps)
 
 
+def test_a_bridge_that_also_funded_the_wallet_gives_one_step_with_the_outgoing_hash():
+    att = run([tx(1, "BRIDGE", "S", 100, 0), tx(2, "S", "BRIDGE", 100, 5)])
+    steps = [s for s in att.next_steps if s.startswith("Follow the")]
+    assert len(steps) == 1 and "(tx2) names the destination" in steps[0] and "tx1" not in steps[0]
+
+
 def test_an_unnamed_exchange_is_a_candidate_that_cannot_be_routed():
     att = run([tx(1, "S", "ANON", 1000, 0)])
     assert att.candidates[0].vasp == "Unidentified exchange"

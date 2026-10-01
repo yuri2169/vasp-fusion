@@ -49,7 +49,8 @@ def test_a_deposit_like_wallet_is_a_lead_and_the_case_still_abstains():
     assert att.outcome == "INSUFFICIENT_EVIDENCE" and att.top is None
     flag = next(f for f in att.flags if f["code"] == "deposit_like")
     assert (flag["wallet"], flag["severity"], flag["tx_hashes"]) == ("D", "info", ["tx1"])
-    assert flag["figures"] == {"p": 0.97, "low": 0.94, "high": 0.98, "share": 1.0, "amount": 1000.0}
+    assert flag["figures"] == {"p": 0.97, "low": 0.94, "high": 0.98, "transfers_read": 6.0,
+                               "share": 1.0, "amount": 1000.0}
     assert flag["text"] == (
         "D behaves like an exchange deposit address: 100% of the funds (1,000 USDT) reached it, "
         "and the deposit-address model gives 0.97 (range 0.94 to 0.98). What speaks for it: "
@@ -109,3 +110,34 @@ def test_without_a_scorer_or_when_a_listing_fails_the_case_says_so():
 def test_a_wallet_that_sent_nothing_has_nothing_to_score():
     _, att, notes = case([tx(1, "X", "S", 5, 0)], StubScorer({}))
     assert notes == []
+
+
+# ---- review: what the collector is decides what may be said
+def test_a_wallet_that_pays_a_bridge_or_a_mixer_is_not_called_a_deposit_address():
+    for what in (("Stargate", "bridge"), ("Tornado.Cash", "mixer"), ("Some DAO", "entity")):
+        rows = [tx(1, "S", "D", 1000, 0), tx(2, "D", "C", 1000, 2)]
+        _, att, notes = case(rows, StubScorer({"D": (0.99, "C")}), labels={"C": what})
+        assert not [f for f in att.flags if f["code"] == "deposit_like"], what
+        assert not any("Identify C" in s or "label for C" in s
+                       for s in att.next_steps + att.what_would_change)
+
+
+def test_a_collector_tagged_exchange_without_an_owner_is_not_called_unlabelled():
+    rows = [tx(1, "S", "D", 1000, 0), tx(2, "D", "C", 1000, 2)]
+    labels = {"C": ("Unidentified exchange", "exchange", "unknown", "explorer_tag")}
+    _, att, _ = case(rows, StubScorer({"D": (0.99, "C")}), labels=labels)
+    flag = next(f for f in att.flags if f["code"] == "deposit_like")
+    assert "is tagged as an exchange but the source names no owner" in flag["text"]
+    assert "Neither it nor" not in flag["text"]
+
+
+def test_a_wallet_that_pays_the_traced_wallet_back_is_no_lead():
+    rows = [tx(1, "S", "D", 1000, 0), tx(2, "D", "S", 1000, 2)]
+    _, att, _ = case(rows, StubScorer({"D": (0.99, "S")}))
+    assert not [f for f in att.flags if f["code"] == "deposit_like"]
+
+
+def test_a_wallet_with_nothing_to_read_is_not_counted_as_scored():
+    _, _, notes = case(SWEEP, StubScorer({"D": (0.2, "C")}))          # C: nothing usable
+    assert notes == ["Deposit-address model: 1 unlabelled wallet on the trail scored, 0 behave "
+                     "like a deposit address."]

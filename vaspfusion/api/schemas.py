@@ -513,12 +513,13 @@ class AbstainBar(_M):
     threshold: float
     claims_answered: int = Field(description="Claims made through unlabelled wallets")
     claims_wrong: int
-    risk: float | None = Field(None, description="claims_wrong / claims_answered")
-    risk_upper_bound: float | None = Field(None, description="One-sided Clopper-Pearson "
-                                           "bound, corrected for the number of bars tried")
-    wallets_named: int
+    wallets_named: int = Field(description="Wallets that get an exchange named at this bar")
     wallets_wrong: int
     wallets_abstained: int
+    risk: float | None = Field(None, description="wallets_wrong / wallets_named")
+    risk_upper_bound: float | None = Field(None, description=(
+        "One-sided Clopper-Pearson bound on that risk, over wallets, corrected for the "
+        "number of bars tried"))
 
 
 class AbstainInfo(_M):
@@ -529,8 +530,8 @@ class AbstainInfo(_M):
     claims: int = Field(description="Exchanges named through unlabelled wallets")
     current_threshold: float = Field(description="The bar the cases use")
     measured_threshold: float | None = Field(None, description=(
-        "Lowest bar whose risk stays under target_risk with confidence 1 - delta; null when "
-        "no bar on the grid does"))
+        "Lowest bar whose wallet-level risk bound stays under target_risk; null when no bar "
+        "on the grid does"))
     target_risk: float
     delta: float
     bars: list[AbstainBar]
