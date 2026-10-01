@@ -318,7 +318,8 @@
           "text": "Its TRX for fees came from the same OKX wallet, the usual pattern for exchange deposit addresses"
         }
       ],
-      "counterfactual": "Still OKX (0.78) if the sweep evidence is removed"
+      "counterfactual": "Still OKX without the label on THS5KL…otELsR: 85% of the funds reach OKX at its proof-of-reserves wallet (published by the exchange itself) in 4 hops, confidence 0.78 (was 0.91).",
+      "counterfactual_holds": true
     },
     {
       "vasp": "HTX",
@@ -360,25 +361,14 @@
       "code": "rapid_forwarding",
       "severity": "warn",
       "wallet": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
-      "text": "Forwarded 100% of what it received within 9 minutes",
+      "text": "TTYBTv…nqq62o passed on 100% of the 48,500 USDT that reached it within 9 minutes of its arrival",
       "figures": {
-        "minutes": 9,
-        "share": 1.0
+        "share": 1.0,
+        "amount": 48500.0,
+        "seconds": 540.0
       },
       "tx_hashes": [
-        "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
-        "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8"
-      ]
-    },
-    {
-      "code": "fan_out",
-      "severity": "info",
-      "wallet": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
-      "text": "Split one inflow into 2 outputs",
-      "figures": {
-        "outputs": 2
-      },
-      "tx_hashes": [
+        "c09b2c24e2a4a6fd4308788cb7b6e9a9c340275ac162c4281ed549100c07287b",
         "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f",
         "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8"
       ]

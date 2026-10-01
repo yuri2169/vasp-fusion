@@ -14,6 +14,8 @@ from urllib.parse import urlsplit
 
 from .api import schemas as S
 from .chains import get_provider
+from .attribute.counterfactual import add_counterfactuals
+from .attribute.leads import add_leads
 from .attribute.rules import Attribution, Candidate, RuleConfig, attribute
 from .explain.case_narrative import narrative, path_hashes
 from .labels.lookup import Label
@@ -21,7 +23,7 @@ from .labels.normalize import VASP_CATEGORIES
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
 SEED = 26182
-CODE_VERSION = "b6-model-1"
+CODE_VERSION = "b7-decide-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
@@ -143,7 +145,7 @@ def _candidate(c: Candidate) -> dict:
             "hops": c.hops, "share_of_funds": round(float(c.share), 4),
             "time_to_reach_s": c.time_to_reach_s, "label_tier": c.label_tier,
             "deposit_address": c.deposit_address, "path": c.path, "evidence": c.evidence,
-            "counterfactual": None}
+            "counterfactual": c.counterfactual, "counterfactual_holds": c.counterfactual_holds}
 
 
 def _where(tr: TraceResult) -> list[dict]:
@@ -206,15 +208,23 @@ def build_case(tr: TraceResult, att: Attribution, *, case_id: str, meta: dict | 
 def run_case(address: str, chain: str, provider, labels, *, case_id: str | None = None,
              meta: dict | None = None, cfg: TraceConfig = TraceConfig(),
              rules: RuleConfig = RuleConfig(), fetcher=None, label_db_sha256: str | None = None,
-             now: datetime | None = None, demo: bool = False) -> dict:
-    """Trace `address`, attribute it, return the CaseDetail as a JSON-ready dict.
-    `fetcher` (the one behind `provider`) is only read for provenance."""
+             now: datetime | None = None, demo: bool = False, scorer="auto") -> dict:
+    """Trace `address`, attribute it, check each named exchange against the loss of its
+    label, score the unlabelled wallets on the trail, and return the CaseDetail as a
+    JSON-ready dict. `fetcher` (the one behind `provider`) is read for provenance, and
+    the deposit-address model reads its listings through it (`scorer`: "auto" builds the
+    chain's scorer on `fetcher`; None scores nothing)."""
     pages_before = len(fetcher.trail) if fetcher is not None else 0
     live_before = fetcher.stats["live"] if fetcher is not None else 0
     tr = trace(address, chain, provider, labels, cfg)
     att = attribute(tr, rules)
+    add_counterfactuals(tr, att, provider, labels, cfg, rules)
+    if scorer == "auto":
+        from .classify.runtime import make_scorer
+        scorer = make_scorer(chain, fetcher) if fetcher is not None else None
+    notes = add_leads(tr, att, scorer, labels)
     now = now or datetime.now(timezone.utc)
-    prov: dict = {"label_db_sha256": label_db_sha256}
+    prov: dict = {"label_db_sha256": label_db_sha256, "notes": notes}
     if fetcher is not None:
         went_live = fetcher.stats["live"] > live_before
         hosts = sorted({urlsplit(p["query"]).netloc for p in fetcher.trail[pages_before:]})
@@ -232,9 +242,10 @@ def case_headline(case: dict) -> dict:
         "asset": case["asset"], "total_sent": case["total_sent"],
         "candidates": [{k: c[k] for k in ("vasp", "direction", "proximity_rank", "confidence",
                                           "confidence_interval", "hops", "share_of_funds",
-                                          "deposit_address", "label_tier")}
+                                          "deposit_address", "label_tier",
+                                          "counterfactual_holds")}
                        for c in case["candidates"]],
         "where_funds_went": case["where_funds_went"],
         "nodes": len(case["graph"]["nodes"]), "edges": len(case["graph"]["edges"]),
-        "flags": [[f["code"], f["wallet"]] for f in case["typology_flags"]],
+        "flags": [[f["code"], f["wallet"], f["figures"]] for f in case["typology_flags"]],
     }

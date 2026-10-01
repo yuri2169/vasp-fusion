@@ -52,8 +52,8 @@ def test_a_deposit_like_wallet_is_a_lead_and_the_case_still_abstains():
     assert flag["figures"] == {"p": 0.97, "low": 0.94, "high": 0.98, "share": 1.0, "amount": 1000.0}
     assert flag["text"] == (
         "D behaves like an exchange deposit address: 100% of the funds (1,000 USDT) reached it, "
-        "and the deposit-address model gives 0.97 (range 0.94 to 0.98). It forwards 100% of "
-        "what it receives to one wallet; it pays 1 wallet. Neither it nor C, the wallet it "
+        "and the deposit-address model gives 0.97 (range 0.94 to 0.98). What speaks for it: "
+        "forwards 100% of what it receives to one wallet; pays 1 wallet. Neither it nor C, the wallet it "
         "sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a "
         "finding: the model was measured on exchange customers and deposit addresses only.")
     assert att.what_would_change[0] == (
@@ -80,7 +80,8 @@ def test_a_lead_whose_collector_is_a_labelled_exchange_names_it_as_a_question():
     flag = next(f for f in att.flags if f["code"] == "deposit_like")
     assert "is labelled ExA (curated list), so it may be a deposit address of ExA that the " \
            "discovery rules have not derived" in flag["text"]
-    assert att.next_steps[0].startswith("Ask ExA whether D is one of its deposit addresses")
+    assert att.next_steps[0].startswith("Draft a request to ExA")
+    assert att.next_steps[-1].startswith("Ask ExA whether D is one of its deposit addresses")
 
 
 def test_hubs_labelled_and_small_wallets_are_not_scored_and_at_most_five_are():
@@ -97,7 +98,9 @@ def test_hubs_labelled_and_small_wallets_are_not_scored_and_at_most_five_are():
 def test_without_a_scorer_or_when_a_listing_fails_the_case_says_so():
     _, att, notes = case(SWEEP, None)
     assert att.flags == [f for f in att.flags if f["code"] != "deposit_like"]
-    assert notes[0].startswith("2 unlabelled wallets on the trail not scored")
+    assert notes == ["2 unlabelled wallets on the trail not scored by the deposit-address model: "
+                     "it is only used on Tron, where it recognised the deposit addresses of an "
+                     "exchange it had never seen."]
     _, att, notes = case(SWEEP, StubScorer({"C": (0.1, None)}, fail={"D"}))
     assert notes[0] == "D could not be scored by the deposit-address model (listing unavailable)."
     assert "1 unlabelled wallet on the trail scored, 0 behave" in notes[1]

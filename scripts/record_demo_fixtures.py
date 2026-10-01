@@ -2,6 +2,8 @@
 
     python scripts/record_demo_fixtures.py            # every wallet in demo/cases.json
     python scripts/record_demo_fixtures.py tron-ofac  # one
+    python scripts/record_demo_fixtures.py --extend   # keep what is recorded, fetch only
+                                                      # the requests a code change added
 
 For each wallet this runs the real `run_case` against the live chain APIs and the
 real label DB, and writes:
@@ -32,12 +34,32 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from record_chain_fixtures import RecordingTransport, _secrets  # noqa: E402
 from vaspfusion.cases import case_headline, run_case, trace_provider  # noqa: E402
-from vaspfusion.chains.cache import ChainCache, Fetcher  # noqa: E402
+from vaspfusion.chains.cache import ChainCache, Fetcher, request_key  # noqa: E402
 from vaspfusion.labels.lookup import LabelStore  # noqa: E402
 from vaspfusion.trace import TraceConfig  # noqa: E402
 
 OUT = ROOT / "tests" / "fixtures" / "demo"
 DEMO = ROOT / "demo" / "cases.json"
+
+
+class ExtendingTransport(RecordingTransport):
+    """Answers a request that is already in the fixture from the fixture, and fetches
+    (and records) only the others. The recorded pages stay byte-for-byte what they were,
+    so a code change that reads more pages does not also change the old ones."""
+
+    def __init__(self, recorded: dict):
+        super().__init__()
+        self.recorded, self.fetched = recorded, 0
+
+    def get(self, url, params, headers):
+        key = request_key(url, params)
+        if key not in self.recorded:
+            self.fetched += 1
+            return super().get(url, params, headers)
+        self.responses[key] = self.recorded[key]
+        body = self.recorded[key]["body"]
+        return self.recorded[key]["status"], \
+            (json.dumps(body) if not isinstance(body, str) else body).encode()
 
 
 class RecordingLabels:
@@ -54,6 +76,8 @@ class RecordingLabels:
 
 
 def main(wanted: list[str]) -> None:
+    extend = "--extend" in wanted
+    wanted = [w for w in wanted if w != "--extend"]
     OUT.mkdir(parents=True, exist_ok=True)
     cases = json.loads(DEMO.read_text())["cases"]
     labels_path, expected_path = OUT / "labels.json", OUT / "expected.json"
@@ -64,7 +88,9 @@ def main(wanted: list[str]) -> None:
         for spec in cases:
             if wanted and spec["id"] not in wanted:
                 continue
-            rec = RecordingTransport()
+            path = OUT / f"{spec['id']}.json"
+            rec = ExtendingTransport(json.loads(path.read_text())["responses"]) \
+                if extend and path.exists() else RecordingTransport()
             with tempfile.TemporaryDirectory() as d:
                 fetcher = Fetcher(ChainCache(Path(d) / "c.duckdb"), rec, offline=False)
                 cfg = TraceConfig(max_hops=spec.get("max_hops", 3))
@@ -82,11 +108,13 @@ def main(wanted: list[str]) -> None:
             expected[spec["id"]] = case_headline(case)
             got = (case["outcome"], case["top_vasp"])
             want = (spec["expect"]["outcome"], spec["expect"]["top_vasp"])
-            print(f"{spec['id']}: {len(rec.responses)} responses, {len(text) // 1024} KB, "
+            new = f" ({rec.fetched} new)" if extend and hasattr(rec, "fetched") else ""
+            print(f"{spec['id']}: {len(rec.responses)} responses{new}, {len(text) // 1024} KB, "
                   f"{got[0]} top={got[1]}" + ("" if got == want else f"  !! expected {want}"))
     labels_path.write_text(json.dumps(
-        {"_source": "rows of data/labels.duckdb returned while tracing the demo wallets "
-                    "(real labels; see research/data)", "labels": dict(sorted(seen.items()))},
+        {"_source": "rows of the label DB returned while tracing the demo wallets (real "
+                    "labels; derived rows come from derived/*.csv)",
+         "labels": dict(sorted(seen.items()))},
         indent=1, sort_keys=True) + "\n")
     expected_path.write_text(json.dumps(dict(sorted(expected.items())), indent=1) + "\n")
     print(f"labels.json: {len(seen)} label rows")

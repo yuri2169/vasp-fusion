@@ -146,7 +146,12 @@ def test_candidates_are_in_proximity_order_with_both_numbers():
         [("ExB", 1, "outbound"), ("ExA", 2, "outbound"), ("ExB", 3, "inbound")]
     first = c["candidates"][0]
     assert (first["hops"], first["share_of_funds"], first["label_tier"]) == (1, 0.4, "published_por")
-    assert first["confidence_interval"] is None and first["counterfactual"] is None
+    assert first["confidence_interval"] is None
+    # B7: named candidates are checked without the label they were entered at
+    assert first["counterfactual_holds"] is False and first["counterfactual"] == \
+        "Without the label on POR, ExB is not reached at all: naming ExB rests on that one label."
+    assert first["evidence"][-1]["kind"] == "counterfactual"
+    assert c["candidates"][2]["counterfactual"] is None          # inbound: not checked
     assert first["path"] == ["S", "POR"] and first["deposit_address"] == "POR"
     assert c["candidates"][1]["time_to_reach_s"] == 960
 
@@ -217,7 +222,9 @@ def test_provenance_records_the_run():
     c = case(SPLIT, label_db_sha256="ab" * 32)
     p = c["provenance"]
     assert (p["seed"], p["label_db_sha256"]) == (26182, "ab" * 32)
-    assert p["code_version"].startswith("b6")
+    assert p["code_version"].startswith("b7") and p["notes"] == [
+        "1 unlabelled wallet on the trail not scored by the deposit-address model: the model "
+        "was not loaded for this run (`make model` writes its files)."]
 
 
 def test_the_same_inputs_give_the_same_case():

@@ -44,7 +44,7 @@ def wallets_to_score(tr: TraceResult, cfg: LeadConfig = LeadConfig()) -> list[Tr
 
 def _reasons(score) -> str:
     said = [r["text"] for r in score.reasons if r["weight"] > 0]
-    return f" It {'; it '.join(said)}." if said else ""
+    return f" What speaks for it: {'; '.join(said)}." if said else ""
 
 
 def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
@@ -55,9 +55,13 @@ def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
     if not nodes:
         return []
     if scorer is None:
+        from ..classify.runtime import SCORED_CHAINS
+        why = ("the model was not loaded for this run (`make model` writes its files)"
+               if tr.chain in SCORED_CHAINS else
+               "it is only used on Tron, where it recognised the deposit addresses of an "
+               "exchange it had never seen")
         return [f"{len(nodes)} unlabelled wallet{'s' if len(nodes) != 1 else ''} on the trail "
-                "not scored by the deposit-address model: it is measured on Tron only, or its "
-                "files are not on disk (`make model`)."]
+                f"not scored by the deposit-address model: {why}."]
     notes, flags, change, steps = [], [], [], []
     scored = 0
     for node in nodes:
@@ -107,7 +111,10 @@ def add_leads(tr: TraceResult, att: Attribution, scorer, labels,
     att.flags = att.flags + flags
     if att.outcome == "INSUFFICIENT_EVIDENCE":
         att.what_would_change = list(dict.fromkeys(change + att.what_would_change))
-    att.next_steps = list(dict.fromkeys(steps + att.next_steps))
+    # with no exchange named a lead is the first thing to do; otherwise it follows the request
+    first = att.outcome == "INSUFFICIENT_EVIDENCE"
+    att.next_steps = list(dict.fromkeys(steps + att.next_steps if first
+                                        else att.next_steps + steps))
     notes.append(f"Deposit-address model: {scored} unlabelled wallet"
                  f"{'s' if scored != 1 else ''} on the trail scored, {len(flags)} "
                  f"behave{'s' if len(flags) == 1 else ''} like a deposit address.")

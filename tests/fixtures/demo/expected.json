@@ -40,7 +40,8 @@
     "hops": 1,
     "share_of_funds": 1.0,
     "deposit_address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
-    "label_tier": "explorer_tag"
+    "label_tier": "explorer_tag",
+    "counterfactual_holds": true
    }
   ],
   "where_funds_went": [
@@ -74,7 +75,8 @@
     "hops": 1,
     "share_of_funds": 0.0962,
     "deposit_address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
-    "label_tier": "derived"
+    "label_tier": "derived",
+    "counterfactual_holds": null
    }
   ],
   "where_funds_went": [
@@ -99,7 +101,83 @@
   ],
   "nodes": 17,
   "edges": 23,
-  "flags": []
+  "flags": [
+   [
+    "rapid_forwarding",
+    "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+    {
+     "share": 1.0,
+     "amount": 395.0,
+     "seconds": 141.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
+    {
+     "share": 1.0,
+     "amount": 250.0,
+     "seconds": 111.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
+    {
+     "share": 1.0,
+     "amount": 250.0,
+     "seconds": 135.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
+    {
+     "share": 1.0,
+     "amount": 24.0,
+     "seconds": 279.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
+    {
+     "share": 1.0,
+     "amount": 20.0,
+     "seconds": 423.0
+    }
+   ],
+   [
+    "fan_in",
+    "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    {
+     "senders": 3.0,
+     "amount": 721.0
+    }
+   ],
+   [
+    "deposit_like",
+    "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+    {
+     "p": 0.9972,
+     "low": 0.9972,
+     "high": 1.0,
+     "share": 0.2532,
+     "amount": 395.0
+    }
+   ],
+   [
+    "deposit_like",
+    "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
+    {
+     "p": 0.9983,
+     "low": 0.9983,
+     "high": 1.0,
+     "share": 0.1545,
+     "amount": 241.0
+    }
+   ]
+  ]
  },
  "tron-coindcx": {
   "outcome": "ATTRIBUTED",
@@ -120,7 +198,8 @@
     "hops": 1,
     "share_of_funds": 0.5769,
     "deposit_address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
-    "label_tier": "derived"
+    "label_tier": "derived",
+    "counterfactual_holds": true
    }
   ],
   "where_funds_went": [
@@ -139,7 +218,19 @@
   ],
   "nodes": 7,
   "edges": 8,
-  "flags": []
+  "flags": [
+   [
+    "deposit_like",
+    "TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ",
+    {
+     "p": 0.9989,
+     "low": 0.9989,
+     "high": 1.0,
+     "share": 0.4231,
+     "amount": 1122.22
+    }
+   ]
+  ]
  },
  "tron-htx-coindcx": {
   "outcome": "ATTRIBUTED",
@@ -160,7 +251,8 @@
     "hops": 1,
     "share_of_funds": 0.4615,
     "deposit_address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
-    "label_tier": "derived"
+    "label_tier": "derived",
+    "counterfactual_holds": true
    },
    {
     "vasp": "HTX",
@@ -171,7 +263,8 @@
     "hops": 2,
     "share_of_funds": 0.5385,
     "deposit_address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
-    "label_tier": "published_por"
+    "label_tier": "published_por",
+    "counterfactual_holds": false
    }
   ],
   "where_funds_went": [
@@ -190,7 +283,28 @@
   ],
   "nodes": 6,
   "edges": 7,
-  "flags": []
+  "flags": [
+   [
+    "round_amounts",
+    "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    {
+     "round_transfers": 3.0,
+     "transfers": 3.0,
+     "amount": 13000.0
+    }
+   ],
+   [
+    "deposit_like",
+    "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    {
+     "p": 0.9983,
+     "low": 0.9983,
+     "high": 1.0,
+     "share": 0.5385,
+     "amount": 7000.0
+    }
+   ]
+  ]
  },
  "tron-ofac": {
   "outcome": "SANCTIONED_OR_MIXER_REACHED",
@@ -224,7 +338,21 @@
   "flags": [
    [
     "sanctioned_contact",
-    "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey"
+    "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+    {
+     "share": 0.9894,
+     "amount": 100008.0,
+     "hops": 1.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
+    {
+     "share": 1.0,
+     "amount": 1052.0,
+     "seconds": 36.0
+    }
    ]
   ]
  }

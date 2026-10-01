@@ -304,9 +304,15 @@ export interface components {
             evidence: components["schemas"]["EvidenceItem"][];
             /**
              * Counterfactual
-             * @example Still Binance if the sweep evidence is removed
+             * @description Named candidates only: what happens to this answer when the label on deposit_address (its strongest evidence) is hidden and the wallet is traced again
+             * @example Still CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).
              */
             counterfactual?: string | null;
+            /**
+             * Counterfactual Holds
+             * @description true: the same VASP is still named without that label. false: it falls under the bar or is not reached. null: not checked (the candidate was not named)
+             */
+            counterfactual_holds?: boolean | null;
         };
         /** CaseCreate */
         CaseCreate: {
@@ -1052,6 +1058,12 @@ export interface components {
              * @default []
              */
             data_sources: string[];
+            /**
+             * Notes
+             * @description What this run did or could not do, e.g. how many unlabelled wallets the deposit-address model scored
+             * @default []
+             */
+            notes: string[];
         };
         /** ReliabilityBin */
         ReliabilityBin: {
@@ -1234,9 +1246,10 @@ export interface components {
         TypologyFlag: {
             /**
              * Code
+             * @description deposit_like is a lead from the deposit-address model on an unlabelled wallet (figures: p, low, high, share, amount); it never changes the outcome
              * @enum {string}
              */
-            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact";
+            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact" | "deposit_like";
             /**
              * Severity
              * @enum {string}

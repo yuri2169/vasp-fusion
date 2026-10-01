@@ -158,7 +158,10 @@ def case_attributed(L) -> dict:
              {"kind": "gas_payer", "tier": None, "tx_hashes": [tron_tx("c1:gas")],
               "weight": 0.12, "text": "Its TRX for fees came from the same OKX wallet, "
                                       "the usual pattern for exchange deposit addresses"}],
-         "counterfactual": "Still OKX (0.78) if the sweep evidence is removed"},
+         "counterfactual": f"Still OKX without the label on {dep[:6]}…{dep[-6:]}: 85% of the "
+                           "funds reach OKX at its proof-of-reserves wallet (published by "
+                           "the exchange itself) in 4 hops, confidence 0.78 (was 0.91).",
+         "counterfactual_holds": True},
         {"vasp": "HTX", "category": "exchange", "proximity_rank": 2, "confidence": 0.46,
          "confidence_interval": [0.31, 0.61], "hops": 4, "share_of_funds": 0.15,
          "time_to_reach_s": 12_600, "label_tier": "published_por",
@@ -169,11 +172,10 @@ def case_attributed(L) -> dict:
                                "reserve wallet"}],
          "counterfactual": None}]
     flags = [{"code": "rapid_forwarding", "severity": "warn", "wallet": h1,
-              "text": "Forwarded 100% of what it received within 9 minutes",
-              "figures": {"minutes": 9, "share": 1.0}, "tx_hashes": [tx["b"], tx["d"]]},
-             {"code": "fan_out", "severity": "info", "wallet": h1,
-              "text": "Split one inflow into 2 outputs", "figures": {"outputs": 2},
-              "tx_hashes": [tx["b"], tx["d"]]}]
+              "text": f"{h1[:6]}…{h1[-6:]} passed on 100% of the 48,500 USDT that reached it "
+                      "within 9 minutes of its arrival",
+              "figures": {"share": 1.0, "amount": 48_500.0, "seconds": 540.0},
+              "tx_hashes": [tx["a"], tx["b"], tx["d"]]}]
     return {
         "id": "demo-tron-okx", "address": s, "chain": "tron", "status": "done",
         "outcome": "ATTRIBUTED", "top_vasp": "OKX", "confidence": 0.91,
@@ -229,8 +231,9 @@ def case_abstain(L) -> dict:
         "created_at": at(-60 * 5), "demo": True, "hop_rail": rail,
         "graph": {"nodes": nodes, "edges": edges}, "candidates": cands,
         "typology_flags": [{"code": "peel_chain", "severity": "warn", "wallet": hs[0],
-                            "text": "Peeled off small amounts over 3 hops, keeping the rest",
-                            "figures": {"hops": 3}, "tx_hashes": [tx["c"], tx["d"]]}],
+                            "text": "Peel chain of 3 wallets: each sent most of the money on "
+                                    "to one wallet and peeled the rest off to others",
+                            "figures": {"wallets": 3.0}, "tx_hashes": [tx["c"], tx["d"]]}],
         "narrative": (f"Wallet {s[:6]}… split its funds across several wallets. Only 12% "
                       "reached a known VASP (a ChangeNOW hot wallet, 4 hops away). That is "
                       "not enough to name a VASP, so none is named."),

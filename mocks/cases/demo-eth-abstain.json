@@ -230,9 +230,9 @@
       "code": "peel_chain",
       "severity": "warn",
       "wallet": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
-      "text": "Peeled off small amounts over 3 hops, keeping the rest",
+      "text": "Peel chain of 3 wallets: each sent most of the money on to one wallet and peeled the rest off to others",
       "figures": {
-        "hops": 3
+        "wallets": 3.0
       },
       "tx_hashes": [
         "0x362e1afaad7322d47cd16000b461db5506465448577b38817d32286a6f4957b5",

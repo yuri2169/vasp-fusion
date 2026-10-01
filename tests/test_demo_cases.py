@@ -72,7 +72,7 @@ def test_tron_wallet_reaches_coindcx_through_a_deposit_address(tmp_path):
     # the rules' own confidence was 0.8075
     assert c["confidence"] == 0.8491 and c["confidence_interval"] == [0.8491, 0.85]
     assert [e["kind"] for e in c["evidence"]] == ["label", "model", "model", "model", "model",
-                                                  "path"]
+                                                  "path", "counterfactual"]
     assert c["evidence"][1]["text"].startswith("Deposit-address model: over 0.99 that an "
                                                "address behaving like TCw8j3…LLcoV5")
     assert "Sweep rule: forwarded 100% of the 847,730 USDT it received from 2 senders to " \
@@ -152,6 +152,99 @@ def test_eth_wallet_whose_money_never_reached_a_label_abstains(tmp_path):
     assert kinds == {"not_moved": 12214.697568, "not_followed": 10000.0}
     assert "more transfers than one fetch reads" in case["abstain_reason"]
     assert any("0x6f48" in w and "full history" in w for w in case["what_would_change"])
+
+
+# ---- B7: flags, counterfactual and leads on the real wallets
+def flags_of(case, code):
+    return [f for f in case["typology_flags"] if f["code"] == code]
+
+
+def test_the_named_exchange_survives_without_the_deposit_address_label(tmp_path):
+    case = run_demo("tron-coindcx", tmp_path / "c.duckdb")
+    c = by_vasp(case)[("CoinDCX", "outbound")]
+    # hide the derived label: the deposit address is followed one hop on, into "CoinDCX 2"
+    assert c["counterfactual_holds"] is True and c["counterfactual"] == (
+        "Still CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach CoinDCX at "
+        "TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).")
+    assert c["evidence"][-1]["weight"] == pytest.approx(0.7225 - 0.8491)
+    assert "Checked without its strongest evidence: Still CoinDCX" in case["narrative"]
+    bitget = by_vasp(run_demo("eth-bitget", tmp_path / "e.duckdb"))[("Bitget", "outbound")]
+    assert bitget["counterfactual_holds"] is True          # swept on to "Bitget 6"
+    assert "at 0x1ab4…8f8f23 (explorer tag) in 2 hops, confidence 0.64" in bitget["counterfactual"]
+
+
+def test_an_answer_resting_on_one_label_is_reported_as_such(tmp_path):
+    case = run_demo("tron-htx-coindcx", tmp_path / "c.duckdb")
+    htx = by_vasp(case)[("HTX", "outbound")]
+    assert htx["counterfactual_holds"] is False
+    assert htx["counterfactual"] == ("Without the label on TFTWNg…8x5jLu, HTX is not reached at "
+                                     "all: naming HTX rests on that one label.")
+    assert by_vasp(case)[("CoinDCX", "outbound")]["counterfactual_holds"] is True
+    assert case["top_vasp"] == "CoinDCX" and case["outcome"] == "ATTRIBUTED"    # unchanged
+
+
+def test_the_other_half_of_the_hero_wallets_money_is_a_lead_not_an_answer(tmp_path):
+    case = run_demo("tron-coindcx", tmp_path / "c.duckdb")
+    lead, = flags_of(case, "deposit_like")
+    # 42% went to an unlabelled wallet that sweeps everything into the busy unlabelled
+    # wallet TDqSqu…: the model reads that as deposit-address behaviour, and says no more
+    assert lead["wallet"] == "TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ" and lead["severity"] == "info"
+    assert lead["figures"]["share"] == 0.4231 and lead["figures"]["p"] >= 0.99
+    assert "behaves like an exchange deposit address" in lead["text"]
+    assert "Neither it nor TDqSqu…dkhSCf, the wallet it sweeps into, is labelled" in lead["text"]
+    assert "A lead to check, not a finding" in lead["text"] and "over 0.99" in lead["text"]
+    assert [c["vasp"] for c in case["candidates"]] == ["CoinDCX"]      # no exchange was added
+    assert case["next_steps"][0].startswith("Draft a request to CoinDCX")
+    assert case["next_steps"][-1].startswith("Identify TDqSqu…dkhSCf")
+    assert "Lead, not a finding: TDYCQE…yPdsUJ behaves like" in case["narrative"]
+    assert case["provenance"]["notes"] == ["Deposit-address model: 1 unlabelled wallet on the "
+                                           "trail scored, 1 behaves like a deposit address."]
+
+
+def test_leads_do_not_turn_an_abstain_into_an_answer(tmp_path):
+    case = run_demo("tron-abstain", tmp_path / "c.duckdb")
+    leads = flags_of(case, "deposit_like")
+    assert [f["wallet"][:6] for f in leads] == ["TMPJaN", "TLfVvt"]
+    assert case["outcome"] == "INSUFFICIENT_EVIDENCE" and case["top_vasp"] is None
+    assert case["what_would_change"][0].startswith("A label for TWBPGL…yJW1JJ, the wallet "
+                                                   "TMPJaN…YyzeAJ sweeps into")
+    assert case["next_steps"][0].startswith("Identify TWBPGL…yJW1JJ")
+    assert case["candidates"][0]["counterfactual"] is None       # not named, so not checked
+    assert "5 unlabelled wallets on the trail scored, 2 behave" in case["provenance"]["notes"][0]
+
+
+def test_a_lead_that_pays_a_labelled_exchange_wallet_names_it_as_a_question(tmp_path):
+    case = run_demo("tron-htx-coindcx", tmp_path / "c.duckdb")
+    lead, = flags_of(case, "deposit_like")
+    assert lead["wallet"].startswith("THW7GJ")
+    assert "is labelled HTX (published by the exchange itself), so it may be a deposit " \
+           "address of HTX that the discovery rules have not derived" in lead["text"]
+
+
+def test_real_flags_carry_figures_and_hashes_from_the_trace(tmp_path):
+    case = run_demo("tron-abstain", tmp_path / "c.duckdb")
+    hashes = {e["tx_hash"] for e in case["graph"]["edges"]}
+    assert [f["code"] for f in case["typology_flags"]] == \
+        ["rapid_forwarding"] * 5 + ["fan_in", "deposit_like", "deposit_like"]
+    for f in case["typology_flags"]:
+        assert f["tx_hashes"] and set(f["tx_hashes"]) <= hashes and f["figures"]
+    rapid = case["typology_flags"][0]
+    assert rapid["figures"] == {"share": 1.0, "amount": 395.0, "seconds": 141.0}
+    merge, = flags_of(case, "fan_in")
+    assert merge["wallet"] == "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf"
+    assert merge["figures"] == {"senders": 3.0, "amount": 721.0}
+    split = run_demo("tron-htx-coindcx", tmp_path / "s.duckdb")
+    assert flags_of(split, "round_amounts")[0]["figures"] == \
+        {"round_transfers": 3.0, "transfers": 3.0, "amount": 13000.0}
+
+
+def test_ethereum_wallets_are_not_scored_and_the_case_says_why(tmp_path):
+    case = run_demo("eth-abstain", tmp_path / "c.duckdb")
+    assert flags_of(case, "deposit_like") == []
+    assert case["provenance"]["notes"] == [
+        "4 unlabelled wallets on the trail not scored by the deposit-address model: it is only "
+        "used on Tron, where it recognised the deposit addresses of an exchange it had never "
+        "seen."]
 
 
 # ---- adapters say whether a listing is the whole answer

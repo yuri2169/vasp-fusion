@@ -30,7 +30,8 @@ NodeRole = Literal["suspect", "intermediary", "exchange_hot", "exchange_deposit"
                    "exchange", "custodial_wallet", "swap_service", "bridge", "mixer",
                    "sanctioned", "hub", "unknown"]
 TypologyCode = Literal["peel_chain", "fan_out", "fan_in", "rapid_forwarding",
-                       "round_amounts", "bridge_hop", "mixer_contact", "sanctioned_contact"]
+                       "round_amounts", "bridge_hop", "mixer_contact", "sanctioned_contact",
+                       "deposit_like"]
 Severity = Literal["info", "warn", "high"]
 EvidenceKind = Literal["label", "path", "sweep", "gas_payer", "model", "counterfactual"]
 RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered",
@@ -206,12 +207,21 @@ class Candidate(_M):
     deposit_address: str
     path: list[str] = Field(description="Addresses from the suspect to deposit_address")
     evidence: list[EvidenceItem]
-    counterfactual: str | None = Field(None, examples=["Still Binance if the sweep "
-                                                       "evidence is removed"])
+    counterfactual: str | None = Field(None, description=(
+        "Named candidates only: what happens to this answer when the label on "
+        "deposit_address (its strongest evidence) is hidden and the wallet is traced again"),
+        examples=["Still CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach "
+                  "CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 "
+                  "(was 0.85)."])
+    counterfactual_holds: bool | None = Field(None, description=(
+        "true: the same VASP is still named without that label. false: it falls under the "
+        "bar or is not reached. null: not checked (the candidate was not named)"))
 
 
 class TypologyFlag(_M):
-    code: TypologyCode
+    code: TypologyCode = Field(description=(
+        "deposit_like is a lead from the deposit-address model on an unlabelled wallet "
+        "(figures: p, low, high, share, amount); it never changes the outcome"))
     severity: Severity
     wallet: str
     text: str
@@ -226,6 +236,8 @@ class Provenance(_M):
     fetched_at: datetime | None = None
     offline_replay: bool = False
     data_sources: list[str] = []
+    notes: list[str] = Field([], description="What this run did or could not do, e.g. how "
+                             "many unlabelled wallets the deposit-address model scored")
 
 
 class FundsSlice(_M):

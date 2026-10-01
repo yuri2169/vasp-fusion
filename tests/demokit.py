@@ -8,6 +8,7 @@ from pathlib import Path
 
 from vaspfusion.cases import run_case, trace_provider
 from vaspfusion.chains.cache import ChainCache, Fetcher, request_key
+from vaspfusion.classify.runtime import make_scorer
 from vaspfusion.labels.lookup import Label
 from vaspfusion.trace import TraceConfig
 
@@ -77,4 +78,5 @@ def run_demo(case_id: str, cache_path, offline: bool = False, **kw) -> dict:
     fetcher = demo_fetcher(cache_path, case_id, offline=offline)
     cfg = TraceConfig(max_hops=spec["max_hops"])
     return run_case(spec["address"], spec["chain"], demo_provider(spec["chain"], fetcher, cfg),
-                    DemoLabels(), case_id=case_id, cfg=cfg, fetcher=fetcher, demo=True, **kw)
+                    DemoLabels(), case_id=case_id, cfg=cfg, fetcher=fetcher, demo=True,
+                    scorer=make_scorer(spec["chain"], fetcher, key="test-key"), **kw)

@@ -96,6 +96,13 @@ def narrative(tr: TraceResult, att: Attribution, rules: RuleConfig = RuleConfig(
     else:
         parts.append("No labelled exchange was reached.")
 
+    if att.top is not None and att.top.counterfactual:
+        parts.append("Checked without its strongest evidence: " + att.top.counterfactual)
+    leads = [f for f in att.flags if f["code"] == "deposit_like"]
+    if leads:
+        more = f", and {len(leads) - 1} more" if len(leads) > 1 else ""
+        parts.append("Lead, not a finding: " + leads[0]["text"].split(". ", 1)[0]
+                     + f"{more}; see the flags.")
     for c in [c for c in att.candidates if c.direction == "inbound"][:2]:
         parts.append(f"The wallet received {fmt.amount(tr.total_in, tr.in_asset)}; "
                      f"{fmt.pct(c.share)} came directly from {c.vasp} "
