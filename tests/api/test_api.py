@@ -21,8 +21,14 @@ def label_db(tmp_path_factory):
 
 
 @pytest.fixture
-def client(label_db, monkeypatch):
+def client(label_db, monkeypatch, tmp_path):
+    """Mock-era behaviour: an empty case store, and a fetcher that cannot reach the
+    network (tests/api/test_cases_live.py covers the live pipeline)."""
+    from vaspfusion.chains.cache import ChainCache, Fetcher
     monkeypatch.setattr(main, "LABEL_DB", label_db)
+    monkeypatch.setattr(main, "CASE_DB", tmp_path / "case.duckdb")
+    monkeypatch.setattr(main, "make_fetcher",
+                        lambda: Fetcher(ChainCache(tmp_path / "cache.duckdb"), None, offline=True))
     return TestClient(main.app)
 
 

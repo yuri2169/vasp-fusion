@@ -1276,7 +1276,10 @@ export interface operations {
     };
     create_case_api_cases_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Trace again even if this wallet already has a finished case */
+                refresh?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;

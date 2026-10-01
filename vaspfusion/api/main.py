@@ -3,34 +3,42 @@ response model, so the OpenAPI schema (and ui/src/api/types.ts) is complete from
 day one.
 
 Until the backend phases land, routes answer from mocks/*.json (validated
-against the same models) and say so in the `X-Data-Source` header. The label
-store is live from B1: label search and wallet labels read data/labels.duckdb.
-Phases replace mock handlers route by route (B3 cases, B8 desk/requests,
-B6/B7 model), keeping the models unchanged.
+against the same models) and say so in the `X-Data-Source` header. Live so far:
+the label store (B1: label search, wallet labels) and cases (B3: POST traces the
+wallet in the background and stores the result in data/case.duckdb; the three
+mock demo cases stay listed after the live ones). Phases replace the remaining
+mock handlers route by route (B8 desk/requests, B6/B7 model).
 
 No authentication: a single-officer workstation, as in BTC-FUSION. Login and the
 audit trail arrive in B9.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from .. import chains
+from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..labels.lookup import DEFAULT_DB, LabelStore
+from ..store.cases import SUMMARY_KEYS, CaseStore
+from ..trace import TraceConfig
 from . import schemas as S
 
 ROOT = Path(__file__).resolve().parents[2]
 MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
+CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 VERSION = "0.1.0"
+# Chains a trace can run on today. BSC has no free data source, Solana and Avalanche
+# have no adapter yet (PROGRESS.md, B2).
+TRACEABLE = ("tron", "ethereum", "polygon", "arbitrum", "base", "optimism", "bitcoin")
 
 app = FastAPI(title="VASP-FUSION",
               description="Nearest-VASP attribution for unknown crypto wallets, with "
@@ -101,20 +109,28 @@ def _labels() -> LabelStore | None:
     return LabelStore(LABEL_DB) if Path(LABEL_DB).exists() else None
 
 
-# ------------------------------------------------------------------ chain guess
-_PATTERNS = [
-    ("tron", re.compile(r"^T[1-9A-HJ-NP-Za-km-z]{33}$")),
-    ("ethereum", re.compile(r"^0x[0-9a-fA-F]{40}$")),
-    ("bitcoin", re.compile(r"^(bc1[02-9ac-hj-np-z]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$")),
-    ("solana", re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")),
-]
+# ------------------------------------------------------------------ live seams
+def make_fetcher() -> chains.Fetcher:
+    """Cache-first, OFFLINE=1 aware. Tests swap this for a replaying fetcher."""
+    return chains.default_fetcher()
 
 
-def guess_chain(address: str) -> str | None:
-    """Format-only guess, enough to label a case. B2's validators (base58check,
-    EIP-55, bech32) replace it. An EVM address is reported as ethereum; the
-    officer picks bsc/polygon explicitly."""
-    return next((c for c, p in _PATTERNS if p.match(address.strip())), None)
+def _cases() -> CaseStore:
+    return CaseStore(CASE_DB)
+
+
+_label_sha: dict[tuple[str, float], str] = {}
+
+
+def label_db_sha256() -> str | None:
+    """SHA-256 of the label DB file, for provenance; rehashed only when the file changes."""
+    path = Path(LABEL_DB)
+    if not path.exists():
+        return None
+    key = (str(path), path.stat().st_mtime)
+    if key not in _label_sha:
+        _label_sha[key] = file_sha256(path)
+    return _label_sha[key]
 
 
 # ------------------------------------------------------------------ health
@@ -129,35 +145,91 @@ def _demo_cases() -> list[dict]:
     return load_mock("cases")["items"]
 
 
-@app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
-def create_case(body: S.CaseCreate, response: Response):
-    chain = body.chain or guess_chain(body.address)
-    if chain is None:
+def _resolve(body: S.CaseCreate) -> tuple[str, str]:
+    """(chain, address as the adapters and the label store spell it), or a 422."""
+    address = body.address.strip()
+    try:
+        chain = body.chain or chains.detect_chain(address)
+    except chains.InvalidAddress:
         raise HTTPException(422, "Could not tell which chain this address is on. "
-                                 "Pick the chain and try again.")
-    _source(response, "mock")
-    for c in _demo_cases():
+                                 "Pick the chain and try again.") from None
+    if not chains.validate(address, chain):
+        raise HTTPException(422, f"{address[:64]} is not a valid {chain} address. Check it "
+                                 "was copied whole, or pick another chain.")
+    if chain not in TRACEABLE:
+        raise HTTPException(422, f"Tracing is not available on {chain} yet. Supported "
+                                 f"chains: {', '.join(TRACEABLE)}.")
+    if chain in chains.EVM_FAMILY or address.lower().startswith("bc1"):
+        address = address.lower()
+    return chain, address
+
+
+def _run_case(case_id: str, max_hops: int, incident: datetime | None) -> None:
+    """Trace the wallet and store the result. Runs after the POST has answered."""
+    store = _cases()
+    queued = store.get(case_id)
+    store.set_status(case_id, "running")
+    try:
+        fetcher = make_fetcher()
+        cfg = TraceConfig(max_hops=max_hops, since=incident)
+        provider = trace_provider(queued["chain"], fetcher, cfg)
+        with LabelStore(LABEL_DB) as labels:
+            detail = run_case(
+                queued["address"], queued["chain"], provider, labels, case_id=case_id,
+                meta=queued, cfg=cfg, fetcher=fetcher, label_db_sha256=label_db_sha256(),
+                now=datetime.fromisoformat(queued["created_at"].replace("Z", "+00:00")))
+        store.save(detail)
+    except Exception as e:  # noqa: BLE001 - whatever went wrong, the case must say so
+        store.set_status(case_id, "failed", error=f"{type(e).__name__}: {e}"[:500])
+
+
+@app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
+def create_case(body: S.CaseCreate, response: Response, background: BackgroundTasks,
+                refresh: bool = Query(False, description="Trace again even if this wallet "
+                                                         "already has a finished case")):
+    for c in _demo_cases():          # the mock demo wallets are not on any chain
         if c["address"] == body.address.strip():
+            _source(response, "mock")
             return c
-    cid = "c-" + hashlib.sha256(f"{chain}:{body.address.strip()}".encode()).hexdigest()[:10]
-    return S.CaseSummary(id=cid, address=body.address.strip(), chain=chain, status="queued",
-                         case_ref=body.case_ref, complaint_no=body.complaint_no,
-                         amount_lost_inr=body.amount_lost_inr,
-                         created_at=datetime.now(timezone.utc))
+    chain, address = _resolve(body)
+    if not Path(LABEL_DB).exists():
+        raise HTTPException(503, "The label database is missing. Run `make labels` first.")
+    store = _cases()
+    _source(response, "live")
+    existing = store.find(chain, address)
+    if existing and existing["status"] != "failed" and not refresh:
+        return {k: existing.get(k) for k in SUMMARY_KEYS}
+    cid = existing["id"] if existing else case_id_for(chain, address)
+    summary = S.CaseSummary(
+        id=cid, address=address, chain=chain, status="queued", case_ref=body.case_ref,
+        complaint_no=body.complaint_no, amount_lost_inr=body.amount_lost_inr,
+        created_at=datetime.now(timezone.utc)).model_dump(mode="json")
+    store.save(skeleton(summary))
+    incident = None
+    if body.incident_date is not None:
+        incident = datetime(body.incident_date.year, body.incident_date.month,
+                            body.incident_date.day, tzinfo=timezone.utc)
+    background.add_task(_run_case, cid, body.max_hops, incident)
+    return summary
 
 
 @app.get("/api/cases", response_model=S.CaseList)
 def list_cases(response: Response, outcome: S.Outcome | None = None,
                status: S.CaseStatus | None = None):
-    _source(response, "mock")
-    items = [c for c in _demo_cases()
-             if (outcome is None or c.get("outcome") == outcome)
-             and (status is None or c["status"] == status)]
-    return {"total": len(items), "items": items}
+    live = _cases().list(outcome=outcome, status=status)
+    mock = [c for c in _demo_cases()
+            if (outcome is None or c.get("outcome") == outcome)
+            and (status is None or c["status"] == status)]
+    _source(response, "mixed" if live else "mock")
+    return {"total": len(live) + len(mock), "items": live + mock}
 
 
 @app.get("/api/cases/{case_id}", response_model=S.CaseDetail)
 def get_case(case_id: str, response: Response):
+    live = _cases().get(case_id)
+    if live is not None:
+        _source(response, "live")
+        return live
     _source(response, "mock")
     return load_mock(f"cases/{case_id}")
 
@@ -178,6 +250,9 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
             hit = store.lookup(address, chain)
         wallet["labels"] = [hit.as_dict()] if hit else []
         kind = "mixed" if kind == "mock" else kind
+    seen = {c["case_id"] for c in wallet["cases"]}
+    wallet["cases"] = wallet["cases"] + [c for c in _cases().wallet_cases(address, chain)
+                                         if c["case_id"] not in seen]
     _source(response, kind)
     return wallet
 

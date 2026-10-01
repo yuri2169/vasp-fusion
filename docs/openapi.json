@@ -28,6 +28,20 @@
       "post": {
         "summary": "Create Case",
         "operationId": "create_case_api_cases_post",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Trace again even if this wallet already has a finished case",
+              "default": false,
+              "title": "Refresh"
+            },
+            "description": "Trace again even if this wallet already has a finished case"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
