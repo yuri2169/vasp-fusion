@@ -67,6 +67,14 @@ def test_seeds_are_the_chains_exchange_wallets_in_a_fixed_order(store):
     assert store.seeds("dogecoin") == []
 
 
+def test_non_deposit_lists_a_chains_labels_that_are_not_deposit_addresses(store):
+    rows = store.non_deposit("tron")
+    assert rows and [l.address for l in rows] == sorted(l.address for l in rows)
+    assert all(l.chain == "tron" and l.kind != "deposit" and l.tier != "derived" for l in rows)
+    assert {l.address for l in store.seeds("tron")} <= {l.address for l in rows}
+    assert store.non_deposit("dogecoin") == []
+
+
 def test_by_tier_lists_one_tier_of_one_chain_by_address(store):
     por = store.by_tier("tron", "published_por")
     assert [l.address for l in por] == ["TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz"]

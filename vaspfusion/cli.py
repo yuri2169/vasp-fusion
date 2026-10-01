@@ -264,6 +264,53 @@ def cmd_discover_eval(args) -> None:
     print(_pages(fetcher))
 
 
+def cmd_model_data(args) -> None:
+    """Build the deposit-address model's training set (B6) from the chain caches."""
+    import json
+
+    from . import chains
+    from .classify.dataset import DatasetConfig, build, load_runs, write_dataset
+    from .labels.lookup import LabelStore
+
+    runs = [r for r in load_runs(args.derived) if r.chain == args.chain]
+    if not runs:
+        sys.exit(f"no discovery run for {args.chain} in {args.derived}: run `make discover`")
+    limit = runs[0].limit
+    if any(r.limit != limit for r in runs):
+        sys.exit("the discovery runs were read with different row limits")
+    caches = [chains.ChainCache(path, hold=True) for path in (args.crawl_cache, args.cache)]
+    fetchers = [chains.Fetcher(c, chains.UrllibTransport()) for c in caches]
+    # the crawl's candidate protocol: one page of `limit` rows per listing
+    crawl, extra = (chains.get_provider(args.chain, f, page_size=limit, max_pages=1)
+                    for f in fetchers)
+
+    def progress(stage: str, i: int, n: int) -> None:
+        if i == n or i % 500 == 0:
+            print(f"  {stage}: {i}/{n}  ({_pages(fetchers[1])})", file=sys.stderr, flush=True)
+
+    cfg = DatasetConfig(per_exchange=args.per_exchange, seed=args.seed)
+    with LabelStore(args.labels_db) as labels:
+        examples, stats = build(runs, crawl, extra, labels, cfg, progress, workers=args.workers)
+    for c in caches:
+        c.close()
+    out = Path(args.out) / args.chain
+    path = write_dataset(out / "dataset.csv", examples)
+    stats["config"] = {"per_exchange": cfg.per_exchange, "seed": cfg.seed,
+                       "runs": [{"name": r.name, "since": r.since.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                 "limit": r.limit} for r in runs]}
+    (out / "dataset_report.json").write_text(json.dumps(stats, indent=1, sort_keys=True) + "\n")
+    print(f"deposit-address dataset for {args.chain}: {stats['examples']} addresses")
+    for source, n in stats["by_source"].items():
+        print(f"  {source:<22}{n:>7}")
+    print(f"customers seen {stats['customers_seen']} (sampled up to {cfg.per_exchange} per "
+          f"exchange: {stats['customers']}); {stats['customers_in_two_exchanges']} paid into "
+          "two exchanges")
+    print(f"no usable transfers in the window: {stats['empty']}; could not be read: "
+          f"{stats['errors']}")
+    print(f"wrote {path}")
+    print(_pages(fetchers[1]))
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -429,6 +476,21 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--out", default=str(ROOT / "derived"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover_eval)
+
+    s = sub.add_parser("model-data", help="build the deposit-address model's training set "
+                                          "(cached; OFFLINE=1 replays)")
+    s.add_argument("--chain", default="tron")
+    s.add_argument("--derived", default=str(ROOT / "derived"))
+    s.add_argument("--out", default=str(ROOT / "artifacts" / "model_v1"))
+    s.add_argument("--crawl-cache", default=str(ROOT / "data" / "discover_cache.duckdb"),
+                   help="the discovery crawl's cache: it holds the positives")
+    s.add_argument("--cache", default=str(ROOT / "data" / "model_cache.duckdb"),
+                   help="the cache the negatives are fetched into")
+    s.add_argument("--per-exchange", type=int, default=700, help="customers sampled per exchange")
+    s.add_argument("--seed", type=int, default=26182)
+    s.add_argument("--workers", type=int, default=6, help="parallel fetches")
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_model_data)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))

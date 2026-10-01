@@ -1,0 +1,155 @@
+"""The training set of the deposit-address model: who is in it, and that both classes
+are read the same way. Toy transfers pin the logic; real rows are in test_classify_real.py."""
+from datetime import timedelta
+
+from test_discover_crawl import Chain, Labels, deposit_and_sweep, ev
+from tracekit import CHAIN, T0, tx
+from vaspfusion.chains.base import ProviderError
+from vaspfusion.classify.dataset import (DatasetConfig, build, load_runs, read_dataset,
+                                         write_dataset)
+from vaspfusion.classify.features import FEATURES, LABEL_FEATURES
+from vaspfusion.discover.crawl import CrawlConfig, discover
+from vaspfusion.discover.store import write_result
+
+LABELS = {
+    "HOT": ("ExA", "exchange", "hot", "curated"),
+    "BHOT": ("ExB", "exchange", "reserve", "published_por"),
+    "BAD": ("Lazarus", "sanctioned"),
+    "TAGGED": ("ExA", "exchange", "deposit", "explorer_tag"),
+}
+
+
+class Store(Labels):
+    def non_deposit(self, chain):
+        return sorted((l for l in self.labels.values()
+                       if l.tier != "derived" and l.kind != "deposit"), key=lambda l: l.address)
+
+
+def world():
+    """Two ExA deposit addresses and one of ExB, their customers, and what the customers
+    and the labelled wallets did."""
+    rows = (deposit_and_sweep(1, "D1", "HOT", 0, user="U1")
+            + deposit_and_sweep(3, "D2", "HOT", 10, user="U2")
+            + deposit_and_sweep(5, "E1", "BHOT", 20, user="U3")
+            + [tx(7, "BHOT", "D1", 40, 30), tx(8, "D1", "HOT", 40, 35),      # a labelled sender
+               tx(9, "D2", "D1", 5, 36), tx(10, "D1", "HOT", 5, 37),         # a finding as sender
+               tx(11, "X", "U1", 300, -5), tx(12, "U1", "Y", 50, 40),        # U1's own life
+               tx(13, "BAD", "Z", 9, 40),
+               tx(14, "U4", "D1", 7, 41), tx(15, "D1", "HOT", 7, 42)])
+    return rows
+
+
+def runs_of(rows, tmp_path, gas=None, fail=()):
+    chain = Chain(rows, gas or {"D1": [ev("PAY", 4)]}, fail=fail)
+    result = discover(CHAIN, chain, chain, Store(LABELS), CrawlConfig(window_start=T0))
+    write_result(tmp_path / "derived", result)
+    chain.calls.clear()
+    chain.gas_calls.clear()
+    return load_runs(tmp_path / "derived"), chain
+
+
+def built(tmp_path, cfg=DatasetConfig(), rows=None, fail=()):
+    runs, chain = runs_of(rows or world(), tmp_path)
+    chain.fail = set(fail)
+    examples, stats = build(runs, chain, chain, Store(LABELS), cfg)
+    return {e["address"]: e for e in examples}, stats, chain
+
+
+def test_a_run_carries_its_fetch_protocol(tmp_path):
+    (run,), _ = runs_of(world(), tmp_path)
+    assert run.name == CHAIN and run.limit == 50
+    assert run.since == T0 - timedelta(days=7)
+    assert sorted(f.address for f in run.findings) == ["D1", "D2", "E1"]
+
+
+def test_positives_are_the_derived_addresses_grouped_by_their_exchange(tmp_path):
+    ex, stats, _ = built(tmp_path)
+    assert {a: (e["y"], e["group"], e["source"]) for a, e in ex.items() if e["y"] == 1} == {
+        "D1": (1, "ExA", "derived"), "D2": (1, "ExA", "derived"), "E1": (1, "ExB", "derived")}
+    assert ex["D1"]["forward_ratio"] == 1.0 and ex["D1"]["gas_outside_share"] == 1.0
+    assert ex["D1"]["run"] == CHAIN and ex["D1"]["first_ts"] == T0
+    assert stats["positives"] == 3
+
+
+def test_customers_are_the_unlabelled_senders_that_are_not_findings(tmp_path):
+    ex, stats, _ = built(tmp_path)
+    customers = {a: e["group"] for a, e in ex.items() if e["source"] == "customer"}
+    # BHOT is labelled and D2 is a finding: neither is an ordinary wallet
+    assert customers == {"U1": "ExA", "U2": "ExA", "U3": "ExB", "U4": "ExA"}
+    assert all(ex[a]["y"] == 0 for a in customers)
+    assert ex["U1"]["n_recipients"] == 2 and ex["U1"]["n_senders"] == 1
+    assert stats["customers_seen"] == 4
+
+
+def test_labelled_wallets_that_are_not_deposit_addresses_are_negatives(tmp_path):
+    ex, _, _ = built(tmp_path)
+    assert (ex["HOT"]["y"], ex["HOT"]["group"], ex["HOT"]["source"]) == \
+        (0, "ExA", "labelled:exchange")
+    assert (ex["BAD"]["y"], ex["BAD"]["group"], ex["BAD"]["source"]) == \
+        (0, "other", "labelled:sanctioned")
+    assert "TAGGED" not in ex                 # a tagged deposit address is not a negative
+
+
+def test_the_customer_sample_is_capped_per_exchange_and_seeded(tmp_path):
+    rows = world() + [r for i in range(20) for r in
+                      (tx(100 + 2 * i, f"V{i:02d}", "D2", 3, 60 + i),
+                       tx(101 + 2 * i, "D2", "HOT", 3, 61 + i))]
+    cfg = DatasetConfig(per_exchange=5)
+    a, stats, _ = built(tmp_path / "a", cfg, rows)
+    b, _, _ = built(tmp_path / "b", cfg, list(reversed(rows)))
+    picked = sorted(x for x, e in a.items() if e["source"] == "customer" and e["group"] == "ExA")
+    assert len(picked) == 5 and stats["customers_seen"] == 24
+    assert picked == sorted(x for x, e in b.items()
+                            if e["source"] == "customer" and e["group"] == "ExA")
+    c, _, _ = built(tmp_path / "c", DatasetConfig(per_exchange=5, seed=1), rows)
+    assert picked != sorted(x for x, e in c.items()
+                            if e["source"] == "customer" and e["group"] == "ExA")
+
+
+def test_both_classes_are_read_with_the_same_calls(tmp_path):
+    _, _, chain = built(tmp_path)
+    shapes = {address: (direction, since, asset) for address, direction, since, asset in chain.calls}
+    assert len(set(shapes.values())) == 1                  # one protocol for every address
+    assert set(chain.gas_calls) == set(shapes)             # and a gas listing for each
+
+
+def test_nothing_after_the_runs_last_positive_transfer_is_read(tmp_path):
+    # the customers are fetched later than the positives were: what happened since is cut
+    late = world() + [tx(50, "U2", "W", 99, 600)]
+    ex, _, _ = built(tmp_path, rows=late)
+    assert ex["U2"]["n_out"] == 1 and ex["U2"]["n_rows"] == 1
+
+
+def test_an_address_that_cannot_be_read_is_counted_not_guessed(tmp_path):
+    ex, stats, _ = built(tmp_path, fail=("U3",))
+    assert "U3" not in ex and stats["errors"] == 1
+
+
+def test_the_csv_round_trips_and_rewrites_to_the_same_bytes(tmp_path):
+    ex, _, _ = built(tmp_path)
+    rows = list(ex.values())
+    path = write_dataset(tmp_path / "dataset.csv", rows)
+    first = path.read_bytes()
+    df = read_dataset(path)
+    assert df.height == len(rows)
+    assert set(FEATURES) | set(LABEL_FEATURES) | {"address", "y", "group", "first_ts"} \
+        <= set(df.columns)
+    write_dataset(tmp_path / "again.csv", list(reversed(rows)))
+    assert (tmp_path / "again.csv").read_bytes() == first
+    d1 = df.filter(df["address"] == "D1").to_dicts()[0]
+    assert d1["forward_ratio"] == 1.0 and d1["y"] == 1 and d1["first_ts"] == T0
+    assert df.filter(df["address"] == "BAD")["forward_ratio"][0] is None      # empty, not zero
+
+
+def test_a_failed_address_never_breaks_the_build(tmp_path):
+    runs, chain = runs_of(world(), tmp_path)
+
+    class Flaky(Chain):
+        def gas_events(self, address, since=None, limit=None):
+            if address == "U1":
+                raise ProviderError("gas listing failed")
+            return super().gas_events(address, since, limit)
+
+    flaky = Flaky(world())
+    examples, stats = build(runs, flaky, flaky, Store(LABELS), DatasetConfig())
+    assert "U1" not in {e["address"] for e in examples} and stats["errors"] == 1

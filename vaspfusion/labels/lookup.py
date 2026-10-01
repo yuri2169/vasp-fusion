@@ -124,6 +124,14 @@ class LabelStore:
             [normalize_chain(chain), *sorted(VASP_CATEGORIES)]).fetchall()
         return [Label(*r) for r in rows]
 
+    def non_deposit(self, chain: str) -> list[Label]:
+        """A chain's labels from the sources that are not deposit addresses: exchange
+        wallets, sanctioned addresses, services. The deposit model's known negatives."""
+        rows = self.con.execute(
+            f"SELECT {self._cols} FROM labels WHERE chain = ? AND tier <> 'derived' "
+            "AND kind <> 'deposit' ORDER BY address", [normalize_chain(chain)]).fetchall()
+        return [Label(*r) for r in rows]
+
     def by_tier(self, chain: str, tier: str) -> list[Label]:
         """Every label of one tier on a chain, by address (the hold-out test samples
         its ground truth from the explorer-tagged ones)."""
