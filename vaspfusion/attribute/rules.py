@@ -29,13 +29,13 @@ import json
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from ..detect.typologies import ALERT_CATEGORIES, typology_flags
 from ..explain import fmt
 from ..labels.lookup import Label
 from ..labels.normalize import VASP_CATEGORIES
 from ..trace import ZERO, TraceEdge, TraceNode, TraceResult
 
 TIER_WEIGHT = {"published_por": 0.95, "curated": 0.85, "explorer_tag": 0.75, "derived": 0.6}
-ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"}
 UNROUTABLE = "Unidentified exchange"
 
 
@@ -242,45 +242,6 @@ def _candidates(tr: TraceResult, cfg: RuleConfig) -> list[Candidate]:
     return [Candidate(**{**c.__dict__, "proximity_rank": i}) for i, c in enumerate(found, 1)]
 
 
-# ------------------------------------------------------------------ flags
-def _flags(tr: TraceResult) -> list[dict]:
-    flags: list[dict] = []
-    lab = tr.origin_label
-    if lab is not None and lab.category in ALERT_CATEGORIES:
-        flags.append({"code": ALERT_CATEGORIES[lab.category], "severity": "high",
-                      "wallet": tr.address, "figures": {}, "tx_hashes": [],
-                      "text": f"The wallet itself is labelled {lab.entity} ({lab.category})"})
-    for (side, addr), node in tr.nodes.items():
-        if side == "origin" or node.label is None or node.received <= 0:
-            continue
-        cat = node.label.category
-        if cat not in ALERT_CATEGORIES and cat != "bridge":
-            continue
-        total = tr.total_out if side == "outbound" else tr.total_in
-        asset = tr.asset if side == "outbound" else tr.in_asset
-        share = float(node.received / total)
-        what = {"sanctioned": "a sanctioned address", "mixer": "a mixer",
-                "bridge": "a bridge"}[cat]
-        if side == "outbound":
-            text = (f"{fmt.pct(share)} of the funds ({fmt.amount(node.received, asset)}) reached "
-                    f"{what}, {fmt.short(addr)} ({node.label.entity}), {fmt.hops(node.hop)} away")
-        else:
-            text = (f"{fmt.pct(share)} of what the wallet received "
-                    f"({fmt.amount(node.received, asset)}) was funded by {what}, "
-                    f"{fmt.short(addr)} ({node.label.entity})")
-        flags.append({
-            "code": ALERT_CATEGORIES.get(cat, "bridge_hop"),
-            "severity": "high" if cat in ALERT_CATEGORIES else "warn",
-            "wallet": addr, "text": text,
-            "figures": {"share": round(share, 4), "amount": float(node.received),
-                        "hops": float(node.hop)},
-            "tx_hashes": sorted({e.transfer.tx_hash for e in tr.edges_into(side, addr)}),
-        })
-    order = {"high": 0, "warn": 1, "info": 2}
-    flags.sort(key=lambda f: (order[f["severity"]], -f["figures"].get("share", 1.0), f["wallet"]))
-    return flags
-
-
 def _alert_share(tr: TraceResult) -> float:
     if not tr.total_out:
         return 0.0
@@ -398,10 +359,28 @@ def _abstain_steps(tr: TraceResult, cands: list[Candidate]) -> list[str]:
     return steps
 
 
+def _bridge_steps(tr: TraceResult, flags: list[dict]) -> list[str]:
+    """A bridge is where the trail leaves this chain, not where it ends: say so, and say
+    which transactions carry the destination."""
+    steps = []
+    for f in flags:
+        node = tr.nodes.get(("outbound", f["wallet"]))
+        if f["code"] != "bridge_hop" or node is None:
+            continue
+        steps.append(
+            f"Follow the {fmt.amount(node.received, tr.asset)} that went into the "
+            f"{node.label.entity} bridge at {fmt.short(node.address)} onto the destination "
+            "chain: a bridge is not an exchange and holds no customer account, so no request "
+            f"is drafted for it. The bridge transaction{'s' if len(f['tx_hashes']) != 1 else ''} "
+            f"({', '.join(f['tx_hashes'][:3])}{', …' if len(f['tx_hashes']) > 3 else ''}) "
+            "name the destination chain and address")
+    return steps
+
+
 # ------------------------------------------------------------------ outcome
 def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
     cands = _candidates(tr, cfg)
-    flags = _flags(tr)
+    flags = typology_flags(tr)
     clearing = [c for c in cands if c.direction == "outbound" and c.confidence >= cfg.attribute_min]
     top = clearing[0] if clearing else None          # candidates are in proximity order
     origin_alert = tr.origin_label is not None and tr.origin_label.category in ALERT_CATEGORIES
@@ -442,4 +421,5 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
                 f"ask {c.vasp} which account withdrew to it")
     if att.outcome == "INSUFFICIENT_EVIDENCE":
         att.next_steps = _abstain_steps(tr, cands) + att.next_steps
+    att.next_steps += _bridge_steps(tr, flags)
     return att

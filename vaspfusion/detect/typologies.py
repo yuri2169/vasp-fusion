@@ -1,177 +1,265 @@
-"""Typology matchers - EVIDENCE GENERATORS, never detectors.
+"""Typology flags: patterns in how a traced wallet's money moved.
 
-THE DISTINCTION IS THE POINT. These rules never decide whether an alert is
-raised; the models do that. What a matcher contributes is concrete,
-human-checkable corroboration attached to an alert the model already raised: the
-actual transaction IDs, the actual path, the actual amounts. That is what makes
-an alert auditable rather than merely explained, and it is what satisfies the
-PS's "working model - not just rules" wording while still giving the analyst
-something they can verify by hand (roadmap §4.3, §6.8 layer 3).
+A flag is something for the officer to look at, never a verdict. None of them
+decides the outcome (the label flags are the one exception the attribution rules
+read: money at a sanctioned or mixer label sets SANCTIONED_OR_MIXER_REACHED). Each
+flag names the wallet, gives the figures it was raised on and lists the
+transaction hashes, so it can be checked by hand on a block explorer.
 
-If these ever start gating alerts, the project has quietly become the
-rules-engine every other team is building.
+Every flag reads the traced money only (`TraceEdge.traced`), not a wallet's whole
+history: "fan-out" means this wallet's money was spread, not that the wallet is busy.
+
+* sanctioned_contact / mixer_contact / bridge_hop: traced money reached (or the
+  wallet was funded by) an address with that label.
+* peel_chain: consecutive wallets that each send most of the money on to one next
+  wallet and peel the rest off to others.
+* rapid_forwarding: an unlabelled wallet passed on nearly everything that reached
+  it, each part within minutes of arriving.
+* fan_out: one wallet paid the money out to many wallets in a short time.
+* fan_in: the wallet was funded by many senders, or split money merged again.
+* round_amounts: most of the wallet's stablecoin payments are whole hundreds.
 """
 from __future__ import annotations
 
-import polars as pl
+from collections import defaultdict
+from dataclasses import dataclass
+from decimal import Decimal
 
-ROUND_SATS = 100_000_000
+from ..explain import fmt
+from ..trace import ZERO, TraceEdge, TraceResult
 
-
-class Evidence(dict):
-    """One corroborating observation: a label, a strength, and the receipts."""
-
-
-def _fmt_btc(sats) -> str:
-    return f"{(sats or 0) / 1e8:.4f}"
-
-
-def match_typologies(fm: pl.DataFrame, txs: pl.DataFrame,
-                     top_entities: list[str]) -> dict[str, list[dict]]:
-    """Return entity -> list of evidence dicts.
-
-    Computed only for the entities actually being shown to an analyst. Running it
-    across all 89k entities would cost time nobody spends: the analyst opens the
-    top of the queue, not the tail.
-    """
-    if not top_entities:
-        return {}
-    f = fm.filter(pl.col("entity").is_in(top_entities))
-    sub = txs.filter(pl.col("sender_entity").is_in(top_entities))
-
-    # Per-entity transaction detail, newest first, for quoting real TXIDs.
-    detail: dict[str, list[dict]] = {}
-    for row in sub.select(["sender_entity", "txid", "timestamp", "output_amounts",
-                           "output_addresses", "fee"]).sort("timestamp").iter_rows(named=True):
-        detail.setdefault(row["sender_entity"], []).append(row)
-
-    out: dict[str, list[dict]] = {}
-    for r in f.iter_rows(named=True):
-        eid = r["entity"]
-        txlist = detail.get(eid, [])
-        ev: list[dict] = []
-
-        # --- peel chain ---------------------------------------------------
-        # A long, thin outward reach where most spends split into exactly two
-        # outputs and one of them is consistently tiny.
-        if (r.get("peel_ratio_mean", 0) or 0) > 0 and r.get("two_output_frac", 0) > 0.45 \
-                and r.get("chain_linearity", 0) > 1.8 and r.get("peel_ratio_mean", 1) < 0.22:
-            examples = [t for t in txlist if len(t["output_amounts"]) == 2][:3]
-            ev.append(Evidence(
-                typology="peel_chain",
-                strength=min(1.0, float(r["chain_linearity"]) / 6.0),
-                summary=(f"Peel pattern: {r['two_output_frac']:.0%} of spends split into two "
-                         f"outputs with a mean peel of {r['peel_ratio_mean']:.1%}, "
-                         f"reaching {int(r.get('reach_3', 0))} entities within 3 hops."),
-                txids=[t["txid"] for t in examples],
-                detail=[{"txid": t["txid"],
-                         "peel_btc": _fmt_btc(min(t["output_amounts"])),
-                         "remainder_btc": _fmt_btc(max(t["output_amounts"]))}
-                        for t in examples]))
-
-        # --- fan-out / fan-in ---------------------------------------------
-        if r.get("max_n_outputs", 0) >= 8 and r.get("n_counterparties_out", 0) >= 8:
-            examples = sorted(txlist, key=lambda t: -len(t["output_amounts"]))[:2]
-            ev.append(Evidence(
-                typology="fan_out_in",
-                strength=min(1.0, float(r["max_n_outputs"]) / 30.0),
-                summary=(f"Fan-out: a single transaction split across "
-                         f"{int(r['max_n_outputs'])} outputs; "
-                         f"{int(r['n_counterparties_out'])} distinct counterparties overall."),
-                txids=[t["txid"] for t in examples],
-                detail=[{"txid": t["txid"], "n_outputs": len(t["output_amounts"]),
-                         "total_btc": _fmt_btc(sum(t["output_amounts"]))}
-                        for t in examples]))
-
-        # --- rapid layering ------------------------------------------------
-        gap = r.get("gap_mean", 0) or 0
-        if 0 < gap < 3600 and r.get("n_tx_sent", 0) >= 5 and r.get("chain_linearity", 0) > 1.4:
-            ev.append(Evidence(
-                typology="rapid_layering",
-                strength=min(1.0, 3600.0 / max(gap, 60.0) / 12.0),
-                summary=(f"Rapid layering: {int(r['n_tx_sent'])} spends with a mean gap of "
-                         f"{gap / 60:.0f} minutes - almost no dwell time between hops."),
-                txids=[t["txid"] for t in txlist[:3]],
-                detail=[{"txid": t["txid"], "ts": str(t["timestamp"])} for t in txlist[:3]]))
-
-        # --- mixer signature -----------------------------------------------
-        # Many outputs paying the SAME value, plus uniform script types. Keyed on
-        # output_uniformity rather than entropy: entropy is maximal for uniform
-        # values, so an earlier version of this rule matched the exact inverse of
-        # a CoinJoin. A property test caught it.
-        # Equal output VALUES is the primary signal and an excellent one:
-        # mixer-archetype entities average 0.86 here against under 0.02 for every
-        # other archetype. Script uniformity corroborates and raises the strength,
-        # but does NOT gate - gating on it suppressed the rule entirely on wallets
-        # whose participants used mixed address types.
-        _unif = float(r.get("output_uniformity_max", 0) or 0)
-        if _unif >= 0.5 and r.get("max_n_outputs", 0) >= 6:
-            examples = sorted(txlist, key=lambda t: -len(t["output_amounts"]))[:2]
-            ev.append(Evidence(
-                typology="mixer_passthrough",
-                strength=float(min(1.0, _unif * (1.0 + 0.3 * float(
-                    r.get("script_uniformity", 0) or 0)))),
-                summary=(f"Mixer signature: {_unif:.0%} of outputs in one transaction "
-                         f"repeat the same value"
-                         + (f", and {float(r.get('script_uniformity', 0)):.0%} of outputs "
-                            f"share one script type" if float(r.get("script_uniformity", 0) or 0) > 0.7
-                            else "")
-                         + " - the CoinJoin fingerprint."),
-                txids=[t["txid"] for t in examples],
-                detail=[{"txid": t["txid"], "n_outputs": len(t["output_amounts"]),
-                         "distinct_values": len(set(t["output_amounts"]))}
-                        for t in examples]))
-
-        # --- dormancy burst -------------------------------------------------
-        # A short-lived wallet with four spends trivially has one gap covering
-        # most of its life; that is not dormancy, it is just a brief existence.
-        # Require a long observed lifespan AND a genuinely large absolute gap.
-        if (r.get("dormancy_ratio", 0) > 0.7 and r.get("n_tx_sent", 0) >= 4
-                and r.get("lifespan_days", 0) >= 7
-                and (r.get("gap_max", 0) or 0) >= 5 * 86400):
-            ev.append(Evidence(
-                typology="dormancy_burst",
-                strength=float(r["dormancy_ratio"]),
-                summary=(f"Dormancy: {r['dormancy_ratio']:.0%} of this entity's "
-                         f"{r['lifespan_days']:.0f}-day lifespan is a single "
-                         f"{(r['gap_max'] or 0) / 86400:.0f}-day gap, followed by "
-                         f"{int(r['n_tx_sent'])} spends in a burst."),
-                txids=[t["txid"] for t in txlist[-3:]],
-                detail=[{"txid": t["txid"], "ts": str(t["timestamp"])} for t in txlist[-3:]]))
-
-        # --- cross-ASN structuring ------------------------------------------
-        if r.get("structuring_proximity", 0) > 0.45 and r.get("n_asns", 0) >= 3:
-            ev.append(Evidence(
-                typology="cross_asn_structuring",
-                strength=float(r["structuring_proximity"]),
-                summary=(f"Structuring: {r['structuring_proximity']:.0%} of outputs sit just "
-                         f"below a round threshold, spread over {int(r['n_asns'])} "
-                         f"autonomous systems."),
-                txids=[t["txid"] for t in txlist[:3]],
-                detail=[{"txid": t["txid"], "total_btc": _fmt_btc(sum(t["output_amounts"]))}
-                        for t in txlist[:3]]))
-
-        if ev:
-            out[eid] = ev
-    return out
+ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"}
+_SEVERITY = {"high": 0, "warn": 1, "info": 2}
+_CODES = ["sanctioned_contact", "mixer_contact", "bridge_hop", "peel_chain", "rapid_forwarding",
+          "fan_out", "fan_in", "round_amounts"]
 
 
-def evidence_strength(fm: pl.DataFrame, txs: pl.DataFrame,
-                      entities: list[str]) -> pl.DataFrame:
-    """A scalar per entity for the fusion stage.
+@dataclass(frozen=True)
+class TypologyConfig:
+    fan_out_recipients: int = 5        # distinct wallets paid ...
+    fan_out_hours: float = 24.0        # ... inside this window
+    fan_in_senders: int = 5            # distinct funders of the wallet
+    merge_senders: int = 3             # traced wallets that pay one wallet
+    rapid_share: float = 0.90          # passed on at least this much ...
+    rapid_seconds: int = 600           # ... each part within this long of arriving
+    peel_main_share: float = 0.70      # sent on to one wallet; the rest is peeled
+    peel_wallets: int = 2              # consecutive peeling wallets
+    round_unit: int = 100              # stablecoin units
+    round_transfers: int = 3
+    round_share: float = 0.5
 
-    Note what this is NOT: it never raises an alert on its own. It is one of
-    three inputs to the fused score, weighted lowest of the three by config.
-    """
-    matches = match_typologies(fm, txs, entities)
-    rows = [{"entity": e,
-             "evidence_strength": max((m["strength"] for m in ev), default=0.0),
-             "n_evidence": len(ev),
-             "matched_typologies": "|".join(sorted({m["typology"] for m in ev}))}
-            for e, ev in matches.items()]
-    if not rows:
-        return pl.DataFrame({"entity": [], "evidence_strength": [], "n_evidence": [],
-                             "matched_typologies": []},
-                            schema={"entity": pl.Utf8, "evidence_strength": pl.Float64,
-                                    "n_evidence": pl.Int64, "matched_typologies": pl.Utf8})
-    return pl.DataFrame(rows)
+
+def _flag(code: str, severity: str, wallet: str, text: str, figures: dict,
+          edges: list[TraceEdge]) -> dict:
+    return {"code": code, "severity": severity, "wallet": wallet, "text": text,
+            "figures": {k: float(v) for k, v in figures.items()},
+            "tx_hashes": sorted({e.transfer.tx_hash for e in edges})}
+
+
+def _when(e: TraceEdge) -> float:
+    return e.transfer.block_time.timestamp()
+
+
+class _View:
+    """The outbound side of a trace, by wallet."""
+
+    def __init__(self, tr: TraceResult):
+        self.tr = tr
+        self.asset = tr.asset
+        self.sent: dict[str, list[TraceEdge]] = defaultdict(list)
+        self.got: dict[str, list[TraceEdge]] = defaultdict(list)
+        for e in tr.edges:
+            if e.side == "outbound":
+                self.sent[e.transfer.from_addr].append(e)
+                self.got[e.transfer.to_addr].append(e)
+        for edges in (*self.sent.values(), *self.got.values()):
+            edges.sort(key=lambda e: (_when(e), e.transfer.tx_hash, e.transfer.to_addr))
+
+    def received(self, wallet: str) -> Decimal:
+        if wallet == self.tr.address:
+            return self.tr.total_out
+        return sum((e.traced for e in self.got[wallet]), ZERO)
+
+    def unlabelled(self, wallet: str) -> bool:
+        node = self.tr.nodes.get(("outbound", wallet))
+        return wallet != self.tr.address and node is not None and node.label is None
+
+
+# ------------------------------------------------------------------ labels
+def _label_flags(tr: TraceResult) -> list[dict]:
+    flags: list[dict] = []
+    lab = tr.origin_label
+    if lab is not None and lab.category in ALERT_CATEGORIES:
+        flags.append({"code": ALERT_CATEGORIES[lab.category], "severity": "high",
+                      "wallet": tr.address, "figures": {}, "tx_hashes": [],
+                      "text": f"The wallet itself is labelled {lab.entity} ({lab.category})"})
+    for (side, addr), node in tr.nodes.items():
+        if side == "origin" or node.label is None or node.received <= 0:
+            continue
+        cat = node.label.category
+        if cat not in ALERT_CATEGORIES and cat != "bridge":
+            continue
+        total = tr.total_out if side == "outbound" else tr.total_in
+        asset = tr.asset if side == "outbound" else tr.in_asset
+        share = float(node.received / total)
+        what = {"sanctioned": "a sanctioned address", "mixer": "a mixer",
+                "bridge": "a bridge"}[cat]
+        if side == "outbound":
+            text = (f"{fmt.pct(share)} of the funds ({fmt.amount(node.received, asset)}) reached "
+                    f"{what}, {fmt.short(addr)} ({node.label.entity}), {fmt.hops(node.hop)} away")
+        else:
+            text = (f"{fmt.pct(share)} of what the wallet received "
+                    f"({fmt.amount(node.received, asset)}) was funded by {what}, "
+                    f"{fmt.short(addr)} ({node.label.entity})")
+        flags.append(_flag(ALERT_CATEGORIES.get(cat, "bridge_hop"),
+                           "high" if cat in ALERT_CATEGORIES else "warn", addr, text,
+                           {"share": round(share, 4), "amount": node.received, "hops": node.hop},
+                           tr.edges_into(side, addr)))
+    return flags
+
+
+# ------------------------------------------------------------------ behaviour
+def _fan_out(v: _View, cfg: TypologyConfig) -> list[dict]:
+    flags = []
+    span = cfg.fan_out_hours * 3600
+    for wallet, edges in v.sent.items():
+        best: list[TraceEdge] = []
+        start = 0
+        for end in range(len(edges)):
+            while _when(edges[end]) - _when(edges[start]) > span:
+                start += 1
+            window = edges[start:end + 1]
+            if len({e.transfer.to_addr for e in window}) > len({e.transfer.to_addr for e in best}):
+                best = window
+        recipients = len({e.transfer.to_addr for e in best})
+        if recipients < cfg.fan_out_recipients:
+            continue
+        amount = sum((e.traced for e in best), ZERO)
+        took = _when(best[-1]) - _when(best[0])
+        flags.append(_flag("fan_out", "info", wallet,
+                           f"{fmt.short(wallet)} paid {fmt.amount(amount, v.asset)} to "
+                           f"{recipients} wallets within {fmt.duration(took)}",
+                           {"recipients": recipients, "amount": amount,
+                            "hours": round(took / 3600, 2)}, best))
+    return flags
+
+
+def _fan_in(v: _View, cfg: TypologyConfig) -> list[dict]:
+    tr, flags = v.tr, []
+    funders = [e for e in tr.edges if e.side == "inbound" and e.hop == 1]
+    senders = {e.transfer.from_addr for e in funders}
+    if len(senders) >= cfg.fan_in_senders:
+        amount = sum((e.traced for e in funders), ZERO)
+        flags.append(_flag("fan_in", "info", tr.address,
+                           f"{fmt.short(tr.address)} was funded by {len(senders)} wallets "
+                           f"({fmt.amount(amount, tr.in_asset)} in all)",
+                           {"senders": len(senders), "amount": amount}, funders))
+    for wallet, edges in v.got.items():
+        senders = {e.transfer.from_addr for e in edges}
+        if wallet == tr.address or len(senders) < cfg.merge_senders:
+            continue
+        amount = sum((e.traced for e in edges), ZERO)
+        flags.append(_flag("fan_in", "info", wallet,
+                           f"{fmt.amount(amount, v.asset)} of the wallet's money came together "
+                           f"again at {fmt.short(wallet)}, from {len(senders)} wallets it had "
+                           "been split across",
+                           {"senders": len(senders), "amount": amount}, edges))
+    return flags
+
+
+def _rapid(v: _View, cfg: TypologyConfig) -> list[dict]:
+    flags = []
+    for wallet, sent in v.sent.items():
+        got = v.got.get(wallet)
+        if not got or not v.unlabelled(wallet):
+            continue
+        received = v.received(wallet)
+        passed = sum((e.traced for e in sent), ZERO)
+        if received <= 0 or float(passed / received) < cfg.rapid_share:
+            continue
+        slowest = 0.0
+        for e in sent:                       # timed from the latest arrival before it left
+            before = [_when(a) for a in got if _when(a) <= _when(e)]
+            if not before:
+                slowest = float("inf")
+                break
+            slowest = max(slowest, _when(e) - before[-1])
+        if slowest > cfg.rapid_seconds:
+            continue
+        flags.append(_flag("rapid_forwarding", "warn", wallet,
+                           f"{fmt.short(wallet)} passed on {fmt.pct(passed / received)} of the "
+                           f"{fmt.amount(received, v.asset)} that reached it within "
+                           f"{fmt.duration(slowest)} of its arrival",
+                           {"share": round(float(passed / received), 4), "amount": received,
+                            "seconds": slowest}, got + sent))
+    return flags
+
+
+def _peels(v: _View, wallet: str, cfg: TypologyConfig) -> tuple[str, Decimal] | None:
+    """(the wallet most of the money went on to, what was peeled off), if `wallet` peels."""
+    received = v.received(wallet)
+    to: dict[str, Decimal] = defaultdict(lambda: ZERO)
+    for e in v.sent.get(wallet, ()):
+        to[e.transfer.to_addr] += e.traced
+    if len(to) < 2 or received <= 0:
+        return None
+    main = min(to, key=lambda a: (-to[a], a))
+    if float(to[main] / received) < cfg.peel_main_share:
+        return None
+    return main, sum(to.values(), ZERO) - to[main]
+
+
+def _peel_chain(v: _View, cfg: TypologyConfig) -> list[dict]:
+    peel = {w: p for w in v.sent if (p := _peels(v, w, cfg)) is not None}
+    continued = {main for main, _ in peel.values()}
+    flags = []
+    for start in peel:
+        if start in continued and start != v.tr.address:
+            continue                                   # the middle of a chain, not its start
+        chain, peeled, seen = [], ZERO, set()
+        w = start
+        while w in peel and w not in seen:
+            seen.add(w)
+            chain.append(w)
+            peeled += peel[w][1]
+            w = peel[w][0]
+        if len(chain) < cfg.peel_wallets:
+            continue
+        amount = v.received(start)
+        flags.append(_flag("peel_chain", "warn", start,
+                           f"Peel chain of {len(chain)} wallets: "
+                           f"{' → '.join(fmt.short(a) for a in chain)} each sent most of the "
+                           f"money on to one wallet and peeled the rest off to others "
+                           f"({fmt.amount(peeled, v.asset)} of {fmt.amount(amount, v.asset)} "
+                           "peeled off in all)",
+                           {"wallets": len(chain), "amount": amount, "peeled": peeled},
+                           [e for a in chain for e in v.sent[a]]))
+    return flags
+
+
+def _round_amounts(v: _View, cfg: TypologyConfig) -> list[dict]:
+    first = [e for e in v.sent.get(v.tr.address, ()) if e.transfer.amount_usd is not None]
+    round_ = [e for e in first if e.transfer.amount >= cfg.round_unit
+              and e.transfer.amount % cfg.round_unit == 0]
+    if len(round_) < cfg.round_transfers or len(round_) < cfg.round_share * len(first):
+        return []
+    amount = sum((e.transfer.amount for e in round_), ZERO)
+    return [_flag("round_amounts", "info", v.tr.address,
+                  f"{len(round_)} of the wallet's {len(first)} {v.asset} payments are whole "
+                  f"multiples of {cfg.round_unit} ({fmt.amount(amount, v.asset)} in all)",
+                  {"round_transfers": len(round_), "transfers": len(first), "amount": amount},
+                  round_)]
+
+
+def typology_flags(tr: TraceResult, cfg: TypologyConfig = TypologyConfig()) -> list[dict]:
+    flags = _label_flags(tr)
+    if tr.asset is not None:
+        v = _View(tr)
+        flags += _peel_chain(v, cfg) + _rapid(v, cfg) + _fan_out(v, cfg) + _fan_in(v, cfg) \
+            + _round_amounts(v, cfg)
+    elif tr.in_asset is not None:
+        flags += _fan_in(_View(tr), cfg)
+    flags.sort(key=lambda f: (_SEVERITY[f["severity"]], _CODES.index(f["code"]),
+                              -f["figures"].get("share", 1.0),
+                              -f["figures"].get("amount", 0.0), f["wallet"]))
+    return flags

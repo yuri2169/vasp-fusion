@@ -244,6 +244,28 @@ def test_a_bridge_is_flagged():
     assert att.outcome == "INSUFFICIENT_EVIDENCE" and "bridge" in att.abstain_reason
 
 
+def test_a_bridge_is_never_named_as_an_exchange_even_with_one_behind_it():
+    # the bridge contract pays an exchange wallet right after: that is other users' money
+    att = run([tx(1, "S", "BRIDGE", 700, 0), tx(2, "BRIDGE", "HOT", 700, 1),
+               tx(3, "S", "HOT", 300, 2)])
+    assert [c.vasp for c in att.candidates] == ["ExA"]
+    assert att.candidates[0].share == D("0.3") and att.candidates[0].path == ["S", "HOT"]
+    assert att.outcome == "ATTRIBUTED"
+    step = next(s for s in att.next_steps if "bridge" in s)
+    assert step.startswith("Follow the 700 USDT that went into the Stargate bridge at BRIDGE "
+                           "onto the destination chain: a bridge is not an exchange")
+    assert "(tx1)" in step
+    assert not any("Stargate" in s for s in att.next_steps if s.startswith("Draft a request"))
+
+
+def test_a_bridge_abstain_says_where_to_follow():
+    att = run([tx(1, "S", "BRIDGE", 1000, 0)])
+    assert att.candidates == [] and att.outcome == "INSUFFICIENT_EVIDENCE"
+    assert "100% went into a bridge (Stargate)" in att.abstain_reason
+    assert any("across the bridge (Stargate)" in w for w in att.what_would_change)
+    assert any(s.startswith("Follow the 1,000 USDT") for s in att.next_steps)
+
+
 def test_an_unnamed_exchange_is_a_candidate_that_cannot_be_routed():
     att = run([tx(1, "S", "ANON", 1000, 0)])
     assert att.candidates[0].vasp == "Unidentified exchange"
