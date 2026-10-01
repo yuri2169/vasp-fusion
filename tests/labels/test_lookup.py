@@ -99,7 +99,10 @@ def test_real_db_finds_known_addresses(address, chain, entity, category):
 def test_real_db_exchange_count_matches_the_source():
     with LabelStore(DEFAULT_DB) as s:
         stats = s.stats()
-    # 27.7k exchange rows upstream + Dune, plus the Etherscan Exchange-tag rows.
-    assert 36_000 <= stats["by_category"]["exchange"] <= 38_000
+        from_sources = s.con.execute("SELECT count(*) FROM labels WHERE category = 'exchange' "
+                                     "AND tier <> 'derived'").fetchone()[0]
+    # 27.7k exchange rows upstream + Dune, plus the Etherscan Exchange-tag rows. Deposit
+    # addresses derived by `make discover` come on top and grow with every run.
+    assert 36_000 <= from_sources <= 38_000
     assert stats["by_category"]["swap_service"] > 0
     assert stats["by_category"]["custodial_wallet"] > 0
