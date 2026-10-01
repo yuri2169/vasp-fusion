@@ -1,0 +1,83 @@
+"""Counterfactual check: does a named exchange survive losing its strongest evidence?
+
+The strongest single item behind "this wallet's money reached exchange X" is the
+label on the address where it entered X. So that label is hidden and the wallet is
+traced and attributed again, with the same settings:
+
+* holds:  X still clears the bar (usually one hop further, at X's own wallet);
+* weaker: X is still reached, but below the bar that names an exchange;
+* gone:   X is not reached at all, so the answer rests on that one label.
+
+It is run for the candidates that were named (outbound, at or above the bar). The
+second trace reads through the same cache-first fetcher, so its pages are recorded
+and replayed like every other page. The idea of re-scoring without the top evidence
+item is from Lokesh-1511's SIH entry (research/COMPETITOR_SCAN.md).
+"""
+from __future__ import annotations
+
+from dataclasses import replace
+
+from ..chains.base import ProviderError
+from ..explain import fmt
+from ..trace import TraceConfig, TraceResult, trace
+from .rules import Attribution, Candidate, RuleConfig, attribute
+
+MAX_CHECKED = 3
+
+
+class HiddenLabels:
+    """A label lookup that does not know the given addresses."""
+
+    def __init__(self, labels, hidden: set[str]):
+        self.labels, self.hidden = labels, set(hidden)
+
+    def lookup_many(self, pairs):
+        return {k: v for k, v in self.labels.lookup_many(pairs).items()
+                if k[0] not in self.hidden}
+
+
+def _verdict(c: Candidate, again: Candidate | None, rules: RuleConfig) -> tuple[bool, str]:
+    without = f"the label on {fmt.short(c.deposit_address)}"
+    if again is None:
+        return False, (f"Without {without}, {c.vasp} is not reached at all: naming {c.vasp} "
+                       "rests on that one label.")
+    where = (f"{fmt.pct(again.share)} of the funds reach {c.vasp} at "
+             f"{fmt.short(again.deposit_address)} ({fmt.tier_words(again.label.tier)}) in "
+             f"{fmt.hops(again.hops_min, again.hops_max)}")
+    if again.confidence >= rules.attribute_min:
+        return True, (f"Still {c.vasp} without {without}: {where}, confidence "
+                      f"{again.confidence:.2f} (was {c.confidence:.2f}).")
+    return False, (f"Without {without}, {where}, but confidence falls to "
+                   f"{again.confidence:.2f}, below the {rules.attribute_min:.2f} needed to name "
+                   f"an exchange (was {c.confidence:.2f}).")
+
+
+def check(c: Candidate, tr: TraceResult, provider, labels, cfg: TraceConfig,
+          rules: RuleConfig) -> Candidate:
+    """`c` with its counterfactual filled in; unchanged if the second trace cannot run."""
+    try:
+        tr2 = trace(tr.address, tr.chain, provider, HiddenLabels(labels, {c.deposit_address}),
+                    cfg)
+    except ProviderError:
+        return c
+    again = next((x for x in attribute(tr2, rules).candidates
+                  if x.direction == "outbound" and x.vasp == c.vasp and x.hops > 0), None)
+    holds, text = _verdict(c, again, rules)
+    item = {"kind": "counterfactual", "tier": None, "text": text,
+            "tx_hashes": [e.transfer.tx_hash for e in again.path_edges] if again else [],
+            "weight": round((again.confidence if again else 0.0) - c.confidence, 4)}
+    return replace(c, counterfactual=text, counterfactual_holds=holds,
+                   evidence=[*c.evidence, item])
+
+
+def add_counterfactuals(tr: TraceResult, att: Attribution, provider, labels,
+                        cfg: TraceConfig = TraceConfig(),
+                        rules: RuleConfig = RuleConfig()) -> None:
+    """Fill in the counterfactual of every named candidate (at most MAX_CHECKED, nearest
+    first). Nothing else about the attribution changes."""
+    named = [c for c in att.candidates if c.direction == "outbound" and c.hops > 0
+             and c.confidence >= rules.attribute_min][:MAX_CHECKED]
+    done = {id(c): check(c, tr, provider, labels, cfg, rules) for c in named}
+    if att.top is not None:
+        att.top = done.get(id(att.top), att.top)
+    att.candidates = [done.get(id(c), c) for c in att.candidates]

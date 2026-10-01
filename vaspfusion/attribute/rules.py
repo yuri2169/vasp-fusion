@@ -116,6 +116,9 @@ class Candidate:
     passed_all: bool = False       # last_hop forwarded everything it got from this trail
     # the calibrated range, when money reached a deposit address the model scored
     confidence_interval: tuple[float, float] | None = None
+    # does the answer survive without its strongest evidence? (attribute/counterfactual.py)
+    counterfactual: str | None = None
+    counterfactual_holds: bool | None = None
 
     @property
     def label_tier(self) -> str:
