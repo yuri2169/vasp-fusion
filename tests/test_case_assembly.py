@@ -94,6 +94,17 @@ def test_narrative_of_a_sanctioned_reach_leads_with_it():
     assert "Transaction hashes: tx1, tx2" in text
 
 
+def test_narrative_of_a_sanctioned_reach_with_no_exchange_says_so():
+    text = story([tx(1, "S", "OFAC", 1000, 0)])
+    assert "No labelled exchange was reached." in text
+    assert "rule confidence" not in text
+
+
+def test_narrative_gives_the_hop_range_when_money_took_two_routes():
+    text = story([tx(1, "S", "POR", 200, 0), tx(2, "S", "M1", 800, 1), tx(3, "M1", "POR", 800, 2)])
+    assert "1,000 USDT (100%) reached ExB in 1 to 2 hops, at POR" in text
+
+
 def test_narrative_of_a_wallet_that_sent_nothing():
     assert "has not sent" in story([tx(1, "X", "S", 5, 0)])
 

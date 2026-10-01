@@ -1,0 +1,223 @@
+{
+ "eth-abstain": {
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 22214.697568,
+  "candidates": [],
+  "where_funds_went": [
+   {
+    "kind": "not_moved",
+    "name": null,
+    "share": 1.0,
+    "amount": 22214.697468
+   },
+   {
+    "kind": "not_followed",
+    "name": null,
+    "share": 0.0,
+    "amount": 0.0001
+   }
+  ],
+  "nodes": 8,
+  "edges": 7,
+  "flags": [],
+  "narrative": "Wallet 0x0bad\u20262424bb sent 22,214.70 USDT on Ethereum in 2 transfers between 4 Apr 2024 and 23 Sep 2024. No exchange is named. None of the 22,214.70 USDT this wallet sent reached a labelled exchange within 3 hops. 99% has not moved on from the wallets it reached; under 1% split into parts too small to follow. Not followed in this run: 270.30 ETH in 4 transfers."
+ },
+ "eth-bitget": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "Bitget",
+  "confidence": 0.75,
+  "asset": "USDT",
+  "total_sent": 552163.80319,
+  "candidates": [
+   {
+    "vasp": "Bitget",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.75,
+    "hops": 1,
+    "share_of_funds": 1.0,
+    "deposit_address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
+    "label_tier": "explorer_tag"
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "Bitget",
+    "share": 1.0,
+    "amount": 552163.80319
+   }
+  ],
+  "nodes": 5,
+  "edges": 5,
+  "flags": [],
+  "narrative": "Wallet 0x8971\u2026b0eda9 sent 552,163.80 USDT on Ethereum in 2 transfers between 23 Jan 2024 and 6 Apr 2024. 552,163.80 USDT (100%) reached Bitget in 1 hop, at 0x0008\u20260c8f24 (\"Bitget Dep: 0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24\", explorer tag). Nearest exchange: Bitget, rule confidence 0.75 (rule-based, not calibrated). Not followed in this run: 325.56 ETH in 6 transfers. Transaction hashes: 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1."
+ },
+ "tron-abstain": {
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 1560.0,
+  "candidates": [
+   {
+    "vasp": "CoinDCX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.2779,
+    "hops": 2,
+    "share_of_funds": 0.0962,
+    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
+    "label_tier": "curated"
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "hub",
+    "name": null,
+    "share": 0.7436,
+    "amount": 1160.0
+   },
+   {
+    "kind": "beyond_hop_limit",
+    "name": null,
+    "share": 0.1603,
+    "amount": 250.0
+   },
+   {
+    "kind": "vasp",
+    "name": "CoinDCX",
+    "share": 0.0962,
+    "amount": 150.0
+   }
+  ],
+  "nodes": 18,
+  "edges": 24,
+  "flags": [],
+  "narrative": "Wallet TXXvb9\u2026BCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr 2025 and 21 Apr 2026. 150 USDT (10%) reached CoinDCX in 2 hops within 21 seconds, at TU7BbA\u2026vZbsFs (\"CoinDCX 2\", curated list). The wallet before it, THuWri\u20268CRkY9, passed on everything it received from this trail. No exchange is named. Only 10% of the funds reached a labelled VASP (CoinDCX), 2 hops away; rule confidence 0.28 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced. Not followed in this run: 64.83 TRX in 4 transfers. Transaction hashes: a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf, db8bac2016d00e4d8fd1aefa156ce087c3ce9a1adbf0f7b9f71f31d0bd3f5f5c."
+ },
+ "tron-coindcx": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "CoinDCX",
+  "confidence": 0.7225,
+  "asset": "USDT",
+  "total_sent": 2652.22,
+  "candidates": [
+   {
+    "vasp": "CoinDCX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.7225,
+    "hops": 2,
+    "share_of_funds": 0.5769,
+    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
+    "label_tier": "curated"
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "CoinDCX",
+    "share": 0.5769,
+    "amount": 1530.0
+   },
+   {
+    "kind": "hub",
+    "name": null,
+    "share": 0.4231,
+    "amount": 1122.22
+   }
+  ],
+  "nodes": 8,
+  "edges": 9,
+  "flags": [],
+  "narrative": "Wallet TYJD2h\u2026e2HP1c sent 2,652.22 USDT on Tron in 2 transfers between 25 May 2025 and 14 Jul 2025. 1,530 USDT (58%) reached CoinDCX in 2 hops within 21 seconds, at TU7BbA\u2026vZbsFs (\"CoinDCX 2\", curated list). The wallet before it, TCw8j3\u2026LLcoV5, passed on everything it received from this trail. Nearest exchange: CoinDCX, rule confidence 0.72 (rule-based, not calibrated). Not followed in this run: 36.50 TRX in 1 transfer. Transaction hashes: 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072, 1878e14b6c3b9a8f72b63f69276cd838ee349b03861e6710a96f0793854b7df4."
+ },
+ "tron-htx-coindcx": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "HTX",
+  "confidence": 0.7071,
+  "asset": "USDT",
+  "total_sent": 13000.0,
+  "candidates": [
+   {
+    "vasp": "HTX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.7071,
+    "hops": 2,
+    "share_of_funds": 0.5385,
+    "deposit_address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "label_tier": "published_por"
+   },
+   {
+    "vasp": "CoinDCX",
+    "direction": "outbound",
+    "proximity_rank": 2,
+    "confidence": 0.7225,
+    "hops": 2,
+    "share_of_funds": 0.4615,
+    "deposit_address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
+    "label_tier": "curated"
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "HTX",
+    "share": 0.5385,
+    "amount": 7000.0
+   },
+   {
+    "kind": "vasp",
+    "name": "CoinDCX",
+    "share": 0.4615,
+    "amount": 6000.0
+   }
+  ],
+  "nodes": 7,
+  "edges": 8,
+  "flags": [],
+  "narrative": "Wallet TGfoGr\u2026q49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul 2024 and 26 Aug 2024. 7,000 USDT (54%) reached HTX in 2 hops within 4 minutes, at TFTWNg\u20268x5jLu (\"HTX (Huobi) (proof-of-reserves)\", published by the exchange itself). The wallet before it, THW7GJ\u2026uUJt6a, passed on everything it received from this trail. 6,000 USDT (46%) reached CoinDCX in 2 hops within 24 seconds, at TU7BbA\u2026vZbsFs (\"CoinDCX 2\", curated list). The wallet before it, TLUQsV\u20262NHPYk, passed on everything it received from this trail. Nearest exchange: HTX, rule confidence 0.71 (rule-based, not calibrated). Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes: a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d, b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645."
+ },
+ "tron-ofac": {
+  "outcome": "SANCTIONED_OR_MIXER_REACHED",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 101078.339672,
+  "candidates": [],
+  "where_funds_went": [
+   {
+    "kind": "sanctioned",
+    "name": "OFAC SDN",
+    "share": 0.9894,
+    "amount": 100008.0
+   },
+   {
+    "kind": "beyond_hop_limit",
+    "name": null,
+    "share": 0.0104,
+    "amount": 1052.0
+   },
+   {
+    "kind": "not_followed",
+    "name": null,
+    "share": 0.0002,
+    "amount": 18.339672
+   }
+  ],
+  "nodes": 8,
+  "edges": 15,
+  "flags": [
+   [
+    "sanctioned_contact",
+    "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey"
+   ]
+  ],
+  "narrative": "Wallet TU1D9S\u2026WpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25 Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away. No exchange clears the 0.60 rule confidence needed to name one. Not followed in this run: 200 TRX in 1 transfer. Transaction hashes: 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b."
+ }
+}

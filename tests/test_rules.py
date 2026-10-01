@@ -80,7 +80,9 @@ def test_money_arriving_by_two_routes_is_weighted_by_amount():
     # 200 reach POR in 1 hop, 800 in 2 hops
     att = run([tx(1, "S", "POR", 200, 0), tx(2, "S", "M1", 800, 1), tx(3, "M1", "POR", 800, 2)])
     c = att.candidates[0]
-    assert (c.hops, c.share) == (1, D(1))                 # nearest route gives the hop count
+    assert (c.hops, c.hops_max, c.share) == (1, 2, D(1))  # nearest route gives the hop count
+    path = next(e for e in c.evidence if e["kind"] == "path")
+    assert "in 1 to 2 hops" in path["text"] and "within" not in path["text"]
     assert c.confidence == approx(TIER_WEIGHT["published_por"] * (0.2 + 0.8 * 0.85))
 
 

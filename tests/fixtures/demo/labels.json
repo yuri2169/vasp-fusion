@@ -1,0 +1,65 @@
+{
+ "_source": "rows of data/labels.duckdb returned while tracing the demo wallets (real labels; see research/data)",
+ "labels": {
+  "ethereum:0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24": {
+   "address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
+   "category": "exchange",
+   "chain": "ethereum",
+   "entity": "Bitget",
+   "kind": "deposit",
+   "label": "Bitget Dep: 0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24",
+   "query_chain": "ethereum",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels",
+   "tier": "explorer_tag"
+  },
+  "ethereum:0x1111111254fb6c44bac0bed2854e76f90643097d": {
+   "address": "0x1111111254fb6c44bac0bed2854e76f90643097d",
+   "category": "defi",
+   "chain": "ethereum",
+   "entity": "1inch",
+   "kind": "unknown",
+   "label": "Aggregation Router V4",
+   "query_chain": "ethereum",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels",
+   "tier": "explorer_tag"
+  },
+  "tron:TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu": {
+   "address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+   "category": "exchange",
+   "chain": "tron",
+   "entity": "HTX",
+   "kind": "reserve",
+   "label": "HTX (Huobi) (proof-of-reserves)",
+   "query_chain": "tron",
+   "source": "defillama-cex",
+   "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+   "tier": "published_por"
+  },
+  "tron:TFdHux43bs21qRsygv5WQWfgtbQeT6nXey": {
+   "address": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+   "category": "sanctioned",
+   "chain": "tron",
+   "entity": "OFAC SDN",
+   "kind": "unknown",
+   "label": "OFAC sanctioned (USDT)",
+   "query_chain": "tron",
+   "source": "ofac-sdn",
+   "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "tier": "curated"
+  },
+  "tron:TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs": {
+   "address": "TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs",
+   "category": "exchange",
+   "chain": "tron",
+   "entity": "CoinDCX",
+   "kind": "unknown",
+   "label": "CoinDCX 2",
+   "query_chain": "tron",
+   "source": "dune-spellbook",
+   "source_url": "https://github.com/duneanalytics/spellbook",
+   "tier": "curated"
+  }
+ }
+}

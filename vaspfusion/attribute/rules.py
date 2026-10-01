@@ -64,6 +64,7 @@ class Candidate:
     last_hop: str | None           # last unlabelled wallet before the entry, if any
     evidence: list[dict]
     proximity_rank: int = 0
+    hops_max: int = 0              # longest route the money took (hops is the shortest)
 
     @property
     def label_tier(self) -> str:
@@ -94,10 +95,11 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     amount = sum((n.received for n in entries), ZERO)
     share = amount / total
     main = max(entries, key=lambda n: (n.received, n.address))
-    weighted = 0.0
+    weighted, hops_max = 0.0, 0
     for n in entries:
         for e in _edges_into(tr, side, n.address):
             weighted += TIER_WEIGHT[n.label.tier] * cfg.hop_decay ** (e.hop - 1) * float(e.traced)
+            hops_max = max(hops_max, e.hop)
     confidence = min(1.0, float(share) / cfg.share_full) * weighted / float(amount)
     edges = tr.path_to(side, main.address)
     addresses = [edges[0].transfer.from_addr] + [e.transfer.to_addr for e in edges]
@@ -118,8 +120,9 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
         "kind": "path", "tier": None, "tx_hashes": [e.transfer.tx_hash for e in edges],
         "weight": round(confidence / TIER_WEIGHT[main.label.tier], 4),
         "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, asset)}) {verb} "
-                f"in {fmt.hops(hop_count)}"
-                + (f" within {fmt.duration(took)}" if len(edges) > 1 else ""),
+                f"in {fmt.hops(hop_count, hops_max)}"
+                + (f" within {fmt.duration(took)}" if len(edges) > 1 and hops_max == hop_count
+                   else ""),
     }]
     if last_hop is not None:
         node = tr.nodes[(side, last_hop)]
@@ -141,7 +144,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
                      amount=amount, time_to_reach_s=took, label=main.label,
                      deposit_address=main.address, path=addresses, path_edges=edges,
                      entries=sorted(entries, key=lambda n: (-n.received, n.address)),
-                     last_hop=last_hop, evidence=evidence)
+                     last_hop=last_hop, evidence=evidence, hops_max=hops_max)
 
 
 def _self_candidate(tr: TraceResult) -> Candidate:

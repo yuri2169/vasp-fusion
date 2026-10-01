@@ -1,0 +1,59 @@
+{
+  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1 Oct 2026 from senders into labelled exchange and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
+  "cases": [
+    {
+      "id": "tron-coindcx",
+      "title": "USDT on Tron, through a deposit address into CoinDCX",
+      "address": "TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
+      "chain": "tron",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/101",
+      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "CoinDCX"}
+    },
+    {
+      "id": "eth-bitget",
+      "title": "USDT on Ethereum, straight into a tagged Bitget deposit address",
+      "address": "0x8971dd825ba5dd32b60307773f71f6e3efb0eda9",
+      "chain": "ethereum",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/102",
+      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "Bitget"}
+    },
+    {
+      "id": "tron-ofac",
+      "title": "USDT on Tron, 99% into an OFAC-listed address",
+      "address": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+      "chain": "tron",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/103",
+      "expect": {"outcome": "SANCTIONED_OR_MIXER_REACHED", "top_vasp": null}
+    },
+    {
+      "id": "tron-htx-coindcx",
+      "title": "USDT on Tron, split between HTX and CoinDCX",
+      "address": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+      "chain": "tron",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/104",
+      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "HTX"}
+    },
+    {
+      "id": "tron-abstain",
+      "title": "USDT on Tron, mostly into an unlabelled high-activity wallet",
+      "address": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+      "chain": "tron",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/105",
+      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+    },
+    {
+      "id": "eth-abstain",
+      "title": "USDT on Ethereum that never reached a labelled address",
+      "address": "0x0bad8ba03dd113931d4db1058f32c4d4b72424bb",
+      "chain": "ethereum",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/106",
+      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+    }
+  ]
+}

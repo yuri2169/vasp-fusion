@@ -41,8 +41,8 @@ def _opening(tr: TraceResult) -> str:
 
 def _reached(tr: TraceResult, c: Candidate) -> str:
     text = (f"{fmt.amount(c.amount, tr.asset)} ({fmt.pct(c.share)}) reached {c.vasp} in "
-            f"{fmt.hops(c.hops)}")
-    if len(c.path_edges) > 1:
+            f"{fmt.hops(c.hops, c.hops_max)}")
+    if len(c.path_edges) > 1 and c.hops_max == c.hops:
         text += f" within {fmt.duration(c.time_to_reach_s)}"
     text += f", at {fmt.short(c.deposit_address)}"
     name = f"\"{c.label.label}\", " if c.label.label else ""
@@ -80,9 +80,11 @@ def narrative(tr: TraceResult, att: Attribution, rules: RuleConfig = RuleConfig(
                      f"{att.top.confidence:.2f} (rule-based, not calibrated).")
     elif att.outcome == "INSUFFICIENT_EVIDENCE":
         parts.append("No exchange is named. " + (att.abstain_reason or ""))
-    else:
+    elif out:
         parts.append(f"No exchange clears the {rules.attribute_min:.2f} rule confidence needed "
                      "to name one.")
+    else:
+        parts.append("No labelled exchange was reached.")
 
     for c in [c for c in att.candidates if c.direction == "inbound"][:2]:
         parts.append(f"The wallet received {fmt.amount(tr.total_in, tr.in_asset)}; "

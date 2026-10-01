@@ -57,7 +57,10 @@ def duration(seconds: int | float | None) -> str:
     return f"{s} seconds"
 
 
-def hops(n: int) -> str:
+def hops(n: int, upto: int | None = None) -> str:
+    """"2 hops", or "2 to 3 hops" when the money took routes of different lengths."""
+    if upto is not None and upto != n:
+        return f"{n} to {upto} hops"
     return f"{n} hop{'s' if n != 1 else ''}"
 
 

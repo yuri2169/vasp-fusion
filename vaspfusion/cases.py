@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from .api import schemas as S
+from .chains import get_provider
 from .attribute.rules import Attribution, Candidate, RuleConfig, attribute
 from .explain.case_narrative import narrative, path_hashes
 from .labels.lookup import Label
@@ -25,6 +26,16 @@ CODE_VERSION = "b3-rules-1"
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
              "error": "not_followed", "returned": "returned"}
+
+
+TRACE_MAX_PAGES = 5
+
+
+def trace_provider(chain: str, fetcher, cfg: TraceConfig = TraceConfig(), **opts):
+    """The adapter settings every trace uses. They are part of each request (and so of
+    each cache key), so live runs, offline replays and recorded fixtures must agree."""
+    return get_provider(chain, fetcher, page_size=cfg.fetch_limit, max_pages=TRACE_MAX_PAGES,
+                        **opts)
 
 
 def case_id_for(chain: str, address: str) -> str:
@@ -209,3 +220,18 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
                     data_sources=hosts + ["label store"])
     return build_case(tr, att, case_id=case_id or case_id_for(chain, address), meta=meta,
                       rules=rules, now=now, demo=demo, provenance=prov)
+
+
+def case_headline(case: dict) -> dict:
+    """The parts of a case that must not change between a live run and its replay."""
+    return {
+        "outcome": case["outcome"], "top_vasp": case["top_vasp"], "confidence": case["confidence"],
+        "asset": case["asset"], "total_sent": case["total_sent"],
+        "candidates": [{k: c[k] for k in ("vasp", "direction", "proximity_rank", "confidence",
+                                          "hops", "share_of_funds", "deposit_address", "label_tier")}
+                       for c in case["candidates"]],
+        "where_funds_went": case["where_funds_went"],
+        "nodes": len(case["graph"]["nodes"]), "edges": len(case["graph"]["edges"]),
+        "flags": [[f["code"], f["wallet"]] for f in case["typology_flags"]],
+        "narrative": case["narrative"],
+    }
