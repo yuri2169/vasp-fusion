@@ -78,7 +78,13 @@ def narrative(tr: TraceResult, att: Attribution, rules: RuleConfig = RuleConfig(
         reached.append(f"{len(out) - MAX_CANDIDATES} more exchanges received smaller shares.")
     parts += alerts + reached if att.outcome == "SANCTIONED_OR_MIXER_REACHED" else reached + alerts
 
-    if att.top is not None:
+    if att.top is not None and att.top.confidence_interval is not None:
+        low, high = att.top.confidence_interval
+        parts.append(f"Nearest exchange: {att.top.vasp}, confidence {att.top.confidence:.2f} "
+                     f"(range {low:.2f} to {high:.2f}). The range is the deposit-address "
+                     "model's, which is calibrated; the weight of the exchange wallet's label "
+                     "and the hop decay are rule-set.")
+    elif att.top is not None:
         parts.append(f"Nearest exchange: {att.top.vasp}, rule confidence "
                      f"{att.top.confidence:.2f} (rule-based, not calibrated).")
     elif att.outcome == "INSUFFICIENT_EVIDENCE":

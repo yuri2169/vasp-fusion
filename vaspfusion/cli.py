@@ -21,7 +21,7 @@ def cmd_labels(args) -> None:
     research = Path(args.research)
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
                          research / "indian_vasps_dune_spellbook.csv",
-                         derived_dir=Path(args.derived))
+                         derived_dir=Path(args.derived), model_dir=Path(args.model))
     t = stats["total"]
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
@@ -38,6 +38,9 @@ def cmd_labels(args) -> None:
           f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
           f"source or named by two runs; {stats['derived_conflicting']:,} left out because two "
           "runs name different exchanges). Run `make discover` to produce them.")
+    print(f"  of those, {stats['derived_model_scored']:,} carry the deposit-address model's "
+          f"calibrated confidence and range (from {args.model}; `make model` writes it); the "
+          "rest keep the rules' hand-set confidence")
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -311,6 +314,53 @@ def cmd_model_data(args) -> None:
     print(_pages(fetchers[1]))
 
 
+def cmd_model(args) -> None:
+    """Train, calibrate and measure the deposit-address model; score the derived labels."""
+    from datetime import datetime, timezone
+
+    from .classify.dataset import load_runs
+    from .classify.report import build_model
+
+    runs = [r for r in load_runs(args.derived) if r.chain == args.chain]
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    result, scores = build_model(args.chain, args.out, runs, trained_at=now, seed=args.seed)
+    m = result.metrics
+    d, t = m["dataset"], m["time_split"]
+    print(f"deposit-address model ({m['version']}, {m['backend']}, seed {m['seed']}) on "
+          f"{m['chain']}: {d['addresses']:,} addresses, {d['positive']:,} deposit addresses, "
+          f"{d['negative']:,} others")
+    s = t["sizes"]
+    print(f"by time: train {s['train']:,} / calibrate {s['calib']:,} / test {s['test']:,}")
+    x = t["test"]
+    print(f"  PR-AUC {x['pr_auc']}  ROC-AUC {x['roc_auc']}  Brier {x['brier']}  ECE {x['ece']}  "
+          f"precision {x['at_0_5']['precision']}  recall {x['at_0_5']['recall']}  "
+          f"range width {x['interval_mean_width']}")
+    print("by exchange (each scored by a model that never saw it):")
+    print(f"  {'exchange':<12}{'n':>6}{'dep.':>6}{'PR-AUC':>8}{'ROC':>8}{'Brier':>8}{'ECE':>8}"
+          f"{'prec.':>8}{'recall':>8}")
+
+    def row(name, r, prec, rec) -> str:
+        cells = [r["pr_auc"], r["roc_auc"], r["brier"], r["ece"], prec, rec]
+        return (f"  {name:<12}{r['n']:>6}{r['n_positive']:>6}"
+                + "".join(f"{'-' if c is None else c:>8}" for c in cells))
+
+    for r in m["leave_one_exchange_out"]["folds"]:
+        print(row(r["exchange"], r, r["precision"], r["recall"]))
+    p = m["leave_one_exchange_out"]["pooled"]
+    print(row("POOLED", p, p["at_0_5"]["precision"], p["at_0_5"]["recall"]))
+    ab = m["ablation_label_features"]
+    print(f"with the two label features (not shipped): by time PR-AUC "
+          f"{ab['time_split']['pr_auc']}; on an exchange whose labels are hidden, pooled "
+          f"recall {ab['leave_one_exchange_out']['pooled']['at_0_5']['recall']}")
+    print("what the model leans on: " + ", ".join(
+        f"{f['feature']} {f['importance']:.0%}" for f in m["feature_importance"][:5]))
+    audit = m["leak_audit"]
+    print(f"leak audit (address order, minute, second of first transfer): "
+          f"{'none over the gate' if not audit['strict_over_gate'] else audit['strict_over_gate']}")
+    print(f"scored {len(scores):,} derived labels; wrote {Path(args.out) / args.chain}/ "
+          "(run `make labels` to merge the scores)")
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -414,6 +464,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
     s.add_argument("--derived", default=str(ROOT / "derived"),
                    help="folder of discovery CSVs (`discover` writes them); merged as tier=derived")
+    s.add_argument("--model", default=str(ROOT / "artifacts" / "model_v1"),
+                   help="folder of the deposit-address model: its <chain>/scores.csv set the "
+                        "confidence of the derived labels it scored")
     s.set_defaults(fn=cmd_labels)
 
     s = sub.add_parser("fetch", help="fetch an address's transfers (cached; OFFLINE=1 = cache only)")
@@ -491,6 +544,14 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--workers", type=int, default=6, help="parallel fetches")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_model_data)
+
+    s = sub.add_parser("model", help="train, calibrate and measure the deposit-address "
+                                     "model on the dataset; score the derived labels")
+    s.add_argument("--chain", default="tron")
+    s.add_argument("--derived", default=str(ROOT / "derived"))
+    s.add_argument("--out", default=str(ROOT / "artifacts" / "model_v1"))
+    s.add_argument("--seed", type=int, default=26182)
+    s.set_defaults(fn=cmd_model)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))

@@ -61,7 +61,10 @@ class ToyLabels:
                                       kind=kind, tier=tier, source="toy", source_url=None,
                                       label=f"{entity} toy label",
                                       confidence=spec[4] if len(spec) > 4 else None,
-                                      evidence=spec[5] if len(spec) > 5 else None)
+                                      evidence=spec[5] if len(spec) > 5 else None,
+                                      confidence_low=spec[6] if len(spec) > 6 else None,
+                                      confidence_high=spec[7] if len(spec) > 7 else None,
+                                      reasons=spec[8] if len(spec) > 8 else None)
 
     def lookup_many(self, pairs):
         return {(a, c): self.labels[a] for a, c in pairs if a in self.labels}

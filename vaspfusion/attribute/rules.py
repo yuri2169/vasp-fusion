@@ -25,6 +25,7 @@ with the reason and what would change it. Abstaining is a result, not a failure.
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -45,6 +46,25 @@ def label_weight(label) -> float:
     if label.tier == "derived" and label.confidence is not None:
         return label.confidence
     return TIER_WEIGHT[label.tier]
+
+
+def label_range(label) -> tuple[float, float] | None:
+    """The calibrated range of a label the deposit-address model scored (B6); None for
+    every label whose weight is rule-set."""
+    if label.tier == "derived" and label.confidence_low is not None \
+            and label.confidence_high is not None:
+        return label.confidence_low, label.confidence_high
+    return None
+
+
+def _model_items(address: str, label) -> list[dict]:
+    """The model's reasons for a scored deposit address, as evidence with signed weights."""
+    if not label.reasons:
+        return []
+    return [{"kind": "model", "tier": None, "tx_hashes": [], "weight": r["weight"],
+             "text": f"Deposit-address model, {'for' if r['weight'] >= 0 else 'against'}: "
+                     f"{fmt.short(address)} {r['text']}"}
+            for r in json.loads(label.reasons)]
 
 
 def _label_words(label) -> str:
@@ -81,6 +101,8 @@ class Candidate:
     hops_min: int = 0              # shortest and longest route the money took to this VASP;
     hops_max: int = 0              # `hops` is the route in `path` (to the main entry)
     passed_all: bool = False       # last_hop forwarded everything it got from this trail
+    # the calibrated range, when money reached a deposit address the model scored
+    confidence_interval: tuple[float, float] | None = None
 
     @property
     def label_tier(self) -> str:
@@ -106,13 +128,21 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     amount = sum((n.received for n in entries), ZERO)
     share = amount / total
     main = max(entries, key=lambda n: (n.received, n.address))
-    weighted, route_hops = 0.0, []
+    weighted, low, high, route_hops = 0.0, 0.0, 0.0, []
     for n in entries:
+        # a rule-weighted label has no range: its weight stands at both ends
+        lo, hi = label_range(n.label) or (label_weight(n.label),) * 2
         for e in tr.edges_into(side, n.address):
-            weighted += label_weight(n.label) * cfg.hop_decay ** (e.hop - 1) * float(e.traced)
+            part = cfg.hop_decay ** (e.hop - 1) * float(e.traced)
+            weighted += label_weight(n.label) * part
+            low, high = low + lo * part, high + hi * part
             route_hops.append(e.hop)
     hops_min, hops_max = min(route_hops), max(route_hops)
-    confidence = min(1.0, float(share) / cfg.share_full) * weighted / float(amount)
+    scale = min(1.0, float(share) / cfg.share_full) / float(amount)
+    confidence = scale * weighted
+    interval = None
+    if any(label_range(n.label) for n in entries):
+        interval = (round(min(1.0, scale * low), 4), round(min(1.0, scale * high), 4))
     # hops, path, entry address, time and last hop all describe ONE route: the nearest
     # one into the entry that received the most
     edges = tr.path_to(side, main.address)
@@ -130,7 +160,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
         "text": f"{fmt.short(main.address)} is labelled {main.label.entity}"
                 + (f" (\"{main.label.label}\")" if main.label.label else "")
                 + f": {_label_words(main.label)}",
-    }, {
+    }, *_model_items(main.address, main.label), {
         "kind": "path", "tier": None, "tx_hashes": [e.transfer.tx_hash for e in edges],
         "weight": round(confidence / label_weight(main.label), 4),
         "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, asset)}) {verb} "
@@ -161,7 +191,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
                      deposit_address=main.address, path=addresses, path_edges=edges,
                      entries=sorted(entries, key=lambda n: (-n.received, n.address)),
                      last_hop=last_hop, evidence=evidence, hops_min=hops_min,
-                     hops_max=hops_max, passed_all=passed_all)
+                     hops_max=hops_max, passed_all=passed_all, confidence_interval=interval)
 
 
 def _self_candidate(tr: TraceResult) -> Candidate:
@@ -175,7 +205,8 @@ def _self_candidate(tr: TraceResult) -> Candidate:
                    "weight": label_weight(lab),
                    "text": f"The address itself is labelled {lab.entity}"
                            + (f" (\"{lab.label}\")" if lab.label else "")
-                           + f": {_label_words(lab)}"}])
+                           + f": {_label_words(lab)}"}, *_model_items(tr.address, lab)],
+        confidence_interval=label_range(lab))
 
 
 def _candidates(tr: TraceResult, cfg: RuleConfig) -> list[Candidate]:

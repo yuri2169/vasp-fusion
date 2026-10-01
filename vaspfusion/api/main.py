@@ -35,6 +35,7 @@ from . import schemas as S
 ROOT = Path(__file__).resolve().parents[2]
 MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
+MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
@@ -382,6 +383,15 @@ def get_dashboard(response: Response):
 
 
 @app.get("/api/model", response_model=S.ModelInfo)
-def get_model(response: Response):
-    _source(response, "mock")
-    return load_mock("model")
+def get_model(response: Response, chain: str = "tron"):
+    """The deposit-address model's measurements (`make model`). Tron is the model whose
+    scores the labels carry; `?chain=ethereum` is the explorer-tagged benchmark."""
+    from ..classify.report import model_info, read_metrics
+    if not _SAFE.match(chain):
+        raise HTTPException(404, "not found")
+    metrics = read_metrics(MODEL_DIR, chain)
+    if metrics is None:
+        _source(response, "mock")
+        return load_mock("model")
+    _source(response, "live")
+    return model_info(metrics)

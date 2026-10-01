@@ -35,6 +35,7 @@ from ..detect.venn_abers import VennAbers
 from ..eval import metrics as M
 from ..eval.calibration_report import _wilson, adaptive_ece
 from ..eval.leak_audit import audit
+from ..eval.selective import risk_coverage
 from .features import FEATURES, LABEL_FEATURES
 from .splits import exchange_folds, time_split
 
@@ -121,6 +122,9 @@ def evaluate(y, pred: dict) -> dict:
     p = np.asarray(pred["p"], dtype=float)
     at = M.classification_report_at(y, p, 0.5)
     sure = np.maximum(p, 1 - p) >= CONFIDENT
+    right = (p >= 0.5) == (y == 1)
+    # answer the surest addresses first: how accurate is the model at each coverage?
+    curve = risk_coverage(np.maximum(p, 1 - p), right, len(y), n_points=25).get("curve", [])
     return {
         "n": int(len(y)), "n_positive": int(y.sum()),
         "pr_auc": _num(M.pr_auc(y, p)), "roc_auc": _num(M.roc_auc(y, p)),
@@ -131,10 +135,12 @@ def evaluate(y, pred: dict) -> dict:
         "at_0_5": {k: at[k] for k in ("tp", "fp", "fn", "tn", "precision", "recall", "f1",
                                       "mcc", "accuracy", "accuracy_all_negative_baseline")},
         "confident": {"threshold": CONFIDENT, "coverage": _num(float(sure.mean())),
-                      "accuracy": _num(float(((p >= 0.5) == (y == 1))[sure].mean())
+                      "accuracy": _num(float(right[sure].mean())
                                        if sure.any() else float("nan"))},
         "reliability": _reliability(y, p),
         "range_check": _range_check(y, pred),
+        "risk_coverage": [{"coverage": c["coverage"], "accuracy": round(1 - c["risk"], 4)}
+                          for c in curve],
     }
 
 

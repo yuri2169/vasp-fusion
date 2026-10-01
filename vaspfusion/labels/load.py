@@ -31,7 +31,8 @@ from .normalize import (
 )
 
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
-                 "source_url", "label", "confidence", "evidence"]
+                 "source_url", "label", "confidence", "evidence", "confidence_low",
+                 "confidence_high", "reasons"]
 _DERIVED_COLUMNS = {"address", "chain", "entity", "category", "kind", "status", "rule",
                     "confidence", "evidence"}
 _RULE_WORDS = {"sweep+gas": "sweep + gas payer", "sweep+station": "sweep + gas station",
@@ -49,8 +50,12 @@ CREATE TABLE labels (
     source     VARCHAR NOT NULL,
     source_url VARCHAR,
     label      VARCHAR,
-    confidence DOUBLE,   -- derived rows only: rule confidence, not calibrated
-    evidence   VARCHAR,  -- derived rows only: what the rules saw
+    confidence DOUBLE,   -- derived rows only: the model's (B6) where it scored the address,
+                         -- else the discovery rules' hand-set confidence
+    evidence   VARCHAR,  -- derived rows only: what the rules saw (and the model said)
+    confidence_low  DOUBLE,  -- model-scored rows only: the calibrated range
+    confidence_high DOUBLE,
+    reasons    VARCHAR,  -- model-scored rows only: JSON list of the model's top reasons
     PRIMARY KEY (address, chain)
 )
 """
@@ -73,6 +78,9 @@ def _row(address: str, chain_raw: str, entity_raw: str, label: str, category_raw
         "label": label,
         "confidence": None,
         "evidence": None,
+        "confidence_low": None,
+        "confidence_high": None,
+        "reasons": None,
         # Upstream said `entity`; Etherscan's Exchange tag made it an exchange.
         "_promoted": category_raw.strip().lower() == "entity" and category == "exchange",
     }
@@ -99,12 +107,29 @@ def read_dune(csv_path: Path) -> list[dict]:
                  r["source"], DUNE_SOURCE_URL) for r in _read(Path(csv_path))]
 
 
-def read_derived(derived_dir: Path | None) -> list[dict]:
+def read_model_scores(model_dir: Path | None) -> dict[tuple[str, str], dict]:
+    """`<model_dir>/<chain>/scores.csv` (written by `make model`): the deposit-address
+    model's confidence, range, reasons and evidence text per derived address."""
+    scores: dict[tuple[str, str], dict] = {}
+    if model_dir is None or not Path(model_dir).is_dir():
+        return scores
+    for path in sorted(Path(model_dir).glob("*/scores.csv")):
+        with path.open(newline="", encoding="utf-8") as fh:
+            for r in csv.DictReader(fh):
+                chain = normalize_chain(r["chain"])
+                scores[(normalize_address(r["address"], chain), chain)] = r
+    return scores
+
+
+def read_derived(derived_dir: Path | None, model_dir: Path | None = None) -> list[dict]:
     """The `derived` rows of every discovery CSV in the folder (conflicts and addresses
-    that were already labelled are in those files too, and are not labels)."""
+    that were already labelled are in those files too, and are not labels). Where the
+    model scored an address for the same exchange, its confidence, range, reasons and
+    evidence replace the rules' hand-set confidence."""
     rows = []
     if derived_dir is None or not Path(derived_dir).is_dir():
         return rows
+    scores = read_model_scores(model_dir)
     for path in sorted(Path(derived_dir).glob("*.csv")):
         with path.open(newline="", encoding="utf-8") as fh:
             reader = csv.DictReader(fh)
@@ -118,13 +143,21 @@ def read_derived(derived_dir: Path | None) -> list[dict]:
                     raise ValueError(f"{path.name}: {r['address']} has confidence "
                                      f"{r['confidence']}; a derived label needs one in (0, 1]")
                 chain = normalize_chain(r["chain"])
+                address = normalize_address(r["address"], chain)
+                score = scores.get((address, chain))
+                if score is not None and score["entity"] != r["entity"]:
+                    score = None            # scored as another exchange's: not this label's
                 rows.append({
-                    "address": normalize_address(r["address"], chain), "chain": chain,
+                    "address": address, "chain": chain,
                     "entity": r["entity"], "category": r["category"], "kind": r["kind"],
                     "tier": "derived", "source": DERIVED_SOURCE, "source_url": None,
                     "label": f"{r['entity']} deposit address "
                              f"(derived: {_RULE_WORDS[r['rule']]})",
-                    "confidence": confidence, "evidence": r["evidence"],
+                    "confidence": float(score["confidence"]) if score else confidence,
+                    "evidence": score["evidence"] if score else r["evidence"],
+                    "confidence_low": float(score["confidence_low"]) if score else None,
+                    "confidence_high": float(score["confidence_high"]) if score else None,
+                    "reasons": score["reasons"] if score else None,
                     "_promoted": False,
                 })
     return rows
@@ -159,7 +192,8 @@ def _validate(rows: list[dict]) -> tuple[list[dict], int, int]:
 
 def _dedupe(rows: list[dict]) -> pl.DataFrame:
     df = pl.DataFrame(rows, schema={**{c: pl.String for c in LABEL_COLUMNS},
-                                    "confidence": pl.Float64, "_promoted": pl.Boolean})
+                                    "confidence": pl.Float64, "confidence_low": pl.Float64,
+                                    "confidence_high": pl.Float64, "_promoted": pl.Boolean})
     df = df.with_columns(
         pl.col("tier").replace_strict(TIER_RANK).alias("_tr"),
         pl.col("category").replace_strict(CATEGORY_RANK).alias("_cr"),
@@ -182,8 +216,8 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
-                 derived_dir: Path | None = None) -> dict:
-    read = read_derived(derived_dir)
+                 derived_dir: Path | None = None, model_dir: Path | None = None) -> dict:
+    read = read_derived(derived_dir, model_dir)
     derived, conflicting = _drop_conflicting(read)
     derived, dropped_derived, _ = _validate(derived)
     rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv)
@@ -202,6 +236,8 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
         stats["derived_exchange"] = con.execute(
             "SELECT count(*) FROM labels WHERE tier = 'derived' AND category = 'exchange'"
         ).fetchone()[0]
+        stats["derived_model_scored"] = con.execute(
+            "SELECT count(*) FROM labels WHERE confidence_low IS NOT NULL").fetchone()[0]
     os.replace(tmp, db_path)  # readers never see a half-built DB
     stats["raw_rows"] = len(rows)
     stats["derived_loaded"] = len(read)

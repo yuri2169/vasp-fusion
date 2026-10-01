@@ -1,6 +1,7 @@
 """Read-only lookups against data/labels.duckdb (built by `make labels`)."""
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
@@ -25,15 +26,20 @@ class Label:
     source: str
     source_url: str | None
     label: str | None
-    confidence: float | None = None     # derived labels only: rule confidence
+    confidence: float | None = None     # derived labels only (model-scored or rule-set)
     evidence: str | None = None         # derived labels only: what the rules saw
+    confidence_low: float | None = None   # model-scored labels only: the calibrated range
+    confidence_high: float | None = None
+    reasons: str | None = None          # model-scored labels only: JSON list of top reasons
 
     @property
     def is_vasp(self) -> bool:
         return self.category in VASP_CATEGORIES
 
     def as_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d["reasons"] = json.loads(self.reasons) if self.reasons else None
+        return d
 
 
 def _chains_for(chain: str) -> list[str]:
@@ -49,7 +55,8 @@ class LabelStore:
         if not path.exists():
             raise FileNotFoundError(f"{path} not found - run `make labels`")
         self.con = duckdb.connect(str(path), read_only=True)
-        # a DB built before B4 has no confidence / evidence columns: read them as NULL
+        # a DB built before B4 has no confidence / evidence columns, one built before B6
+        # no range / reasons: read them as NULL
         have = {r[0] for r in self.con.execute("DESCRIBE labels").fetchall()}
         self._select = [c if c in have else f"NULL AS {c}" for c in LABEL_COLUMNS]
         self._cols = ", ".join(self._select)

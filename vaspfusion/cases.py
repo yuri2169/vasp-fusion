@@ -21,7 +21,7 @@ from .labels.normalize import VASP_CATEGORIES
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
 SEED = 26182
-CODE_VERSION = "b3-rules-1"
+CODE_VERSION = "b6-model-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
@@ -137,7 +137,9 @@ def _hop_rail(edges: list[TraceEdge]) -> list[dict]:
 
 def _candidate(c: Candidate) -> dict:
     return {"vasp": c.vasp, "category": c.category, "proximity_rank": c.proximity_rank,
-            "confidence": c.confidence, "confidence_interval": None, "direction": c.direction,
+            "confidence": c.confidence,
+            "confidence_interval": list(c.confidence_interval) if c.confidence_interval else None,
+            "direction": c.direction,
             "hops": c.hops, "share_of_funds": round(float(c.share), 4),
             "time_to_reach_s": c.time_to_reach_s, "label_tier": c.label_tier,
             "deposit_address": c.deposit_address, "path": c.path, "evidence": c.evidence,

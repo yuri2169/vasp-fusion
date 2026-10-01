@@ -47,6 +47,13 @@ class _M(BaseModel):
 
 
 # ------------------------------------------------------------------ labels
+class ModelReason(_M):
+    feature: str = Field(description="The model feature, as a stable key")
+    text: str = Field(description="What the address did, in plain English")
+    weight: float = Field(description="SHAP value in log-odds: above 0 speaks for a deposit "
+                                      "address, below 0 against")
+
+
 class LabelOut(_M):
     address: str
     chain: str = Field(description="Chain slug as stored; 'evm' = any EVM chain")
@@ -58,9 +65,17 @@ class LabelOut(_M):
     source_url: str | None = None
     label: str | None = Field(None, description="The upstream name tag, verbatim")
     confidence: float | None = Field(None, ge=0, le=1, description=(
-        "tier=derived only: rule confidence of the discovery rules. Not calibrated"))
+        "tier=derived only. With confidence_low/high set: the weight of the exchange wallet's "
+        "label x the deposit-address model's calibrated probability (B6). Without them: the "
+        "discovery rules' hand-set confidence, not calibrated"))
     evidence: str | None = Field(None, description=(
-        "tier=derived only: what the sweep and gas-payer rules saw, in plain English"))
+        "tier=derived only: what the sweep and gas-payer rules saw, and what the model said, "
+        "in plain English"))
+    confidence_low: float | None = Field(None, ge=0, le=1, description=(
+        "Model-scored labels only: low end of the calibrated range (Venn-Abers)"))
+    confidence_high: float | None = Field(None, ge=0, le=1)
+    reasons: list[ModelReason] | None = Field(None, description=(
+        "Model-scored labels only: the model's strongest reasons, strongest first"))
 
 
 class LabelSearch(_M):
@@ -160,8 +175,13 @@ class Candidate(_M):
     vasp: str
     category: Category
     proximity_rank: int = Field(ge=1, description="1 = nearest; hops, share, time")
-    confidence: float = Field(ge=0, le=1, description="Calibrated; separate from proximity")
-    confidence_interval: tuple[float, float] | None = None
+    confidence: float = Field(ge=0, le=1, description=(
+        "Separate from proximity. Label weight x hop decay x share factor. The label weight "
+        "is the deposit-address model's calibrated probability where confidence_interval is "
+        "set; otherwise every factor is rule-set"))
+    confidence_interval: tuple[float, float] | None = Field(None, description=(
+        "Set when the money reached a model-scored deposit address: the model's calibrated "
+        "range, carried through the same formula. null = rule confidence only"))
     direction: Direction = Field("outbound", description="outbound = the wallet's money went "
                                  "there; inbound = it funded the wallet")
     hops: int = Field(ge=0, description="0 = the wallet itself is a labelled VASP address")
@@ -409,6 +429,7 @@ class ReliabilityBin(_M):
     bin_mid: float
     observed: float
     count: int
+    predicted: float | None = Field(None, description="Mean predicted probability in the bin")
 
 
 class RiskCoveragePoint(_M):
@@ -430,6 +451,19 @@ class ModelMetrics(_M):
     n_test: int | None = None
 
 
+class ExchangeFold(_M):
+    """One row of the leave-one-exchange-out table: the model never saw this exchange."""
+    exchange: str
+    n: int
+    n_positive: int
+    pr_auc: float | None = None
+    roc_auc: float | None = None
+    brier: float | None = None
+    ece: float | None = None
+    precision: float | None = Field(None, description="At probability 0.5")
+    recall: float | None = Field(None, description="At probability 0.5")
+
+
 class ModelInfo(_M):
     status: Literal["not_measured", "measured"]
     version: str | None = None
@@ -439,6 +473,8 @@ class ModelInfo(_M):
     reliability: list[ReliabilityBin] = []
     risk_coverage: list[RiskCoveragePoint] = []
     feature_importance: list[FeatureImportance] = []
+    leave_one_exchange_out: list[ExchangeFold] = []
+    chain: str | None = Field(None, description="The chain the model was trained on")
     notes: list[str] = []
 
 

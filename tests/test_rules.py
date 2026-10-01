@@ -375,3 +375,60 @@ def test_a_wallet_that_is_itself_a_derived_deposit_address():
 def test_the_request_names_the_derived_deposit_address_itself():
     att = run([tx(1, "S", "DEP", 1000, 0)], labels=DERIVED)
     assert any("freeze on the account behind DEP" in step for step in att.next_steps)
+
+
+# ------------------------------------------------------------------ model-scored labels (B6)
+WHY = ('[{"feature": "forward_ratio", "text": "forwards 100% of what it receives to one wallet", '
+       '"weight": 1.9}, {"feature": "gas_outside_share", "text": "pays its own network fees", '
+       '"weight": -0.4}]')
+SCORED = {**DERIVED,
+          "MDEP": ("ExA", "exchange", "deposit", "derived", 0.80,
+                   "Sweep rule: forwarded 100%. Model: 0.94 that this is an exchange deposit "
+                   "address (range 0.89 to 0.99).", 0.76, 0.84, WHY)}
+
+
+def test_a_model_scored_label_gives_the_candidate_its_range():
+    c = run([tx(1, "S", "MDEP", 1000, 0)], labels=SCORED).candidates[0]
+    assert c.confidence == approx(0.80)
+    assert c.confidence_interval == (approx(0.76), approx(0.84))
+
+
+def test_the_range_decays_with_hops_and_shrinks_with_a_small_share_like_the_confidence():
+    far = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "MDEP", 1000, 1)], labels=SCORED)
+    assert far.candidates[0].confidence_interval == (approx(0.76 * 0.85), approx(0.84 * 0.85))
+    small = run([tx(1, "S", "MDEP", 100, 0), tx(2, "S", "X", 900, 1)], labels=SCORED)
+    c = small.candidates[0]
+    assert c.confidence == approx(0.80 * 0.4)
+    assert c.confidence_interval == (approx(0.76 * 0.4), approx(0.84 * 0.4))
+
+
+def test_a_candidate_whose_labels_are_rule_weighted_has_no_range():
+    assert run([tx(1, "S", "HOT", 1000, 0)]).candidates[0].confidence_interval is None
+    assert run([tx(1, "S", "DEP", 1000, 0)], labels=SCORED).candidates[0] \
+        .confidence_interval is None
+
+
+def test_a_range_covers_only_the_part_that_went_through_scored_labels():
+    att = run([tx(1, "S", "MDEP", 500, 0), tx(2, "S", "HOT", 500, 1)], labels=SCORED)
+    c = by_vasp(att)["ExA"]
+    w = TIER_WEIGHT["curated"]
+    assert c.confidence == approx(0.5 * 0.80 + 0.5 * w)
+    assert c.confidence_interval == (approx(0.5 * 0.76 + 0.5 * w), approx(0.5 * 0.84 + 0.5 * w))
+
+
+def test_the_models_reasons_are_evidence_with_signed_weights():
+    c = run([tx(1, "S", "MDEP", 1000, 0)], labels=SCORED).candidates[0]
+    model = [e for e in c.evidence if e["kind"] == "model"]
+    assert [(e["weight"], e["text"]) for e in model] == [
+        (1.9, "Deposit-address model, for: MDEP forwards 100% of what it receives to one wallet"),
+        (-0.4, "Deposit-address model, against: MDEP pays its own network fees")]
+    assert [e["kind"] for e in c.evidence[:2]] == ["label", "model"]
+    assert not [e for e in run([tx(1, "S", "HOT", 1000, 0)]).candidates[0].evidence
+                if e["kind"] == "model"]
+
+
+def test_a_wallet_that_is_itself_a_model_scored_deposit_address_carries_the_range():
+    tr = trace("MDEP", CHAIN, ToyProvider([tx(1, "MDEP", "HOT", 10, 0)]), ToyLabels(SCORED),
+               TraceConfig())
+    own = [c for c in attribute(tr).candidates if c.hops == 0][0]
+    assert own.confidence_interval == (0.76, 0.84)

@@ -204,7 +204,7 @@ def test_provenance_records_the_run():
     c = case(SPLIT, label_db_sha256="ab" * 32)
     p = c["provenance"]
     assert (p["seed"], p["label_db_sha256"]) == (26182, "ab" * 32)
-    assert p["code_version"].startswith("b3")
+    assert p["code_version"].startswith("b6")
 
 
 def test_the_same_inputs_give_the_same_case():
@@ -216,3 +216,27 @@ def test_a_skeleton_is_a_valid_empty_case_detail():
                   "created_at": "2026-10-01T12:00:00Z"})
     S.CaseDetail.model_validate(s)
     assert s["candidates"] == [] and s["narrative"] == ""
+
+
+# ------------------------------------------------------------------ model-scored labels (B6)
+SCORED = {**LABELS, "MDEP": ("ExA", "exchange", "deposit", "derived", 0.80, "Sweep rule. Model.",
+                             0.76, 0.84, '[{"feature": "forward_ratio", "text": "forwards 100% '
+                             'of what it receives to one wallet", "weight": 1.9}]')}
+
+
+def test_a_case_through_a_model_scored_label_carries_the_range_and_says_what_is_calibrated():
+    c = case([tx(1, "S", "MDEP", 1000, 0)], labels=SCORED)
+    cand = c["candidates"][0]
+    assert cand["confidence"] == 0.8 and cand["confidence_interval"] == [0.76, 0.84]
+    assert any(e["kind"] == "model" and e["weight"] == 1.9 for e in cand["evidence"])
+    assert "Nearest exchange: ExA, confidence 0.80 (range 0.76 to 0.84)." in c["narrative"]
+    assert "rule-based, not calibrated" not in c["narrative"]
+    node = [n for n in c["graph"]["nodes"] if n["id"] == "MDEP"][0]
+    assert node["label"]["reasons"][0]["feature"] == "forward_ratio"
+    assert node["label"]["confidence_low"] == 0.76
+
+
+def test_a_case_through_rule_weighted_labels_still_says_it_is_not_calibrated():
+    c = case([tx(1, "S", "HOT", 1000, 0)])
+    assert c["candidates"][0]["confidence_interval"] is None
+    assert "rule confidence 0.85 (rule-based, not calibrated)" in c["narrative"]
