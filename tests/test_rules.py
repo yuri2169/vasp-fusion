@@ -98,6 +98,38 @@ def test_confidence_never_exceeds_one():
     assert all(0 <= c.confidence <= 1 for c in run([tx(1, "S", "POR", 5, 0)]).candidates)
 
 
+def test_a_candidates_hops_path_entry_and_time_describe_one_route():
+    # ExA got 10 directly at HOT and 90 at HOT2 by a 3-hop route: the entry that took the
+    # most is the one described, and every field describes that same route
+    att = run([tx(1, "S", "HOT", 10, 0), tx(2, "S", "M1", 90, 1), tx(3, "M1", "M2", 90, 2),
+               tx(4, "M2", "HOT2", 90, 300)])
+    c = att.candidates[0]
+    assert c.deposit_address == "HOT2" and c.path == ["S", "M1", "M2", "HOT2"]
+    assert c.hops == len(c.path) - 1 == 3
+    assert (c.hops_min, c.hops_max) == (1, 3)
+    assert c.time_to_reach_s == 299 * 60 and c.last_hop == "M2"
+    path = next(e for e in c.evidence if e["kind"] == "path")
+    assert "in 1 to 3 hops" in path["text"] and path["tx_hashes"] == ["tx2", "tx3", "tx4"]
+
+
+def test_the_time_to_reach_is_never_negative():
+    # the first deposit was swept on; a larger later one was not
+    att = run([tx(1, "S", "D", 1000, 1), tx(2, "D", "HOT", 1000, 2), tx(3, "S", "D", 2000, 10)])
+    c = att.candidates[0]
+    assert [e.transfer.tx_hash for e in c.path_edges] == ["tx1", "tx2"]
+    assert c.time_to_reach_s == 60
+
+
+def test_unnamed_exchange_wallets_are_not_added_together():
+    labels = {**LABELS, "ANON2": ("Unidentified exchange", "exchange", "unknown", "explorer_tag")}
+    att = run([tx(1, "S", "ANON", 150, 0), tx(2, "S", "ANON2", 150, 1), tx(3, "S", "X", 700, 2)],
+              labels=labels)
+    assert [(c.vasp, c.deposit_address, c.share) for c in att.candidates] == \
+        [("Unidentified exchange", "ANON", D("0.15")), ("Unidentified exchange", "ANON2", D("0.15"))]
+    # 15% each stays under the bar; added together (30%) they would have been "named"
+    assert att.outcome == "INSUFFICIENT_EVIDENCE"
+
+
 # ------------------------------------------------------------------ proximity
 def test_proximity_is_hops_then_share_then_time():
     att = run([tx(1, "S", "M1", 900, 0), tx(2, "M1", "POR", 900, 5),      # ExB: 2 hops, 90%
@@ -233,6 +265,27 @@ def test_a_sanctioned_wallet_is_flagged_and_still_attributed_forward():
     assert att.flags[0]["wallet"] == "S"
 
 
+def test_the_request_names_the_deposit_wallet_only_when_it_passed_everything_on():
+    swept = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "HOT", 1000, 1)])
+    assert "account behind M1" in swept.next_steps[0]
+    # MULE kept half for someone else: it is not the exchange's wallet
+    partial = run([tx(1, "S", "MULE", 100, 0), tx(2, "MULE", "HOT", 50, 1),
+                   tx(3, "MULE", "OTHER", 50, 2)])
+    assert "account behind HOT" in partial.next_steps[0]
+    assert "MULE" not in partial.next_steps[0]
+
+
+def test_a_labelled_deposit_address_is_itself_the_account():
+    att = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "TAG", 1000, 1)])
+    assert "account behind TAG" in att.next_steps[0]
+
+
+def test_an_exchange_wallet_as_the_subject_is_not_asked_to_freeze_itself():
+    att = run([tx(1, "S", "X", 1000, 0)], labels={"S": ("ExC", "exchange", "hot", "curated")})
+    assert not any("freeze" in s for s in att.next_steps)
+    assert any("ExC" in s and "own wallet" in s for s in att.next_steps)
+
+
 # ------------------------------------------------------------------ inbound
 def test_an_exchange_that_funded_the_wallet_is_an_inbound_candidate():
     att = run([tx(1, "POR", "S", 1000, 0), tx(2, "S", "M1", 1000, 5), tx(3, "M1", "HOT", 1000, 6)])
@@ -270,6 +323,7 @@ def test_evidence_states_the_label_and_the_path():
 def test_evidence_notes_a_last_hop_that_passed_everything_on():
     att = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "HOT", 1000, 1)])
     texts = [e["text"] for e in att.candidates[0].evidence]
-    assert any("M1" in t and "passed on all" in t for t in texts)
+    assert any("M1" in t and "passed on all" in t and "within 1 minute" in t for t in texts)
+    assert att.candidates[0].passed_all is True
     partial = run([tx(1, "S", "M1", 1000, 0), tx(2, "M1", "HOT", 500, 1), tx(3, "M1", "X", 500, 2)])
     assert not any("passed on all" in e["text"] for e in partial.candidates[0].evidence)

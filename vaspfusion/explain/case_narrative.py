@@ -3,7 +3,8 @@ went, which exchange (if any) to write to, and how sure the rules are.
 
 Written for the investigating officer, so it states amounts, shares, hops, times
 and the kind of label behind each name, and lists the transaction hashes that
-back the main path. It never names an exchange the rules did not name.
+back the main path. Exchanges that received a share are listed with that share, but
+only the one the rules named is presented as the answer ("Nearest exchange: ...").
 """
 from __future__ import annotations
 
@@ -41,13 +42,13 @@ def _opening(tr: TraceResult) -> str:
 
 def _reached(tr: TraceResult, c: Candidate) -> str:
     text = (f"{fmt.amount(c.amount, tr.asset)} ({fmt.pct(c.share)}) reached {c.vasp} in "
-            f"{fmt.hops(c.hops, c.hops_max)}")
-    if len(c.path_edges) > 1 and c.hops_max == c.hops:
+            f"{fmt.hops(c.hops_min, c.hops_max)}")
+    if len(c.path_edges) > 1 and c.hops_max == c.hops_min:
         text += f" within {fmt.duration(c.time_to_reach_s)}"
     text += f", at {fmt.short(c.deposit_address)}"
     name = f"\"{c.label.label}\", " if c.label.label else ""
     text += f" ({name}{fmt.tier_words(c.label.tier)})."
-    if any("passed on all" in e["text"] for e in c.evidence):
+    if c.passed_all:
         text += (f" The wallet before it, {fmt.short(c.last_hop)}, passed on everything it "
                  f"received from this trail.")
     return text

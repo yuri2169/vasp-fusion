@@ -64,7 +64,9 @@ class Candidate:
     last_hop: str | None           # last unlabelled wallet before the entry, if any
     evidence: list[dict]
     proximity_rank: int = 0
-    hops_max: int = 0              # longest route the money took (hops is the shortest)
+    hops_min: int = 0              # shortest and longest route the money took to this VASP;
+    hops_max: int = 0              # `hops` is the route in `path` (to the main entry)
+    passed_all: bool = False       # last_hop forwarded everything it got from this trail
 
     @property
     def label_tier(self) -> str:
@@ -83,11 +85,6 @@ class Attribution:
 
 
 # ------------------------------------------------------------------ candidates
-def _edges_into(tr: TraceResult, side: str, address: str) -> list[TraceEdge]:
-    far = (lambda t: t.to_addr) if side == "outbound" else (lambda t: t.from_addr)
-    return [e for e in tr.edges if e.side == side and far(e.transfer) == address]
-
-
 def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
                cfg: RuleConfig) -> Candidate:
     total = tr.total_out if side == "outbound" else tr.total_in
@@ -95,16 +92,19 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     amount = sum((n.received for n in entries), ZERO)
     share = amount / total
     main = max(entries, key=lambda n: (n.received, n.address))
-    weighted, hops_max = 0.0, 0
+    weighted, route_hops = 0.0, []
     for n in entries:
-        for e in _edges_into(tr, side, n.address):
+        for e in tr.edges_into(side, n.address):
             weighted += TIER_WEIGHT[n.label.tier] * cfg.hop_decay ** (e.hop - 1) * float(e.traced)
-            hops_max = max(hops_max, e.hop)
+            route_hops.append(e.hop)
+    hops_min, hops_max = min(route_hops), max(route_hops)
     confidence = min(1.0, float(share) / cfg.share_full) * weighted / float(amount)
+    # hops, path, entry address, time and last hop all describe ONE route: the nearest
+    # one into the entry that received the most
     edges = tr.path_to(side, main.address)
     addresses = [edges[0].transfer.from_addr] + [e.transfer.to_addr for e in edges]
     took = int((edges[-1].transfer.block_time - edges[0].transfer.block_time).total_seconds())
-    hop_count = min(n.hop for n in entries)
+    hop_count = len(edges)
     last_hop = None
     if side == "outbound" and len(edges) > 1:
         last_hop = edges[-1].transfer.from_addr
@@ -120,31 +120,34 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
         "kind": "path", "tier": None, "tx_hashes": [e.transfer.tx_hash for e in edges],
         "weight": round(confidence / TIER_WEIGHT[main.label.tier], 4),
         "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, asset)}) {verb} "
-                f"in {fmt.hops(hop_count, hops_max)}"
-                + (f" within {fmt.duration(took)}" if len(edges) > 1 and hops_max == hop_count
+                f"in {fmt.hops(hops_min, hops_max)}"
+                + (f" within {fmt.duration(took)}" if len(edges) > 1 and hops_max == hops_min
                    else ""),
     }]
+    passed_all = False
     if last_hop is not None:
         node = tr.nodes[(side, last_hop)]
-        onward = [e for n in entries for e in _edges_into(tr, side, n.address)
+        onward = [e for n in entries for e in tr.edges_into(side, n.address)
                   if e.transfer.from_addr == last_hop]
         passed = sum((e.traced for e in onward), ZERO)
         if node.received and passed == node.received:
+            passed_all = True
             wait = int((edges[-1].transfer.block_time
                         - edges[-2].transfer.block_time).total_seconds())
             evidence.append({
                 "kind": "path", "tier": None, "weight": None,
                 "tx_hashes": sorted({e.transfer.tx_hash for e in onward}),
                 "text": f"{fmt.short(last_hop)} passed on all {fmt.amount(passed, asset)} it "
-                        f"received from this trail to {vasp}, the first time within "
-                        f"{fmt.duration(wait)}",
+                        f"received from this trail to {vasp}"
+                        + (f", within {fmt.duration(wait)}" if len(onward) == 1 else ""),
             })
     return Candidate(vasp=vasp, category=main.label.category, direction=side,
                      confidence=round(min(1.0, confidence), 4), hops=hop_count, share=share,
                      amount=amount, time_to_reach_s=took, label=main.label,
                      deposit_address=main.address, path=addresses, path_edges=edges,
                      entries=sorted(entries, key=lambda n: (-n.received, n.address)),
-                     last_hop=last_hop, evidence=evidence, hops_max=hops_max)
+                     last_hop=last_hop, evidence=evidence, hops_min=hops_min,
+                     hops_max=hops_max, passed_all=passed_all)
 
 
 def _self_candidate(tr: TraceResult) -> Candidate:
@@ -166,14 +169,18 @@ def _candidates(tr: TraceResult, cfg: RuleConfig) -> list[Candidate]:
     if tr.origin_label is not None and tr.origin_label.category in VASP_CATEGORIES:
         found.append(_self_candidate(tr))
     for side in ("outbound", "inbound"):
-        groups: dict[str, list[TraceNode]] = {}
-        for (s, _), node in tr.nodes.items():
+        groups: dict[tuple[str, str], list[TraceNode]] = {}
+        for (s, addr), node in tr.nodes.items():
             if s == side and node.label is not None and node.received > 0 \
                     and node.label.category in VASP_CATEGORIES:
-                groups.setdefault(node.label.entity, []).append(node)
-        found += [_candidate(tr, side, vasp, entries, cfg) for vasp, entries in groups.items()]
+                # wallets tagged "exchange" with no owner are not one exchange: keep them apart
+                key = (node.label.entity, addr if node.label.entity == UNROUTABLE else "")
+                groups.setdefault(key, []).append(node)
+        found += [_candidate(tr, side, vasp, entries, cfg)
+                  for (vasp, _), entries in groups.items()]
     found.sort(key=lambda c: (c.direction != "outbound", c.hops, -c.share,
-                              c.time_to_reach_s if c.time_to_reach_s is not None else 0, c.vasp))
+                              c.time_to_reach_s if c.time_to_reach_s is not None else 0, c.vasp,
+                              c.deposit_address))
     return [Candidate(**{**c.__dict__, "proximity_rank": i}) for i, c in enumerate(found, 1)]
 
 
@@ -209,7 +216,7 @@ def _flags(tr: TraceResult) -> list[dict]:
             "wallet": addr, "text": text,
             "figures": {"share": round(share, 4), "amount": float(node.received),
                         "hops": float(node.hop)},
-            "tx_hashes": sorted({e.transfer.tx_hash for e in _edges_into(tr, side, addr)}),
+            "tx_hashes": sorted({e.transfer.tx_hash for e in tr.edges_into(side, addr)}),
         })
     order = {"high": 0, "warn": 1, "info": 2}
     flags.sort(key=lambda f: (order[f["severity"]], -f["figures"].get("share", 1.0), f["wallet"]))
@@ -358,7 +365,13 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
                 f"{fmt.short(c.deposit_address)} is tagged as an exchange but the source names "
                 "no owner; no request can be routed until the exchange is identified")
             continue
-        where = c.last_hop or c.deposit_address
+        if c.hops == 0:
+            att.next_steps.append(f"This is {c.vasp}'s own wallet: ask {c.vasp} about the "
+                                  "transfers of interest directly")
+            continue
+        # the customer's deposit wallet is the labelled deposit address itself, or else
+        # the hop before the exchange wallet, but only if it forwarded everything
+        where = c.last_hop if c.passed_all and c.label.kind != "deposit" else c.deposit_address
         att.next_steps.append(
             f"Draft a request to {c.vasp} for KYC and a freeze on the account behind "
             f"{fmt.short(where)}" + ("" if c is top else f" ({fmt.pct(c.share)} of the funds)"))
