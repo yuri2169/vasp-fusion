@@ -71,7 +71,9 @@
           "tier": "curated",
           "source": "ofac-sdn",
           "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
-          "label": "OFAC sanctioned (USDT)"
+          "label": "OFAC sanctioned (USDT)",
+          "confidence": null,
+          "evidence": null
         },
         "cluster": null,
         "is_hub": false
@@ -90,7 +92,9 @@
           "tier": "curated",
           "source": "dune-spellbook",
           "source_url": "https://github.com/duneanalytics/spellbook",
-          "label": "CoinDCX 11"
+          "label": "CoinDCX 11",
+          "confidence": null,
+          "evidence": null
         },
         "cluster": "CoinDCX",
         "is_hub": false

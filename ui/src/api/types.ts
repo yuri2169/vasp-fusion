@@ -806,6 +806,16 @@ export interface components {
              * @description The upstream name tag, verbatim
              */
             label?: string | null;
+            /**
+             * Confidence
+             * @description tier=derived only: rule confidence of the discovery rules. Not calibrated
+             */
+            confidence?: number | null;
+            /**
+             * Evidence
+             * @description tier=derived only: what the sweep and gas-payer rules saw, in plain English
+             */
+            evidence?: string | null;
         };
         /** LabelSearch */
         LabelSearch: {

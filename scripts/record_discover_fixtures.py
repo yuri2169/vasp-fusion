@@ -53,7 +53,58 @@ def record_gas() -> None:
     _write("tron_gas", "TronGrid raw listings since 2026-09-17 of " + ", ".join(GAS.values()), rec)
 
 
+class RecordingLabels:
+    """The real label store, remembering every row it returned."""
+
+    def __init__(self, store, entities=None):
+        self.store, self.entities, self.seen = store, entities, {}
+
+    def _keep(self, chain, label):
+        self.seen[f"{chain}:{label.address}"] = {"query_chain": chain, **label.as_dict()}
+
+    def seeds(self, chain):
+        seeds = [s for s in self.store.seeds(chain)
+                 if self.entities is None or s.entity in self.entities]
+        for s in seeds:
+            self._keep(chain, s)
+        return seeds
+
+    def lookup_many(self, pairs):
+        found = self.store.lookup_many(pairs)
+        for (_, chain), label in found.items():
+            self._keep(chain, label)
+        return found
+
+
+def crawl_providers(fetcher, cfg):
+    """The two Tron providers a crawl uses (the tests build the same pair)."""
+    return (TronProvider(fetcher, page_size=200, max_pages=cfg.seed_limit // 200),
+            TronProvider(fetcher, page_size=cfg.candidate_limit, max_pages=1))
+
+
+def record_crawl() -> None:
+    """A small real crawl: CoinDCX and KuCoin, the first 5 senders per wallet."""
+    from dataclasses import asdict
+
+    from vaspfusion.discover.crawl import CrawlConfig, discover
+    from vaspfusion.labels.lookup import LabelStore
+
+    cfg = CrawlConfig(seed_limit=200, max_candidates=5, entities=("CoinDCX", "KuCoin"))
+    rec = RecordingTransport()
+    with tempfile.TemporaryDirectory() as d, LabelStore() as store:
+        fetcher = Fetcher(ChainCache(Path(d) / "c.duckdb"), rec, offline=False)
+        labels = RecordingLabels(store, cfg.entities)
+        result = discover("tron", *crawl_providers(fetcher, cfg), labels, cfg)
+    _write("crawl_tron", "discover() on Tron: CoinDCX and KuCoin wallets, window from "
+           "2026-09-24, first 5 senders per wallet, live TronGrid", rec,
+           labels=dict(sorted(labels.seen.items())),
+           expected={"findings": [asdict(f) for f in result.findings],
+                     "stats": result.stats, "totals": result.totals})
+    for f in result.findings:
+        print(f"  {f.entity:<8} {f.address} {f.status:<8} {f.rule:<10} {f.confidence}")
+
+
 if __name__ == "__main__":
     wanted = sys.argv[1:] or ["gas"]
     for name in wanted:
-        {"gas": record_gas}[name]()
+        {"gas": record_gas, "crawl": record_crawl}[name]()

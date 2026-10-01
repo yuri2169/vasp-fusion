@@ -110,7 +110,9 @@
           "tier": "published_por",
           "source": "defillama-cex",
           "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
-          "label": "OKX (OKEx) (proof-of-reserves)"
+          "label": "OKX (OKEx) (proof-of-reserves)",
+          "confidence": null,
+          "evidence": null
         },
         "cluster": "OKX",
         "is_hub": false
@@ -147,7 +149,9 @@
           "tier": "published_por",
           "source": "defillama-cex",
           "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
-          "label": "HTX (Huobi) (proof-of-reserves)"
+          "label": "HTX (Huobi) (proof-of-reserves)",
+          "confidence": null,
+          "evidence": null
         },
         "cluster": "HTX",
         "is_hub": false

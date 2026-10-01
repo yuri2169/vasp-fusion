@@ -30,6 +30,7 @@ EVM_CHAINS = frozenset({
 CATEGORIES = ("exchange", "custodial_wallet", "swap_service", "sanctioned", "scam",
               "mixer", "bridge", "defi", "entity")
 KINDS = ("hot", "cold", "deposit", "reserve", "unknown")
+DERIVED_SOURCE = "vaspfusion-discover"     # the `source` of every tier=derived row (B4)
 TIER_RANK = {"published_por": 4, "curated": 3, "explorer_tag": 2, "derived": 1}
 CATEGORY_RANK = {"sanctioned": 6, "scam": 5, "exchange": 4, "custodial_wallet": 4,
                  "swap_service": 4, "mixer": 4, "bridge": 3, "defi": 2, "entity": 1}

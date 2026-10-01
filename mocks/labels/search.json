@@ -15,7 +15,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 1"
+      "label": "CoinDCX 1",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x07e114c06462d8892ae4574a7502b8c1c0fbdfbb",
@@ -26,7 +28,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 30"
+      "label": "CoinDCX 30",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x0b5ffae844a4b21c7beeded2595f22215288173c",
@@ -37,7 +41,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 31"
+      "label": "CoinDCX 31",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x2407b9b9662d970ece2224a0403d3b15c7e4d1fe",
@@ -48,7 +54,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 2"
+      "label": "CoinDCX 2",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x274c427b1bf0bb4a137ede688c6d621263ca7ce8",
@@ -59,7 +67,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 28"
+      "label": "CoinDCX 28",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x29a62a542b6ea441abb6f03c2bca54ad72ff750c",
@@ -70,7 +80,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 29"
+      "label": "CoinDCX 29",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x2deffdde0867b6eca9a63fe53ef0fc3106d3dba0",
@@ -81,7 +93,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX: Deposit Funder 3"
+      "label": "CoinDCX: Deposit Funder 3",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x2e5129e77c928d96b5a70c0effb97ee6e95d77b6",
@@ -92,7 +106,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 18"
+      "label": "CoinDCX 18",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x35efe40ceddb8dfa27f0c3e4cd65b711c29cb5d8",
@@ -103,7 +119,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 45"
+      "label": "CoinDCX 45",
+      "confidence": null,
+      "evidence": null
     },
     {
       "address": "0x3698cc7f524bade1a05e02910538f436a3e94384",
@@ -114,7 +132,9 @@
       "tier": "explorer_tag",
       "source": "eth-labels",
       "source_url": "https://github.com/dawsbot/eth-labels",
-      "label": "CoinDCX 3"
+      "label": "CoinDCX 3",
+      "confidence": null,
+      "evidence": null
     }
   ]
 }

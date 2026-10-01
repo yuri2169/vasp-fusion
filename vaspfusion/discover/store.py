@@ -12,7 +12,6 @@ from pathlib import Path
 
 from .crawl import DiscoveryResult, Finding
 
-SOURCE = "vaspfusion-discover"
 NOTE = ("Derived by the sweep and gas-payer rules from labelled exchange wallets. "
         "Confidences are rule-based, not calibrated.")
 _INT = {"n_deposits", "n_senders", "n_sweeps", "n_paid"}

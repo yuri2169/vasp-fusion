@@ -6,12 +6,18 @@ Inputs (both real, both in ../research/data):
     would be counted twice.
   * indian_vasps_dune_spellbook.csv - CoinDCX, WazirX and CoinSwitch addresses.
 
+  * data/derived/<chain>.csv (optional) - deposit addresses derived by B4's discovery
+    rules (`make discover`). Only rows with status `derived` are loaded, as tier
+    `derived`, each with its rule confidence and evidence text.
+
 One row per (address, chain). When sources disagree the highest tier wins, then
 the higher-priority category, then the source name - a total order, so the build
-is deterministic and a rebuild is byte-for-byte the same table.
+is deterministic and a rebuild is byte-for-byte the same table. `derived` is the
+lowest tier, so a derived row never replaces a label from any other source.
 """
 from __future__ import annotations
 
+import csv
 import os
 from pathlib import Path
 
@@ -20,12 +26,14 @@ import polars as pl
 
 from .normalize import (
     address_chain,
-    CATEGORY_RANK, TIER_RANK, canonical_entity, infer_kind, map_category,
+    CATEGORY_RANK, DERIVED_SOURCE, TIER_RANK, canonical_entity, infer_kind, map_category,
     normalize_address, normalize_chain, tier_for,
 )
 
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
-                 "source_url", "label"]
+                 "source_url", "label", "confidence", "evidence"]
+_RULE_WORDS = {"sweep+gas": "sweep + gas payer", "sweep+station": "sweep + gas station",
+               "sweep": "sweep"}
 DUNE_SOURCE_URL = "https://github.com/duneanalytics/spellbook"
 
 _DDL = """
@@ -39,6 +47,8 @@ CREATE TABLE labels (
     source     VARCHAR NOT NULL,
     source_url VARCHAR,
     label      VARCHAR,
+    confidence DOUBLE,   -- derived rows only: rule confidence, not calibrated
+    evidence   VARCHAR,  -- derived rows only: what the rules saw
     PRIMARY KEY (address, chain)
 )
 """
@@ -59,6 +69,8 @@ def _row(address: str, chain_raw: str, entity_raw: str, label: str, category_raw
         "source": source,
         "source_url": source_url,
         "label": label,
+        "confidence": None,
+        "evidence": None,
         # Upstream said `entity`; Etherscan's Exchange tag made it an exchange.
         "_promoted": category_raw.strip().lower() == "entity" and category == "exchange",
     }
@@ -85,6 +97,30 @@ def read_dune(csv_path: Path) -> list[dict]:
                  r["source"], DUNE_SOURCE_URL) for r in _read(Path(csv_path))]
 
 
+def read_derived(derived_dir: Path | None) -> list[dict]:
+    """The `derived` rows of every discovery CSV in the folder (conflicts and addresses
+    that were already labelled are in those files too, and are not labels)."""
+    rows = []
+    if derived_dir is None or not Path(derived_dir).is_dir():
+        return rows
+    for path in sorted(Path(derived_dir).glob("*.csv")):
+        with path.open(newline="", encoding="utf-8") as fh:
+            for r in csv.DictReader(fh):
+                if r["status"] != "derived":
+                    continue
+                chain = normalize_chain(r["chain"])
+                rows.append({
+                    "address": normalize_address(r["address"], chain), "chain": chain,
+                    "entity": r["entity"], "category": r["category"], "kind": r["kind"],
+                    "tier": "derived", "source": DERIVED_SOURCE, "source_url": None,
+                    "label": f"{r['entity']} deposit address "
+                             f"(derived: {_RULE_WORDS[r['rule']]})",
+                    "confidence": float(r["confidence"]), "evidence": r["evidence"],
+                    "_promoted": False,
+                })
+    return rows
+
+
 def _validate(rows: list[dict]) -> tuple[list[dict], int, int]:
     """Drop rows whose address is valid on no chain; re-file misfiled ones.
     Returns (kept rows, dropped count, re-filed count)."""
@@ -104,7 +140,7 @@ def _validate(rows: list[dict]) -> tuple[list[dict], int, int]:
 
 def _dedupe(rows: list[dict]) -> pl.DataFrame:
     df = pl.DataFrame(rows, schema={**{c: pl.String for c in LABEL_COLUMNS},
-                                    "_promoted": pl.Boolean})
+                                    "confidence": pl.Float64, "_promoted": pl.Boolean})
     df = df.with_columns(
         pl.col("tier").replace_strict(TIER_RANK).alias("_tr"),
         pl.col("category").replace_strict(CATEGORY_RANK).alias("_cr"),
@@ -124,8 +160,10 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
             "by_tier": by("tier"), "by_kind": by("kind")}
 
 
-def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path) -> dict:
-    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv)
+def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
+                 derived_dir: Path | None = None) -> dict:
+    derived = read_derived(derived_dir)
+    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv) + derived
     kept, dropped, refiled = _validate(rows)
     df = _dedupe(kept)
     db_path = Path(db_path)
@@ -139,9 +177,12 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path) -> dict:
         con.unregister("df")
         stats = label_stats(con)
     os.replace(tmp, db_path)  # readers never see a half-built DB
-    stats["raw_rows"] = len(rows)
+    stats["raw_rows"] = len(rows) - len(derived)
+    stats["derived_loaded"] = len(derived)
+    # derived rows that lost to a label of a higher tier for the same address
+    stats["derived_shadowed"] = len(derived) - stats["by_tier"].get("derived", 0)
     stats["invalid_dropped"] = dropped
     stats["chain_refiled"] = refiled
-    stats["duplicates_dropped"] = len(kept) - stats["total"]
+    stats["duplicates_dropped"] = len(kept) - stats["total"] - stats["derived_shadowed"]
     stats["exchange_tag_promoted"] = int(df["_promoted"].sum())
     return stats

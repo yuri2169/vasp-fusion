@@ -66,7 +66,7 @@ def demo_label_db(path) -> Path:
     con = duckdb.connect(str(path))
     con.execute(_DDL)
     con.executemany(f"INSERT INTO labels VALUES ({', '.join('?' * len(LABEL_COLUMNS))})",
-                    [[r[c] for c in LABEL_COLUMNS] for r in rows])
+                    [[r.get(c) for c in LABEL_COLUMNS] for r in rows])   # recorded before B4
     con.close()
     return Path(path)
 

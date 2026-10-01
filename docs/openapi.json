@@ -2259,6 +2259,32 @@
             ],
             "title": "Label",
             "description": "The upstream name tag, verbatim"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence",
+            "description": "tier=derived only: rule confidence of the discovery rules. Not calibrated"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence",
+            "description": "tier=derived only: what the sweep and gas-payer rules saw, in plain English"
           }
         },
         "additionalProperties": false,

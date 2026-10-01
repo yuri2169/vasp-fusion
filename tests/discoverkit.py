@@ -47,6 +47,12 @@ class FixtureLabels:
         self.rows = {key: Label(**{k: v for k, v in row.items() if k != "query_chain"})
                      for key, row in load(name)["labels"].items()}
 
+    def seeds(self, chain):
+        from vaspfusion.discover.rules import is_seed
+        return sorted((l for key, l in self.rows.items()
+                       if key.startswith(f"{chain}:") and is_seed(l)),
+                      key=lambda l: (l.entity, l.address))
+
     def lookup_many(self, pairs):
         return {(a, c): self.rows[f"{c}:{a}"] for a, c in pairs if f"{c}:{a}" in self.rows}
 

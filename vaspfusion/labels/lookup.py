@@ -12,7 +12,6 @@ from .load import LABEL_COLUMNS
 from .normalize import EVM_CHAINS, VASP_CATEGORIES, normalize_address, normalize_chain
 
 DEFAULT_DB = Path(__file__).resolve().parents[2] / "data" / "labels.duckdb"
-_COLS = ", ".join(LABEL_COLUMNS)
 
 
 @dataclass(frozen=True)
@@ -26,6 +25,8 @@ class Label:
     source: str
     source_url: str | None
     label: str | None
+    confidence: float | None = None     # derived labels only: rule confidence
+    evidence: str | None = None         # derived labels only: what the rules saw
 
     @property
     def is_vasp(self) -> bool:
@@ -48,6 +49,10 @@ class LabelStore:
         if not path.exists():
             raise FileNotFoundError(f"{path} not found - run `make labels`")
         self.con = duckdb.connect(str(path), read_only=True)
+        # a DB built before B4 has no confidence / evidence columns: read them as NULL
+        have = {r[0] for r in self.con.execute("DESCRIBE labels").fetchall()}
+        self._select = [c if c in have else f"NULL AS {c}" for c in LABEL_COLUMNS]
+        self._cols = ", ".join(self._select)
 
     def close(self) -> None:
         self.con.close()
@@ -61,7 +66,8 @@ class LabelStore:
     def lookup(self, address: str, chain: str) -> Label | None:
         c = normalize_chain(chain)
         for ch in _chains_for(c):
-            row = self.con.execute(f"SELECT {_COLS} FROM labels WHERE address = ? AND chain = ?",
+            row = self.con.execute(f"SELECT {self._cols} FROM labels "
+                                   "WHERE address = ? AND chain = ?",
                                    [normalize_address(address, ch), ch]).fetchone()
             if row:
                 return Label(*row)
@@ -82,7 +88,8 @@ class LabelStore:
         self.con.register("_q", pa.table({"i": i, "prio": prio, "address": address,
                                           "chain": chain}))
         rows = self.con.execute(
-            f"SELECT q.i, {', '.join('l.' + c for c in LABEL_COLUMNS)} FROM _q q "
+            f"SELECT q.i, {', '.join(c if ' AS ' in c else 'l.' + c for c in self._select)} "
+            "FROM _q q "
             "JOIN labels l USING (address, chain) "
             "QUALIFY row_number() OVER (PARTITION BY q.i ORDER BY q.prio) = 1").fetchall()
         self.con.unregister("_q")
@@ -103,7 +110,7 @@ class LabelStore:
         clause = f"WHERE {' AND '.join(where)}" if where else ""
         total = self.con.execute(f"SELECT count(*) FROM labels {clause}", params).fetchone()[0]
         rows = self.con.execute(
-            f"SELECT {_COLS} FROM labels {clause} ORDER BY entity, chain, address "
+            f"SELECT {self._cols} FROM labels {clause} ORDER BY entity, chain, address "
             "LIMIT ? OFFSET ?", [*params, int(limit), int(offset)]).fetchall()
         return total, [Label(*r) for r in rows]
 
@@ -111,7 +118,7 @@ class LabelStore:
         """The chain's labelled exchange wallets that B4's discovery starts from: VASP
         categories, not derived and not themselves deposit addresses."""
         rows = self.con.execute(
-            f"SELECT {_COLS} FROM labels WHERE chain = ? AND category IN "
+            f"SELECT {self._cols} FROM labels WHERE chain = ? AND category IN "
             f"({', '.join('?' * len(VASP_CATEGORIES))}) AND tier <> 'derived' "
             "AND kind <> 'deposit' ORDER BY entity, address",
             [normalize_chain(chain), *sorted(VASP_CATEGORIES)]).fetchall()

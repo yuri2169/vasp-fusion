@@ -20,7 +20,8 @@ def cmd_labels(args) -> None:
     from .labels.load import build_labels
     research = Path(args.research)
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
-                         research / "indian_vasps_dune_spellbook.csv")
+                         research / "indian_vasps_dune_spellbook.csv",
+                         derived_dir=Path(args.derived))
     t = stats["total"]
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
@@ -30,6 +31,10 @@ def cmd_labels(args) -> None:
     ex = stats["by_category"].get("exchange", 0)
     print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted']:,} upstream + Dune "
           f"exchange rows + {stats['exchange_tag_promoted']:,} promoted by Etherscan's Exchange tag")
+    print(f"  derived deposit addresses merged from {args.derived}: "
+          f"{stats['by_tier'].get('derived', 0):,} (of {stats['derived_loaded']:,} in the "
+          f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
+          "source). Run `make discover` to produce them.")
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -288,6 +293,8 @@ def main(argv: list[str] | None = None) -> None:
     s = sub.add_parser("labels", help="build the label DB and print its stats")
     s.add_argument("--research", default=str(ROOT.parent / "research" / "data"))
     s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.add_argument("--derived", default=str(ROOT / "data" / "derived"),
+                   help="folder of discovery CSVs (`discover` writes them); merged as tier=derived")
     s.set_defaults(fn=cmd_labels)
 
     s = sub.add_parser("fetch", help="fetch an address's transfers (cached; OFFLINE=1 = cache only)")

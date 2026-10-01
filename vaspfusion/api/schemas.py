@@ -57,6 +57,10 @@ class LabelOut(_M):
     source: str
     source_url: str | None = None
     label: str | None = Field(None, description="The upstream name tag, verbatim")
+    confidence: float | None = Field(None, ge=0, le=1, description=(
+        "tier=derived only: rule confidence of the discovery rules. Not calibrated"))
+    evidence: str | None = Field(None, description=(
+        "tier=derived only: what the sweep and gas-payer rules saw, in plain English"))
 
 
 class LabelSearch(_M):
