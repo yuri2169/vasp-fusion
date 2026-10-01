@@ -1,0 +1,65 @@
+{
+ "chain": "tron",
+ "config": {
+  "candidate_limit": 50,
+  "entities": [
+   "CoinDCX"
+  ],
+  "lookback_days": 7,
+  "max_candidates": null,
+  "rules": {
+   "dust": "0.1",
+   "gas_window_s": 3600,
+   "max_hours": 168.0,
+   "min_senders": 1,
+   "min_share": 0.9,
+   "min_station": 10,
+   "station_share": 0.95
+  },
+  "seed_limit": 1000,
+  "window_start": "2026-08-01T00:00:00Z"
+ },
+ "note": "Derived by the sweep and gas-payer rules from labelled exchange wallets. Confidences are rule-based, not calibrated.",
+ "stations": [],
+ "stats": {
+  "CoinDCX": {
+   "active_seeds": 1,
+   "by_gas": {
+    "confirmed": 31
+   },
+   "by_rule": {
+    "sweep+gas": 31
+   },
+   "candidates": 64,
+   "conflict": 0,
+   "derived": 31,
+   "errors": 0,
+   "fired": 31,
+   "inbound_rows": 460,
+   "known": 0,
+   "labelled_senders": 0,
+   "median_sweep_delay_s": 33.0,
+   "rejected": {
+    "forwards under 90% of what it receives": 33
+   },
+   "seed_errors": 0,
+   "seeds": 13
+  }
+ },
+ "totals": {
+  "active_seeds": 1,
+  "candidates": 64,
+  "conflict": 0,
+  "derived": 31,
+  "errors": 0,
+  "fired": 31,
+  "inbound_rows": 460,
+  "known": 0,
+  "labels_by_exchange": {
+   "CoinDCX": 31
+  },
+  "seed_errors": 0,
+  "seeds": 13,
+  "stations": 0
+ }
+}

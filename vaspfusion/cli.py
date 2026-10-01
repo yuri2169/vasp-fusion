@@ -139,6 +139,14 @@ def _pages(fetcher) -> str:
             f"OFFLINE={1 if fetcher.offline else 0}")
 
 
+def _rules(args):
+    from dataclasses import replace
+
+    from .discover.rules import DiscoverConfig
+    rules = DiscoverConfig()
+    return rules if args.max_hours is None else replace(rules, max_hours=args.max_hours)
+
+
 def cmd_discover(args) -> None:
     """Derive deposit addresses from the chain's labelled exchange wallets (B4)."""
     from math import ceil
@@ -153,7 +161,8 @@ def cmd_discover(args) -> None:
         window_start=_since(args.since) or base.window_start,
         lookback_days=args.lookback_days, seed_limit=args.seed_limit,
         candidate_limit=args.candidate_limit, max_candidates=args.max_candidates,
-        entities=tuple(e.strip() for e in args.entities.split(",")) if args.entities else None)
+        entities=tuple(e.strip() for e in args.entities.split(",")) if args.entities else None,
+        rules=_rules(args))
     # its own cache file, held open for the whole run: thousands of small pages would
     # otherwise each reopen the main cache, and would bloat what the demo has to ship
     cache = chains.ChainCache(args.cache, hold=True)
@@ -206,7 +215,8 @@ def cmd_discover_eval(args) -> None:
     from .labels.lookup import LabelStore
 
     cfg = EvalConfig(chain=args.chain, entity=args.entity, n_positive=args.positives,
-                     n_negative=args.negatives, seed=args.seed, limit=args.limit)
+                     n_negative=args.negatives, seed=args.seed, limit=args.limit,
+                     rules=_rules(args))
     fetcher = chains.default_fetcher()
     provider = chains.get_provider(cfg.chain, fetcher, page_size=cfg.limit, max_pages=1)
 
@@ -217,7 +227,7 @@ def cmd_discover_eval(args) -> None:
     with LabelStore(args.labels_db) as labels:
         groups = sample(labels, cfg)
         report = evaluate(provider, labels, *groups, cfg, progress)
-    out = Path(args.out) / f"holdout_{cfg.chain}_{cfg.entity.lower()}.json"
+    out = Path(args.out) / f"{args.name or f'holdout_{cfg.chain}_{cfg.entity.lower()}'}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"config": report.config, "metrics": report.metrics,
                                "rows": report.rows}, indent=1, sort_keys=True) + "\n")
@@ -398,6 +408,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--workers", type=int, default=6, help="parallel fetches")
     s.add_argument("--name", help="output file name (default: the chain); a second run "
                                   "with another window keeps its own files")
+    s.add_argument("--max-hours", type=float, help="sweep rule: how long after arriving a "
+                                                   "deposit may be forwarded")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover)
 
@@ -409,6 +421,9 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--negatives", type=int, default=300)
     s.add_argument("--seed", type=int, default=26182)
     s.add_argument("--limit", type=int, default=200, help="transfers read per address")
+    s.add_argument("--max-hours", type=float, help="sweep rule time limit (default: the "
+                                                   "rule's own)")
+    s.add_argument("--name", help="output file name (default holdout_<chain>_<entity>)")
     s.add_argument("--out", default=str(ROOT / "derived"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_discover_eval)

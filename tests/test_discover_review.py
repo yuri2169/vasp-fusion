@@ -203,6 +203,25 @@ def test_a_cut_gas_listing_also_marks_the_finding_incomplete():
     assert "gas listing" in result.findings[0].evidence
 
 
+# ------------------------------------------------- found on real CoinDCX addresses
+def test_a_sweep_takes_the_newest_deposits_so_an_old_idle_balance_does_not_shift_every_pair():
+    # the shape of TVKCy5…StkV2k (Aug 2026): 5 USDT sits unswept, then each deposit is
+    # forwarded whole within a minute, a week or more apart
+    week = 8 * 24 * 60
+    rows = [tx(1, "U", A, 5, 0)]
+    for i in range(1, 6):
+        rows += [tx(10 * i, "U", A, 100, i * week), tx(10 * i + 1, A, "HOT", 100, i * week + 1)]
+    s = sweep_rule(A, rows, LABELS, CFG)
+    assert s.fired and s.forwarded == D(500) and s.received == D(505)
+    assert s.median_delay_s == 60          # each sweep paired with the deposit it moved
+
+
+def test_an_idle_balance_still_counts_against_the_share():
+    rows = [tx(1, "U", A, 100, 0), tx(2, "U", A, 100, 10), tx(3, A, "HOT", 100, 11)]
+    s = sweep_rule(A, rows, LABELS, CFG)
+    assert not s.fired and s.share == D("0.5")
+
+
 # ------------------------------------------------- minor: order must not matter
 def test_outflows_sharing_a_time_and_hash_are_ordered_the_same_way_every_time():
     # only 100 arrived, 200 leaves in one transaction: which outflow took the deposit?

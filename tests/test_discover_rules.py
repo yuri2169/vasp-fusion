@@ -85,11 +85,13 @@ def test_no_transfer_to_any_exchange_wallet():
 
 
 def test_a_sweep_later_than_the_time_limit_does_not_count():
-    late = 25 * 60
+    late = 8 * 24 * 60                # eight days; the limit is seven
     s = sweep([tx(1, "U1", A, 100, 0), tx(2, A, "HOT", 100, late)])
     assert not s.fired and s.share == 0
     assert sweep([tx(1, "U1", A, 100, 0), tx(2, A, "HOT", 100, late)],
-                 DiscoverConfig(max_hours=48)).fired
+                 DiscoverConfig(max_hours=24 * 9)).fired
+    assert not sweep([tx(1, "U1", A, 100, 0), tx(2, A, "HOT", 100, 25 * 60)],
+                     DiscoverConfig(max_hours=24)).fired
 
 
 def test_dust_and_zero_value_rows_are_ignored():
@@ -129,7 +131,7 @@ def test_minimum_number_of_senders():
     assert not s.fired and s.reason == "fewer than 2 distinct senders"
 
 
-def test_first_in_first_out_delay_per_part():
+def test_a_whole_balance_sweep_gives_each_deposit_its_own_delay():
     # 100 arrives at 0, 100 at 10; one sweep of 200 at 12: parts waited 12 and 2 minutes
     s = sweep([tx(1, "U1", A, 100, 0), tx(2, "U1", A, 100, 10), tx(3, A, "HOT", 200, 12)])
     assert s.median_delay_s == (12 * 60 + 2 * 60) / 2

@@ -3,12 +3,15 @@
 Seed: a label with a VASP category that is neither derived nor itself a deposit
 address (so derived labels never breed further labels).
 
-Rule 1, sweep. Over an address's stablecoin transfers, deposits enter a
-first-in-first-out queue and every outflow consumes it. A consumed part counts as
+Rule 1, sweep. Over an address's stablecoin transfers, every outflow is paired with
+the deposits that arrived before it, newest first: a sweeper moves what has just
+come in (or the whole balance), so this pairs each sweep with the deposit it moved
+even when an older balance is still sitting there. A paired part counts as
 forwarded to exchange E when the outflow goes to a seed of E within `max_hours`
-of the part's arrival. `received` is what arrived before the last outflow (later
-deposits are not swept yet); outflow beyond the queue is balance from before the
-listing and is ignored. The rule fires when forwarded / received >= `min_share`.
+of the part's arrival. `received` is everything that arrived before the last
+outflow, idle balance included (later deposits are not swept yet); outflow beyond
+what arrived is balance from before the listing and is ignored. The rule fires
+when forwarded / received >= `min_share`.
 
 Rule 2, gas payer. Exchanges cover the network fee of their own deposit addresses:
 on Tron they delegate energy or send TRX just before the sweep. Whoever did that
@@ -21,7 +24,7 @@ a factor for how much the gas rule adds. It is hand-set, not calibrated (B6).
 """
 from __future__ import annotations
 
-from collections import Counter, defaultdict, deque
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from decimal import Decimal
 from statistics import median
@@ -41,7 +44,10 @@ RULE_NAME = {"confirmed": "sweep+gas", "station": "sweep+station"}
 @dataclass(frozen=True)
 class DiscoverConfig:
     min_share: float = 0.90          # X: share of what it received that must be forwarded
-    max_hours: float = 24.0          # T: a part must leave within this long of arriving
+    # T: a part must leave within this long of arriving. Measured on Tron (window from
+    # 24 Sep 2026): at 24 h the rule misses 1,074 addresses that forward everything to
+    # Gate.io, OKX or Bitget a day or more later (median 22 to 48 h, 90% within 123 h).
+    max_hours: float = 168.0
     min_senders: int = 1             # distinct depositors seen before the last sweep
     dust: Decimal = Decimal("0.1")   # smaller rows are address-poisoning spam
     gas_window_s: int = 3600         # how long before a sweep its gas may have been paid
@@ -127,29 +133,29 @@ def sweep_rule(address: str, rows: list[Transfer], labels: dict[str, Label],
     out.received = sum((t.amount_usd for t in deposits), ZERO)
     out.n_deposits, out.n_senders = len(deposits), len({t.from_addr for t in deposits})
 
-    queue: deque[list] = deque()                 # [amount left, arrival time]
+    unspent: list[list] = []                     # [amount left, arrival time], oldest first
     matched: Counter = Counter()                 # entity -> amount, any delay
     in_time: Counter = Counter()                 # entity -> amount within max_hours
     delays: dict[str, list[float]] = defaultdict(list)
     for t in rows[:last_out + 1]:
         if t.to_addr == address:
-            queue.append([t.amount_usd, t.block_time])
+            unspent.append([t.amount_usd, t.block_time])
             continue
         lab = labels.get(t.to_addr)
         entity = lab.entity if is_seed(lab) else None
         left = t.amount_usd
-        while left > 0 and queue:
-            part = min(left, queue[0][0])
-            waited = (t.block_time - queue[0][1]).total_seconds()
+        while left > 0 and unspent:              # newest deposit first
+            part = min(left, unspent[-1][0])
+            waited = (t.block_time - unspent[-1][1]).total_seconds()
             if entity is not None:
                 matched[entity] += part
                 if waited <= cfg.max_hours * 3600:
                     in_time[entity] += part
                     delays[entity].append(waited)
-            queue[0][0] -= part
+            unspent[-1][0] -= part
             left -= part
-            if queue[0][0] == 0:
-                queue.popleft()
+            if unspent[-1][0] == 0:
+                unspent.pop()
 
     totals = {e: sum((t.amount_usd for t in ts), ZERO) for e, ts in to_seed.items()}
     entity = min(totals, key=lambda e: (-totals[e], e))

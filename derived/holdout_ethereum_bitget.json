@@ -1,0 +1,6050 @@
+{
+ "config": {
+  "chain": "ethereum",
+  "entity": "Bitget",
+  "limit": 200,
+  "n_negative": 300,
+  "n_positive": 300,
+  "rules": {
+   "dust": "0.1",
+   "gas_window_s": 3600,
+   "max_hours": 168.0,
+   "min_senders": 1,
+   "min_share": 0.9,
+   "min_station": 10,
+   "station_share": 0.95
+  },
+  "seed": 26182
+ },
+ "metrics": {
+  "conflicts": 0,
+  "entity_precision": 1.0,
+  "errors": 0,
+  "false_positive_rate": {
+   "exchange_wallets": 0.1533,
+   "other_tagged": 0.0
+  },
+  "false_positives": 23,
+  "false_positives_naming_the_tagged_exchange": 23,
+  "missed": 234,
+  "missed_by_reason": {
+   "forwards under 90% of what it receives": 4,
+   "no stablecoin transfers": 230
+  },
+  "negative_conflicts": 0,
+  "negatives": 300,
+  "positives": 300,
+  "positives_with_stablecoin_activity": 70,
+  "precision_in_sample": 0.7416,
+  "recall": 0.22,
+  "recall_with_stablecoin_activity": 0.9429,
+  "true_positives": 66,
+  "true_positives_by_rule": {
+   "sweep": 41,
+   "sweep+gas": 25
+  },
+  "wrong_entity": 0
+ },
+ "rows": [
+  {
+   "address": "0x00226ae5a36e0ecee2ce31eaeb4039800adb4fe3",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x008bc931455dc5ae2c4e1af81b67889790f60dca",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x01f0c588909af2430eae095d072044adda6a0f96",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x026612ab4d21ae10036ee3b7e2b626b7b0713bfc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x027bd9a4bf4f2bafede715693f87847a5072b65f",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x029b051950442a62975e9392bf83218520af9fd3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x02aa4e03ff7439caa85b65227e04cbde93c28a6a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x0366c85ef8c0127188662d478911d78e3beb7c5e",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x03fb95cff44b2fef8f5b025d8e6ab811f331c0b6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x046905b74924781054c6373e7596ea30b96d3ba5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x04a36b3eac06a3a151f3903c81a74493a2cbefca",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x04ee7379146216b733cff7bd69066a1b98218b8b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x07a0f38de768169cbb3a51e04f3110c3e9af62d7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x089af6fce3c37510b1654b50e6d3073c620f6e8f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x09b888a05925566aa0c029003a0a45dedb55fdb6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x0a1c40ddf98a2be8d101dec071c1536a72c574c2",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x103a7593f50d4e0ef3f235c4cd67cad75c836d7c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x10641683de98700a1aee34d2aca2c7806afa8672",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x10730d989ef1cbcef5807f3a9e43ba6748898c5a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x1156e89668eb169f3e4450bd248886a64e6bf35a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x14f31e07e59bc4f7124943fbcaf67e9b7c5eee9d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x150fcc5447858b1d340461f5ce09645d0cf97b5f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x15279388766e8f3144fd137f21e0999a6f1e6b2a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x164f4611c9cd8abb45f8db664c52998a13ce960c",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x16c83ee72d9d148d228b3b9c0ba1e43aca85165f",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x183189792f2cc8b0ebae67e0d22a03ff2df6ce3a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x1a01eb255a140dada3e2294b4143cc3928c7fcd5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x1ca02c0fe049a2e6cfae1a673b52736eb666f906",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x1ec2c76db16c2c39c37489c39cab5b23214d241f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2421f05837502117cf5855accaec8ae3b18c83a9",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x24592d5b9ffe78a574ca8728db1f363f5dc63efd",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x24aedb6830b1327f00ec7648d7e3b6a51ed6da6a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2566ad6e1e39f7fa0b7ed524133d877cc2d3eb5b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x27a6d0c81dda6b0cc9e056f545bb3f0ac2cb818b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2aae5a44eb4a7cf926f6c0539764c997d0f18979",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2aba08f1e67f51cd17f1be90957af34aedf317e7",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2ad67799a7e2e058946a5b2eb4968127e2798504",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2aefdc858352d3a52621f1b947a8da5f3512f8c6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2b0334f644b75b96a86e5ad0dac382b2f344421d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2b603a13a5b9be8e6d8a8a3b29438a90f884ead1",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2c328fa1e0abe3a69afdb58f8892b201b52ff570",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2dd2b09c8bec656eec6f16bbf1df388f2ed01d32",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2e7dcc0f74a3b863076e854e3a85b984c2ee5445",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2f5c33e95df98aabe6516d098a7ce477c88d04a2",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x2f69a1ffcbbb37b89de8c2a063d53098772bb658",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x30b0a874f99efa725daf0b1f769ed223c6fc2412",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3171b9173729b0afa0d4b463f8949ff5dc4a206a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x31dea107c2121de9b3893d1b16264cb63f0c32fd",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x324ac5b8c3f2eaef4d3556cad36b1524bab5bc26",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x327e8043791b88b6a3828dc3807e198b44e29c84",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x331758d4c7fd5525dba057f30062f82a58eb3f1b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x33b0e7c61919910ae357d913d59d6ccef615789f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x348c6b011e15ea407db4725895002dc203fc6628",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x356f0d2aef475e0fddac76f813bbdb41f18b2525",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3724f0e81d5a94aaa4e1884444d32b21a21dd4c9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x38322ffc89c1b64f0fbf76e6c21ced2b27221bb6",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3878f09e017456ee2e9991931e3c46160d49968d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x389ea8960ccb55a973ca6081cd4922e218332082",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x38ebc37c59e20249519907e8e62db0686a0fd231",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x393c16f8560f955e30de359507df61fd0ea23a0d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3a73ac0e1e59ffa23f8ce380e0626148ad5ba05a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3a9892d4ddfedb5e42753dfe2b03906c63259252",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3bf10dd5f206686f92117f3edb1b2a23a280d456",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x3d147a1752e8e1149004bbac78dbbdde8f4d07bf",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x40d36d84dcebbafa02dcea93a1791398e975039c",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x40ed09b2373d1f6b722e0b86f320f4ea3aba8254",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4190051a73a137c5e49ea6101dadcc8a7db2aaa1",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x419439d3cb3b87fd90644a1c98b5e00df0d83ecf",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x41da403e3629da1d73f96d03f6ee6bd3c75b80be",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x43c8ac0957145bebc28421aa15aef8ef118c2c0c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x441868526ad5a9081cecbf3a60b026cb66d95394",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x44a9a1fb69e0be06cbbe1e2a2d3b106531707acc",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x44ea616fc312720565a6f66c82a4488aa7a73ef3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4564f41106eca73dc2d11d44e98be89bbcab22ee",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x466d8e63f042468153bec523907ca8b099ee04cc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x475fe1a422eca399eff114d0aab4caa9eb0c37ed",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4921e2a76f7e8a4eab3051b56dc1ee7ddcf9c65a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4a6a02291510beac3217627657f1a679b53b7177",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4aa1da8302fefcb43978a61a24d1f46867b9b95f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4ae270e507802c078f6df99fbf382eaea1afd157",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4b2d5340f61a38153b75e513f308b27c831cc45d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4b8632a9e4cda12da8800127d9c1d3fc9fad5006",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4ba681e2bbd914e987c48014b8c964997a2e155e",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4bf940327ea7bd035893866744d9b7d50a0ab639",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4ea2c0b12d1463b1e9aa42d56732f5b0ac367e3a",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4ec17c33e91661cee97e40405f81a6d910cff077",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x4f67f06765c6ea8fb865dff0aeab166653573ce3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x52d3740c281689fe09fdab3ec2ff145186bb40d9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x5302ffaabed537243fb2eb3d39f3879ca94781b7",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x53244e216d025e47fa66a5f031c83dcb68b9ab49",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x533db64db1865876e46ed8b0a52ceb2ca3ad4509",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x571d0a442345f5f1d4affb3b2f832575150b1260",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x576791952e9747ab3ab702b4b5b25a2bebd72706",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x582c9a99d85c4469b426bf9cd467de5d5f1c5d88",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x58fdfebc267937ff1d0522f0fba917238a45484f",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x595bf527b1e136e614d8ca6e1af709c2f6ee5181",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x5a18ebebddcd86e7eea03c8a0ea1b81c48db7e6f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x5c64e645a9460002783aa93c008f9cccb423f88f",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x5e0614eddd92172d873e86a33c49bda96a695826",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x5e7e1d0afe4a1d5b851d66519f864b185384ec19",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x61a87c7fdc09472435eb9faa775737dde35703e4",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x61d6d83d1f9efa365970715d0cb8bd4b34684f44",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6226c539038359f950427003c38aa6473cfd724c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x626c7c9853c609938ca7a3a5ea510574c4047ef9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x62985dbd3bfa932e3fb4b5cc2f24630c4e2634f3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x62fd73fa8c532a056b2827a1885826edce9f834b",
+   "entity": "Bitget",
+   "gas": null,
+   "outcome": "missed",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x63eb90dad69fc4983bf6493572b337dc46fa0123",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x63ecd163dd72c847381288da5ab655f6239f4919",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6474fe3a5eb2da6273f27c636655930561a9116d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x653afa4203bc0df6bdd34db52bc47658a385f057",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x65f9e14f9a1c88451eedccf9ab84a4f8d060fcd2",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x67763b6e8cbf25bb9f8f828de7b5c8c1ffcad28d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x68821eff8bf519529dcf93b12f2a813bc44b66de",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x688a26018781df9008b81511d9d6fb045d6e1f25",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x695784952fa1f8e666e8b09e2a91c3d371618843",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x698510b224ed63a8b8d8f234cd02c57348b573ed",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x69f421d5d268db2afef7deae534ac6dbaa277fbc",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6add962b8cdfcf4576b191427eeffc8e9f4332a7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6aff75804184f878c1c1621796579d1dc561083d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6b2b37cd7e92d383b3382a1c4f0ce3b65d5bfb6f",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6b74a06fdc4cea6186e55039efb281ef5ccae9ea",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6ba806259772b46452c26a23d1e22eb73a36d61a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6c221d5fd2d995ddf5a0761ae6d28bc92b2bc1af",
+   "entity": "Bitget",
+   "gas": null,
+   "outcome": "missed",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x6c643d1255c789289d5e0c257c834aeb1dc1b403",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x703d861ae6396d10d779616b922dd7afb8247e33",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x70f782c48e3e9b9eadd62ed23b3e703a1461d1ec",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7139e72cd732d2e1c4898cfab67c0459f3a94a0b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x74c5d992c776a7507daae06ff6b05078548d2575",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x74e61d333b5646a2fc8991e05cf2aae2d578b055",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x759855255de7a98a66a2b579538ab578c72fd3f1",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x772fa215e460268fc16ff50491b8a6392c7ddeb3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x776c940663685ff2dec8da84133a1b4e913ac62b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7784f1bfc8096143316bc4d1c6ff57cb3e0fa026",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x779615558a473df39b15db6b7862fe356c311420",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x78caefb4a889e017a25010200074992455fa9a9d",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x79068263f3779608655d05d53653e055ff662537",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7a67dc112e27d9c87db001e9759d879c0ed71bcf",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7abb7cba0fd24ab45dbf81b8c2bc14f9110060f6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7b9fb6c19f5651666a23bec7038fee54cec7315d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7c5db9d249beccba7121245a2c2b39cdac50473f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7c9fab1db28ceec08a75e6d3e2ac6e21d86004de",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7ce4056f158db425873a67d60d487e9304ae5fb6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7e291faa5a1338b98d62c29cbe793664f3a8575d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x7f6e877290cf3734f47be0d39882d134d302c57c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x80e27d8d142af01178ce5d911ad605a9da4d2def",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x80ee8cb19a2005e1a710bf8e79e078aff4a9a167",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x81378bbb2fbf3afb2be6efe6b2b678f4a6ad58fc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x81620df09a78208e0afb68b00f825f3ac6b17ba9",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x81c21f2dabf63ef968cbbd80598b53b363fa0339",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x8363d377886dc04d9da2ba84477f5202f15a1630",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x852cfef392aab1a6b60d5321b0474a763e561ff8",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x854035e5048d37781a4898d8ecf1329f051b6503",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x860edda17381da33549d2a78e0329f655cb7ed08",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x87896d88f40000018ade41ec599740e7f688582c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x87f1da94dcf324ed31471763c4c202e34c6f2a97",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x88b8ef9becc6d31677f9fded10b4c976d29abf30",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x892628969a6cf034f50584da0352d2b8243f9370",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x89457d708df215512bc61cfe2c469fac357791ef",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x8a34e4f4ef91fa1523482dc106e2ea0c40c2fbdf",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x8a80fa41a1c6771cb34f06f07d7fb59e67f2eaa7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x8b68f9f61d38c58450372c394675557df115ba9e",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x8f860797dfd89edb4e0c3be2f25ab495ca29621c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9057653b8c5f7e2abfd3bfde6d6e117a526a249d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9496f8abe060c5685272b501086e144ec9180f56",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x95eb8e2ad1912d8c35ecb2589f020fc343aa0475",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x96a0a57cbe13093c6f2b8b8a8a55df0d6423f133",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9706b3284e82ddf241bea3df6dee7b63ed1f5c02",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x97a14f6f4564060a5e576eaed5cda05a02803557",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x985dd28729322a70b11a1156689ccb5ac3cf2417",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9975be5053a3635c673fa86e1ba9d22287026b70",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x99b091515df5ea4bf6040ed14da4402235e85cc6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x99cf732d3231180b90fa5ede306b8822434473f8",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9ba3582f4fe2f382fd3e8f06078f4c4ae69dd31b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9e17efc06841d12ba763098f27de76f39bae13c9",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9e49884db0fc754f18613c6baaf9ea0942810608",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x9f8d68bea543dcdefc590da2ab2dad64d952c8d7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa1b6bdc7b085a13c16400c59814a18e27374b62a",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa254dacd2b254d0ce7d95321bea4de7c4202df81",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa2c7ba298b2c0e1ced67158e75da5f0f24a22efa",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa31227af5d559ca10af81d65d2832b6618cae36c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa33173c6e4d0ed0ab7f572f834ea0c7b8404be6c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa33f004985f9501eec160301ad555b87dd90cef5",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa341602449e93941964b5b4a92648a2258f06055",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa4003e3783d1aa123e2ab85913bc1c63e10d2899",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa4346478f3a516f1be81bce01d990baeff36e834",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa45aa11ea4fc65f805c7e2e93efb91840f01bfaf",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa5ec082d5e0fa5adf67b2fa63fd0b269a01c8ce5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa60b58f232b716dcad497d1bf5e1c8ef48429d05",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa65257dafa1fe8e531cfb9f0f9c0cd0eeee1828e",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa6ce523e89c6e42e31cdae36e4958da868d62f41",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa76ab89778bb5540db02e1a1e3ed0761d2e7d4da",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa8ca8d9cefd49b5e50abb0f83dee90c294a530b6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xa8d9f961402c2f9c8695af339a886b338385af40",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xaa1a89aa5491795f7546ac6f615f3cd188c92a48",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xab4f09db67963354a0791318734d18719cf081ff",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xab8d02b80dbff992c1e18b51ba292f5549bb1d50",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xacf5530525988e3449f6ba653a849565bc88d224",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xad15ca7331e9ea5dd67d371e97dc88a8aae429a0",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb0ae7cd24e2b405af51897b0f05cdfff8147103c",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb232ba3997b50de20caf149836f3458db891edd7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb2eb0dc37f42f6cb7bf0567aa6e8578f43fd334d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb4ca9440615ba5a7ce2eccd2e4f1e276cc10681f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb68f90b2f05e076d50ec56c094e2d4f38f9f06b5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb6f795f1b637bf8bf4766a74ad250761ff32e845",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb79f793b1ba36d077d1def5a22bd0fbfe4146952",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb82e86fef37dcbb0c2a38972a736150fda8867b9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xb8bbdf53bb9741b588378c96be9c078cc7351f51",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbabdc1db88e7c46ef497b920d3daada2de8b5301",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbc4defe480c76c38e43237642cb41071bffc0659",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbcc52b57d48280ecb977a8a7cf6becb42d06c9e2",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbd8af34a85b2ffacc93c7c40211b83c8b41ad67a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbdb825ba7094028b6cc0e0eea45218183290e83a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbe058b4b999a502565af3ecd696e2e5ae0e86532",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbe56ddd7434312916fea115f976d082becbf22e2",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xbfabc9cb878074516728351c19cfe9f142f26dff",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc014722f5ced65c3d5ed8af328fafa7e2ee7cd8c",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc1505b782e679931254251e480e9f298684c63b7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc1694deb7b22b20b526d4294160c2bd5c3c38059",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc1af2be911e126c2cbccfed6efc4558fa5958ab5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc1ef6d9cdec61b777894748230603c78346ec17b",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc241c9c773567a87108c965c82bd493eb76102d8",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc2fe8bcc71142f85551902955a169fda4896947e",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc304f62d146795bc6e3a5729f636f6535acd0b10",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc3ab5f5fbc83387feec991716052fefc11e60930",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc42b1f42e70434642f73bfa85f2be35df3945afe",
+   "entity": "Bitget",
+   "gas": "unlabelled",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc44f9ffaf6d90de4e6b3ef0d50dae8f28527baef",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc489013424f9db0d17399e96b9e80e668b275c5b",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc50aa96a08998e27fe292814ce9af0cda4ed7bc1",
+   "entity": "Bitget",
+   "gas": null,
+   "outcome": "missed",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc58efd2d5975464b323310f7bd61db895449ec8a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc5ece52a3283a117ed20ccfdfc924ccc7f7cfdd6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc65c7b02127c48b7c082d717ccd593a7a7dfd273",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc6d1a91e61a8137b753a4cf29d2869d40c845b8a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc6e1db5fd3b41fe5c2c0135b9e50d5ab605cb7bc",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc7a6d8f3eeb6df2fdfcd5da49516f0b500d4a3c9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc80e92b410620ea7768d926b8ab7948dcb2018e6",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc864a0cced70e5ca3c2d4a1e3be59d535be36a7b",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc866851462c4844670ef28ad10ea38aff2ae32af",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc879d4499abeacfa8ecb696dd43161fd6eaaa544",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc9d0874cdaf94a26b408c46218e7493a8a5f4fbe",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc9ded87a8841a04d0e4e12e4f160454cdb756de9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xc9fad2c54ce4895bd49f5ceb375b88f71f7ebdc5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xca78c510606d38578115df9ae7e08161786d6b99",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xcc22ed5cbaeaca067ec0e7a751a5ca3d62853936",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xccec680e7654f55889e158f57f2c047f9df95edf",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xcdf6895fc1779f36f3387b93cd76c066d98b98f7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xce8bf7e7d25d57624d38efa16ea8c5035a054bcc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xce9172c9e10e3df8f1a374489a68b2ca5daf5eca",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xcfacfc627e4b476f5019e26cc7dc91cd04a7be42",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd0865e896e9094c6367c189a52a1ee28f7384c33",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd15bc4ae1ca978663752b906d6e7f5e979332fca",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd1ea110c9436529265fcd733ecbb12f947debb3a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd2e5cea85f1d1d9fbe38537df2abe403ff29f8b5",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd39704d344b76ccb11f2f8bdda7599af61b7b2af",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd468cd8d85cb4cf583dfabd4f4b4436122869eca",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd4c7f0d18ddc5fb40203c5b5050798b9d8d5efcc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd6ae7f747f76d319d56096a05f94fa9791f65874",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd7188aebb83f6d18bc9b8c41bfd256e9054ba7c7",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd7ae0966361e3c5b2bfcc46457ca90cd60181036",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xd98fa0fefa3fc51e27820cb099a5d4aadfe6154a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xdb50e0a5aa3308f4271d6b2f7212348e3e67976f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xdba7b4c9af46de2c269f6d63b81c92c2ef95b68e",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xdc4d002eaf13e73755c3bab88c0edc003bab3b39",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xddba60575e267de3581fb81759ac77b3a6138485",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xddd9e6eb0b1508091763a8750038f013a9d65d0b",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xddde3b9ddffe5f600fdb0ccc5a9b1ef79f65b341",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xdeefed03dcbcc24e36c96920dec8ad130985f0c5",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe122a868af0bf08abbd19aa3aff4c7fc6260d757",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe16c9734543d43256036b618484d9857133b70c9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe2ccd8c9d97b1ffdccd0ca727238cd422f7d1354",
+   "entity": "Bitget",
+   "gas": null,
+   "outcome": "missed",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe35474e9bcf238d2c8354b6c561a0e69985bba69",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe56be40504a711bf28fdad254e6c2e075f7768ba",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe5ed9fff761e628109a1f5745325fe6e9889f0ab",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe7028f16a3c3f29ef45639232704088b9ec64250",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe78f0df1f052e859c0aa2a2688cb9bf16358918f",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe943f8ca3c35e181530a04fdcf94a01d38279e6a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe968b9174b8fc6f0a407ecf77d69398ec94178ce",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xe9e34a382253108c3fd678210c3a266548220510",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xea418a835720b8c4cbac305b7840e47dbc29c168",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xeb761d4723cfbc776de533087c889d7bbd52fa46",
+   "entity": "Bitget",
+   "gas": "confirmed",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xede68d2ae668b4a57c6b8c8d7e00aa8525fa29f4",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xef37fac86302c14543c622cc81103135afb57c1a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf08ee4521c4591ce1aa58f45d92c95c999b573bd",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf0b28dc524a3c6f220ac824cce2e60c81d1603b3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf127dfb54098a925bf5b32aed7e1de1fcd4c8f3a",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf24ad619e169dc06cdef429c6a521d488b2cdf28",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf3ad2ffb97a8f21da6ebd153d81c65525223ea49",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf3d39e4854456a98b46c1802143d4efd640e36c3",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf64360a389ce679c1cfea15fb4b2656b02e939dd",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf756a65a5ee5aeefa8ebee56ee2ae69ebf11b747",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf7785f5c358909983d842d9466690096e557548d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf7d6dd9b98e22d133fd2c97b8a780f0db2c98003",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf8ad3525f8715484428d8cd994589fa8569bc41a",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf8d258cc780c3ca1adeb8e1c1bdcf9bc48cb93fd",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xf96bb645b95841d91f75d847345e22651d8078aa",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xfc2a5b0f9206b76743da07445999e44bc3e72034",
+   "entity": "Bitget",
+   "gas": "none",
+   "outcome": "derived",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xfd54ec2c7fc3fdc611215af9a90b90765b9972f8",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xfd84f3ea973e86dc525c1177ace7686d5a2e9eff",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xfddde6372ce6ba9a2f5cdac5fc8c36c9fd0d266d",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xfed2399b20011af1fc985d5354f12cbc57ed48f9",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0xff2bc0a6cb3b1846cb8541c6fc10692c8f043dfc",
+   "entity": null,
+   "gas": null,
+   "outcome": "missed",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitget",
+   "truth": "deposit"
+  },
+  {
+   "address": "0x00d6be6e90622abceea212f92215bd8a528af934",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x059a86f564031e66156c5ef06e8f35573295ec67",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x06b1a7a503ca993cafaed93979a417f90266a7f1",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x088be4207f51f65fe4eb8c36786a1875734c11e2",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0a3e451d495c9abd2e934e3f98892b8e641fe1fb",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0b6438f10fdae49e48815c4b5222b562789fb9f6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Celsius",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0c01089aedc45ab0f43467cceca6b4d3e4170bea",
+   "entity": "Korbit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Korbit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0ccdbaca9708701e6b7c87399855fc60e5f68a55",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0d2931338b723a116122dfca57c25696dedefdb4",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0f85f33b93da5726f0cca9aa36c706c637df45da",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x120cd6922dd8decb9597acfab29482890ad039af",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x13d4ec1e9eeabb060a73567316ba4e0a7784e7c2",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x19dd892094d0e4633d963ed64ebe65b88a9f5efd",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x1b175c9c01781fc0b39ee4c45a204eff00071a98",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x1baec0d23d46233cb528a531cd41533e1f770bf7",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x1c2785068b3c6b89d8fb2e46d3f453fdef74d181",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x1c32470c9818163c2e26a578cd7be950a31b3648",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x1f6f1e0b9d2583ac2ab9cdafe4eabe6610bad71b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x229501235ddeaa4b330b0bc2fd8ea6c8f1e9b166",
+   "entity": "Deribit",
+   "gas": "none",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x232c0ad3ac79f6f23dfef18c3362e71f88bd3cac",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x2345b52e2350f4805d078a27a96c25f7ad3beae6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x23c7f29f3a40ac8496e5902a7f27a67c4747c811",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x24d7dfc9762decd44c0381689b3ca74c2e5927a7",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x258d97cb2549faf59bbf94746b4f4534a6d0d4d5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x27ad616244f42da373fa5070dcc63f99a2f3226c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x299b12cb340af438d1c467602bb4d9555dbcca0b",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x2ba3e132006c2017f234cf22eb6346e08e1c6ab0",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x2e66529b1f3067d19bb91fcf8188b0cea69764da",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x2e89770daedef46a8372b1c645ec3262cc8bd490",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x2f6af0dc7b608002c7f761692db056cb6b559d3d",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x3074c95cfd8b9bfce1d8ef4a99e296a397ffdb07",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x340d693ed55d7ba167d184ea76ea2fd092a35bdc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Uphold",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x3452d4cbd1afe538cdaa92b8102f2aeafe0b4083",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x35e52480d8c57bad74182aa7bc4e4f60b3b37d10",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x36074414110b2ed0ae24fb49bb35363bdbecb264",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x37b5dbc29865baba75891541f818c7cc4d1aff75",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x3af4109f07cd12bba7db64829efb9ec97cefdee2",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x3ddcaa8fe0f771b552fd3d02720af35a160a45ce",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x3e3f7b5d1a743f87418390888865173563bf9a54",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x432f71e29741fc9405ffb3f3170413418ae3d06d",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x463f1bec9681e9d66a09160c94821f5b9cd95245",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x46a7faef2feff74f8524fac87abfc00ff4b8b523",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x477f00781b1d740c5c3abf81d7a61a194cf0fd44",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x47e3ac26c5a8f1715dabfe1db00e4bf1f54afe23",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bithumb",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x486cef19e6f8b79ff6cb1477ed6ef1c44ec90d6a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x48e6c55bcb7c3c2d477e3b889b3078cd936e3065",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x490257cac24183d002e160d91cf6904db61b9491",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x4c06100c91355e7cae1435a88640b73e68f49729",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x4d6c032b7941482660b8c4a3b91105b0ea6fb597",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x51e3d44172868acc60d68ca99591ce4230bc75e0",
+   "entity": "MEXC",
+   "gas": "none",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "MEXC",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x520983d87a911a39f98b7c7c44d8180898681060",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5398cfce67d12f208b991b80abf09bd1aebe3af5",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x53c5d2386a17450eaa16c3a6439a23c278d0f0c4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x572fb1c9f98af5d354b62f96db6ba68b5fa555b5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x58fa177ed20134f6e14c512b7af3de46b662f86f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x590f27c5bb83b717ad03d9b912f0e37b813bfb86",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5b2dada5a95b0a75c2e524c9bad0ef6ee3b28673",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5b5c13a2cc0ef7d907c68ff9c3868f9c349c94dc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5bb9bd2ee9f5f5e83dd93ea8b3e78ea7fddb1e82",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5be770881f8b4b26324b3beea15aed3d8db28196",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5c44deb5223c1ff02cc46a3c5dd392810f833f66",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5e3f56f5b91918b5915f32979b77a1a83e63a360",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5f6b311a160d30dd38d7c05d044af8b6f8dc5bea",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x5f6cc8d69c438301c38879026983e4c32cb67fda",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x615c1f90060116f87f3b723473062fd64b92878e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6514782f5a3f28162c260381f97303e607761e2b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x660629fe43b0825acf3402e10a999c563075a32c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Coinbase",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x660d50103f5f8a0f1e6278ea0e6345b426c7bcdd",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x665602c6c990ed0af82792affe5dd8bb19756d26",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6700e2cca5106f4ed4cdf9e42ab0ae952d96219d",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6734c1690652878ac3a72471c60254910d76bfbb",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6be5a5ce4aec26431911aaaa36b36d588dc2df5a",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6c3370ec49348371f12d37c13b9b9b2e2dc4dc98",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6c37a68dbb44c3f437d15dc405c67bf5778b8637",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Coinbase",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6de63a606097758f8c94060567d1f51aea50148f",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x6e0bc9049648cd0170a2dfb0f947b498534897a6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7060c908b538b11a84551dde4c17b883bd54719e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x73264fd335dde3ffc688eb70e8d691c25d90d493",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x739120ade7ed878fca5bbdb806263a8258fe2360",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Coinbase",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7497e3d81e48a178d0f38ee532cd94ec07b2f200",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x74f99b57950ab71b1f423ddb74a42136a32242ee",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7570c197410a8b5cd32f06658be5ec247cb4c6f0",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7633c876a80a014f0460742f51ac2a0a968ba24e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7ba97e7287aa58dd461014cc2d3d5455e5959254",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7bf257e9fb53f906aee17d3c7a42753c3fda0836",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7d832675cbe7b3f5c325ed85c4a796a7fb3dab46",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7d9dbe03c63529a08a9919e40d14c088be860054",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x7ed185992f2da09856f7447eaee705fa5425cdd5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x808b4da0be6c9512e948521452227efc619bea52",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "BlockFi",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x809fec265c518c4d6a47e3408cc12c51630bdf27",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x842c34be2a0de45f7a719955f1779333393bf11b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x875eb27bd75f8e8f26e401f1234480e743420052",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x88eb5d8f34fe8aa59731206f166774a2157d5e05",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8ad5d20020778009efe4d367ce0c7a6594a264e3",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8bfb3fe3d2600d6200dce581d3a09fc9416ad4d8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8c2754ded41ccb7643b05e93c66550f146feac1c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8ec8f08ad841677b41b9cfc84977d049a128e1d7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8f704900d24e5e6509222daddc93a68f54a187d1",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x8fb00078f36a3e6fb44ce430f1382feb2b84767a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x90ddfa5c3cc85aa284eccf11420810994d0dc32b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x90f86774e792e91cf81b2ff9f341efca649343a6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "CoinEx",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x93cac825ef96557cb62051b7da7e94fce747935f",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x986b2ce02b01199b517e2f5efb98b6df8fbc62a0",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x9896cc7cec32ef2be06551446e6dc075fc3d7ca7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x990a4ed6e7e52b962fce73de2b57af1da25e555a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x9d8eb0f7123c43d20f599cbe62a422c2a4a6a159",
+   "entity": "Deribit",
+   "gas": "none",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x9ec29f4dd9c5d7a077bece3e0548f557fd2d71b9",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x9ff47dc2b8187ac770b473ed1dfd4920bd248db5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xa0f0d1124ce76e2c842894d4d28a09c2610e0199",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xa152f8bb749c55e9943a3a0a3111d18ee2b3f94e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "KuCoin",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xa26221386dcf511c0d4bec2c333b4bfc4226e42f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xa2f7eef740915f55a9dbd6b6ef9d27d5fe62d0ce",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xa861678bee80035114b47615142e9302139a8c32",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Kraken",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xab2693da9c4308a910b1a049e71454cae67410ba",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xaebcd3f5a2d7b36a646b3a2a064c57fe191dcc5f",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xafc3ee41b72543d249f744fef05e78ee8d52c180",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xb09e2b77168da98fa362fded27aada1f2ae702d0",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xb25479a1be69a5ea4bfec0bb8cbb30bf82c5a02f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xb353734fb6da186facba2785ae0132ca86c6215c",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xb40d3fd88abe8736a4978562bd707a91bee2dabb",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xb42784127b9c41e064d793625793e62293ac556e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xba223b871b43157a73fe2fbd6420ddd815e80e45",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xbb889249df5ad4abde81325dfe596a0f874287d7",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xbf4893a496dadf8df64668de480943775a25dd45",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xc43f5d4f5486ec9ce14174cd03528f2f8790e3e4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xc676b47e920a09662b8fd980b08f456a6c7e331c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xc7d354a15243cad8828736b9377e3340da308532",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xcafb10ee663f465f9d10588ac44ed20ed608c11e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bitfinex",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xcc8bdb371b3f018d06896a264182c9ae46559490",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xcde2a728188c7ac3e788c1611f3e07105facb1af",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xcea4bf3c27b5b556d1e1b87e071d78232d1a8b27",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xd3cc22b1cdb7a3aad345047d64d066fe5bafddd5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xd434c057ae730f3c4183fe07c8a444ede887caaf",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xd553189f2cc2565b261dec43013d257627b2671e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xd60d84abf817dab679b59c18bb13d315e82dd618",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xdffddd43287ea461cc64013a4f25d449b517ea37",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xdfffb7ba70eabd7138d9c89e02d9e5a15d7fe096",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Celsius",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xe25a329d385f77df5d4ed56265babe2b99a5436e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Paxos",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xe36521f9e0da813205708ba5793e02995dda40b8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xe5430d868e091c952d2e0e1476c1cd04b9542db8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xe65e0b6f7461d3a919ca787ca4acfba7e22020e6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xeedbe092780ea5da44f8f45526c83ac046e6814d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xef9aa13553111e8a0a5fd47e02ea4ad65168873b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf0bc8fddb1f358cef470d63f96ae65b1d7914953",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Korbit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf0dd100effd5e88fc222a36a25c9ad12f60736f6",
+   "entity": "Deribit",
+   "gas": "confirmed",
+   "outcome": "false_positive",
+   "reason": null,
+   "rule": "sweep+gas",
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf1e93003cb2ba8e8ef34115dab0fa45c9e6c2fed",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf22c5d38b939ab1b5b95f25c7671452141d613a9",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf67452002338d8a507a0cf9dc8976665aa897b1e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xf91ead2da2da028caa4b652d0403ccd6d92c4259",
+   "entity": "Deribit",
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "forwards under 90% of what it receives",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0xfeadd2691e3117e97df2b1712d02fff839d47a9e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deribit",
+   "truth": "exchange_wallet"
+  },
+  {
+   "address": "0x0077d27cb82ff12322987b225bfce0bb6e8931b4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deprecated",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0153c2199cb3a3b83c5abbd27db0593d07a7a002",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x04b83cb8bf52d22ec151e258ee54520c162c0d5f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Endaoment",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x04f7e8038afd52bdcffcd17d9992e546d6918bbb",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x063ec714f1c7d45be9b20a637089957676c0426a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Airdrop Hunter",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0a054ce91bcf1008d683383692b36ebbe70d7d12",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Endaoment",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0bc833b3719d14fec4c94c8507c28f78ca1406d8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0c10bba91de02fe16de5d4a5d34ea4b228fdf9c4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0c5c6ac81772e3a1cdd8942af34c32a63b88ba7c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x0fcff154753e337983613889b69dd85fe8a1a145",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Coinsquare",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x150bcf49ee8e2bd9f59e991821de5b74c6d876aa",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x164be1c9bf17c40a0972eb72b7878aeb4c584da3",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x17049311101d817efb1d65910f663662a699c98c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x17c8a445edee2fa43b44da1adea0d01c81f9c63a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x1807721b23372d97f7e09a63b8c1186930afdf39",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Airdrop Hunter",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x182db85293f606e88988c3704cb3f0c0bbbfca5a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x1a88df1cfe15af22b3c4c783d4e6f7f9e0c1885d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Aave",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x1c4b8717a3eff560c49d09e7409819cb81fece4b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Avs Operator",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x1c5857e110cd8411054660f60b5de6a6958cfae2",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Reserve Protocol",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x1eaffd79ddf9b7cfc2daf2c4cfd9725257ee6913",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "The Graph",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x210f342802a95be9e8cc371961f23524a3d426e7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Value Defi",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x22f78d6545598fbc290c278c7309b46084bfdae1",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x247551f2eb3362e222c742e9c788b8957d9bc87e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "GNY.io",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x298ec76b440d8807b3f78b5f90979bee42ed43db",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2a784368b1d492f458bf919389f42c18315765f5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Chainlink",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2a82dcdcbfb88e92021b8bcc3da22703a2e4459c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Yearn",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2c4f86610a91c2291cafa02ecfca8bff1df8afb1",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2cd2cae99a6667ff81aa60f759d65b4e50bcf4d1",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2dab13e07d1261d633953ed7d6271169c9a6ac42",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2e9824b5c132111bca24ddfba7e575a5cd7296c1",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2eba0c6ee5a1145c1c573984963a605d880a7a20",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2f4da753430fc09e73acbccdcde9da647f2b5d37",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x2fbb504a5dc527d3e3eb0085e2fc3c7dd538cb7a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x3167c452fa3fa1e5c16bb83bc0fde4519c464299",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Aave",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x31e007276c5862de19f3bca7d0eaaa236462d69c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x32e567e8b527d3194c60ea3c6a5c009d58a0b36d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "CoinSpot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x37a83772b9b539e7f19ce6ff00f3119c8dcd86d8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x39b8053dcf80b33d343db6d528042ca01db93367",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "avs-operator",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x3c16183c1c0e28f1a0cb9f8ee4b21d0db208ca46",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Mining",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x3d7ea5bf03528100ed8af8aed2653e921b6e6725",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x3d98195b252dbfec41dff573981224e4a4b01aff",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Pendle",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x40d45d9d7625d15156c932b771ca7b0527130958",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x4183c5f2ff12ef8d98c635f07f10dae20c9ccd6b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Donate",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x41eef9e037a81eee4866cddbc4b8e16a5b01bd4d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x424cbd7af29ad02c2f083c530e2ff11456088601",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "The Graph",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x4337b4293b936316776c02b483d755c94436f826",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Erc 4337 Bundler",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x43c0bf82a29c3f92ffab3a65ccc32430568c414d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x47beb20f759100542aa93d41118b3211d664920e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x480f31b989311e4124c6a7465f5a44094d36f9d0",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x4d54be5a62f5d9fcf4b17c7ab6e68822c142ec6b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Etherisc",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x4f8b986ecffe7bed5dbeb2b49310fb00ca85a539",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "$Rekt",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x50d830296c7d102675f236a89a610ccc361b69bd",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5245b037f49c9856748c272dc2d3f088c8cd382f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x536c55cfe4892e581806e10b38dfe8083551bd03",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Polygon",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x53ff9d648a8a1cf70c6b60ae26b93047cc24066f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "tokemak",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x56d8bf89371ba9ed001a27ac7a1fab640afe4f91",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Buidlguidl Builders",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x57cf5d79acab980aa0da4a1dcb8a5361e3af1538",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x592777261e3bd852c48eca95b3a44c5b7f2d422c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x59ca6782300cba58c6a5ccfa50ad967490a296c4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Airdrop Hunter",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5a74dce93e048b76e927b5eb8a5814113bffb5c0",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5c6183d10a00cd747a6dbb5f658ad514383e9419",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Nexxus Coin",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5d3881c99177b3fe85e838a32f02ee93372034bc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5f30e761b5f8274dd04ee0c4b1a15952d202be47",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Unidentified blocked",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x5f81b1c7182543e0db342fc2a69525888d648e60",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Deprecated",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x64c5cc449bd253d7fd57751c9080accd0216126d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "DeFi Saver",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x682897bc4f8e89029120fcffb787c01a93e64184",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x6ce9077bb3db37eeeedd8d863988b2f19ff2b9a3",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Hop Protocol",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x710247dfb1ce48e5add96537c8798a268f62f4ab",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x723bb2d17e2d4ac52ba20311df1a62cfa8c51a05",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Buidlguidl Builders",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x7499b67bdda6a2105365990a337dddfa6c371652",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x74a334701010c582cf30c46e54b3889c02e9231c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x7573e8ca0c38ca3319b23de984a91c06af1be673",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "The Graph",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x79f05f75df6c156b2b98ac1fbfb3637fc1e6f048",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Pareto",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x7ef2c76430b2e450ba0b7c56b7fd5ca32530753e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x82e0b8cdd80af5930c4452c684e71c861148ec8a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MetaMask",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x87cf36ad03c9eae9053abb5242de9117bb0f2a0b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x882bd3a2e9d74110b24961c53777f22f1f46dc5d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x8911fce375a8414b1b578be66ee691a8d2d4dbf7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x8cc9f97dd11a17df1d14d7ba966ede05405bdbee",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x8dc6987f7d8e5ae9c39f767a324c5e46c1f731eb",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "dForce",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x8e3fcda01fca533989c3ceabdcf2a6e0a776585f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Timeswap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x92d2c19ef1485548c7fcfd975a8049a217292191",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x959522f6369e16a37904fc58def5f13e61dfdfcc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x97c8cccf75f6c4c184a99cef71a3a6f5262b7eb2",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x99a58482bd75cbab83b27ec03ca68ff489b5788f",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Curve Finance",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x99d0530b29a992f909d84e1110c020680cda48ea",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Unidentified bridged-token",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x9b1da82ee4d269eeeb4977e092b9ad2d7970c096",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "The Graph",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0x9b36c3b16299d68c79f174df7e728e35b6af4a12",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Liquity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa04197e5f7971e7aef78cf5ad2bc65aac1a967aa",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Derivatives",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa0cedf5ae3dacc2f0adeb432457535f33bbef26d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa22668568becf98c08f9b190da43c3c48660bdb5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa2630fc0233940779f25dfdcff3abbdc85682a4c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bancor",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa4e33d091326b0b0ea0ae907d09143015b622606",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa777460766c4c4c39bd8559b0afc16fcb7c59de0",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa8ee1df5d44b128469e913569ef6ac81eeda4fc8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xa9898c49bd007401d3f03a43674edc11a732aa4e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xaa6144ba938c166e701d96f4fdeb51be73c2d0df",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Crispmind.io",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xab098633eeee0ccefdf632f9575456f6dd80fc86",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xad743963f16676acbee18e967efdd287587b72c7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xae57cc129a96a89981dac60d2ffb877d5dc5e432",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xae7d62fb6a305e6d9e9f8c43bbb41093c2be52f6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Synthetix",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xaf6315903ac4dde6de323d09ccbef7a8ae85f877",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb0ed7ef727331bca6bf45e5598dae6c8f164d9bc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Take Action",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb135b31665bd67c4497f6eb3d5964e8897e5feb7",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb20cb55edf81bacfd271f5468e7fc56a3ea4510b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb3774d8242aae3809698eb43f9d2fd30f9bd9101",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb4162b28738a3863dfda180dc4a1526d743367dc",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Endaoment",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xb42c370f5a560a32d92a23889c6ff4d05261ffbe",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Fake_Phishing363105",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xbe69dde0a051e72e18871be52cf506e419058f11",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xbeefbabeea323f07c59926295205d3b7a17e8638",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xbf68d28aaf1eeefef646b65e8cc8d190f6c6da9c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xc0fc3ddfec95ca45a0d2393f518d3ea1ccf44f8b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Router",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xc181eb472f01607f90bff79beb0576fbf51ac6b8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xc1bec32be8a68346ad9dabbb0a67ce220d43997c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Unidentified blocked",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xc31fd07e7cda5f18301038385b9f213cb5599231",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Endaoment",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xc32cb2b5c5ce8b6b2b6d459c7de2ca3e6e36a4cf",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bancor",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xca23f62dff0d6460036c62e840aec5577e0befd2",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xce9786d3712fa200e9f68537eeaa1a06a6f45a4b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xd240f5dad5dd421534d8d2ca32ec9fad7208b186",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xd2edd1ddd6d86dc005baeb541d22b640d5c7cae5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xd5960385b2c4d084a74f4528808f3105b257a1b6",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "The Graph",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xd75496c0a6a36308cfda58e317ab97ea46b8f6b5",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Ico Wallets",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xd7ea6863cfb8d1b16d4e31cc2963c0f8a8bd6849",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "protocol-guild-member",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xda34b2eae30bafe8daeccde819a794cd89e09549",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xdc85107f52b51b98d8ab320a5e233017a4bbb87a",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xdde54bcc6b0a01f9d6481720f3dcc731d6062d64",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Unidentified blocked",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xdf237ba4af842523422d058c5d31d070d01ab601",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xdf40b417a673e6f97ccc2d01018cd1c9b3ba9192",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Proposer Fee Recipient",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe036cce08cf4e23d33bc6b18e53caf532afa8513",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe31bfa27cae61568bd9ed55faf7124ff5ff96b89",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Unidentified bridged-token",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe3afd254f4c1dbb2797c947ee8fb5170713b0db8",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "avs-operator",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe43923fec6dbe0006e4ac53623b37e0f68fef03e",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Unidentified bridged-token",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe7f3e646b34588764918b0ebb8d9708bf361d35b",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Staking",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xe87eac6d602b4109c9671bf57b950c2cfdb99d55",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xeba4dd6771c3e8ba3f168e47d052819abcc87cb2",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xedf835737a4d47cd07e34d7ede8b28fb1a4a648d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xeeb983ffc758361ac04c78946c96f125925cec3d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xeeedac8686ae12183129e80e632e922dd8daecc4",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "MDAPP",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf173a7a055340c91dbdf3083ce3babaa7535a03c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf4786bbc1f78d66cb7b0b59aa87b4f721d02cf5c",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Charity",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf645dd7c890093e8e4c8aa92a6bb353522d3dc98",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf6ddd14b0233320e1d5415ccf3b9545df2335670",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "August",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf7223356819ea48f25880b6c2ab3e907cc336d45",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Mellow",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf7a7e58c634b084a49c2d2e754bd5f521b14f441",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "sends nothing to a labelled exchange wallet",
+   "rule": null,
+   "tag": "MEV Bot",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xf993c2749a21d10a4a36fe5dda23830b415d9e0d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Klub Coin",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xfc7e22a503ec5abe9b08c50bd14999f520fa4884",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "genesis-address",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xfd892a77227ed3a1bf93db0c18dcb465cb1ea006",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Unidentified bridged-token",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xfdf6b075735c3799da21d141b8d2bbfcced48202",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Bancor",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xfe1bb5a50fb92f4309c464094209f9d95e866b3d",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "SushiSwap",
+   "truth": "other_tagged"
+  },
+  {
+   "address": "0xfeb1a24c2752e53576133cdb718f25bc64ebdd52",
+   "entity": null,
+   "gas": null,
+   "outcome": "true_negative",
+   "reason": "no stablecoin transfers",
+   "rule": null,
+   "tag": "Balancer",
+   "truth": "other_tagged"
+  }
+ ]
+}
