@@ -414,12 +414,37 @@ class RequestPatch(_M):
 
 
 class LetterWallet(_M):
-    address: str
+    address: str = Field(description="The wallet the VASP is asked about, in full")
     chain: str
     amount_usd: float | None = None
-    tier: Tier
-    first_seen: datetime | None = None
+    tier: Tier = Field(description="Evidence tier of the label that names the VASP")
+    first_seen: datetime | None = Field(None, description=(
+        "When the traced funds first reached this wallet"))
     tx_hashes: list[str] = []
+    case_id: str | None = None
+    case_ref: str | None = None
+    asset: str | None = None
+    amount: float | None = Field(None, description="Traced funds, in `asset`")
+    confidence: float | None = Field(None, ge=0, le=1)
+    paid_into: str | None = Field(None, description=(
+        "Set when `address` is not itself labelled: the VASP's labelled wallet it passed "
+        "everything on to"))
+    label: str | None = Field(None, description="The label text behind the attribution")
+
+
+class LetterCase(_M):
+    case_id: str
+    case_ref: str | None = None
+    complaint_no: str | None = None
+    wallet: str = Field(description="The wallet under investigation")
+    chain: str
+
+
+class LegalCitation(_M):
+    section: str
+    act: str
+    heading: str
+    url: str
 
 
 class RequestLetter(_M):
@@ -434,6 +459,21 @@ class RequestLetter(_M):
     officer: str
     watermark: str | None = Field("Draft - officer review required",
                                   description="null once approved")
+    cases: list[LetterCase] = []
+    legal_citations: list[LegalCitation] = []
+    channel: str | None = Field(None, description=(
+        "The VASP's own published law-enforcement channel, from the directory"))
+    review_notes: list[str] = Field([], description=(
+        "For the reviewing officer, not part of the request: what to check before "
+        "approving. Printed on the draft PDF only"))
+
+
+class GatewayReceipt(_M):
+    gateway: str = Field(description="`mock-outbox` until a real SAHYOG connection exists")
+    receipt_id: str
+    submitted_at: datetime
+    location: str = Field(description="Where the submission went (the outbox file)")
+    payload_sha256: str
 
 
 class RequestDetail(RequestSummary):
@@ -441,6 +481,9 @@ class RequestDetail(RequestSummary):
     letter: RequestLetter
     pdf_url: str
     payload: dict = Field(description="SAHYOG JSON payload (docs/sahyog_contract.md, B8)")
+    allowed_next: list[RequestStatus] = Field([], description=(
+        "The statuses a PATCH may move this request to now"))
+    receipt: GatewayReceipt | None = Field(None, description="Set once sent")
 
 
 # ------------------------------------------------------------------ dashboard / model
