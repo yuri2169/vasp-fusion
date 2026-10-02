@@ -17,8 +17,59 @@ make desk      # the request desk: the exchanges those cases route to, one row e
 make letter VASP=CoinDCX OFFICER="Insp. A. Rao"   # one consolidated request -> data/exports/<id>.pdf (a draft; SEND=1 approves and writes it to the mock SAHYOG outbox)
 make model     # train, calibrate and measure the deposit-address model; then `make labels`
 make abstain-eval   # measure the abstain bar on real customers traced with labels hidden
+make case-pdf CASE=tron-coindcx   # the case file (A4 PDF) and its receipt -> data/exports/
+make verify    # trace every stored case again from the cache only and compare fingerprints
+make audit     # check the audit log's hash chain
+make reproduce # regenerate every artifact that comes from tracked files; fails if one changed
+make docker && make docker-up     # the offline image on http://127.0.0.1:8000
+make docker-smoke                 # the whole demo inside a container with no network
 ```
 Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` regenerates `docs/openapi.json` and `ui/src/api/types.ts`.
+
+## Offline demo in Docker
+```bash
+make labels          # once: the image bakes data/labels.duckdb in
+make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
+make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
+make docker-smoke    # 47 checks in a throwaway container started with --network none
+```
+- **Nothing reaches the network at run time.** The image sets `OFFLINE=1`: a chain request that is not in its cache is refused, never fetched. `make docker-smoke` proves it by running the whole demo with networking disabled.
+- **What is baked in:** the label database; the chain responses the seven demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the seven demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
+- **The interface.** `UI=build make docker` compiles `ui/` into the image. Without it (the default until the UI track lands) the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
+- **Login.** The image holds one demonstration account (`demo/officer.json`, published in the repository, so it protects nothing). `VASPFUSION_AUTH=off docker compose up` runs without a login. For real use, disable it and add officers: `docker compose exec vasp-fusion python -m vaspfusion.cli officer add <user> --name "..."`.
+- **State** (cases, requests, audit log, token secret) lives in the volume `vaspfusion-data`. A rebuilt image does not replace it: `docker compose down -v` starts again from the image's demo data.
+- The container runs as a non-root user with a read-only root filesystem and no Linux capabilities, bound to 127.0.0.1.
+- To carry it to an air-gapped machine: `docker save vasp-fusion:offline | gzip > vasp-fusion.tar.gz`, then `docker load` there.
+- A live trace from the container needs `OFFLINE=0` and real keys (`ETHERSCAN_API_KEY`, `TRONGRID_API_KEY`) in the environment.
+
+## Case file, receipt, verify
+```bash
+python -m vaspfusion.cli case-pdf <case id>       # data/exports/case-<id>.pdf + .receipt.json
+python -m vaspfusion.cli verify <case id>         # or --all, or --receipt file.json
+```
+- **The case file** (`GET /api/cases/{id}/pdf`): result, summary, where the funds went, a flow diagram with every wallet numbered and listed in full, each exchange reached with its evidence and transaction hashes, the path, patterns, leads, how the confidence was worked out (what is calibrated and what is not, and how the 0.60 bar was checked), what would change it, next steps, limitations, and the receipt. **The same case gives the same bytes**; every page's footer carries the findings fingerprint.
+- **The receipt** is part of every case (`provenance`) and a document of its own (`GET /api/cases/{id}/receipt`): SHA-256 of the input (wallet, chain, hop limit, start date), of every chain response the run read (each listed, with one digest over all), of the label database and of the model; the code version, git commit and seed; and the **findings fingerprint**, a digest over every figure, address and transaction hash of the result and none of its wording.
+- **Verify** traces the wallet again from the cached responses only (it never fetches) and compares. It passes when the stored case still has its own fingerprint, the same responses were read byte for byte, and the new result has the same fingerprint. A changed label database, model or commit is reported beside the result.
+- Golden files: `tests/golden/` holds each demo wallet's fingerprint and its case file as text. `python tests/refresh_golden.py` rewrites them after a deliberate change; read the diff.
+
+## Login and audit
+```bash
+python -m vaspfusion.cli officer add a.rao --name "Insp. A. Rao" --post "Cyber Crime PS"
+python -m vaspfusion.cli officer list | disable <user>
+python -m vaspfusion.cli audit [--officer a.rao] [--action case] [--target <case id>]
+python -m vaspfusion.cli audit --verify
+```
+- **A login is required once an officer account exists** (or with `VASPFUSION_AUTH=required`). With none, the tool runs as a single-officer workstation and the log records "not signed in". `VASPFUSION_AUTH=off` forces it off.
+- Accounts live in `data/officers.json` (scrypt hashes, a salt each; git-ignored). Five wrong passwords lock an account for five minutes. Accounts are made on the command line, not through the API.
+- Tokens are HS256 JWTs, valid 8 hours, sent as `Authorization: Bearer` or the HttpOnly, SameSite=Strict session cookie the login sets. The signing secret is `VASPFUSION_JWT_SECRET`, or 32 random bytes written once to `data/auth_secret`.
+- **Every `/api` request leaves one audit row** (`data/audit.duckdb`): who, which action, on which case, wallet, exchange or request, and the status. Never a request body. A refused request is a row too. The same read repeated within 30 seconds is one row.
+- **The log is hash-chained:** each row's SHA-256 covers the row and the hash before it, so an edited, removed or reordered row breaks the chain from there, and `audit --verify` names it. Rows cut off the end are only caught against a head hash noted somewhere else (`audit --verify` prints it).
+- A request's status history records the signed-in officer who drafted, approved and sent it.
+- Limits: one server process; a token cannot be revoked before it expires except by disabling its account; no roles (every officer can read the log).
+- No file upload exists in this tool, so there is nothing to sandbox; cross-origin writes are refused (403), and every API reply is `no-store`, `nosniff`, not frameable.
+
+## Reproduce
+`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the demo's chain cache (from the recorded fixtures), the seven demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
 
 ## Layout
 | Path | What |
@@ -36,9 +87,16 @@ Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` rege
 | `vaspfusion/eval/abstain.py`, `artifacts/abstain_v1/` | The abstain bar measured by hiding labels: claims, risk vs coverage |
 | `vaspfusion/explain/case_narrative.py` | The paragraph an officer reads |
 | `vaspfusion/cases.py`, `vaspfusion/store/cases.py` | `run_case` → the API's `CaseDetail`; cases in `data/case.duckdb` |
-| `vaspfusion/api/` | `schemas.py` (the contract) and `main.py` (routes; cases and labels are live, the rest answer from mocks until their phase lands) |
-| `vaspfusion/{graph,features,detect,eval}/`, `explain/{narrative,report}.py`, `store/dao.py` | Carried over from BTC-FUSION |
-| `demo/cases.json` | Six real demo wallets and the result each must give |
+| `vaspfusion/provenance.py` | The receipt: digests of the input, the responses, the findings; `verify_case` |
+| `vaspfusion/explain/case_file.py`, `flow.py`, `case_pdf.py` | The case file: what it says (blocks, text), the flow diagram's layout, the A4 PDF |
+| `vaspfusion/desk/`, `data/vasp_directory.yaml` | The request desk: routing, the cited exchange directory, letters, the mock SAHYOG gateway |
+| `vaspfusion/auth/`, `vaspfusion/store/audit.py`, `vaspfusion/api/security.py` | Officer accounts and tokens; the hash-chained audit log; login and audit in front of the API |
+| `vaspfusion/api/` | `schemas.py` (the contract), `main.py` (routes; only the dashboard and the three fixture cases still answer from mocks), `console.html` (served at `/` when no interface is built) |
+| `vaspfusion/{graph,features,detect,eval}/`, `explain/narrative.py`, `store/dao.py` | Carried over from BTC-FUSION |
+| `demo/cases.json`, `demo/officer.json` | Seven real demo wallets and the result each must give; the demonstration login |
+| `tests/golden/` | Each demo wallet's findings fingerprint and case file as text |
+| `Dockerfile`, `docker-compose.yml`, `requirements.lock`, `scripts/docker_smoke.py` | The offline image |
+| `scripts/reproduce.py` | `make reproduce` |
 | `docs/api_contract.md` | Endpoints, conventions, mock rules |
 | `docs/plans/` | Per-phase implementation plans |
 | `mocks/` | Demo fixtures for the UI track (labelled addresses real, the rest synthetic, all marked `_demo`) |
