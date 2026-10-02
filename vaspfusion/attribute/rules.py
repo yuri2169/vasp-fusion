@@ -192,7 +192,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
         onward = [e for n in entries for e in tr.edges_into(side, n.address)
                   if e.transfer.from_addr == last_hop]
         passed = sum((e.traced for e in onward), ZERO)
-        if node.received and passed == node.received:
+        if node.received and passed == _spendable(node):
             passed_all = True
             wait = int((edges[-1].transfer.block_time
                         - edges[-2].transfer.block_time).total_seconds())
@@ -212,6 +212,12 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
                      entries=sorted(entries, key=lambda n: (-n.received, n.address)),
                      last_hop=last_hop, evidence=evidence, hops_min=hops_min,
                      hops_max=hops_max, passed_all=passed_all, confidence_interval=interval)
+
+
+def _spendable(node: TraceNode) -> Decimal:
+    """What a wallet could pass on of the traced money it got: all of it, less the network
+    fee its own transactions paid (known on Bitcoin; zero elsewhere)."""
+    return node.received - node.holds.get("fee", ZERO)
 
 
 def _request_wallets(tr: TraceResult, entries: list[TraceNode]) -> list[dict]:
@@ -250,7 +256,7 @@ def _request_wallets(tr: TraceResult, entries: list[TraceNode]) -> list[dict]:
             node = tr.nodes.get(("outbound", sender))
             through = (n.label.kind != "deposit" and node is not None and sender not in mine
                        and node.label is None and node.received
-                       and passed[sender] == node.received)
+                       and passed[sender] == _spendable(node))
             if through:
                 rows.append(row(sender, n.label, edges, n.address,
                                 tr.edges_into("outbound", sender)))

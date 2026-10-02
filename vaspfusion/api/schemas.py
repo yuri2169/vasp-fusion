@@ -40,7 +40,8 @@ Ask = Literal["kyc", "transactions", "freeze", "preservation"]
 FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
 Direction = Literal["outbound", "inbound"]
 FundsKind = Literal["vasp", "sanctioned", "mixer", "bridge", "other_label", "hub",
-                    "beyond_hop_limit", "not_moved", "not_followed", "returned"]
+                    "beyond_hop_limit", "not_moved", "not_followed", "returned",
+                    "fee"]   # Bitcoin only: miner fees paid along the trail (B5)
 
 
 class _M(BaseModel):

@@ -43,6 +43,7 @@ FUNDS_WORDS = {
     "beyond_hop_limit": "Moved on past the hop limit", "not_moved": "Has not moved on",
     "not_followed": "Not followed (too small, or the listing could not be read to the end)",
     "returned": "Came back to the traced wallet",
+    "fee": "Paid to miners as network fees along the trail",
 }
 FLAG_WORDS = {
     "peel_chain": "Peel chain", "fan_out": "Fan-out", "fan_in": "Fan-in",

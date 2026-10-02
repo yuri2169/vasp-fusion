@@ -47,6 +47,7 @@ ESPLORA = {"blockstream.info": "https://blockstream.info/api",
 DEFAULT_API = "blockstream.info"
 LAST_PAGE_BELOW = 25
 COINJOIN_SINK = "coinjoin:"
+MIN_MIX = 10_000    # satoshis: equal outputs smaller than this are dust, not a mix
 COINBASE = "coinbase"
 
 
@@ -90,27 +91,35 @@ def _transfer(tx: UtxoTx, frm: str, to: str, satoshis: int, payer: str) -> Trans
     return Transfer("bitcoin", tx.txid, tx.time, frm, to, "BTC", _btc(satoshis), None, payer)
 
 
+def _shares(tx: UtxoTx, address: str) -> tuple[dict[str | None, int], int]:
+    """(the address's share of what each output address was paid, its share of the fee),
+    in satoshis. Shares are rounded down; the fee share is what is left of what the
+    address put in, so the two always add up to it exactly."""
+    mine, total = tx.put_in(address), sum(v for _, v in tx.inputs)
+    if not mine or not total:
+        return {}, 0
+    paid: dict[str | None, int] = {}
+    for to, value in tx.outputs:
+        paid[to] = paid.get(to, 0) + value
+    shares = {to: value * mine // total for to, value in paid.items()}
+    return shares, mine - sum(shares.values())
+
+
 def fee_share(tx: UtxoTx, address: str) -> Decimal:
-    """The address's part of the miner fee: pro rata by what it put in."""
-    total = sum(v for _, v in tx.inputs)
-    return _btc(tx.fee * tx.put_in(address) // total) if total else Decimal(0)
+    """The address's part of the miner fee: pro rata by what it put in (plus the
+    satoshis that rounding its output shares down left over)."""
+    return _btc(_shares(tx, address)[1])
 
 
 def out_transfers(tx: UtxoTx, address: str, coinjoin: bool = False) -> list[Transfer]:
     """What `address` sent in `tx` (see the module docstring)."""
-    mine, total = tx.put_in(address), sum(v for _, v in tx.inputs)
-    if not mine or not total:
-        return []
+    shares, _ = _shares(tx, address)
     if coinjoin:
-        left = mine - tx.fee * mine // total
+        left = sum(shares.values())
         return [_transfer(tx, address, COINJOIN_SINK + tx.txid, left, address)] if left else []
     own = set(tx.input_addresses)
-    paid: dict[str, int] = {}
-    for to, value in tx.outputs:
-        if to and to not in own:
-            paid[to] = paid.get(to, 0) + value
-    return [_transfer(tx, address, to, value * mine // total, address)
-            for to, value in paid.items() if value * mine // total]
+    return [_transfer(tx, address, to, value, address)
+            for to, value in shares.items() if to and to not in own and value]
 
 
 def in_transfers(tx: UtxoTx, address: str, coinjoin: bool = False) -> list[Transfer]:
@@ -150,9 +159,18 @@ def tx_frame(txs: list[UtxoTx]):
 
 
 def coinjoin_ids(txs: list[UtxoTx]) -> set[str]:
-    """Which of these transactions have the shape of a collaborative CoinJoin."""
+    """Which of these transactions have the shape of a collaborative CoinJoin: the shape
+    rule of graph/coinjoin.py, less the transactions whose equal outputs are dust. On
+    4,706 real exchange transactions (2 Oct 2026) the shape alone flagged 7, and 6 of
+    them were token transfers with n outputs of 546 satoshis each."""
+    from collections import Counter
+
     from ..graph.coinjoin import coinjoin_txids
-    return coinjoin_txids(tx_frame(txs)) if txs else set()
+    if not txs:
+        return set()
+    by_id = {t.txid: t for t in txs}
+    return {txid for txid in coinjoin_txids(tx_frame(txs))
+            if Counter(v for a, v in by_id[txid].outputs if a).most_common(1)[0][0] >= MIN_MIX}
 
 
 def _check(body) -> None:

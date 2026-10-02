@@ -195,6 +195,14 @@ class _Walk:
         self.used: dict[tuple[Transfer, int], Decimal] = defaultdict(lambda: ZERO)
         self.fetched: dict[str, tuple[datetime | None, list[Transfer], bool]] = {}
         self.expanded: set[str] = set()
+        # Bitcoin (B5). `infer`: a label derived from the wallet's cluster, asked for only
+        # when the wallet has none of its own and holds enough of the funds to matter.
+        # `fee_of`: the wallet's share of a transaction's miner fee, which leaves with the
+        # money it spends and would otherwise be counted as "has not moved on".
+        self.infer = getattr(labels, "infer", None)
+        self.inferred: set[str] = set()
+        self.fee_of = getattr(provider, "fee_share", None) if side == "outbound" else None
+        self.fee_used: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
 
     # the wallet at the far end of a transfer, seen from the origin
     def far(self, t: Transfer) -> str:
@@ -247,6 +255,10 @@ class _Walk:
                 node = TraceNode(addr, hop, self.side, found.get((addr, chain)))
                 self.r.nodes[(self.side, addr)] = node
             node.received += got
+            if node.label is None and self.infer is not None and addr not in self.inferred \
+                    and (not self.total or node.received / self.total >= self.cfg.min_share):
+                self.inferred.add(addr)
+                node.label = self.infer(addr, chain)
             reason = self.why_not_expand(node, hop)
             if reason is None:
                 try:
@@ -262,7 +274,8 @@ class _Walk:
                 continue
             node.state = "expanded"
             self.expanded.add(addr)
-            left = self.allocate(addr, edges, rows, hop, nxt)
+            left, fee = self.allocate(addr, edges, rows, hop, nxt)
+            self.hold(node, fee, "fee")
             # behind a cut-off fetch the rest may well have moved on; we did not see it
             self.hold(node, left, "unspent" if complete else "truncated")
         return nxt
@@ -302,19 +315,28 @@ class _Walk:
         return None
 
     def allocate(self, addr: str, edges: list[TraceEdge], rows: list[Transfer], hop: int,
-                 nxt: dict[str, list[TraceEdge]]) -> Decimal:
+                 nxt: dict[str, list[TraceEdge]]) -> tuple[Decimal, Decimal]:
         """Hand the money that arrived over `edges` to the wallet's next transfers in
-        time order. Returns what was left over."""
+        time order. Returns (what was left over, what went to network fees). A fee is
+        only known on UTXO chains: there a transaction's fee is paid first, once, out of
+        the money that is spent in it."""
         arrived = sorted(edges, key=lambda e: (self.when(e.transfer), e.transfer.tx_hash))
         rows = sorted(rows, key=lambda t: (self.when(t), t.tx_hash, self.far(t), t.amount))
         seen: Counter = Counter()
-        pool, i = ZERO, 0
+        pool, i, fees = ZERO, 0, ZERO
         for t in rows:
             key = (t, seen[t])
             seen[t] += 1
             while i < len(arrived) and self.when(arrived[i].transfer) <= self.when(t):
                 pool += arrived[i].traced
                 i += 1
+            if self.fee_of is not None:
+                paid = (addr, t.tx_hash)
+                fee = min(pool, self.fee_of(addr, t.tx_hash) - self.fee_used[paid])
+                if fee > 0:
+                    self.fee_used[paid] += fee
+                    pool -= fee
+                    fees += fee
             take = min(pool, t.amount - self.used[key])
             if take <= 0:
                 continue
@@ -323,7 +345,7 @@ class _Walk:
             edge = TraceEdge(t, self.side, take, hop + 1)
             self.r.edges.append(edge)
             nxt[self.far(t)].append(edge)
-        return pool + sum((e.traced for e in arrived[i:]), ZERO)
+        return pool + sum((e.traced for e in arrived[i:]), ZERO), fees
 
 
 def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: str
@@ -358,29 +380,41 @@ def trace(address: str, chain: str, provider, labels: LabelLookup,
           cfg: TraceConfig = TraceConfig()) -> TraceResult:
     r = TraceResult(address=address, chain=chain, config=cfg)
     r.origin_label = labels.lookup_many([(address, chain)]).get((address, chain))
+    infer = getattr(labels, "infer", None)
+    if r.origin_label is None and infer is not None:
+        r.origin_label = infer(address, chain)
     r.nodes[("origin", address)] = TraceNode(address, 0, "origin", r.origin_label, state="origin")
     if r.origin_label is not None and r.origin_label.category in SERVICE_CATEGORIES:
         r.notes.append(f"The address is itself labelled {r.origin_label.entity} "
                        f"({r.origin_label.category}); a service wallet is not traced.")
         return r
+    _walks(r, provider, labels, cfg)
+    # what the label layer could not settle (Bitcoin clusters: an unread listing, two owners)
+    r.notes += [n for n in getattr(labels, "notes", ()) if n not in r.notes]
+    return r
 
+
+def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> None:
+    address = r.address
+    # an adapter that lists newest-first cuts off the old end of a long history
+    which = "most recent" if getattr(provider, "newest_first", False) and cfg.since is None \
+        else "first"
     asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound")
     r.asset, r.untraced, r.truncated = asset, untraced, truncated
     r.total_out = sum((t.amount for t in rows), ZERO)
     if truncated:
-        r.notes.append(f"Only the first {len(rows)} outgoing {asset} transfers were traced; "
+        r.notes.append(f"Only the {which} {len(rows)} outgoing {asset} transfers were traced; "
                        "the wallet has more.")
     if asset is not None:
         _Walk(r, provider, labels, cfg, "outbound").start(asset, rows, r.total_out)
 
     if cfg.inbound_hops == 0:
-        return r
+        return
     in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
     r.in_asset = in_asset
     r.total_in = sum((t.amount for t in rows), ZERO)
     if truncated:
-        r.notes.append(f"Only the first {len(rows)} incoming {in_asset} transfers were "
+        r.notes.append(f"Only the {which} {len(rows)} incoming {in_asset} transfers were "
                        "looked at; the wallet has more.")
     if in_asset is not None:
         _Walk(r, provider, labels, cfg, "inbound").start(in_asset, rows, r.total_in)
-    return r

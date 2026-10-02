@@ -48,6 +48,12 @@ class HiddenLabels:
         return {k: v for k, v in self.labels.lookup_many(pairs).items()
                 if k[0] not in self.hidden}
 
+    def infer(self, address: str, chain: str):
+        """A label derived from the wallet's cluster (Bitcoin) is hidden like any other;
+        every other wallet keeps its own."""
+        inner = getattr(self.labels, "infer", None)
+        return None if inner is None or address in self.hidden else inner(address, chain)
+
 
 def _verdict(c: Candidate, again: Candidate | None, rules: RuleConfig) -> tuple[bool, str]:
     without = f"the label on {fmt.short(c.deposit_address)}"

@@ -47,6 +47,20 @@ def test_shares_are_rounded_down_to_a_satoshi():
     tx = utx(4, [("A", 10_000), ("B", 20_000)], [("X", 10_001)])
     assert rows(out_transfers(tx, "A")) == [("A", "X", sats(3_333))]
     assert rows(out_transfers(tx, "B")) == [("B", "X", sats(6_667))]
+    # ... and the satoshi that rounding leaves over is counted with the fee, so what an
+    # address put in is always exactly what it sent plus what it paid
+    assert fee_share(tx, "A") == sats(10_000 - 3_333)
+    assert fee_share(tx, "B") == sats(20_000 - 6_667)
+
+
+def test_what_an_address_put_in_is_exactly_transfers_plus_change_plus_fee():
+    tx = utx(9, [("A", 33_333), ("B", 66_667), ("C", 1)],
+             [("X", 50_001), ("Y", 20_002), ("A", 10_003), (None, 7)])
+    for who in "ABC":
+        sent = sum(t.amount for t in out_transfers(tx, who))
+        kept = sats(10_003 * tx.put_in(who) // 100_001)           # its share of the change
+        lost = sats(7 * tx.put_in(who) // 100_001)                # ... and of the unspendable output
+        assert sent + kept + lost + fee_share(tx, who) == sats(tx.put_in(who))
 
 
 def test_two_inputs_of_one_address_count_together_and_two_outputs_to_one_address_merge():
@@ -119,8 +133,16 @@ def test_a_coinjoin_is_one_transfer_into_a_sink_not_a_share_of_other_peoples_out
     t, = out_transfers(tx, "A", coinjoin=True)
     assert (t.from_addr, t.to_addr) == ("A", "coinjoin:tx20")
     # what A put in, less its share of the fee
-    assert t.amount + fee_share(tx, "A") <= sats(1_100_000)
-    assert sats(1_100_000) - t.amount - fee_share(tx, "A") < sats(2)
+    assert t.amount + fee_share(tx, "A") == sats(1_100_000)
+    assert 0 < fee_share(tx, "A") < sats(2_000)
+
+
+def test_a_transaction_whose_equal_outputs_are_dust_is_not_a_coinjoin():
+    # seen on chain (Aug-Sep 2026): n inputs, n outputs of 546 satoshis each. A token
+    # transfer, not a mix: nobody mixes 546 satoshis.
+    dusty = utx(23, [(f"in{i}", 10_000 + i) for i in range(9)],
+                [(f"out{i}", 546) for i in range(8)] + [("rest", 80_000)])
+    assert coinjoin_ids([dusty, _coinjoin()]) == {"tx20"}
 
 
 def test_coins_that_came_out_of_a_coinjoin_come_from_the_sink():

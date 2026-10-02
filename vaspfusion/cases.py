@@ -17,6 +17,7 @@ from .chains import get_provider
 from .attribute.counterfactual import add_counterfactuals
 from .attribute.leads import add_leads
 from .attribute.rules import Attribution, Candidate, RuleConfig, attribute
+from .cluster import cluster_labels
 from .explain.case_narrative import narrative, path_hashes
 from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
@@ -28,7 +29,7 @@ CODE_VERSION = "b9-receipt-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
-             "error": "not_followed", "returned": "returned"}
+             "error": "not_followed", "returned": "returned", "fee": "fee"}
 
 
 TRACE_MAX_PAGES = 5
@@ -221,6 +222,8 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
     chain's scorer on `fetcher`; None scores nothing)."""
     pages_before = len(fetcher.trail) if fetcher is not None else 0
     live_before = fetcher.stats["live"] if fetcher is not None else 0
+    # Bitcoin: a wallet with no label of its own may still be an exchange's by its cluster
+    labels = cluster_labels(chain, labels, provider)
     tr = trace(address, chain, provider, labels, cfg)
     att = attribute(tr, rules)
     add_counterfactuals(tr, att, provider, labels, cfg, rules)
