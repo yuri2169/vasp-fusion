@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VASP-FUSION API console</title>
+<style>
+  :root { --ink:#0E1C27; --soft:#4A5B69; --rule:#C3CCD4; --wash:#F3F5F7; --ok:#2E7D5B; --bad:#A2453B; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--soft); margin: 30px 0 8px; }
+  p.lede { color: var(--soft); margin: 4px 0 0; max-width: 70ch; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+  code, .mono { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  a { color: #1D5A8C; }
+  button, input { font: inherit; padding: 6px 10px; border: 1px solid var(--soft); border-radius: 4px; background: #fff; color: var(--ink); }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid #1D5A8C; outline-offset: 2px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  label { display: grid; gap: 3px; font-size: 13px; color: var(--soft); }
+  .bar { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: start; }
+  .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--wash); border: 1px solid var(--rule); white-space: nowrap; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+  #msg { min-height: 1.5em; margin-top: 8px; }
+  [hidden] { display: none !important; }
+  .scroll { overflow-x: auto; }
+</style>
+<main>
+  <div class="bar">
+    <div>
+      <h1>VASP-FUSION</h1>
+      <p class="lede">API console. This build ships no interface, so this page stands in for it: the same
+        API the interface uses. Chain data is read from the cache only when the server runs offline.</p>
+    </div>
+    <div id="who" class="pill" role="status">checking…</div>
+  </div>
+
+  <section id="signin" hidden>
+    <h2>Sign in</h2>
+    <form id="login">
+      <label>User name <input name="username" autocomplete="username" required></label>
+      <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+      <button>Sign in</button>
+    </form>
+  </section>
+  <div id="msg" role="alert"></div>
+
+  <section id="app" hidden>
+    <h2>Cases</h2>
+    <div class="scroll"><table id="cases"><thead><tr>
+      <th>Case</th><th>Wallet</th><th>Result</th><th>Exchange</th><th>Confidence</th><th>Documents</th><th>Check</th>
+    </tr></thead><tbody></tbody></table></div>
+
+    <h2>Request desk</h2>
+    <div class="scroll"><table id="desk"><thead><tr>
+      <th>Exchange</th><th>Wallets</th><th>Traced (USD)</th><th>Status</th><th>Next</th>
+    </tr></thead><tbody></tbody></table></div>
+
+    <h2>Audit log (latest 15)</h2>
+    <div class="scroll"><table id="audit"><thead><tr>
+      <th>When (UTC)</th><th>Officer</th><th>Action</th><th>On</th><th>Status</th>
+    </tr></thead><tbody></tbody></table></div>
+    <p id="chain" class="lede"></p>
+
+    <h2>More</h2>
+    <p><a href="/openapi.json">OpenAPI schema</a> · <a href="/docs">Interactive docs</a> (its scripts load from the
+      internet, so it is blank offline) · <button id="out" type="button">Sign out</button></p>
+  </section>
+</main>
+<script>
+const $ = (q) => document.querySelector(q);
+const msg = (text, bad) => { $("#msg").textContent = text || ""; $("#msg").className = bad ? "bad" : ""; };
+const api = async (path, opts) => {
+  const r = await fetch(path, { credentials: "same-origin", ...opts });
+  const body = (r.headers.get("content-type") || "").includes("json") ? await r.json() : null;
+  if (!r.ok) throw Object.assign(new Error((body && body.detail) || r.statusText), { status: r.status });
+  return body;
+};
+const cell = (tr, text, cls) => { const td = tr.insertCell(); td.textContent = text ?? "-"; if (cls) td.className = cls; return td; };
+const link = (td, href, text) => { const a = document.createElement("a"); a.href = href; a.textContent = text; a.target = "_blank"; a.rel = "noopener"; td.append(a, " "); };
+
+async function load() {
+  const [cases, desk, audit] = await Promise.all([
+    api("/api/cases"), api("/api/desk"), api("/api/audit?limit=15&verify=true")]);
+  const tb = $("#cases tbody"); tb.replaceChildren();
+  for (const c of cases.items) {
+    const tr = tb.insertRow();
+    cell(tr, c.case_ref || c.id);
+    cell(tr, c.address, "mono");
+    cell(tr, (c.outcome || c.status).replaceAll("_", " ").toLowerCase());
+    cell(tr, c.top_vasp);
+    cell(tr, c.confidence == null ? "-" : c.confidence.toFixed(2));
+    const docs = tr.insertCell();
+    if (c.status === "done") { link(docs, `/api/cases/${c.id}/pdf`, "case file"); link(docs, `/api/cases/${c.id}/receipt`, "receipt"); }
+    link(docs, `/api/cases/${c.id}`, "JSON");
+    const check = tr.insertCell();
+    if (c.status === "done" && !c.id.startsWith("demo-")) {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = "Verify";
+      b.onclick = async () => {
+        b.disabled = true; b.textContent = "tracing again…";
+        try { const v = await api(`/api/cases/${c.id}/verify`, { method: "POST" });
+              check.textContent = v.matches ? "verified: same fingerprint" : v.summary;
+              check.className = v.matches ? "ok" : "bad"; }
+        catch (e) { check.textContent = e.message; check.className = "bad"; }
+      };
+      check.append(b);
+    } else check.textContent = c.id.startsWith("demo-") ? "fixture" : "-";
+  }
+  const db = $("#desk tbody"); db.replaceChildren();
+  for (const r of desk.rows) {
+    const tr = db.insertRow();
+    cell(tr, r.vasp); cell(tr, r.wallet_count);
+    cell(tr, r.total_usd == null ? "-" : r.total_usd.toLocaleString("en-IN"));
+    const st = cell(tr, r.status.replaceAll("_", " "));
+    if (r.last_request_id) link(st, `/api/requests/${r.last_request_id}/pdf`, "letter");
+    cell(tr, r.next_action);
+  }
+  const ab = $("#audit tbody"); ab.replaceChildren();
+  for (const a of audit.items) {
+    const tr = ab.insertRow();
+    cell(tr, a.at.replace("T", " ").slice(0, 19)); cell(tr, a.officer || "(not signed in)");
+    cell(tr, a.action); cell(tr, a.target, "mono"); cell(tr, a.status, a.status >= 400 ? "bad" : "");
+  }
+  const ch = audit.chain;
+  $("#chain").textContent = ch.ok ? `${ch.rows} rows; every row's hash follows the one before it.`
+                                  : `The log's hash chain is broken: ${ch.reason}`;
+  $("#chain").className = "lede " + (ch.ok ? "ok" : "bad");
+}
+
+async function start() {
+  msg("");
+  let me;
+  try { me = await api("/api/auth/me"); } catch (e) { $("#who").textContent = "server not reachable"; return; }
+  const health = await api("/api/health");
+  const signedIn = !me.auth_required || me.officer;
+  $("#who").textContent = (me.officer ? `${me.officer.name} (${me.officer.username})` : me.auth_required ? "not signed in" : "no login required")
+    + (health.offline ? " · offline" : " · live");
+  $("#signin").hidden = !!signedIn; $("#app").hidden = !signedIn; $("#out").hidden = !me.officer;
+  if (signedIn) { try { await load(); } catch (e) { msg(e.message, true); } }
+}
+$("#login").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const f = new FormData(ev.target);
+  try { await api("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" },
+                                       body: JSON.stringify({ username: f.get("username"), password: f.get("password") }) });
+        ev.target.reset(); await start(); }
+  catch (e) { msg(e.message, true); }
+});
+$("#out").addEventListener("click", async () => { await api("/api/auth/logout", { method: "POST" }); start(); });
+start();
+</script>
+</html>

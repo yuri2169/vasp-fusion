@@ -1,8 +1,30 @@
-.venv/
-**/node_modules/
-.git/
-__pycache__/
+# The build context is the repository minus everything the image does not read.
+.git
+.venv
+**/node_modules
+**/__pycache__
 **/*.pyc
-.pytest_cache/
-ui/dist/
-data/*.duckdb.tmp
+.pytest_cache
+.hypothesis
+ui/dist
+wheels
+
+# Secrets never go into an image.
+.env
+.env.*
+
+# data/: only the label database and the cited directory. The caches (1.7 GB), the case
+# store, the desk, officer accounts, the token secret and the audit log stay on the host.
+data/*
+!data/labels.duckdb
+!data/vasp_directory.yaml
+
+# tests/: only the recorded demo fixtures and their golden fingerprints.
+tests/*
+!tests/fixtures
+tests/fixtures/*
+!tests/fixtures/demo
+!tests/golden
+
+derived
+research

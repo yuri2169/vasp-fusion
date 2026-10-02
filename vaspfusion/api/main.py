@@ -771,3 +771,28 @@ def get_model(response: Response, chain: str = "tron"):
     validation = read_validation(ABSTAIN_DIR, chain)
     return {**model_info(metrics),
             "abstain": abstain_info(validation) if validation else None}
+
+
+# ------------------------------------------------------------------ the interface (B9)
+UI_DIST = ROOT / "ui" / "dist"                       # `npm run build` in ui/ writes it
+CONSOLE = Path(__file__).with_name("console.html")   # stands in when there is no build
+
+
+# Declared last: every /api route, /docs and /openapi.json match before it.
+@app.get("/{path:path}", include_in_schema=False)
+def interface(path: str):
+    """The built interface (a single-page app: unknown paths get index.html), or, when
+    this checkout or image has no build, a plain console page over the same API."""
+    from fastapi.responses import FileResponse
+    if path == "api" or path.startswith("api/"):
+        raise HTTPException(404, "not found")
+    dist = UI_DIST.resolve()
+    if (dist / "index.html").is_file():
+        file = (dist / path).resolve()
+        if path and file.is_file() and dist in file.parents:
+            return FileResponse(file)
+        return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
+    if path in ("", "index.html"):
+        return FileResponse(CONSOLE, media_type="text/html",
+                            headers={"Cache-Control": "no-cache"})
+    raise HTTPException(404, "not found")
