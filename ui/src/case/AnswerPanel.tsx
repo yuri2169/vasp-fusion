@@ -4,7 +4,8 @@ import { TierTag } from '../components/TierTag'
 import { TypologyFlag } from '../components/TypologyFlag'
 import { cx } from '../lib/cx'
 import { CandidateCard } from './CandidateCard'
-import { isInbound, Leads, Section, Sentences } from './parts'
+import { Leads, Section, Sentences } from './parts'
+import { isInbound } from './rules'
 
 /** "Sanctioned address reached", "Mixer reached", or both: from the alerts the trace raised. */
 function sealHeading(c: CaseDetail): string {

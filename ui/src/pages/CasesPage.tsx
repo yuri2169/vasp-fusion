@@ -1,10 +1,10 @@
 import { FolderOpen } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseSummary } from '../api/models'
 import { useCases } from '../api/queries'
 import { AddressChip } from '../components/AddressChip'
-import { Button } from '../components/Button'
+import { buttonClass } from '../components/Button'
 import { ChainBadge } from '../components/ChainBadge'
 import { DataTable, type Column } from '../components/DataTable'
 import { EmptyState } from '../components/EmptyState'
@@ -12,7 +12,6 @@ import { ErrorState } from '../components/ErrorState'
 import { OutcomeStamp } from '../components/OutcomeStamp'
 import { PageHeader } from '../components/PageHeader'
 import { formatConfidence, formatDate, formatInr } from '../lib/format'
-import { SEARCH_INPUT_ID } from '../shell/GlobalSearch'
 
 const OUTCOME_ORDER = { ATTRIBUTED: 0, SANCTIONED_OR_MIXER_REACHED: 1, INSUFFICIENT_EVIDENCE: 2 }
 
@@ -77,15 +76,22 @@ const columns: Column<CaseSummary>[] = [
   },
 ]
 
-/** Every case, newest first. U2 adds case intake (reference, complaint number, incident date) and filters. */
+/** Every case, newest first. "Open a case" leads to the cover sheet (wallet, complaint, hop limit);
+ *  the search bar stays the quick way in. */
 export function CasesPage() {
   const cases = useCases()
   const navigate = useNavigate()
-  const focusSearch = () => document.getElementById(SEARCH_INPUT_ID)?.focus()
+  const openCase = (
+    <Link to="/cases/new" className={buttonClass('primary')}>
+      Open a case
+    </Link>
+  )
 
   return (
     <>
-      <PageHeader title="Cases">One case per wallet: where its funds went, and which exchange to write to.</PageHeader>
+      <PageHeader title="Cases" actions={cases.data && cases.data.items.length > 0 ? openCase : undefined}>
+        One case per wallet: where its funds went, and which exchange to write to.
+      </PageHeader>
       {cases.isError ? (
         <ErrorState
           title="The cases could not be loaded"
@@ -96,13 +102,9 @@ export function CasesPage() {
         <EmptyState
           title="No cases yet"
           icon={<FolderOpen size={22} aria-hidden />}
-          action={
-            <Button variant="primary" onClick={focusSearch}>
-              Trace a wallet
-            </Button>
-          }
+          action={openCase}
         >
-          Paste a wallet address in the search bar to open the first case. Tron, Bitcoin and EVM wallets can be traced.
+          Open the first case with a wallet address, or paste one in the search bar. Tron, Bitcoin and EVM wallets can be traced.
         </EmptyState>
       ) : (
         <DataTable

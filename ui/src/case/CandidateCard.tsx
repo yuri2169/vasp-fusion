@@ -8,7 +8,7 @@ import { DualMeter } from '../components/DualMeter'
 import { EvidenceList } from '../components/EvidenceList'
 import { TierTag } from '../components/TierTag'
 import { cx } from '../lib/cx'
-import { deskLink, isInbound, NAMING_BAR, routable } from './parts'
+import { deskLink, isInbound, NAMING_BAR, routable } from './rules'
 
 /** What the counterfactual check found: the label on the entry address is hidden and the
  *  wallet is traced again. A tick, a warning, or "not checked", then the backend's sentence. */

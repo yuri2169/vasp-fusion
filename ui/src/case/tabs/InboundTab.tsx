@@ -6,7 +6,7 @@ import { EmptyState } from '../../components/EmptyState'
 import { TierTag } from '../../components/TierTag'
 import { traced } from '../../lib/caseGraph'
 import { formatDate } from '../../lib/format'
-import { isInbound } from '../parts'
+import { isInbound } from '../rules'
 
 interface Funder {
   address: string

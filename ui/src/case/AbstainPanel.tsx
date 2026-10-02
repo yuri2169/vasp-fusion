@@ -1,7 +1,8 @@
 import type { CaseDetail } from '../api/models'
 import { cx } from '../lib/cx'
 import { CandidateCard } from './CandidateCard'
-import { isInbound, Leads, Section, Sentences } from './parts'
+import { Leads, Section, Sentences } from './parts'
+import { isInbound } from './rules'
 
 /** INSUFFICIENT EVIDENCE is an answer, not an error: no exchange is named, and the panel
  *  says why, what was reached, what would change it, and what to do next. Slate and dashed,

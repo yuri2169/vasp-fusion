@@ -94,7 +94,10 @@ export function createMockTransport(opts: { now?: () => number; traceMs?: number
             `Demo data holds only the ${loaders.has('cases.json') ? 'three ' : ''}demo wallets. To trace any wallet, ${GO_LIVE}.`,
           )
         const ms = traceMs()
-        if (ms <= 0) return { data: found, source: 'mock' }
+        if (ms <= 0) {
+          traces.delete(found.id)
+          return { data: found, source: 'mock' }
+        }
         traces.set(found.id, { began: now(), ms })
         const queued: CaseSummary = { ...found, ...NOT_YET, status: 'queued' }
         return { data: queued, source: 'mock' }

@@ -55,7 +55,8 @@ export function GlobalSearch() {
       {
         onSuccess: (opened) => {
           change('')
-          navigate(`/cases/${encodeURIComponent(opened.id)}`)
+          // `watched`: the officer started this trace, so the case page extends the rail as the result lands.
+          navigate(`/cases/${encodeURIComponent(opened.id)}`, { state: { watched: opened.status !== 'done' } })
         },
         onError: (error) =>
           setFailure(error instanceof ApiError ? error.detail : 'The case could not be opened. Try again.'),

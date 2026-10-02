@@ -224,7 +224,8 @@ describe('cases', () => {
     vi.spyOn(api, 'cases').mockResolvedValue({ total: 0, items: [] })
     renderApp(<AppRoutes />, { route: '/cases' })
     expect(await screen.findByRole('heading', { name: 'No cases yet' })).toBeInTheDocument()
-    expect(screen.getByText(/Paste a wallet address/)).toBeInTheDocument()
+    expect(screen.getByText(/Open the first case with a wallet address/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open a case' })).toHaveAttribute('href', '/cases/new')
   })
 
   it('a case that does not exist says so', async () => {

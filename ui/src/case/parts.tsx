@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react'
-import type { Candidate, CaseDetail, TypologyFlag as Flag } from '../api/models'
+import type { CaseDetail } from '../api/models'
 import { TypologyFlag } from '../components/TypologyFlag'
 import { cx } from '../lib/cx'
-
-/** The bar a candidate must clear to be named (docs/api_contract.md; measured in B7, not calibrated). */
-export const NAMING_BAR = 0.6
+import { leadsOf } from './rules'
 
 /** A part of a panel, under a small printed heading. It is a landmark, so a screen reader can jump to it. */
 export function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
@@ -32,9 +30,6 @@ export function Sentences({ items, marker = 'dash' }: { items: string[]; marker?
   )
 }
 
-export const isLead = (flag: Flag) => flag.code === 'deposit_like'
-export const leadsOf = (c: CaseDetail) => c.typology_flags.filter(isLead)
-
 /** Leads from the deposit-address model: something to look into, never part of the answer. */
 export function Leads({ c }: { c: CaseDetail }) {
   const leads = leadsOf(c)
@@ -51,11 +46,3 @@ export function Leads({ c }: { c: CaseDetail }) {
     </Section>
   )
 }
-
-export const isInbound = (x: Candidate) => x.direction === 'inbound'
-
-/** Whether a request can be drafted to this exchange from this case (the desk's own rule, B8). */
-export const routable = (x: Candidate) =>
-  !isInbound(x) && x.hops >= 1 && x.confidence >= NAMING_BAR && x.vasp !== 'Unidentified exchange'
-
-export const deskLink = (c: CaseDetail, vasp: string) => `/desk?vasp=${encodeURIComponent(vasp)}&case=${encodeURIComponent(c.id)}`

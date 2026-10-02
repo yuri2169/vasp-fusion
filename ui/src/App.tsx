@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { CasePage } from './pages/CasePage'
 import { CasesPage } from './pages/CasesPage'
 import { KitPage } from './pages/KitPage'
+import { NewCasePage } from './pages/NewCasePage'
 import { NotFoundPage, PlaceholderPage } from './pages/PlaceholderPage'
 import { AppShell } from './shell/AppShell'
 
@@ -12,6 +13,7 @@ export function AppRoutes() {
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/cases" replace />} />
         <Route path="cases" element={<CasesPage />} />
+        <Route path="cases/new" element={<NewCasePage />} />
         <Route path="cases/:id" element={<CasePage />} />
         <Route
           path="desk"

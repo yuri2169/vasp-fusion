@@ -85,7 +85,9 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
 
   // The canvas's handlers outlive a render: they read what is current through these.
   const live = useRef({ view, onSelect })
-  live.current = { view, onSelect }
+  useEffect(() => {
+    live.current = { view, onSelect }
+  })
 
   const fit = (onlyPath = false) => {
     const cy = cyRef.current

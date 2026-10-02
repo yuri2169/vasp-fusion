@@ -3,7 +3,7 @@ import { AddressChip } from '../../components/AddressChip'
 import { EmptyState } from '../../components/EmptyState'
 import { TxHash } from '../../components/TxHash'
 import { TypologyFlag } from '../../components/TypologyFlag'
-import { isLead } from '../parts'
+import { isLead } from '../rules'
 
 const LISTED = 6
 
