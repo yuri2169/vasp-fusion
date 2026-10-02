@@ -216,6 +216,20 @@ class Candidate(_M):
     counterfactual_holds: bool | None = Field(None, description=(
         "true: the same VASP is still named without that label. false: it falls under the "
         "bar or is not reached. null: not checked (the candidate was not named)"))
+    # what a request to this VASP is built from (B8)
+    amount: float | None = Field(None, description=(
+        "In the case's asset: the traced funds that reached this VASP (exact; "
+        "share_of_funds is rounded)"))
+    account_address: str | None = Field(None, description=(
+        "The wallet a request asks the VASP about: deposit_address itself, or the wallet "
+        "one hop before it when that wallet passed on everything it received"))
+    reached_at: datetime | None = Field(None, description=(
+        "When the traced funds first reached account_address on this route"))
+    entry_label: str | None = Field(None, description="The label text on deposit_address")
+    entry_kind: Kind | None = None
+    entry_addresses: list[str] = Field([], description=(
+        "Every labelled wallet of this VASP the funds reached, largest first; "
+        "deposit_address is the first"))
 
 
 class TypologyFlag(_M):
@@ -314,6 +328,8 @@ class DeskRow(_M):
     status: RequestStatus | Literal["not_requested"]
     next_action: str
     last_request_id: str | None = None
+    unrequested_wallets: int = Field(0, description=(
+        "Routed wallets of this VASP that no request asks about yet"))
 
 
 class Desk(_M):
@@ -355,6 +371,9 @@ class VaspWallet(_M):
     amount_usd: float | None = None
     tier: Tier
     confidence: float | None = Field(None, ge=0, le=1)
+    routable: bool = Field(True, description=(
+        "false: shown for context only (under the bar, or the VASP funded the wallet); "
+        "no request can be drafted on it"))
 
 
 class StatusEvent(_M):

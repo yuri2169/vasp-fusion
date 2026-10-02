@@ -23,7 +23,7 @@ from .labels.normalize import VASP_CATEGORIES
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
 SEED = 26182
-CODE_VERSION = "b7-decide-1"
+CODE_VERSION = "b8-desk-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
@@ -145,7 +145,24 @@ def _candidate(c: Candidate) -> dict:
             "hops": c.hops, "share_of_funds": round(float(c.share), 4),
             "time_to_reach_s": c.time_to_reach_s, "label_tier": c.label_tier,
             "deposit_address": c.deposit_address, "path": c.path, "evidence": c.evidence,
-            "counterfactual": c.counterfactual, "counterfactual_holds": c.counterfactual_holds}
+            "counterfactual": c.counterfactual, "counterfactual_holds": c.counterfactual_holds,
+            **_request_facts(c)}
+
+
+def _request_facts(c: Candidate) -> dict:
+    """What a request to this VASP is built from (B8), exact where the share is rounded.
+    The account to ask about is the labelled deposit address itself, or else the wallet
+    one hop before the exchange's wallet, but only if it passed on everything it got
+    (the same rule as the "draft a request" next step)."""
+    account, into = c.deposit_address, c.path_edges[-1] if c.path_edges else None
+    if c.direction == "outbound" and c.passed_all and c.label.kind != "deposit" \
+            and c.last_hop is not None and len(c.path_edges) > 1:
+        account, into = c.last_hop, c.path_edges[-2]
+    reached = into.transfer.block_time.astimezone(timezone.utc) if into else None
+    return {"amount": _f(c.amount), "account_address": account,
+            "reached_at": reached.strftime("%Y-%m-%dT%H:%M:%SZ") if reached else None,
+            "entry_label": c.label.label, "entry_kind": c.label.kind,
+            "entry_addresses": [n.address for n in c.entries]}
 
 
 def _where(tr: TraceResult) -> list[dict]:
