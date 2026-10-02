@@ -321,12 +321,29 @@ class Desk(_M):
     rows: list[DeskRow]
 
 
+class DirectorySource(_M):
+    field: str = Field(description="The directory field this source was read for")
+    title: str
+    publisher: str | None = None
+    url: str
+    published: date | None = None
+    accessed: date
+
+
 class VaspDirectoryEntry(_M):
+    """`data/vasp_directory.yaml`: only facts with a source. A blank field means no
+    source was found, not "no"."""
     name: str
     legal_name: str | None = None
-    fiu_ind_registered: bool | None = Field(None, description="Only if cited")
+    fiu_ind_registered: bool | None = Field(None, description=(
+        "true: a source states it is registered with FIU-IND. false: FIU-IND named it as "
+        "operating unregistered. null: no usable source. Always show with fiu_ind_as_of"))
+    fiu_ind_as_of: date | None = Field(None, description="The date that source speaks for")
     jurisdiction: str | None = None
-    le_request_channel: str | None = None
+    le_request_channel: str | None = Field(None, description=(
+        "The exchange's own published channel for law-enforcement requests (URL or email)"))
+    notes: list[str] = Field([], description="Cited remarks; show them verbatim")
+    sources: list[DirectorySource] = []
     source_urls: list[str] = []
 
 
