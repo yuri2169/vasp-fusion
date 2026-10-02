@@ -259,6 +259,34 @@
     "data_sources": [
       "Etherscan v2 (demo replay)",
       "wallet-attribution labels"
-    ]
+    ],
+    "input": {
+      "address": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+      "chain": "ethereum",
+      "max_hops": 3,
+      "since": null
+    },
+    "input_sha256": "4ba879e64786f7640da203c82329e6484051324ba9dbcc8850b99b00ac38c892",
+    "responses": [
+      {
+        "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=1",
+        "sha256": "f9a1c9d6c0c4281892c12272d6172dc8407184c2ee9dddb08a5848af465edfcf"
+      },
+      {
+        "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=2",
+        "sha256": "09c8d5e98e75f92f5034b579e7722c206d11def7ecfc7f64adfe3445e207d0a5"
+      },
+      {
+        "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=3",
+        "sha256": "89639ff3742bf51e771df9ff96bb66bab91cf72584e00fb59a9c12fd8a3fcba3"
+      }
+    ],
+    "responses_sha256": "ecb2826556c5942fa138d94bf73e4d4620fb69620ad0fcb8c58d709a2979ae3e",
+    "pages": 3,
+    "model_version": null,
+    "model_sha256": null,
+    "git_commit": null,
+    "git_dirty": null,
+    "findings_sha256": "046989f41183fbfbdc768ef30cb0350ed0c14cdad55d68eb809451ab18afab2e"
   }
 }

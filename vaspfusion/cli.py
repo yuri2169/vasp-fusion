@@ -782,6 +782,70 @@ def cmd_request(args) -> None:
                                  if letter["watermark"] else ""))
 
 
+def cmd_officer(args) -> None:
+    """Officer accounts (data/officers.json). Once one exists, the API asks for a login."""
+    from .auth.officers import Officers
+    book = Officers()
+    try:
+        if args.do == "list":
+            rows = book.list()
+            for r in rows:
+                print(f"  {r['username']:<20}{r['name']:<32}{r['post'] or '-':<28}"
+                      f"{'disabled' if r['disabled'] else 'active'}")
+            print(f"{len(rows)} officer(s) in {book.path} | login "
+                  f"{'required' if book.active() else 'not required (no active account)'}")
+        elif args.do == "disable":
+            book.disable(args.username)
+            print(f"disabled {args.username}")
+        elif args.do == "demo":
+            spec = json.loads(Path(args.file).read_text())
+            if book.get(spec["username"]) is None:
+                book.add(spec["username"], spec["name"], spec["password"], spec.get("post"))
+            print(f"demo officer {spec['username']} is in {book.path}; its password is in "
+                  f"{args.file}. For demonstrations only.")
+        else:
+            if args.password_stdin:
+                password = sys.stdin.readline().rstrip("\n")
+            else:
+                import getpass
+                password = getpass.getpass("Password (10 characters or more): ")
+                if getpass.getpass("Again: ") != password:
+                    raise ValueError("The two passwords differ.")
+            made = book.add(args.username, args.name, password, args.post)
+            print(f"added {made['username']} ({made['name']}) to {book.path}; the API now "
+                  f"asks for a login")
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+
+
+def cmd_audit(args) -> None:
+    """The audit log: who looked up what, and when; `--verify` recomputes its hash chain."""
+    from .store.audit import AuditLog
+    log = AuditLog()
+    if args.verify:
+        check = log.verify_chain()
+        head = check["head"]
+        if check["ok"]:
+            print(f"OK: {check['rows']} rows, every hash follows the one before it\n"
+                  f"head: row {head['seq']}  {head['hash']}\n"
+                  f"(note the head somewhere else: rows cut off the end are only caught "
+                  f"against a head that was noted)")
+        else:
+            print(f"BROKEN at row {check['broken_at']}: {check['reason']}")
+            raise SystemExit(1)
+        return
+    total, rows = log.list(limit=args.limit, officer=args.officer, action=args.action,
+                           target=args.target)
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return
+    for r in reversed(rows):
+        print(f"  {r['seq']:>6}  {r['at']}  {r['officer'] or '(not signed in)':<18}"
+              f"{r['action']:<16}{r['status']:<5}{r['target'] or ''}")
+    print(f"{len(rows)} of {total} rows | {log.path}")
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     uvicorn.run("vaspfusion.api.main:app", host=args.host, port=args.port)
@@ -956,6 +1020,26 @@ def main(argv: list[str] | None = None) -> None:
                    help="approve and hand to the mock SAHYOG gateway (a local outbox)")
     s.add_argument("--out", help="PDF path (default: data/exports/<request id>.pdf)")
     s.set_defaults(fn=cmd_request)
+
+    s = sub.add_parser("officer", help="officer accounts: add | list | disable | demo")
+    s.add_argument("do", choices=("add", "list", "disable", "demo"))
+    s.add_argument("username", nargs="?")
+    s.add_argument("--name", help="as printed on letters, e.g. 'Insp. A. Rao'")
+    s.add_argument("--post")
+    s.add_argument("--password-stdin", action="store_true",
+                   help="read the password from standard input instead of asking")
+    s.add_argument("--file", default=str(ROOT / "demo" / "officer.json"),
+                   help="demo: the demonstration account to create")
+    s.set_defaults(fn=cmd_officer)
+
+    s = sub.add_parser("audit", help="the audit log: who looked up what, and when")
+    s.add_argument("--verify", action="store_true", help="recompute the hash chain")
+    s.add_argument("--limit", type=int, default=50)
+    s.add_argument("--officer")
+    s.add_argument("--action", help="an action (case.view) or a family (case)")
+    s.add_argument("--target", help="e.g. a case id")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(fn=cmd_audit)
 
     s = sub.add_parser("serve", help="run the API")
     s.add_argument("--host", default="127.0.0.1")

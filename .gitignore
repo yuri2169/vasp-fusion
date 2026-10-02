@@ -29,3 +29,10 @@ data/abstain_cache.duckdb
 # The request desk (B8): requests drafted on this machine, and the mock SAHYOG outbox.
 data/desk.duckdb
 data/sahyog_outbox/
+# Login and audit (B9): officer accounts (password hashes), the token secret, the audit log.
+data/officers.json
+data/officers.json.tmp
+data/auth_secret
+data/audit.duckdb
+# The demo's chain cache, built from tests/fixtures/demo by `make demo-cache`.
+data/demo_cache.duckdb

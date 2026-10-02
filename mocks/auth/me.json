@@ -1,0 +1,10 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "auth_required": true,
+  "officer": {
+    "username": "demo.officer",
+    "name": "Insp. D. Officer",
+    "post": "Cyber Crime PS (demonstration)"
+  }
+}

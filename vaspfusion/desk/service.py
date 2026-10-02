@@ -70,6 +70,12 @@ def _clean(text: str, limit: int) -> str:
     return " ".join("".join(ch if ch.isprintable() else " " for ch in text).split())[:limit]
 
 
+def _event(status: str, at: datetime, note: str | None, by: str | None) -> dict:
+    """A status-history entry. `by` is there only when a signed-in officer made it."""
+    event = {"status": status, "at": _iso(at), "note": note}
+    return {**event, "by": by} if by else event
+
+
 class DeskService:
     def __init__(self, cases, requests, directory: Directory, gateway: SahyogGateway,
                  cfg: DeskConfig = DeskConfig(),
@@ -116,11 +122,13 @@ class DeskService:
 
     # ------------------------------------------------------------------ draft
     def create(self, vasp: str, case_ids: list[str], asks: list[str], officer: str,
-               wallets: list[str] | None = None) -> dict:
+               wallets: list[str] | None = None, by: str | None = None) -> dict:
+        """`officer` is the name printed on the letter; `by` is the signed-in account that
+        drafted it (None when no login is in force)."""
         with _LOCK:
-            return self._view(self._create(vasp, case_ids, asks, officer, wallets))
+            return self._view(self._create(vasp, case_ids, asks, officer, wallets, by))
 
-    def _create(self, vasp, case_ids, asks, officer, wallets) -> dict:
+    def _create(self, vasp, case_ids, asks, officer, wallets, by=None) -> dict:
         vasp = self.directory.canonical(_clean(vasp, 100))
         officer = _clean(officer, 200)
         if not officer:
@@ -181,8 +189,7 @@ class DeskService:
             "id": rid, "reference": reference, "vasp": vasp, "status": "drafted",
             "case_ids": [c["case_id"] for c in letter["cases"]], "created_at": _iso(now),
             "due": None,
-            "status_history": [{"status": "drafted", "at": _iso(now),
-                                "note": f"Drafted by {officer}"}],
+            "status_history": [_event("drafted", now, f"Drafted by {officer}", by)],
             "letter": letter, "pdf_url": f"/api/requests/{rid}/pdf",
             "payload": build_payload(request_id=rid, created_at=now, vasp=vasp, entry=entry,
                                      letter=letter, code_version=CODE_VERSION),
@@ -223,11 +230,13 @@ class DeskService:
                     "Withdraw this request and draft a new one."))
 
     # ------------------------------------------------------------------ status
-    def patch(self, request_id: str, status: str, note: str | None = None) -> dict:
+    def patch(self, request_id: str, status: str, note: str | None = None,
+              by: str | None = None) -> dict:
         with _LOCK:
-            return self._view(self._patch(request_id, status, note))
+            return self._view(self._patch(request_id, status, note, by))
 
-    def _patch(self, request_id: str, status: str, note: str | None) -> dict:
+    def _patch(self, request_id: str, status: str, note: str | None,
+               by: str | None = None) -> dict:
         req = self.requests.get(request_id)
         if req is None:
             raise DeskError(404, f"No request {request_id}.")
@@ -258,6 +267,6 @@ class DeskService:
                 + f", receipt {req['receipt']['receipt_id']}"
             note = f"{note}. {sent}" if note else sent
         req["status"] = status
-        req["status_history"].append({"status": status, "at": _iso(now), "note": note})
+        req["status_history"].append(_event(status, now, note, by))
         self.requests.save(req)
         return req

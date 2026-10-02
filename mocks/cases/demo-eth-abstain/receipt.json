@@ -1,0 +1,50 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "schema": "vaspfusion-receipt/1",
+  "case_id": "demo-eth-abstain",
+  "case_ref": "DEMO/2026/002",
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "created_at": "2026-09-14T05:02:11Z",
+  "demo": true,
+  "seed": 26182,
+  "code_version": "b1-mock",
+  "git_commit": null,
+  "git_dirty": null,
+  "input": {
+    "address": "0x238c9f6c01efb39ee0a893aa8170af7110ac48b1",
+    "chain": "ethereum",
+    "max_hops": 3,
+    "since": null
+  },
+  "input_sha256": "4ba879e64786f7640da203c82329e6484051324ba9dbcc8850b99b00ac38c892",
+  "pages": 3,
+  "responses_sha256": "ecb2826556c5942fa138d94bf73e4d4620fb69620ad0fcb8c58d709a2979ae3e",
+  "label_db_sha256": null,
+  "model_version": null,
+  "model_sha256": null,
+  "findings_sha256": "046989f41183fbfbdc768ef30cb0350ed0c14cdad55d68eb809451ab18afab2e",
+  "fetched_at": null,
+  "offline_replay": true,
+  "data_sources": [
+    "Etherscan v2 (demo replay)",
+    "wallet-attribution labels"
+  ],
+  "responses": [
+    {
+      "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=1",
+      "sha256": "f9a1c9d6c0c4281892c12272d6172dc8407184c2ee9dddb08a5848af465edfcf"
+    },
+    {
+      "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=2",
+      "sha256": "09c8d5e98e75f92f5034b579e7722c206d11def7ecfc7f64adfe3445e207d0a5"
+    },
+    {
+      "query": "https://api.etherscan.io/demo/demo-eth-abstain/transfers?page=3",
+      "sha256": "89639ff3742bf51e771df9ff96bb66bab91cf72584e00fb59a9c12fd8a3fcba3"
+    }
+  ],
+  "receipt_sha256": "420470cd09eb9d478bcb21ec918945546b338a11e7a24920f030985cd1114e7c"
+}

@@ -11,15 +11,18 @@ desk (B8: desk, VASP pages, requests and letter PDFs, from the case store and
 data/desk.duckdb; the mock desk answers until a finished case names an exchange).
 The dashboard is still mock, apart from its label coverage.
 
-No authentication: a single-officer workstation, as in BTC-FUSION. Login and the
-audit trail arrive in B9.
+Login and audit (B9, api/security.py): every `/api` request leaves a row in the audit
+log. A login is required once an officer account exists (`cli officer add`), or when
+VASPFUSION_AUTH=required; with no account the tool answers as a single-officer
+workstation, as BTC-FUSION did, and the log says "not signed in".
 """
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -28,11 +31,15 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from .. import chains
+from ..auth import tokens
+from ..auth.officers import USERNAME, Locked, Officers
 from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..labels.lookup import DEFAULT_DB, LabelStore
+from ..store.audit import AuditLog
 from ..store.cases import SUMMARY_KEYS, CaseStore
 from ..trace import TraceConfig
 from . import schemas as S
+from . import security
 
 ROOT = Path(__file__).resolve().parents[2]
 MOCKS = ROOT / "mocks"
@@ -43,6 +50,10 @@ CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_D
 DESK_DB: Path | None = None      # None = data/desk.duckdb (or VASPFUSION_DESK_DB)
 OUTBOX: Path | None = None       # None = data/sahyog_outbox (or VASPFUSION_SAHYOG_OUTBOX)
 DIRECTORY = ROOT / "data" / "vasp_directory.yaml"   # cited facts only (B8)
+OFFICERS: Path | None = None     # None = data/officers.json (or VASPFUSION_OFFICERS)
+AUDIT_DB: Path | None = None     # None = data/audit.duckdb (or VASPFUSION_AUDIT_DB)
+AUTH_SECRET: Path | None = None  # None = data/auth_secret (or VASPFUSION_JWT_SECRET)
+AUTH: str | None = None          # None = VASPFUSION_AUTH, else "auto"; "off" | "required"
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
 # have no adapter yet (PROGRESS.md, B2); Bitcoin waits for B5 (a UTXO transaction is
@@ -75,6 +86,100 @@ async def refuse_cross_origin_writes(request: Request, call_next):
     return await call_next(request)
 
 
+# ------------------------------------------------------------------ login + audit (B9)
+def auth_required() -> bool:
+    """auto (the default): a login is required as soon as one officer account exists."""
+    mode = (AUTH or os.environ.get("VASPFUSION_AUTH") or "auto").strip().lower()
+    if mode == "off":
+        return False
+    if mode == "required":
+        return True
+    return Officers(OFFICERS).active()
+
+
+def _officer_of(request: Request) -> dict | None:
+    """The signed-in officer: a valid token (header or session cookie) for an account
+    that still exists and is enabled."""
+    token = security.bearer(request.headers.get("authorization")) \
+        or request.cookies.get(security.SESSION_COOKIE)
+    if not token:
+        return None
+    try:
+        claims = tokens.check(token, tokens.load_secret(AUTH_SECRET))
+    except tokens.TokenError:
+        return None
+    sub = claims.get("sub")
+    return Officers(OFFICERS).get(sub) if isinstance(sub, str) else None
+
+
+def _route_of(request: Request) -> tuple[str | None, dict]:
+    from starlette.routing import Match
+    for route in app.router.routes:
+        match, child = route.matches(request.scope)
+        if match == Match.FULL:
+            return getattr(route, "path", None), child.get("path_params", {})
+    return None, {}
+
+
+def _note(request: Request, target: str | None = None, **detail) -> None:
+    """What a handler adds to its audit row (never anything from a request body beyond
+    the wallet, the exchange and the status it names)."""
+    audit = getattr(request.state, "audit", None)
+    if audit is not None:
+        if target is not None:
+            audit["target"] = target
+        if detail:
+            audit["detail"] = detail
+
+
+def _by(request: Request) -> str | None:
+    officer = getattr(request.state, "officer", None)
+    return officer["username"] if officer else None
+
+
+# Added after refuse_cross_origin_writes, so it wraps it: a refused write is logged too.
+@app.middleware("http")
+async def login_and_audit(request: Request, call_next):
+    path = request.url.path
+    if not path.startswith("/api/"):
+        response = await call_next(request)
+        for k, v in security.HEADERS.items():
+            response.headers.setdefault(k, v)
+        return response
+    officer = _officer_of(request)
+    request.state.officer = officer
+    request.state.audit = {}
+    if auth_required() and officer is None and path not in security.OPEN_PATHS:
+        response = JSONResponse({"detail": "Sign in to continue."}, status_code=401,
+                                headers={"WWW-Authenticate": "Bearer"})
+    else:
+        response = await call_next(request)
+    template, params = _route_of(request)
+    if (request.method, template) not in security.NOT_LOGGED:
+        action, target = security.describe(request.method, template, params,
+                                           request.query_params)
+        target = request.state.audit.get("target", target)
+        who = officer["username"] if officer else None
+        if not security.is_repeat(request.method, (who, action, target, response.status_code)):
+            try:
+                security.write_row(
+                    AuditLog(AUDIT_DB), officer=who, action=action, target=target,
+                    method=request.method,
+                    path=path + (f"?{request.url.query}" if request.url.query else ""),
+                    status=response.status_code,
+                    client=request.client.host if request.client else None,
+                    detail=request.state.audit.get("detail"))
+            except Exception:  # noqa: BLE001 - no reply without its audit row
+                response = JSONResponse(
+                    {"detail": "The audit log could not be written, so the reply is "
+                               "withheld. The action itself may have been carried out. "
+                               "Check the disk and data/audit.duckdb."}, status_code=503)
+    for k, v in security.HEADERS.items():
+        response.headers[k] = v
+    response.headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
 # ------------------------------------------------------------------ mocks
 # Which model each mock file validates against. Paths mirror the API's URLs.
 MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
@@ -88,6 +193,8 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"requests/[^/]+", S.RequestDetail),
     (r"dashboard", S.Dashboard),
     (r"model", S.ModelInfo),
+    (r"audit", S.AuditPage),
+    (r"auth/me", S.Me),
 ]
 
 _SAFE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._&-]{0,99}$")
@@ -146,8 +253,66 @@ def label_db_sha256() -> str | None:
 # ------------------------------------------------------------------ health
 @app.get("/api/health", response_model=S.Health)
 def health():
+    from ..provenance import git_state
     return S.Health(status="ok", version=VERSION, label_db=Path(LABEL_DB).exists(),
-                    data_mode="mixed")
+                    data_mode="mixed", auth_required=auth_required(),
+                    offline=chains.cache.offline_mode(), git_commit=git_state()[0])
+
+
+# ------------------------------------------------------------------ login (B9)
+@app.post("/api/auth/login", response_model=S.LoginResult)
+def login(body: S.Login, request: Request, response: Response):
+    """Sign in. The token comes back in the body and as an HttpOnly session cookie; either
+    is accepted on later requests. 401 for a wrong user name or password (the same words
+    for both), 429 while an account is locked after five wrong passwords."""
+    username = body.username.strip().lower()
+    # what was typed is logged only if it could be a user name (never a stray password)
+    _note(request, target=username if USERNAME.match(username) else "(not a user name)")
+    try:
+        officer = Officers(OFFICERS).verify(username, body.password)
+    except Locked as e:
+        raise HTTPException(429, str(e)) from None
+    if officer is None:
+        raise HTTPException(401, "Wrong user name or password.")
+    now = datetime.now(timezone.utc)
+    token = tokens.issue({"sub": officer["username"], "name": officer["name"]},
+                         tokens.load_secret(AUTH_SECRET), now=now.timestamp())
+    response.set_cookie(security.SESSION_COOKIE, token, max_age=tokens.TTL_S, httponly=True,
+                        samesite="strict", path="/api", secure=request.url.scheme == "https")
+    return {"token": token, "token_type": "bearer",
+            "expires_at": now + timedelta(seconds=tokens.TTL_S), "officer": officer}
+
+
+@app.post("/api/auth/logout", response_model=S.Ok)
+def logout(response: Response):
+    """Clear the session cookie. A token already handed out stays valid until it expires
+    (8 hours) or its account is disabled."""
+    response.delete_cookie(security.SESSION_COOKIE, path="/api")
+    return {"ok": True}
+
+
+@app.get("/api/auth/me", response_model=S.Me)
+def me(request: Request):
+    """Who is signed in, and whether a login is required at all. Always answers."""
+    return {"auth_required": auth_required(),
+            "officer": getattr(request.state, "officer", None)}
+
+
+@app.get("/api/audit", response_model=S.AuditPage)
+def get_audit(response: Response, limit: int = Query(100, ge=1, le=500),
+              offset: int = Query(0, ge=0), officer: str | None = None,
+              action: str | None = Query(None, description="An action (`case.view`) or a "
+                                                           "family (`case`)"),
+              target: str | None = Query(None, description="e.g. a case id: everything "
+                                                           "done on that case"),
+              verify: bool = Query(False, description="Recompute the whole hash chain")):
+    """The audit log, newest first: who looked up what, and when."""
+    log = AuditLog(AUDIT_DB)
+    total, items = log.list(limit=limit, offset=offset, officer=officer, action=action,
+                            target=target)
+    _source(response, "live")
+    return {"total": total, "limit": limit, "offset": offset, "items": items,
+            "chain": log.verify_chain() if verify else None}
 
 
 # ------------------------------------------------------------------ cases (B3)
@@ -215,20 +380,24 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
 
 
 @app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
-def create_case(body: S.CaseCreate, response: Response, background: BackgroundTasks,
+def create_case(body: S.CaseCreate, request: Request, response: Response,
+                background: BackgroundTasks,
                 refresh: bool = Query(False, description="Trace again even if this wallet "
                                                          "already has a finished case")):
     for c in _demo_cases():          # the mock demo wallets are not on any chain
         if c["address"] == body.address.strip():
             _source(response, "mock")
+            _note(request, target=c["id"], address=c["address"], chain=c["chain"])
             return c
     chain, address = _resolve(body)
+    _note(request, target=case_id_for(chain, address), address=address, chain=chain)
     if not Path(LABEL_DB).exists():
         raise HTTPException(503, "The label database is missing. Run `make labels` first.")
     store = _cases()
     _source(response, "live")
     existing = store.find(chain, address)
     cid = existing["id"] if existing else case_id_for(chain, address)
+    _note(request, target=cid, address=address, chain=chain)
     with _ACTIVE_LOCK:
         tracing = cid in _ACTIVE
         finished = existing is not None and existing["status"] == "done"
@@ -473,7 +642,7 @@ def _demo_request_for(vasp: str) -> dict:
 
 
 @app.post("/api/requests", response_model=S.RequestDetail, status_code=201)
-def create_request(body: S.RequestCreate, response: Response):
+def create_request(body: S.RequestCreate, request: Request, response: Response):
     from ..desk.service import DeskError
     demo = {c["id"]: c for c in _demo_cases()}
     if all(c in demo for c in body.case_ids):     # the mock demo cases have no trace
@@ -482,13 +651,18 @@ def create_request(body: S.RequestCreate, response: Response):
             if demo[cid].get("top_vasp") != body.vasp:
                 raise HTTPException(422, f"Demo case {cid} does not support a request to "
                                          f"{body.vasp}: it does not name that exchange.")
-        return _demo_request_for(body.vasp)
+        mock = _demo_request_for(body.vasp)
+        _note(request, target=mock["id"], vasp=mock["vasp"], cases=mock["case_ids"])
+        return mock
     _source(response, "live")
+    _note(request, vasp=body.vasp[:100], cases=body.case_ids[:50])
     try:
-        return _desk().create(body.vasp, body.case_ids, list(body.asks), body.officer,
-                              body.wallets)
+        made = _desk().create(body.vasp, body.case_ids, list(body.asks), body.officer,
+                              body.wallets, by=_by(request))
     except DeskError as e:
         raise _refused(e) from None
+    _note(request, target=made["id"], vasp=made["vasp"], cases=made["case_ids"])
+    return made
 
 
 def _request_pdf(request_id: str) -> Response:
@@ -531,16 +705,18 @@ def get_request(request_id: str, response: Response):
 
 
 @app.patch("/api/requests/{request_id}", response_model=S.RequestDetail)
-def patch_request(request_id: str, body: S.RequestPatch, response: Response):
+def patch_request(request_id: str, body: S.RequestPatch, request: Request,
+                  response: Response):
     """Move a request along: drafted -> approved -> sent -> acknowledged -> answered |
     freeze_confirmed | refused. 409 for a step that is not allowed from where it is.
     Sending hands the payload and the letter to the gateway (a local outbox)."""
     from ..desk.service import DeskError
     svc = _desk()
+    _note(request, status=body.status)
     if svc.get(request_id) is not None:
         _source(response, "live")
         try:
-            return svc.patch(request_id, body.status, body.note)
+            return svc.patch(request_id, body.status, body.note, by=_by(request))
         except DeskError as e:
             raise _refused(e) from None
     # a mock demo request: the new status is applied to the reply, nothing persists

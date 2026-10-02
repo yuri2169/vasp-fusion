@@ -26,6 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from vaspfusion.api import schemas as S  # noqa: E402
 from vaspfusion.api.main import MOCKS, mock_model_for  # noqa: E402
 from vaspfusion.labels.lookup import DEFAULT_DB, LabelStore  # noqa: E402
 
@@ -290,6 +291,56 @@ def case_sanctioned(L) -> dict:
     }
 
 
+def with_receipt(case: dict) -> dict:
+    """The mock case with the receipt fields a real run fills (B9). The page digests are
+    synthetic like every other hash in a mock; the digests over them are computed."""
+    from vaspfusion import provenance as P
+    from vaspfusion.api import schemas as S
+    host = "api.trongrid.io" if case["chain"] == "tron" else "api.etherscan.io"
+    pages = P.responses([
+        {"query": f"https://{host}/demo/{case['id']}/transfers?page={i}",
+         "sha256": _h(f"page:{case['id']}:{i}").hex()} for i in (1, 2, 3)])
+    case_in = P.case_input(case["address"], case["chain"], 3, None)
+    case["provenance"].update(
+        input=case_in, input_sha256=P.sha256_of(case_in), responses=pages,
+        responses_sha256=P.responses_sha256(pages), pages=len(pages), model_version=None,
+        model_sha256=None, git_commit=None, git_dirty=None)
+    stored = S.CaseDetail.model_validate(case).model_dump(mode="json")   # as the API serves it
+    case["provenance"]["findings_sha256"] = P.findings_sha256(stored)
+    return case
+
+
+def audit_mock(c1: dict, c3: dict, req: dict) -> dict:
+    """A page of the audit log, chained with the real row hash."""
+    from vaspfusion.store.audit import FIELDS, GENESIS, row_hash
+    who = "demo.officer"
+    steps = [
+        (None, "auth.login", who, "POST", "/api/auth/login", 200, None),
+        (who, "case.open", c1["id"], "POST", "/api/cases", 202,
+         {"address": c1["address"], "chain": c1["chain"]}),
+        (who, "case.view", c1["id"], "GET", f"/api/cases/{c1['id']}", 200, None),
+        (who, "case.export", c1["id"], "GET", f"/api/cases/{c1['id']}/pdf", 200, None),
+        (who, "request.draft", req["id"], "POST", "/api/requests", 201,
+         {"vasp": req["vasp"], "cases": req["case_ids"]}),
+        (who, "case.view", c3["id"], "GET", f"/api/cases/{c3['id']}", 200, None),
+        (None, "case.view", c3["id"], "GET", f"/api/cases/{c3['id']}", 401, None),
+    ]
+    rows, prev = [], GENESIS
+    for i, (officer, action, target, method, path, status, detail) in enumerate(steps, 1):
+        row = {"seq": i, "at": at(i * 2).replace("Z", ".000Z"), "officer": officer,
+               "action": action, "target": target, "method": method, "path": path,
+               "status": status, "client": "127.0.0.1",
+               "detail": json.dumps(detail, sort_keys=True) if detail else None,
+               "prev_hash": prev}
+        assert set(row) == set(FIELDS)
+        prev = row_hash(row)
+        rows.append({**row, "detail": detail, "hash": prev})
+    head = {"seq": rows[-1]["seq"], "hash": rows[-1]["hash"], "at": rows[-1]["at"]}
+    return {"total": len(rows), "limit": 100, "offset": 0, "items": rows[::-1],
+            "chain": {"ok": True, "rows": len(rows), "broken_at": None, "reason": None,
+                      "head": head}}
+
+
 def summary(case: dict) -> dict:
     keys = ("id", "address", "chain", "status", "outcome", "top_vasp", "confidence",
             "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo")
@@ -392,7 +443,7 @@ def main() -> None:
         L = real_labels(store)
         c1, derived = case_attributed(L)
         c2, c3 = case_abstain(L), case_sanctioned(L)
-        cases = [c1, c2, c3]
+        cases = [with_receipt(c) for c in (c1, c2, c3)]
         req = request_okx(c1)
         req_summary = {k: req[k] for k in ("id", "reference", "vasp", "status", "case_ids",
                                            "created_at", "due")}
@@ -442,7 +493,14 @@ def main() -> None:
                 "label_coverage": {k: st[k] for k in ("total", "by_category", "by_tier",
                                                       "by_chain")}},
             "model": model_mock(),
+            "audit": audit_mock(c1, c3, req),
+            "auth/me": {"auth_required": True,
+                        "officer": {"username": "demo.officer", "name": "Insp. D. Officer",
+                                    "post": "Cyber Crime PS (demonstration)"}},
         }
+        from vaspfusion.provenance import receipt
+        files.update({f"cases/{c['id']}/receipt": receipt(
+            S.CaseDetail.model_validate(c).model_dump(mode="json")) for c in cases})
 
     shutil.rmtree(MOCKS, ignore_errors=True)
     for rel, body in files.items():

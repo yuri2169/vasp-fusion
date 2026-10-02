@@ -1,0 +1,126 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "total": 7,
+  "limit": 100,
+  "offset": 0,
+  "items": [
+    {
+      "seq": 7,
+      "at": "2026-09-14T10:16:11.000Z",
+      "officer": null,
+      "action": "case.view",
+      "target": "demo-tron-sanctioned",
+      "method": "GET",
+      "path": "/api/cases/demo-tron-sanctioned",
+      "status": 401,
+      "client": "127.0.0.1",
+      "detail": null,
+      "prev_hash": "179843694e4f5059966b64f3162a93e624f6a7e567f0e2d4e040f63f644bccbd",
+      "hash": "e53163568ff01924ff167de971168b668607910b8f1c2809195da857710792d5"
+    },
+    {
+      "seq": 6,
+      "at": "2026-09-14T10:14:11.000Z",
+      "officer": "demo.officer",
+      "action": "case.view",
+      "target": "demo-tron-sanctioned",
+      "method": "GET",
+      "path": "/api/cases/demo-tron-sanctioned",
+      "status": 200,
+      "client": "127.0.0.1",
+      "detail": null,
+      "prev_hash": "2488261449325f614ed88f10b59707dd64527e6f0899b4de6e94f34b66f787ba",
+      "hash": "179843694e4f5059966b64f3162a93e624f6a7e567f0e2d4e040f63f644bccbd"
+    },
+    {
+      "seq": 5,
+      "at": "2026-09-14T10:12:11.000Z",
+      "officer": "demo.officer",
+      "action": "request.draft",
+      "target": "demo-req-okx-001",
+      "method": "POST",
+      "path": "/api/requests",
+      "status": 201,
+      "client": "127.0.0.1",
+      "detail": {
+        "vasp": "OKX",
+        "cases": [
+          "demo-tron-okx"
+        ]
+      },
+      "prev_hash": "e44e2eb8a976e5460244ed206b232887534b5d7ed343291c897ba0899e4ac821",
+      "hash": "2488261449325f614ed88f10b59707dd64527e6f0899b4de6e94f34b66f787ba"
+    },
+    {
+      "seq": 4,
+      "at": "2026-09-14T10:10:11.000Z",
+      "officer": "demo.officer",
+      "action": "case.export",
+      "target": "demo-tron-okx",
+      "method": "GET",
+      "path": "/api/cases/demo-tron-okx/pdf",
+      "status": 200,
+      "client": "127.0.0.1",
+      "detail": null,
+      "prev_hash": "5ad66a97809b185cb4b6445c82c1d4e8588518639b93f8e6a1fb5d10d9959896",
+      "hash": "e44e2eb8a976e5460244ed206b232887534b5d7ed343291c897ba0899e4ac821"
+    },
+    {
+      "seq": 3,
+      "at": "2026-09-14T10:08:11.000Z",
+      "officer": "demo.officer",
+      "action": "case.view",
+      "target": "demo-tron-okx",
+      "method": "GET",
+      "path": "/api/cases/demo-tron-okx",
+      "status": 200,
+      "client": "127.0.0.1",
+      "detail": null,
+      "prev_hash": "b4038b9d6b50dab168ffe2b97973a1eb5f12f821ace9c3c8b0efb8e5b605f687",
+      "hash": "5ad66a97809b185cb4b6445c82c1d4e8588518639b93f8e6a1fb5d10d9959896"
+    },
+    {
+      "seq": 2,
+      "at": "2026-09-14T10:06:11.000Z",
+      "officer": "demo.officer",
+      "action": "case.open",
+      "target": "demo-tron-okx",
+      "method": "POST",
+      "path": "/api/cases",
+      "status": 202,
+      "client": "127.0.0.1",
+      "detail": {
+        "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+        "chain": "tron"
+      },
+      "prev_hash": "74ad9beda406fa7fcf20e0a26b63106c26756249bfae046c61fa75a565714455",
+      "hash": "b4038b9d6b50dab168ffe2b97973a1eb5f12f821ace9c3c8b0efb8e5b605f687"
+    },
+    {
+      "seq": 1,
+      "at": "2026-09-14T10:04:11.000Z",
+      "officer": null,
+      "action": "auth.login",
+      "target": "demo.officer",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "client": "127.0.0.1",
+      "detail": null,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "74ad9beda406fa7fcf20e0a26b63106c26756249bfae046c61fa75a565714455"
+    }
+  ],
+  "chain": {
+    "ok": true,
+    "rows": 7,
+    "broken_at": null,
+    "reason": null,
+    "head": {
+      "seq": 7,
+      "hash": "e53163568ff01924ff167de971168b668607910b8f1c2809195da857710792d5",
+      "at": "2026-09-14T10:16:11.000Z"
+    }
+  }
+}

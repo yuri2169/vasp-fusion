@@ -14,7 +14,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 ## Conventions
 - Base path `/api`. JSON in and out. Times are ISO-8601 UTC (`Z`); dates are `YYYY-MM-DD`.
 - **Every response carries `X-Data-Source`: `mock` | `live` | `mixed`.** The UI can show a "demo data" ribbon whenever it isn't `live`.
-- Errors come back as `{"detail": "<plain-English sentence saying what happened and what to do>"}`. Codes used: 404 (unknown id), 422 (bad input; `detail` is a string for our own checks, and a list for Pydantic validation errors), 403 (cross-origin write refused), 501 (not built yet).
+- Errors come back as `{"detail": "<plain-English sentence saying what happened and what to do>"}`. Codes used: 401 (not signed in, when a login is required), 404 (unknown id), 409 (not allowed now), 422 (bad input; `detail` is a string for our own checks, and a list for Pydantic validation errors), 403 (cross-origin write refused), 429 (account locked), 503 (label database missing, or the audit log could not be written).
 - Addresses are returned exactly as stored. EVM addresses are lowercase; Tron and BTC keep their case.
 - **Proximity and confidence are separate fields and are never blended.** `proximity_rank` (1 = nearest: hops, share of funds, time) and `confidence` (0–1; rule-based in B3, calibrated from B6).
 - Outcomes: `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (then `abstain_reason` + `what_would_change` are set, and `top_vasp` is null) · `SANCTIONED_OR_MIXER_REACHED`.
@@ -26,10 +26,17 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 
 | Method | Path | Request | Response model | Mock file | Status | Owner |
 |---|---|---|---|---|---|---|
-| GET | `/api/health` | – | `Health` | – | live | B1 |
+| GET | `/api/health` | – | `Health` (now with `auth_required`, `offline`, `git_commit`) | – | live, never needs a login | B1/B9 |
+| POST | `/api/auth/login` | `Login` | `LoginResult` (+ session cookie) | – | **live** | B9 |
+| POST | `/api/auth/logout` | – | `Ok` | – | **live** | B9 |
+| GET | `/api/auth/me` | – | `Me` | `auth/me.json` | **live**, never needs a login | B9 |
+| GET | `/api/audit?limit=&offset=&officer=&action=&target=&verify=` | – | `AuditPage` | `audit.json` | **live** | B9 |
 | POST | `/api/cases?refresh=` | `CaseCreate` | `CaseSummary` (202) | returns a mock demo case if the address is one of theirs | **live** | B3 |
 | GET | `/api/cases?outcome=&status=` | – | `CaseList` | `cases.json` (listed after the live cases) | **live** + mock | B3 |
 | GET | `/api/cases/{id}` | – | `CaseDetail` | `cases/{id}.json` (only for the mock ids) | **live** | B3 (B4, B7 fill evidence/flags) |
+| GET | `/api/cases/{id}/pdf` (also `/api/cases/{id}.pdf`) | – | `application/pdf` | the mock case, marked "Demo fixture - not evidence" | **live** | B9 |
+| GET | `/api/cases/{id}/receipt` | – | `Receipt` | `cases/{id}/receipt.json` | **live** | B9 |
+| POST | `/api/cases/{id}/verify` | – | `VerifyResult` | 422 for a mock id | **live** | B9 |
 | GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` | **labels and `cases` live**, the rest mock | B3/B6 |
 | GET | `/api/labels/search?q=&chain=&category=&tier=&limit=&offset=` | – | `LabelSearch` | `labels/search.json` (fallback) | **live** | B1 |
 | GET | `/api/desk` | – | `Desk` | `desk.json` (until a finished case names an exchange) | **live** | B8 |
@@ -170,6 +177,40 @@ The unit of work is an exchange, not a complaint. Everything is read from finish
 - **`GET /api/requests/{id}/pdf`** (or `.pdf`): A4, `Content-Disposition: inline`. A draft carries a banner on every page, a diagonal watermark and a last sheet of review notes; an approved letter has none of them. The same request always gives the same bytes, and once sent the bytes served are the ones that were submitted.
 - The mock demo request follows the same rules: `POST` with a demo case answers only for the exchange that demo case names (else 422), and `PATCH` on it refuses a step that is not allowed (409).
 - CLI: `make desk`, `make letter VASP=CoinDCX OFFICER="…" [CASES=a,b] [SEND=1]`.
+
+### Case file, receipt, login, audit (B9)
+All additive. `make mocks types` has been run; the three mock cases now carry the receipt fields too.
+
+**The receipt.** `CaseDetail.provenance` gained (all null in a case stored before B9: trace it again):
+- `input` (`address`, `chain`, `max_hops`, `since`) and `input_sha256`: the question asked.
+- `responses[]` (`query`, `sha256`): every chain API response the run read, each once, API keys removed; `responses_sha256` is one digest over the list; `pages` is its length.
+- `findings_sha256`: **the findings fingerprint**. It covers every figure, address and transaction hash of the result (outcome, candidates, confidences, shares, the wallets and their labels, every transfer, the evidence hashes, the wallets a request would list, the flags) and none of the wording, `created_at` or the provenance itself. Floats are rounded to six places before hashing.
+- `model_version` / `model_sha256` (set only when the deposit-address model scored a wallet in the run), `git_commit`, `git_dirty`, beside the existing `label_db_sha256`, `seed`, `code_version`.
+- `GET /api/cases/{id}/receipt` gives the same as one document (`schema: "vaspfusion-receipt/1"`) with the headline (`outcome`, `top_vasp`, `confidence`) and `receipt_sha256` over all of it. **409** while the case has no result or carries no receipt.
+
+**Verify.** `POST /api/cases/{id}/verify` traces the wallet again **from the cached chain responses only** (it never fetches, whatever `OFFLINE` says) and answers `VerifyResult`: `matches`, a one-line `summary`, and `checks[]`, each `name`, `result` (`same` | `different` | `not_checked`), `detail` (a sentence), `stored`, `now`.
+- `matches` is true only when three checks are `same`: `stored_case` (the stored case still has its own fingerprint: nobody edited it), `responses` (the same pages, byte for byte), `findings` (the new run has the same fingerprint).
+- `labels`, `model` and `code` are reported beside them. A changed label database is the usual reason for `findings` to differ; it is shown, and it does not by itself fail the check.
+- A page missing from the cache gives one `replay` check with `not_checked`, and `matches: false`.
+- Takes about as long as the trace did from cache (a second or two). Show a tick, or the sentence in `summary`.
+- CLI: `python -m vaspfusion.cli verify <id>` / `--all` / `--receipt file.json` (exit 1 on a mismatch).
+
+**The case file.** `GET /api/cases/{id}/pdf` (or `.pdf`): A4, `Content-Disposition: inline; filename="case-<id>.pdf"`. Sections: result, summary, where the funds went, flow diagram with a numbered wallet table, exchanges reached (each with its evidence and full transaction hashes), the path, patterns, leads, how the confidence was worked out (what is calibrated and what is not, and how the 0.60 bar was checked), what would change it, next steps, limitations, and the receipt with every response digest. **The same case always gives the same bytes.** Every page's footer carries the fingerprint. **409** until the case is `done`. A demo wallet's file opens with a notice that it alleges nothing; a mock fixture is watermarked. CLI: `make case-pdf CASE=<id>` writes `data/exports/case-<id>.pdf` and `.receipt.json`.
+
+**Login.**
+- **A login is required once an officer account exists** (`python -m vaspfusion.cli officer add <user> --name "Insp. A. Rao"`), or when `VASPFUSION_AUTH=required`. With no account every route answers as before. `VASPFUSION_AUTH=off` switches it off. **`GET /api/auth/me`** (always open) says which: `{"auth_required": true|false, "officer": {username, name, post} | null}`. Start there: show the sign-in screen when `auth_required` is true and `officer` is null.
+- `POST /api/auth/login` `{username, password}` → `{token, token_type: "bearer", expires_at, officer}` and sets the cookie `vf_session` (HttpOnly, SameSite=Strict, Path=/api, 8 hours). **Either works on later requests**: the cookie (nothing to do in a same-origin UI, and a PDF opened in a new tab is signed in too) or `Authorization: Bearer <token>`.
+- **401** `{"detail": "Sign in to continue."}` on every `/api` route except `health`, `auth/me`, `auth/login`, `auth/logout` when not signed in: send the user to the sign-in screen. Login itself answers **401** "Wrong user name or password." (the same words for both) and **429** while an account is locked (five wrong passwords, five minutes).
+- `POST /api/auth/logout` clears the cookie. A token already handed out stays valid until it expires or its account is disabled.
+- `RequestDetail.status_history[].by` (new): the user name of the signed-in officer who drafted, approved or sent it; absent when no login was in force. `RequestCreate.officer` is still the name printed on the letter.
+
+**Audit.** Every `/api` request except `health` and `auth/me` leaves one row, signed in or not (a refused request is a row with status 401). `GET /api/audit` → `AuditPage`: `total`, `items[]` newest first, and with `?verify=true` a `chain` block (`ok`, `rows`, `broken_at`, `reason`, `head`).
+- `AuditEntry`: `seq`, `at`, `officer` (null = not signed in), `action`, `target`, `method`, `path`, `status`, `client`, `detail`, `prev_hash`, `hash`.
+- Actions and their targets: `case.open` / `case.view` / `case.export` / `case.receipt` / `case.verify` (the case id; `case.open` also has `detail.address`, `detail.chain`), `case.list`, `wallet.view` (`chain:address`), `label.search` (the search text), `desk.view`, `vasp.view` (the name), `request.draft` (the request id; `detail.vasp`, `detail.cases`), `request.view`, `request.status` (`detail.status`), `request.export`, `dashboard.view`, `model.view`, `audit.view`, `auth.login` (the user name), `auth.logout`, `api.other`.
+- **For a case page's Audit tab: `GET /api/audit?target=<case id>`.** `?action=case` matches the whole family, `?action=case.view` one action.
+- The same read by the same officer with the same result within 30 seconds is one row (a page polling a running trace); writes are never folded. A request body is never logged.
+- Rows are hash-chained: `hash` covers the row and `prev_hash`. An edited, removed or reordered row breaks the chain from there, and `chain.broken_at` names it. Rows cut off the end can only be caught against a `head` noted somewhere else.
+- Every `/api` reply carries `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
 
 **`ModelInfo`**: `status: "measured"` once `make model` has run (see "The deposit-address model (B6)"). With no `metrics.json` for the chain the route answers `status: "not_measured"`: every metric is null and the lists are empty, and the UI shows "not yet measured". Every number is measured; there are no placeholders.
 

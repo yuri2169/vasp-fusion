@@ -21,6 +21,89 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login
+         * @description Sign in. The token comes back in the body and as an HttpOnly session cookie; either
+         *     is accepted on later requests. 401 for a wrong user name or password (the same words
+         *     for both), 429 while an account is locked after five wrong passwords.
+         */
+        post: operations["login_api_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Logout
+         * @description Clear the session cookie. A token already handed out stays valid until it expires
+         *     (8 hours) or its account is disabled.
+         */
+        post: operations["logout_api_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Who is signed in, and whether a login is required at all. Always answers.
+         */
+        get: operations["me_api_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Audit
+         * @description The audit log, newest first: who looked up what, and when.
+         */
+        get: operations["get_audit_api_audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cases": {
         parameters: {
             query?: never;
@@ -50,6 +133,72 @@ export interface paths {
         get: operations["get_case_api_cases__case_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cases/{case_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Case Pdf
+         * @description The case file as an A4 PDF: result, summary, where the funds went, flow diagram,
+         *     exchanges reached with their evidence and transaction hashes, flags, how the
+         *     confidence was worked out, limitations, and the provenance receipt. The same case
+         *     always gives the same bytes. 409 until the case has a result. Also served at
+         *     /api/cases/{id}.pdf.
+         */
+        get: operations["get_case_pdf_api_cases__case_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cases/{case_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Case Receipt
+         * @description What the case was computed from, as SHA-256 digests: input, chain responses,
+         *     label database, model, code, and the findings fingerprint.
+         */
+        get: operations["get_case_receipt_api_cases__case_id__receipt_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cases/{case_id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Case
+         * @description Trace the wallet again from the cached chain responses only (never the network)
+         *     and compare the findings fingerprint with the receipt's.
+         */
+        post: operations["verify_case_api_cases__case_id__verify_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -328,6 +477,81 @@ export interface components {
             /** Case Id */
             case_id?: string | null;
         };
+        /**
+         * AuditEntry
+         * @description One request to the API: who, what, on which case / wallet / exchange / request.
+         */
+        AuditEntry: {
+            /** Seq */
+            seq: number;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Officer
+             * @description User name; null = not signed in
+             */
+            officer?: string | null;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "audit.view" | "auth.login" | "auth.logout" | "api.other";
+            /**
+             * Target
+             * @description case id, `chain:address`, exchange name, request id, search text or user name, by action
+             */
+            target?: string | null;
+            /** Method */
+            method: string;
+            /** Path */
+            path: string;
+            /**
+             * Status
+             * @description HTTP status of the reply (401 = refused, not signed in)
+             */
+            status: number;
+            /** Client */
+            client?: string | null;
+            /** Detail */
+            detail?: {
+                [key: string]: unknown;
+            } | null;
+            /** Prev Hash */
+            prev_hash: string;
+            /**
+             * Hash
+             * @description SHA-256 over this row and prev_hash
+             */
+            hash: string;
+        };
+        /** AuditHead */
+        AuditHead: {
+            /** Seq */
+            seq: number;
+            /** Hash */
+            hash: string;
+            /** At */
+            at?: string | null;
+        };
+        /** AuditPage */
+        AuditPage: {
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /**
+             * Items
+             * @description Newest first
+             */
+            items: components["schemas"]["AuditEntry"][];
+            /** @description With `?verify=true`: every hash recomputed */
+            chain?: components["schemas"]["ChainCheck"] | null;
+        };
         /** Candidate */
         Candidate: {
             /** Vasp */
@@ -531,6 +755,20 @@ export interface components {
             /** Edges */
             edges: components["schemas"]["GraphEdge"][];
         };
+        /**
+         * CaseInput
+         * @description The question a case answers (everything else a trace depends on is code).
+         */
+        CaseInput: {
+            /** Address */
+            address: string;
+            /** Chain */
+            chain: string;
+            /** Max Hops */
+            max_hops: number;
+            /** Since */
+            since?: string | null;
+        };
         /** CaseList */
         CaseList: {
             /** Total */
@@ -581,6 +819,18 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+        };
+        /** ChainCheck */
+        ChainCheck: {
+            /** Ok */
+            ok: boolean;
+            /** Rows */
+            rows: number;
+            /** Broken At */
+            broken_at?: number | null;
+            /** Reason */
+            reason?: string | null;
+            head: components["schemas"]["AuditHead"];
         };
         /** ChainCount */
         ChainCount: {
@@ -910,6 +1160,19 @@ export interface components {
              * @enum {string}
              */
             data_mode: "mock" | "live" | "mixed";
+            /**
+             * Auth Required
+             * @default false
+             */
+            auth_required: boolean;
+            /**
+             * Offline
+             * @description OFFLINE=1: chain data comes from the cache only
+             * @default false
+             */
+            offline: boolean;
+            /** Git Commit */
+            git_commit?: string | null;
         };
         /**
          * Hop
@@ -1109,6 +1372,32 @@ export interface components {
              */
             label?: string | null;
         };
+        /** Login */
+        Login: {
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
+        };
+        /** LoginResult */
+        LoginResult: {
+            /**
+             * Token
+             * @description Send as `Authorization: Bearer <token>`. The same token is set as an HttpOnly session cookie
+             */
+            token: string;
+            /**
+             * Token Type
+             * @constant
+             */
+            token_type: "bearer";
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            officer: components["schemas"]["OfficerOut"];
+        };
         /**
          * LookAlikes
          * @description The hard negatives: wallets that are not deposit addresses but forward as much.
@@ -1125,6 +1414,15 @@ export interface components {
             flagged: number;
             /** False Positive Rate */
             false_positive_rate?: number | null;
+        };
+        /** Me */
+        Me: {
+            /**
+             * Auth Required
+             * @description false: no officer account exists (or login is switched off), so every route answers without one
+             */
+            auth_required: boolean;
+            officer?: components["schemas"]["OfficerOut"] | null;
         };
         /** ModelInfo */
         ModelInfo: {
@@ -1246,6 +1544,36 @@ export interface components {
              */
             reasons: components["schemas"]["ModelReason"][];
         };
+        /** OfficerOut */
+        OfficerOut: {
+            /** Username */
+            username: string;
+            /** Name */
+            name: string;
+            /** Post */
+            post?: string | null;
+        };
+        /** Ok */
+        Ok: {
+            /**
+             * Ok
+             * @constant
+             */
+            ok: true;
+        };
+        /** PageDigest */
+        PageDigest: {
+            /**
+             * Query
+             * @description The chain API request, API keys removed
+             */
+            query: string;
+            /**
+             * Sha256
+             * @description SHA-256 of the response body as it was received
+             */
+            sha256: string;
+        };
         /** Provenance */
         Provenance: {
             /** Seed */
@@ -1272,6 +1600,117 @@ export interface components {
              * @default []
              */
             notes: string[];
+            input?: components["schemas"]["CaseInput"] | null;
+            /** Input Sha256 */
+            input_sha256?: string | null;
+            /**
+             * Responses
+             * @description Every chain API response this run read, each once, sorted by request
+             */
+            responses?: components["schemas"]["PageDigest"][] | null;
+            /**
+             * Responses Sha256
+             * @description One digest over `responses`
+             */
+            responses_sha256?: string | null;
+            /** Pages */
+            pages?: number | null;
+            /**
+             * Findings Sha256
+             * @description The findings fingerprint: every figure, address and transaction hash of the result, none of its wording. `verify` must reproduce it
+             */
+            findings_sha256?: string | null;
+            /**
+             * Model Version
+             * @description Set when the deposit-address model scored a wallet in this run, e.g. model_v1/tron
+             */
+            model_version?: string | null;
+            /** Model Sha256 */
+            model_sha256?: string | null;
+            /** Git Commit */
+            git_commit?: string | null;
+            /**
+             * Git Dirty
+             * @description true: the code had uncommitted changes
+             */
+            git_dirty?: boolean | null;
+        };
+        /**
+         * Receipt
+         * @description What a case was computed from, as digests anyone can recompute. The same document
+         *     is the last page of the case file.
+         */
+        Receipt: {
+            /**
+             * Schema
+             * @description vaspfusion-receipt/1
+             */
+            schema: string;
+            /** Case Id */
+            case_id: string;
+            /** Case Ref */
+            case_ref?: string | null;
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "ATTRIBUTED" | "INSUFFICIENT_EVIDENCE" | "SANCTIONED_OR_MIXER_REACHED";
+            /** Top Vasp */
+            top_vasp?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Demo
+             * @default false
+             */
+            demo: boolean;
+            /** Seed */
+            seed: number;
+            /** Code Version */
+            code_version: string;
+            /** Git Commit */
+            git_commit?: string | null;
+            /** Git Dirty */
+            git_dirty?: boolean | null;
+            input: components["schemas"]["CaseInput"];
+            /** Input Sha256 */
+            input_sha256: string;
+            /** Pages */
+            pages: number;
+            /** Responses Sha256 */
+            responses_sha256: string;
+            /** Label Db Sha256 */
+            label_db_sha256?: string | null;
+            /** Model Version */
+            model_version?: string | null;
+            /** Model Sha256 */
+            model_sha256?: string | null;
+            /** Findings Sha256 */
+            findings_sha256: string;
+            /** Fetched At */
+            fetched_at?: string | null;
+            /**
+             * Offline Replay
+             * @default false
+             */
+            offline_replay: boolean;
+            /**
+             * Data Sources
+             * @default []
+             */
+            data_sources: string[];
+            /** Responses */
+            responses: components["schemas"]["PageDigest"][];
+            /**
+             * Receipt Sha256
+             * @description SHA-256 of every other field of this document
+             */
+            receipt_sha256: string;
         };
         /** ReliabilityBin */
         ReliabilityBin: {
@@ -1520,6 +1959,11 @@ export interface components {
             at: string;
             /** Note */
             note?: string | null;
+            /**
+             * By
+             * @description User name of the signed-in officer who made this change; null when no login was in force
+             */
+            by?: string | null;
         };
         /** TypologyFlag */
         TypologyFlag: {
@@ -1662,6 +2106,50 @@ export interface components {
              */
             routable: boolean;
         };
+        /** VerifyCheck */
+        VerifyCheck: {
+            /**
+             * Name
+             * @enum {string}
+             */
+            name: "stored_case" | "replay" | "responses" | "findings" | "labels" | "model" | "code";
+            /**
+             * Result
+             * @enum {string}
+             */
+            result: "same" | "different" | "not_checked";
+            /**
+             * Detail
+             * @description Plain English
+             */
+            detail: string;
+            /** Stored */
+            stored?: string | null;
+            /** Now */
+            now?: string | null;
+        };
+        /**
+         * VerifyResult
+         * @description A stored case traced again from the cached chain responses only, and compared.
+         */
+        VerifyResult: {
+            /** Case Id */
+            case_id: string;
+            /**
+             * Matches
+             * @description true only when the stored case still has its receipt's fingerprint, the same responses were read, and the new findings have the same fingerprint
+             */
+            matches: boolean;
+            /** Summary */
+            summary: string;
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /** Checks */
+            checks: components["schemas"]["VerifyCheck"][];
+        };
         /** WalletCaseRef */
         WalletCaseRef: {
             /** Case Id */
@@ -1716,6 +2204,118 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    login_api_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Login"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ok"];
+                };
+            };
+        };
+    };
+    me_api_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+        };
+    };
+    get_audit_api_audit_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+                officer?: string | null;
+                /** @description An action (`case.view`) or a family (`case`) */
+                action?: string | null;
+                /** @description e.g. a case id: everything done on that case */
+                target?: string | null;
+                /** @description Recompute the whole hash chain */
+                verify?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1806,6 +2406,99 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaseDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_case_pdf_api_cases__case_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The case file, A4 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_case_receipt_api_cases__case_id__receipt_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Receipt"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_case_api_cases__case_id__verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerifyResult"];
                 };
             };
             /** @description Validation Error */

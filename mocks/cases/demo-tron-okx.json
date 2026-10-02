@@ -390,6 +390,34 @@
     "data_sources": [
       "TronGrid (demo replay)",
       "wallet-attribution labels"
-    ]
+    ],
+    "input": {
+      "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+      "chain": "tron",
+      "max_hops": 3,
+      "since": null
+    },
+    "input_sha256": "2d4b56f456b956615ac8d607ce695a9c0fac49936c135c24313681906d2f3c94",
+    "responses": [
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-okx/transfers?page=1",
+        "sha256": "36b79284a23daf82931e14098b13949796da737ffaff4b0f41419fa318baf949"
+      },
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-okx/transfers?page=2",
+        "sha256": "1d7d253cf1fc95c82ac89a739df5b1d597ac41c344db89d7b30dce4c0cc1d404"
+      },
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-okx/transfers?page=3",
+        "sha256": "a023823395d2c4cdf6dddeea90514ba9fe0d596cf4eb6be5a59ba59671553f88"
+      }
+    ],
+    "responses_sha256": "010820cad3ad63d93357c6111335ac2673492b81bdc91bf8bfd2f8fdd2de56d4",
+    "pages": 3,
+    "model_version": null,
+    "model_sha256": null,
+    "git_commit": null,
+    "git_dirty": null,
+    "findings_sha256": "e8e7d8250d07f68a9a4c37e2a17e73fcd441ba893529d74e3cd5c2ce215ef2ae"
   }
 }

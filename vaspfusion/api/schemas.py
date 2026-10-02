@@ -421,6 +421,8 @@ class StatusEvent(_M):
     status: RequestStatus
     at: datetime
     note: str | None = None
+    by: str | None = Field(None, description="User name of the signed-in officer who made "
+                                             "this change; null when no login was in force")
 
 
 class RequestSummary(_M):
@@ -731,8 +733,89 @@ class VerifyResult(_M):
     checks: list[VerifyCheck]
 
 
+# ------------------------------------------------------------------ login / audit (B9)
+class Login(_M):
+    username: str = Field(max_length=200)
+    password: str = Field(max_length=1000)
+
+
+class OfficerOut(_M):
+    username: str
+    name: str
+    post: str | None = None
+
+
+class LoginResult(_M):
+    token: str = Field(description="Send as `Authorization: Bearer <token>`. The same token "
+                                   "is set as an HttpOnly session cookie")
+    token_type: Literal["bearer"]
+    expires_at: datetime
+    officer: OfficerOut
+
+
+class Me(_M):
+    auth_required: bool = Field(description="false: no officer account exists (or login is "
+                                            "switched off), so every route answers without one")
+    officer: OfficerOut | None = None
+
+
+class Ok(_M):
+    ok: Literal[True]
+
+
+AuditAction = Literal[
+    "case.open", "case.list", "case.view", "case.export", "case.receipt", "case.verify",
+    "wallet.view", "label.search", "desk.view", "vasp.view", "request.draft", "request.view",
+    "request.status", "request.export", "dashboard.view", "model.view", "audit.view",
+    "auth.login", "auth.logout", "api.other"]
+
+
+class AuditEntry(_M):
+    """One request to the API: who, what, on which case / wallet / exchange / request."""
+    seq: int
+    at: datetime
+    officer: str | None = Field(None, description="User name; null = not signed in")
+    action: AuditAction
+    target: str | None = Field(None, description=(
+        "case id, `chain:address`, exchange name, request id, search text or user name, "
+        "by action"))
+    method: str
+    path: str
+    status: int = Field(description="HTTP status of the reply (401 = refused, not signed in)")
+    client: str | None = None
+    detail: dict | None = None
+    prev_hash: str
+    hash: str = Field(description="SHA-256 over this row and prev_hash")
+
+
+class AuditHead(_M):
+    seq: int
+    hash: str
+    at: datetime | None = None
+
+
+class ChainCheck(_M):
+    ok: bool
+    rows: int
+    broken_at: int | None = None
+    reason: str | None = None
+    head: AuditHead
+
+
+class AuditPage(_M):
+    total: int
+    limit: int
+    offset: int
+    items: list[AuditEntry] = Field(description="Newest first")
+    chain: ChainCheck | None = Field(None, description="With `?verify=true`: every hash "
+                                     "recomputed")
+
+
 class Health(_M):
     status: Literal["ok"]
     version: str
     label_db: bool
     data_mode: Literal["mock", "live", "mixed"]
+    auth_required: bool = False
+    offline: bool = Field(False, description="OFFLINE=1: chain data comes from the cache only")
+    git_commit: str | None = None

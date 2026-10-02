@@ -1,0 +1,7 @@
+{
+  "_notice": "The demonstration login for the offline Docker image. Published in the repository, so it protects nothing: never use it on a machine that holds real cases. `python -m vaspfusion.cli officer demo` creates it; `officer disable demo.officer` removes it.",
+  "username": "demo.officer",
+  "name": "Insp. D. Officer",
+  "post": "Cyber Crime PS (demonstration)",
+  "password": "vasp-fusion-demo-2026"
+}

@@ -229,6 +229,34 @@
     "data_sources": [
       "TronGrid (demo replay)",
       "OFAC SDN (0xB10C list)"
-    ]
+    ],
+    "input": {
+      "address": "TLoXu5WereZCDVGXtmiCd9TNbfjuF4krPi",
+      "chain": "tron",
+      "max_hops": 3,
+      "since": null
+    },
+    "input_sha256": "8d2309dcb18b7b2f8e1ffee3ec776ff3c5305cae24c063e3201d5d786b683889",
+    "responses": [
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-sanctioned/transfers?page=1",
+        "sha256": "39cbd0fc4416f74ddf1db64f9829ecda52d34a5a26b850160b69d9b73dbf5ad6"
+      },
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-sanctioned/transfers?page=2",
+        "sha256": "ae7388744f347c96c4e55d87ae8ee45f24e888d3e79a04f4d8a72cc2c4b4df57"
+      },
+      {
+        "query": "https://api.trongrid.io/demo/demo-tron-sanctioned/transfers?page=3",
+        "sha256": "c1b0204688c6b34121c8d3ab6f25d600c33b90d5f5d43f199ab26948568211fd"
+      }
+    ],
+    "responses_sha256": "d560c9b12208964277797f0d67296758b4c104ab7c7eb6a1a93d2dd8ec99d59e",
+    "pages": 3,
+    "model_version": null,
+    "model_sha256": null,
+    "git_commit": null,
+    "git_dirty": null,
+    "findings_sha256": "c95fe85af92e9b867f2d8c9367b0928fb0fd402209c3292bd231f7e7967ebbeb"
   }
 }

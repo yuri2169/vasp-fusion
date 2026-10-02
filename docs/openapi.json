@@ -24,6 +24,201 @@
         }
       }
     },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login",
+        "description": "Sign in. The token comes back in the body and as an HttpOnly session cookie; either\nis accepted on later requests. 401 for a wrong user name or password (the same words\nfor both), 429 while an account is locked after five wrong passwords.",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "description": "Clear the session cookie. A token already handed out stays valid until it expires\n(8 hours) or its account is disabled.",
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Me",
+        "description": "Who is signed in, and whether a login is required at all. Always answers.",
+        "operationId": "me_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/audit": {
+      "get": {
+        "summary": "Get Audit",
+        "description": "The audit log, newest first: who looked up what, and when.",
+        "operationId": "get_audit_api_audit_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "officer",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Officer"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "An action (`case.view`) or a family (`case`)",
+              "title": "Action"
+            },
+            "description": "An action (`case.view`) or a family (`case`)"
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "e.g. a case id: everything done on that case",
+              "title": "Target"
+            },
+            "description": "e.g. a case id: everything done on that case"
+          },
+          {
+            "name": "verify",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Recompute the whole hash chain",
+              "default": false,
+              "title": "Verify"
+            },
+            "description": "Recompute the whole hash chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases": {
       "post": {
         "summary": "Create Case",
@@ -977,6 +1172,203 @@
         ],
         "title": "Alert"
       },
+      "AuditEntry": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          },
+          "officer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Officer",
+            "description": "User name; null = not signed in"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "case.open",
+              "case.list",
+              "case.view",
+              "case.export",
+              "case.receipt",
+              "case.verify",
+              "wallet.view",
+              "label.search",
+              "desk.view",
+              "vasp.view",
+              "request.draft",
+              "request.view",
+              "request.status",
+              "request.export",
+              "dashboard.view",
+              "model.view",
+              "audit.view",
+              "auth.login",
+              "auth.logout",
+              "api.other"
+            ],
+            "title": "Action"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target",
+            "description": "case id, `chain:address`, exchange name, request id, search text or user name, by action"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "HTTP status of the reply (401 = refused, not signed in)"
+          },
+          "client": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "prev_hash": {
+            "type": "string",
+            "title": "Prev Hash"
+          },
+          "hash": {
+            "type": "string",
+            "title": "Hash",
+            "description": "SHA-256 over this row and prev_hash"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "seq",
+          "at",
+          "action",
+          "method",
+          "path",
+          "status",
+          "prev_hash",
+          "hash"
+        ],
+        "title": "AuditEntry",
+        "description": "One request to the API: who, what, on which case / wallet / exchange / request."
+      },
+      "AuditHead": {
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "title": "Seq"
+          },
+          "hash": {
+            "type": "string",
+            "title": "Hash"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "seq",
+          "hash"
+        ],
+        "title": "AuditHead"
+      },
+      "AuditPage": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEntry"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "Newest first"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChainCheck"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "With `?verify=true`: every hash recomputed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "AuditPage"
+      },
       "Candidate": {
         "properties": {
           "vasp": {
@@ -1738,6 +2130,51 @@
           "created_at"
         ],
         "title": "CaseSummary"
+      },
+      "ChainCheck": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "rows": {
+            "type": "integer",
+            "title": "Rows"
+          },
+          "broken_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broken At"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "head": {
+            "$ref": "#/components/schemas/AuditHead"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ok",
+          "rows",
+          "head"
+        ],
+        "title": "ChainCheck"
       },
       "ChainCount": {
         "properties": {
@@ -2609,6 +3046,28 @@
               "mixed"
             ],
             "title": "Data Mode"
+          },
+          "auth_required": {
+            "type": "boolean",
+            "title": "Auth Required",
+            "default": false
+          },
+          "offline": {
+            "type": "boolean",
+            "title": "Offline",
+            "description": "OFFLINE=1: chain data comes from the cache only",
+            "default": false
+          },
+          "git_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Commit"
           }
         },
         "additionalProperties": false,
@@ -3156,6 +3615,58 @@
         ],
         "title": "LetterWallet"
       },
+      "Login": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Login"
+      },
+      "LoginResult": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token",
+            "description": "Send as `Authorization: Bearer <token>`. The same token is set as an HttpOnly session cookie"
+          },
+          "token_type": {
+            "type": "string",
+            "const": "bearer",
+            "title": "Token Type"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "officer": {
+            "$ref": "#/components/schemas/OfficerOut"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "token",
+          "token_type",
+          "expires_at",
+          "officer"
+        ],
+        "title": "LoginResult"
+      },
       "LookAlikes": {
         "properties": {
           "forwarding_at_least": {
@@ -3192,6 +3703,31 @@
         ],
         "title": "LookAlikes",
         "description": "The hard negatives: wallets that are not deposit addresses but forward as much."
+      },
+      "Me": {
+        "properties": {
+          "auth_required": {
+            "type": "boolean",
+            "title": "Auth Required",
+            "description": "false: no officer account exists (or login is switched off), so every route answers without one"
+          },
+          "officer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OfficerOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "auth_required"
+        ],
+        "title": "Me"
       },
       "ModelInfo": {
         "properties": {
@@ -3496,6 +4032,51 @@
         ],
         "title": "ModelScore",
         "description": "What the deposit-address model said about one address (B6)."
+      },
+      "OfficerOut": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "post": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Post"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "name"
+        ],
+        "title": "OfficerOut"
+      },
+      "Ok": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true,
+            "title": "Ok"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "title": "Ok"
       },
       "PageDigest": {
         "properties": {
@@ -4546,6 +5127,18 @@
               }
             ],
             "title": "Note"
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By",
+            "description": "User name of the signed-in officer who made this change; null when no login was in force"
           }
         },
         "additionalProperties": false,
