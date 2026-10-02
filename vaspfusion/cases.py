@@ -150,19 +150,14 @@ def _candidate(c: Candidate) -> dict:
 
 
 def _request_facts(c: Candidate) -> dict:
-    """What a request to this VASP is built from (B8), exact where the share is rounded.
-    The account to ask about is the labelled deposit address itself, or else the wallet
-    one hop before the exchange's wallet, but only if it passed on everything it got
-    (the same rule as the "draft a request" next step)."""
-    account, into = c.deposit_address, c.path_edges[-1] if c.path_edges else None
-    if c.direction == "outbound" and c.passed_all and c.label.kind != "deposit" \
-            and c.last_hop is not None and len(c.path_edges) > 1:
-        account, into = c.last_hop, c.path_edges[-2]
-    reached = into.transfer.block_time.astimezone(timezone.utc) if into else None
-    return {"amount": _f(c.amount), "account_address": account,
-            "reached_at": reached.strftime("%Y-%m-%dT%H:%M:%SZ") if reached else None,
-            "entry_label": c.label.label, "entry_kind": c.label.kind,
-            "entry_addresses": [n.address for n in c.entries]}
+    """What a request to this VASP is built from (B8): the exact sum, and the wallets to
+    ask about, each with its own share of it (attribute/rules.py::_request_wallets)."""
+    return {"amount": _f(c.amount),
+            "request_wallets": [{
+                **w, "amount": _f(w["amount"]),
+                "reached_at": w["reached_at"].astimezone(timezone.utc)
+                                             .strftime("%Y-%m-%dT%H:%M:%SZ")}
+                for w in c.request_wallets]}
 
 
 def _where(tr: TraceResult) -> list[dict]:

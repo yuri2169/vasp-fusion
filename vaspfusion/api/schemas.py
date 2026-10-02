@@ -35,7 +35,7 @@ TypologyCode = Literal["peel_chain", "fan_out", "fan_in", "rapid_forwarding",
 Severity = Literal["info", "warn", "high"]
 EvidenceKind = Literal["label", "path", "sweep", "gas_payer", "model", "counterfactual"]
 RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered",
-                        "freeze_confirmed", "refused"]
+                        "freeze_confirmed", "refused", "withdrawn"]
 Ask = Literal["kyc", "transactions", "freeze", "preservation"]
 FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
 Direction = Literal["outbound", "inbound"]
@@ -187,6 +187,22 @@ class EvidenceItem(_M):
     weight: float | None = Field(None, description="Signed contribution (SHAP or rule)")
 
 
+class RequestWallet(_M):
+    address: str = Field(description=(
+        "A labelled deposit address; or the unlabelled wallet that passed everything it "
+        "got on to the VASP's wallet in paid_into; or the VASP's own labelled wallet"))
+    amount: float = Field(description="Traced funds through this wallet, in the case's asset")
+    paid_into: str | None = Field(None, description=(
+        "Set when address carries no label: the VASP's labelled wallet it paid into"))
+    tier: Tier = Field(description="Of the label that names the VASP")
+    kind: Kind
+    label: str | None = None
+    reached_at: datetime = Field(description="When the traced funds first reached address")
+    tx_hashes: list[str] = Field(description=(
+        "The transfers that brought the funds to address and, for a pass-through wallet, "
+        "on into the VASP's wallet; in time order"))
+
+
 class Candidate(_M):
     vasp: str
     category: Category
@@ -220,16 +236,10 @@ class Candidate(_M):
     amount: float | None = Field(None, description=(
         "In the case's asset: the traced funds that reached this VASP (exact; "
         "share_of_funds is rounded)"))
-    account_address: str | None = Field(None, description=(
-        "The wallet a request asks the VASP about: deposit_address itself, or the wallet "
-        "one hop before it when that wallet passed on everything it received"))
-    reached_at: datetime | None = Field(None, description=(
-        "When the traced funds first reached account_address on this route"))
-    entry_label: str | None = Field(None, description="The label text on deposit_address")
-    entry_kind: Kind | None = None
-    entry_addresses: list[str] = Field([], description=(
-        "Every labelled wallet of this VASP the funds reached, largest first; "
-        "deposit_address is the first"))
+    request_wallets: list[RequestWallet] | None = Field(None, description=(
+        "The wallets a request to this VASP lists, largest first; their amounts add up to "
+        "`amount`. Empty for an inbound candidate and for the VASP's own wallet (hops 0). "
+        "null in a case stored before B8: trace it again to route it to the desk"))
 
 
 class TypologyFlag(_M):
@@ -341,6 +351,9 @@ class DirectorySource(_M):
     field: str = Field(description="The directory field this source was read for")
     title: str
     publisher: str | None = None
+    kind: Literal["official", "exchange", "news"] = Field("official", description=(
+        "official: a government or regulator document. exchange: the exchange's own "
+        "page. news: a press report. Show it: a self-reported fact is weaker"))
     url: str
     published: date | None = None
     accessed: date

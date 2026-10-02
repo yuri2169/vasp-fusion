@@ -1018,69 +1018,20 @@
             "title": "Amount",
             "description": "In the case's asset: the traced funds that reached this VASP (exact; share_of_funds is rounded)"
           },
-          "account_address": {
+          "request_wallets": {
             "anyOf": [
               {
-                "type": "string"
+                "items": {
+                  "$ref": "#/components/schemas/RequestWallet"
+                },
+                "type": "array"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Account Address",
-            "description": "The wallet a request asks the VASP about: deposit_address itself, or the wallet one hop before it when that wallet passed on everything it received"
-          },
-          "reached_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reached At",
-            "description": "When the traced funds first reached account_address on this route"
-          },
-          "entry_label": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Entry Label",
-            "description": "The label text on deposit_address"
-          },
-          "entry_kind": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "hot",
-                  "cold",
-                  "deposit",
-                  "reserve",
-                  "unknown"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Entry Kind"
-          },
-          "entry_addresses": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Entry Addresses",
-            "description": "Every labelled wallet of this VASP the funds reached, largest first; deposit_address is the first",
-            "default": []
+            "title": "Request Wallets",
+            "description": "The wallets a request to this VASP lists, largest first; their amounts add up to `amount`. Empty for an inbound candidate and for the VASP's own wallet (hops 0). null in a case stored before B8: trace it again to route it to the desk"
           }
         },
         "additionalProperties": false,
@@ -1834,7 +1785,8 @@
                   "acknowledged",
                   "answered",
                   "freeze_confirmed",
-                  "refused"
+                  "refused",
+                  "withdrawn"
                 ]
               },
               {
@@ -1900,6 +1852,17 @@
               }
             ],
             "title": "Publisher"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "official",
+              "exchange",
+              "news"
+            ],
+            "title": "Kind",
+            "description": "official: a government or regulator document. exchange: the exchange's own page. news: a press report. Show it: a self-reported fact is weaker",
+            "default": "official"
           },
           "url": {
             "type": "string",
@@ -3562,7 +3525,8 @@
               "acknowledged",
               "answered",
               "freeze_confirmed",
-              "refused"
+              "refused",
+              "withdrawn"
             ],
             "title": "Status"
           },
@@ -3620,7 +3584,8 @@
                 "acknowledged",
                 "answered",
                 "freeze_confirmed",
-                "refused"
+                "refused",
+                "withdrawn"
               ]
             },
             "type": "array",
@@ -3787,7 +3752,8 @@
               "acknowledged",
               "answered",
               "freeze_confirmed",
-              "refused"
+              "refused",
+              "withdrawn"
             ],
             "title": "Status"
           },
@@ -3833,7 +3799,8 @@
               "acknowledged",
               "answered",
               "freeze_confirmed",
-              "refused"
+              "refused",
+              "withdrawn"
             ],
             "title": "Status"
           },
@@ -3873,6 +3840,90 @@
           "created_at"
         ],
         "title": "RequestSummary"
+      },
+      "RequestWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address",
+            "description": "A labelled deposit address; or the unlabelled wallet that passed everything it got on to the VASP's wallet in paid_into; or the VASP's own labelled wallet"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "description": "Traced funds through this wallet, in the case's asset"
+          },
+          "paid_into": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Into",
+            "description": "Set when address carries no label: the VASP's labelled wallet it paid into"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "published_por",
+              "curated",
+              "explorer_tag",
+              "derived"
+            ],
+            "title": "Tier",
+            "description": "Of the label that names the VASP"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "hot",
+              "cold",
+              "deposit",
+              "reserve",
+              "unknown"
+            ],
+            "title": "Kind"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "reached_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Reached At",
+            "description": "When the traced funds first reached address"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "description": "The transfers that brought the funds to address and, for a pass-through wallet, on into the VASP's wallet; in time order"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "amount",
+          "tier",
+          "kind",
+          "reached_at",
+          "tx_hashes"
+        ],
+        "title": "RequestWallet"
       },
       "RiskCoveragePoint": {
         "properties": {
@@ -3981,7 +4032,8 @@
               "acknowledged",
               "answered",
               "freeze_confirmed",
-              "refused"
+              "refused",
+              "withdrawn"
             ],
             "title": "Status"
           },

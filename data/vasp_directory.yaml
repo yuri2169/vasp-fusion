@@ -5,102 +5,125 @@
 # Every source below was opened and read on the `accessed` date. The loader
 # (vaspfusion/desk/directory.py) refuses a fact without a source.
 #
-# Fact fields: legal_name, fiu_ind_registered (+ fiu_ind_as_of, the date the source
-# speaks for), jurisdiction, le_request_channel, notes.
+# Fact fields: legal_name, fiu_ind_registered (+ fiu_ind_as_of, which must be the date
+# its source was published), jurisdiction, le_request_channel. Each note carries its own
+# source. Every source has a kind: official (government or regulator), exchange (the
+# exchange's own page) or news.
 #
 # What `fiu_ind_registered` means here:
 #   true  = a source states the entity is registered with FIU-IND as a reporting entity
 #   false = FIU-IND itself named the entity as operating without registering, on that date
-#   blank = no source read, or the only source is too old to speak for today
+#   blank = no source read, or the only source is a 2023 notice that is known to be out
+#           of date (two of the nine exchanges it names have registered since)
+# A registration is shown with its date and is a claim about that date only: the letter's
+# review notes ask the officer to confirm it is current, and say when the only source is
+# the exchange's own statement.
 # FIU-IND does not publish a register on its website (checked 2 Oct 2026); the one
 # official list of names is the annexure to a Lok Sabha answer of 4 Dec 2023.
 # Registration is always shown with its date. It can have changed since.
 
 sources:
   lok-sabha-usq-112:
+    kind: official
     title: "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)"
     publisher: "Ministry of Finance, Department of Revenue (Lok Sabha)"
     url: "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals"
     published: 2023-12-04
     accessed: 2026-10-02
   pib-2023-12-28:
+    kind: official
     title: "FIU IND issues compliance Show Cause Notices to nine offshore Virtual Digital Assets Service Providers"
     publisher: "Press Information Bureau, Ministry of Finance (Release ID 1991372)"
     url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1991372"
     published: 2023-12-28
     accessed: 2026-10-02
   pib-2025-10-01:
+    kind: official
     title: "FIU IND issues notices for non-compliance to 25 offshore Virtual Digital Assets Service Providers under Section 13 of the PML Act, 2002"
     publisher: "Press Information Bureau, Ministry of Finance (Release ID 2173758)"
     url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2173758"
     published: 2025-10-01
     accessed: 2026-10-02
   fiu-order-binance:
+    kind: official
     title: "FIU-IND Order-in-Original No. 10/DIR/FIU-IND/2024 in the matter of Binance u/s 13 PMLA, dated 19.06.2024 (summary)"
     publisher: "Financial Intelligence Unit - India"
     url: "https://fiuindia.gov.in/pdfs/judgements/Binance_Order_10_2024.pdf"
     published: 2024-06-19
     accessed: 2026-10-02
   fiu-order-kucoin:
+    kind: official
     title: "FIU-IND Order-in-Original No. 08/DIR/FIU-IND/2024 in the matter of Peken Global Limited (\"Kucoin\") u/s 13 PMLA, dated 22.03.2024 (summary)"
     publisher: "Financial Intelligence Unit - India"
     url: "https://fiuindia.gov.in/pdfs/judgements/PGL_Order_08_2024.pdf"
     published: 2024-03-22
     accessed: 2026-10-02
   fiu-order-bybit:
+    kind: official
     title: "FIU-IND Order-in-Original No. 15/DIR/FIU-IND/2024 in the matter of Bybit Fintech Limited u/s 13 PMLA, dated 31.01.2025 (summary)"
     publisher: "Financial Intelligence Unit - India"
     url: "https://fiuindia.gov.in/pdfs/judgements/Bybit_Order_15_2024.pdf"
     published: 2025-01-31
     accessed: 2026-10-02
   binance-blog-india:
+    kind: exchange
     title: "Binance Achieves Its 19th Global Regulatory Milestone With Registration in India"
     publisher: "Binance (the exchange's own statement)"
     url: "https://www.binance.com/en-IN/blog/regulation/binance-achieves-its-19th-global-regulatory-milestone-with-registration-in-india-3022489348045738409"
     published: 2024-08-15
     accessed: 2026-10-02
   kucoin-fiu:
+    kind: exchange
     title: "KuCoin's FIU Registration"
     publisher: "KuCoin (the exchange's own statement)"
     url: "https://www.kucoin.com/support/30399751079449"
+    published: 2025-12-16
     accessed: 2026-10-02
   binance-le:
+    kind: exchange
     title: "Government Law Enforcement Request System"
     publisher: "Binance"
     url: "https://www.binance.com/en/support/law-enforcement"
     accessed: 2026-10-02
   okx-le:
+    kind: exchange
     title: "OKX Law Enforcement Request Guide"
     publisher: "OKX"
     url: "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide"
     accessed: 2026-10-02
   kucoin-le:
+    kind: exchange
     title: "Law Enforcement Request Guide"
     publisher: "KuCoin"
     url: "https://www.kucoin.com/legal/law-enforcement-request-guidelines"
     accessed: 2026-10-02
   bitget-le:
+    kind: exchange
     title: "Law Enforcement Request Guide"
     publisher: "Bitget"
     url: "https://www.bitget.com/support/articles/12560603800342"
     accessed: 2026-10-02
   bitget-sahyog-news:
+    kind: news
     title: "Bitget Joins India's Sahyog Portal to Support Law Enforcement Investigations"
     publisher: "DeFi Planet, republished in Bitget's news section (a news report, not a statement by Bitget or I4C)"
     url: "https://www.bitget.com/news/detail/12560604830717"
     published: 2025-06-24
     accessed: 2026-10-02
   htx-le:
+    kind: exchange
     title: "HTX - Law Enforcement Requests"
     publisher: "HTX"
     url: "https://www.htx.com/terms/legal"
     accessed: 2026-10-02
   gate-le:
+    kind: exchange
     title: "Gate Law Enforcement Request Guidelines"
     publisher: "Gate"
     url: "https://www.gate.com/legal/law-enforcement"
     accessed: 2026-10-02
   bitfinex-le:
+    kind: exchange
     title: "Bitfinex Law Enforcement Requests Policy"
     publisher: "Bitfinex"
     url: "https://www.bitfinex.com/legal/general/law-enforcement-requests-policy/"
@@ -112,31 +135,26 @@ vasps:
     legal_name: "Neblio Technologies Private Limited"
     fiu_ind_registered: true
     fiu_ind_as_of: 2023-12-04
-    jurisdiction: "India"
     cites:
       legal_name: [lok-sabha-usq-112]
       fiu_ind_registered: [lok-sabha-usq-112]
-      jurisdiction: [lok-sabha-usq-112]
 
   - name: WazirX
     legal_name: "Zanmai Labs Pvt Ltd"
     fiu_ind_registered: true
     fiu_ind_as_of: 2023-12-04
-    jurisdiction: "India"
     cites:
       legal_name: [lok-sabha-usq-112]
       fiu_ind_registered: [lok-sabha-usq-112]
-      jurisdiction: [lok-sabha-usq-112]
 
   - name: CoinSwitch
+    aliases: [Coinswitch]
     legal_name: "Bitcipher Labs LLP"
     fiu_ind_registered: true
     fiu_ind_as_of: 2023-12-04
-    jurisdiction: "India"
     cites:
       legal_name: [lok-sabha-usq-112]
       fiu_ind_registered: [lok-sabha-usq-112]
-      jurisdiction: [lok-sabha-usq-112]
 
   # ---------------------------------------------------------------- offshore
   - name: Binance
@@ -145,12 +163,13 @@ vasps:
     fiu_ind_as_of: 2024-08-15
     le_request_channel: "https://app.kodexglobal.com/binance/signup"
     notes:
-      - "Registration is Binance's own statement of 15 Aug 2024; no official list naming Binance was found."
-      - "FIU-IND's order of 19 Jun 2024 (penalty Rs 18.82 crore under section 13 PMLA) names Binance Investments Co., Ltd (Seychelles), Binance Holdings Limited (Cayman Islands) and Binance (Switzerland) AG."
+      - text: "Registration is Binance's own statement of 15 Aug 2024; no official list naming Binance was found."
+        cites: [binance-blog-india]
+      - text: "FIU-IND's order of 19 Jun 2024 (penalty Rs 18.82 crore under section 13 PMLA) names Binance Investments Co., Ltd (Seychelles), Binance Holdings Limited (Cayman Islands) and Binance (Switzerland) AG."
+        cites: [fiu-order-binance]
     cites:
       fiu_ind_registered: [binance-blog-india]
       le_request_channel: [binance-le]
-      notes: [binance-blog-india, fiu-order-binance]
 
   - name: KuCoin
     legal_name: "Peken Global Limited"
@@ -158,62 +177,66 @@ vasps:
     fiu_ind_as_of: 2025-12-16
     le_request_channel: "https://www.kucoin.com/legal/requests"
     notes:
-      - "Registration is KuCoin's own statement (support page dated 16 Dec 2025); no official list naming KuCoin was found."
-      - "FIU-IND's order of 22 Mar 2024 (penalty Rs 34.5 lakh under section 13 PMLA) is in the matter of Peken Global Limited (\"Kucoin\")."
+      - text: "Registration is KuCoin's own statement (support page dated 16 Dec 2025); no official list naming KuCoin was found."
+        cites: [kucoin-fiu]
+      - text: "FIU-IND's order of 22 Mar 2024 (penalty Rs 34.5 lakh under section 13 PMLA) is in the matter of Peken Global Limited (\"Kucoin\")."
+        cites: [fiu-order-kucoin]
     cites:
       legal_name: [fiu-order-kucoin]
       fiu_ind_registered: [kucoin-fiu]
       le_request_channel: [kucoin-le]
-      notes: [kucoin-fiu, fiu-order-kucoin]
 
   - name: OKX
     le_request_channel: "https://app.kodexglobal.com/okx/signin"
     notes:
-      - "OKX asks that requests be addressed to \"OKX\" rather than to a specific legal entity; enforcement@okx.com is its channel for extraordinary circumstances."
+      - text: "OKX asks that requests be addressed to \"OKX\" rather than to a specific legal entity; enforcement@okx.com is its channel for extraordinary circumstances."
+        cites: [okx-le]
     cites:
       le_request_channel: [okx-le]
-      notes: [okx-le]
 
   - name: Bitget
     le_request_channel: "https://app.kodexglobal.com/bitget/signup"
     notes:
-      - "A news report of 24 Jun 2025 (DeFi Planet, republished on bitget.com) says Bitget joined I4C's Sahyog portal. Not confirmed from an official source."
+      - text: "A news report of 24 Jun 2025 (DeFi Planet, republished on bitget.com) says Bitget joined I4C's Sahyog portal. Not confirmed from an official source."
+        cites: [bitget-sahyog-news]
     cites:
       le_request_channel: [bitget-le]
-      notes: [bitget-sahyog-news]
 
   - name: HTX
     aliases: [Huobi, "HTX (Huobi)"]
     le_request_channel: "regulatory@htx-inc.com"
     notes:
-      - "Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
-      - "HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+      - text: "Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
+      - text: "HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+        cites: [htx-le]
     cites:
       le_request_channel: [htx-le]
-      notes: [pib-2023-12-28, htx-le]
 
   - name: Gate.io
     aliases: [Gate]
     le_request_channel: "regulatory@gate.com"
     notes:
-      - "Named (Gate Technology Incorporated, Cayman Islands) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
-      - "Gate asks that requests come in English from an official government email domain, with evidence of authority."
+      - text: "Named (Gate Technology Incorporated, Cayman Islands) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
+      - text: "Gate asks that requests come in English from an official government email domain, with evidence of authority."
+        cites: [gate-le]
     cites:
       le_request_channel: [gate-le]
-      notes: [pib-2023-12-28, gate-le]
 
   - name: Bitfinex
     legal_name: "iFinex Inc."
     jurisdiction: "British Virgin Islands"
     le_request_channel: "https://app.kodexglobal.com/bitfinex/signup"
     notes:
-      - "Named (iFinex Inc and BFXWW Inc., British Virgin Islands) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
-      - "Bitfinex requires a freeze request to follow local legal process and to state the duration of the freeze."
+      - text: "Named (iFinex Inc and BFXWW Inc., British Virgin Islands) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
+      - text: "Bitfinex requires a freeze request to follow local legal process and to state the duration of the freeze."
+        cites: [bitfinex-le]
     cites:
       legal_name: [bitfinex-le, pib-2023-12-28]
       jurisdiction: [pib-2023-12-28]
       le_request_channel: [bitfinex-le]
-      notes: [pib-2023-12-28, bitfinex-le]
 
   - name: Bitrue
     legal_name: "Bitrue Ltd"
@@ -228,33 +251,31 @@ vasps:
   - name: Bybit
     legal_name: "Bybit Fintech Limited"
     notes:
-      - "FIU-IND's order of 31 Jan 2025 (penalty Rs 9.27 crore under section 13 PMLA) is in the matter of Bybit Fintech Limited. No source read states whether it is registered."
+      - text: "FIU-IND's order of 31 Jan 2025 (penalty Rs 9.27 crore under section 13 PMLA) is in the matter of Bybit Fintech Limited. No source read states whether it is registered."
+        cites: [fiu-order-bybit]
     cites:
       legal_name: [fiu-order-bybit]
-      notes: [fiu-order-bybit]
 
   - name: Kraken
     legal_name: "Payward Trading Ltd"
     jurisdiction: "British Virgin Islands"
     notes:
-      - "Named in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+      - text: "Named in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
     cites:
       legal_name: [pib-2023-12-28]
       jurisdiction: [pib-2023-12-28]
-      notes: [pib-2023-12-28]
 
   - name: MEXC
     aliases: [MEXC Global]
     notes:
-      - "Named as MEXC Global (MEXC Technology Limited; Mexc Global Foundation Ltd; MEXC Global, Seychelles) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
-    cites:
-      notes: [pib-2023-12-28]
+      - text: "Named as MEXC Global (MEXC Technology Limited; Mexc Global Foundation Ltd; MEXC Global, Seychelles) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
 
   - name: Bitstamp
     notes:
-      - "Named (Bitstamp Europe S.A.; Bitstamp UK Limited; Bitstamp Global Ltd; Bitstamp USA, Inc) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
-    cites:
-      notes: [pib-2023-12-28]
+      - text: "Named (Bitstamp Europe S.A.; Bitstamp UK Limited; Bitstamp Global Ltd; Bitstamp USA, Inc) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
+        cites: [pib-2023-12-28]
 
   - name: CoinEx
     legal_name: "CoinEx Exchange"

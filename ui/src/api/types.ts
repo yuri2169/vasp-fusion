@@ -402,28 +402,10 @@ export interface components {
              */
             amount?: number | null;
             /**
-             * Account Address
-             * @description The wallet a request asks the VASP about: deposit_address itself, or the wallet one hop before it when that wallet passed on everything it received
+             * Request Wallets
+             * @description The wallets a request to this VASP lists, largest first; their amounts add up to `amount`. Empty for an inbound candidate and for the VASP's own wallet (hops 0). null in a case stored before B8: trace it again to route it to the desk
              */
-            account_address?: string | null;
-            /**
-             * Reached At
-             * @description When the traced funds first reached account_address on this route
-             */
-            reached_at?: string | null;
-            /**
-             * Entry Label
-             * @description The label text on deposit_address
-             */
-            entry_label?: string | null;
-            /** Entry Kind */
-            entry_kind?: ("hot" | "cold" | "deposit" | "reserve" | "unknown") | null;
-            /**
-             * Entry Addresses
-             * @description Every labelled wallet of this VASP the funds reached, largest first; deposit_address is the first
-             * @default []
-             */
-            entry_addresses: string[];
+            request_wallets?: components["schemas"]["RequestWallet"][] | null;
         };
         /** CaseCreate */
         CaseCreate: {
@@ -661,7 +643,7 @@ export interface components {
             /** Case Ids */
             case_ids: string[];
             /** Status */
-            status: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused") | "not_requested";
+            status: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn") | "not_requested";
             /** Next Action */
             next_action: string;
             /** Last Request Id */
@@ -684,6 +666,13 @@ export interface components {
             title: string;
             /** Publisher */
             publisher?: string | null;
+            /**
+             * Kind
+             * @description official: a government or regulator document. exchange: the exchange's own page. news: a press report. Show it: a self-reported fact is weaker
+             * @default official
+             * @enum {string}
+             */
+            kind: "official" | "exchange" | "news";
             /** Url */
             url: string;
             /** Published */
@@ -1326,7 +1315,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused";
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
             /** Case Ids */
             case_ids: string[];
             /**
@@ -1353,7 +1342,7 @@ export interface components {
              * @description The statuses a PATCH may move this request to now
              * @default []
              */
-            allowed_next: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused")[];
+            allowed_next: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn")[];
             /** @description Set once sent */
             receipt?: components["schemas"]["GatewayReceipt"] | null;
         };
@@ -1414,7 +1403,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused";
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
             /** Note */
             note?: string | null;
         };
@@ -1430,7 +1419,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused";
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
             /** Case Ids */
             case_ids: string[];
             /**
@@ -1440,6 +1429,48 @@ export interface components {
             created_at: string;
             /** Due */
             due?: string | null;
+        };
+        /** RequestWallet */
+        RequestWallet: {
+            /**
+             * Address
+             * @description A labelled deposit address; or the unlabelled wallet that passed everything it got on to the VASP's wallet in paid_into; or the VASP's own labelled wallet
+             */
+            address: string;
+            /**
+             * Amount
+             * @description Traced funds through this wallet, in the case's asset
+             */
+            amount: number;
+            /**
+             * Paid Into
+             * @description Set when address carries no label: the VASP's labelled wallet it paid into
+             */
+            paid_into?: string | null;
+            /**
+             * Tier
+             * @description Of the label that names the VASP
+             * @enum {string}
+             */
+            tier: "published_por" | "curated" | "explorer_tag" | "derived";
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "hot" | "cold" | "deposit" | "reserve" | "unknown";
+            /** Label */
+            label?: string | null;
+            /**
+             * Reached At
+             * Format: date-time
+             * @description When the traced funds first reached address
+             */
+            reached_at: string;
+            /**
+             * Tx Hashes
+             * @description The transfers that brought the funds to address and, for a pass-through wallet, on into the VASP's wallet; in time order
+             */
+            tx_hashes: string[];
         };
         /** RiskCoveragePoint */
         RiskCoveragePoint: {
@@ -1481,7 +1512,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused";
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
             /**
              * At
              * Format: date-time

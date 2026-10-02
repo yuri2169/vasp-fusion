@@ -45,20 +45,43 @@ def letter_wallet(w: dict) -> dict:
             "tier": w["tier"], "first_seen": w["reached_at"], "tx_hashes": w["tx_hashes"],
             "case_id": w["case_id"], "case_ref": w["case_ref"], "asset": w["asset"],
             "amount": w["amount"], "confidence": w["confidence"],
-            "paid_into": w["entry_address"] if w["entry_address"] != w["address"] else None,
-            "label": w["entry_label"]}
+            "paid_into": w["paid_into"], "label": w["label"]}
+
+
+def _registration_note(entry: dict) -> str:
+    name, reg = entry["name"], entry.get("fiu_ind_registered")
+    if reg is None:
+        return (f"No source was found for {name}'s FIU-IND registration. Check whether it "
+                "is a reporting entity before relying on a reply.")
+    as_of = day(entry["fiu_ind_as_of"])
+    if reg is False:
+        return (f"FIU-IND named {name} as operating without registration (as of {as_of}). "
+                "A notice under Indian law may not be answered; consider the mutual legal "
+                "assistance route.")
+    kinds = {s.get("kind") for s in entry.get("sources", [])
+             if s["field"] == "fiu_ind_registered"}
+    if kinds == {"official"}:
+        return (f"{name}'s FIU-IND registration is as of {as_of} (an official list). "
+                "Confirm it is still current.")
+    return (f"{name}'s FIU-IND registration is the exchange's own statement (as of {as_of}); "
+            "no official list naming it was found.")
 
 
 def review_notes(wallets: list[dict], entry: dict) -> list[str]:
     """What the reviewing officer should know before approving. Not sent."""
     notes = []
     for w in wallets:
-        if w["entry_address"] != w["address"]:
+        if w["paid_into"]:
             notes.append(
                 f"{w['address']} carries no label. It is named because it passed on "
                 f"everything it received from this trail to {w['vasp']}'s wallet "
-                f"{w['entry_address']}; it may be a customer's deposit address or an "
+                f"{w['paid_into']}; it may be a customer's deposit address or an "
                 "intermediary.")
+        elif w["kind"] != "deposit":
+            notes.append(
+                f"{w['address']} is {w['vasp']}'s own labelled wallet, not a customer's "
+                f"deposit address. {w['vasp']} can identify the account only from the "
+                "transactions listed for it.")
         if w["counterfactual_holds"] is False:
             notes.append(
                 f"Naming {w['vasp']} for {w['address']} rests on one label "
@@ -68,27 +91,20 @@ def review_notes(wallets: list[dict], entry: dict) -> list[str]:
             notes.append(
                 f"{w['address']} was labelled by VASP-FUSION's own rules (it sweeps into a "
                 f"labelled {w['vasp']} wallet), not by an outside source.")
-        if w["amount_usd"] is None and w["amount"] is not None:
+        if w["amount_usd"] is None:
             notes.append(f"{fmt.amount(w['amount'], w['asset'])} is not a US-dollar "
                          "stablecoin; no rupee or dollar value is stated.")
-    confident = [w["confidence"] for w in wallets if w["confidence"] is not None]
-    if confident:
-        notes.append("Confidence figures are the tool's assessment (label weight, hops and "
-                     "share of funds; calibrated only where a range is shown in the case). "
-                     "They are a lead for investigation, not proof of ownership.")
-    if entry.get("fiu_ind_registered") is False:
-        notes.append(f"FIU-IND named {entry['name']} as operating without registration "
-                     f"(as of {day(entry['fiu_ind_as_of'])}). A notice under Indian law may "
-                     "not be answered; consider the mutual legal assistance route.")
-    elif entry.get("fiu_ind_registered") is None:
-        notes.append(f"No source was found for {entry['name']}'s FIU-IND registration. "
-                     "Check whether it is a reporting entity before relying on a reply.")
+    notes.append("Confidence figures are the tool's assessment (label weight, hops and "
+                 "share of funds; calibrated only where a range is shown in the case). "
+                 "They are a lead for investigation, not proof of ownership.")
+    notes.append(_registration_note(entry))
     if not entry.get("le_request_channel"):
         notes.append(f"No published law-enforcement channel is on file for {entry['name']}.")
     if not entry.get("legal_name"):
         notes.append(f"No legal entity name is on file for {entry['name']}; the letter is "
                      "addressed to the trade name.")
-    return notes
+    notes += [f"On file for {entry['name']}: {n}" for n in entry.get("notes", [])]
+    return list(dict.fromkeys(notes))        # one wallet in two cases: say it once
 
 
 def draft_letter(*, reference: str, vasp: str, entry: dict, wallets: list[dict],
@@ -103,7 +119,7 @@ def draft_letter(*, reference: str, vasp: str, entry: dict, wallets: list[dict],
                           "complaint_no": w["complaint_no"], "wallet": w["suspect"],
                           "chain": w["chain"]})
     names = [_case_name(c) for c in cases]
-    n = len(wallets)
+    n = len({w["address"] for w in wallets})         # one wallet in two cases is one wallet
     plural = "s" if n != 1 else ""
     legal_name = entry.get("legal_name")
     to = f"The Nodal Officer, {legal_name} ({vasp})" if legal_name else f"The Nodal Officer, {vasp}"

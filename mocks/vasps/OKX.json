@@ -16,6 +16,7 @@
         "field": "le_request_channel",
         "title": "OKX Law Enforcement Request Guide",
         "publisher": "OKX",
+        "kind": "exchange",
         "url": "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide",
         "published": null,
         "accessed": "2026-10-02"
@@ -24,6 +25,7 @@
         "field": "notes",
         "title": "OKX Law Enforcement Request Guide",
         "publisher": "OKX",
+        "kind": "exchange",
         "url": "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide",
         "published": null,
         "accessed": "2026-10-02"

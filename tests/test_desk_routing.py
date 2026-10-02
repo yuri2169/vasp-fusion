@@ -24,12 +24,14 @@ def test_a_split_wallet_routes_to_both_exchanges_with_exact_amounts():
     assert (coindcx["vasp"], coindcx["address"], coindcx["tier"]) == (
         "CoinDCX", "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk", "derived")
     assert (coindcx["amount"], coindcx["amount_usd"], coindcx["asset"]) == (6000.0, 6000.0, "USDT")
-    assert coindcx["entry_address"] == coindcx["address"] and coindcx["case_ref"] == "DEMO/2026/104"
+    assert coindcx["paid_into"] is None and coindcx["case_ref"] == "DEMO/2026/104"
+    assert (coindcx["kind"], coindcx["label"]) == (
+        "deposit", "CoinDCX deposit address (derived: sweep + gas payer)")
     assert coindcx["reached_at"] == "2024-07-23T08:44:12Z"
     assert coindcx["tx_hashes"] == [
         "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae"]
     # HTX: the account is the wallet that passed everything on to HTX's published wallet
-    assert (htx["vasp"], htx["address"], htx["entry_address"], htx["tier"]) == (
+    assert (htx["vasp"], htx["address"], htx["paid_into"], htx["tier"]) == (
         "HTX", "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a", "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
         "published_por")
     assert htx["amount"] == 7000.0 and htx["counterfactual_holds"] is False
@@ -58,16 +60,50 @@ def test_a_candidate_under_the_bar_or_inbound_or_unroutable_is_never_routed():
     assert routed_wallets({**case, "status": "running"}) == []
 
 
-def test_a_case_stored_before_b8_still_routes():
+def test_a_case_stored_before_b8_is_not_routed_until_traced_again():
     case = demo_case("tron-htx-coindcx")
-    new = ("amount", "account_address", "reached_at", "entry_label", "entry_kind",
-           "entry_addresses")
-    old = {**case, "candidates": [{k: v for k, v in c.items() if k not in new}
+    old = {**case, "candidates": [{k: v for k, v in c.items()
+                                   if k not in ("amount", "request_wallets")}
                                   for c in case["candidates"]]}
-    coindcx, htx = routed_wallets(old)
-    assert coindcx["amount"] == 6000.0 and htx["amount"] == 7000.0
-    assert htx["address"] == "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu" and htx["reached_at"] is None
-    assert coindcx["tx_hashes"]
+    assert routed_wallets(old) == []
+    page = vasp_detail("CoinDCX", Directory.load(), {}, [old], [])
+    assert [(w["routable"], w["address"]) for w in page["wallets"]] == [
+        (False, "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk")]
+
+
+def test_the_exchanges_own_wallet_is_not_a_letter():
+    case = demo_case("tron-coindcx")
+    c = {**case["candidates"][0], "hops": 0, "request_wallets": []}
+    assert routed_wallets({**case, "candidates": [c]}) == []
+
+
+def test_what_an_exchange_sent_the_wallet_has_no_dollar_figure():
+    case = demo_case("tron-coindcx")
+    inbound = {**case["candidates"][0], "direction": "inbound", "amount": 5000.0,
+               "request_wallets": []}
+    page = vasp_detail("CoinDCX", Directory.load(), {}, [{**case, "candidates": [inbound]}], [])
+    assert [(w["direction"], w["amount_usd"], w["routable"]) for w in page["wallets"]] == [
+        ("inbound", None, False)]
+
+
+def test_the_rows_of_an_exchange_add_up_to_what_reached_it():
+    for cid in ("tron-coindcx", "tron-htx-coindcx", "eth-bitget"):
+        case = demo_case(cid)
+        routed = routed_wallets(case)
+        for c in case["candidates"]:
+            mine = [w["amount"] for w in routed if w["vasp"] == c["vasp"]]
+            if mine:
+                assert abs(sum(mine) - c["amount"]) < 1e-9, (cid, c["vasp"])
+
+
+def test_a_withdrawn_request_counts_for_nothing_on_the_desk():
+    cases = demo_cases("eth-bitget")
+    w = routed_wallets(cases[0])[0]
+    reqs = [_req("req-2026-0001", "Bitget", "withdrawn", [("eth-bitget", w["address"])])]
+    row = build_desk(cases, reqs, TODAY)["rows"][0]
+    assert (row["status"], row["unrequested_wallets"], row["last_request_id"]) == (
+        "not_requested", 1, None)
+    assert build_desk([], reqs, TODAY)["rows"] == []
 
 
 def test_the_desk_has_one_row_per_exchange_across_cases():

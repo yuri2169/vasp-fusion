@@ -74,6 +74,7 @@ def test_from_demo_cases_to_the_desk_to_a_sent_letter(client):
 
     draft = client.get(req["pdf_url"])
     assert draft.status_code == 200 and draft.headers["content-type"] == "application/pdf"
+    assert draft.headers["x-data-source"] == "live"
     assert draft.headers["content-disposition"] == f'inline; filename="{rid}-draft.pdf"'
     assert draft.content[:5] == b"%PDF-" and b"DRAFT - OFFICER REVIEW REQUIRED" in draft.content
     assert client.get(f"/api/requests/{rid}.pdf").content == draft.content
@@ -124,3 +125,22 @@ def test_the_mock_request_still_answers_and_its_pdf_is_marked_demo(client):
     assert r.status_code == 201 and r.headers["x-data-source"] == "mock"
     pdf = client.get("/api/requests/demo-req-okx-001/pdf")
     assert pdf.status_code == 200 and b"DEMO FIXTURE - NOT EVIDENCE" in pdf.content
+    assert pdf.headers["x-data-source"] == "mock"
+    # a demo case that does not name the exchange gets no request, mock or not
+    for cid in ("demo-eth-abstain", "demo-tron-sanctioned"):
+        r = client.post("/api/requests", json={**BODY, "vasp": "OKX", "case_ids": [cid]})
+        assert r.status_code == 422 and "does not name that exchange" in r.json()["detail"]
+    (live,) = _trace(client, "tron-coindcx")
+    r = client.post("/api/requests", json={**BODY, "case_ids": ["demo-tron-okx", live]})
+    assert r.status_code == 404                     # a demo id is not a traced case
+
+
+def test_asking_twice_is_a_409_and_a_withdrawn_draft_can_be_redone(client):
+    (cid,) = _trace(client, "tron-coindcx")
+    rid = client.post("/api/requests", json={**BODY, "case_ids": [cid]}).json()["id"]
+    again = client.post("/api/requests", json={**BODY, "case_ids": [cid]})
+    assert again.status_code == 409 and rid in again.json()["detail"]
+    gone = client.patch(f"/api/requests/{rid}", json={"status": "withdrawn"})
+    assert gone.status_code == 200 and gone.json()["allowed_next"] == []
+    assert client.post("/api/requests", json={**BODY, "case_ids": [cid]}).status_code == 201
+    assert client.get("/api/vasps/coindcx").json()["directory"]["name"] == "CoinDCX"

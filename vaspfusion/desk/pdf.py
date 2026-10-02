@@ -69,7 +69,7 @@ def _wallet_rows(letter: dict) -> list[list]:
         if w.get("label"):
             cell.append(Paragraph(f"label: {_t(w['label'])}", SMALL))
         amount = fmt.amount(w["amount"], w.get("asset")) if w.get("amount") is not None else "-"
-        conf = f"{w['confidence']:.2f}" if w.get("confidence") is not None else "-"
+        conf = fmt.prob(w["confidence"]) if w.get("confidence") is not None else "-"
         rows.append([Paragraph(str(i), CELL), cell, Paragraph(_t(amount), CELL),
                      Paragraph(_t(fmt.tier_words(w["tier"])), CELL), Paragraph(conf, CELL),
                      Paragraph(_when(w.get("first_seen")), CELL)])

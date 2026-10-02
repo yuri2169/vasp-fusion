@@ -388,9 +388,13 @@ def _demo_request_for(vasp: str) -> dict:
 @app.post("/api/requests", response_model=S.RequestDetail, status_code=201)
 def create_request(body: S.RequestCreate, response: Response):
     from ..desk.service import DeskError
-    demo_ids = {c["id"] for c in _demo_cases()}
-    if all(c in demo_ids for c in body.case_ids):     # the mock demo cases have no trace
+    demo = {c["id"]: c for c in _demo_cases()}
+    if all(c in demo for c in body.case_ids):     # the mock demo cases have no trace
         _source(response, "mock")
+        for cid in body.case_ids:                 # ...but they too must name the exchange
+            if demo[cid].get("top_vasp") != body.vasp:
+                raise HTTPException(422, f"Demo case {cid} does not support a request to "
+                                         f"{body.vasp}: it does not name that exchange.")
         return _demo_request_for(body.vasp)
     _source(response, "live")
     try:
@@ -407,16 +411,17 @@ def _request_pdf(request_id: str) -> Response:
         svc = _desk()
         req = svc.get(request_id)
         if req is not None:
-            pdf = svc.pdf(request_id)
+            pdf, kind = svc.pdf(request_id), "live"
             name = request_id + ("-draft" if req["letter"]["watermark"] else "")
         else:
             req = load_mock(f"requests/{request_id}")
             req["letter"]["watermark"] = "Demo fixture - not evidence"
-            pdf, name = letter_pdf(req), f"{request_id}-demo"
+            pdf, name, kind = letter_pdf(req), f"{request_id}-demo", "mock"
     except DeskError as e:
         raise _refused(e) from None
     return Response(pdf, media_type="application/pdf",
-                    headers={"Content-Disposition": f'inline; filename="{name}.pdf"'})
+                    headers={"Content-Disposition": f'inline; filename="{name}.pdf"',
+                             "X-Data-Source": kind})
 
 
 _PDF = {200: {"content": {"application/pdf": {}}, "description": "The request letter, A4"}}
@@ -452,8 +457,12 @@ def patch_request(request_id: str, body: S.RequestPatch, response: Response):
         except DeskError as e:
             raise _refused(e) from None
     # a mock demo request: the new status is applied to the reply, nothing persists
+    from ..desk.service import TRANSITIONS
     _source(response, "mock")
     req = load_mock(f"requests/{request_id}")
+    if body.status not in TRANSITIONS[req["status"]]:
+        raise HTTPException(409, f"A request that is {req['status']} cannot become "
+                                 f"{body.status}.")
     req["status"] = body.status
     req["status_history"].append({"status": body.status, "note": body.note,
                                   "at": datetime.now(timezone.utc).isoformat()})

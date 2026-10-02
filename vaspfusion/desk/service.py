@@ -5,13 +5,17 @@ must be approved by the officer before it can be sent, and is sent through a
 `SahyogGateway`. Its status then follows what the exchange does:
 
     drafted -> approved -> sent -> acknowledged -> answered | freeze_confirmed | refused
+    drafted | approved -> withdrawn      (a draft made by mistake; its wallets are open again)
 
 The letter and the payload are fixed when the request is drafted. Only the status,
-the watermark, the due date and (once sent) the receipt change afterwards.
+the watermark, the due date and (once sent) the receipt change afterwards. A request
+whose case has since been traced again with a different result cannot be approved or
+sent: it has to be withdrawn and drafted afresh.
 """
 from __future__ import annotations
 
 import hashlib
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Callable
@@ -24,14 +28,21 @@ from .pdf import letter_pdf
 from .routing import UNROUTABLE, build_desk, routable, routed_wallets, vasp_detail
 
 TRANSITIONS: dict[str, tuple[str, ...]] = {
-    "drafted": ("approved",),
-    "approved": ("sent", "drafted"),
+    "drafted": ("approved", "withdrawn"),
+    "approved": ("sent", "drafted", "withdrawn"),
     "sent": ("acknowledged", "answered", "freeze_confirmed", "refused"),
     "acknowledged": ("answered", "freeze_confirmed", "refused"),
     "answered": ("freeze_confirmed",),
     "freeze_confirmed": (),
     "refused": (),
+    "withdrawn": (),
 }
+# a wallet in a request with one of these statuses cannot be put in another request
+BLOCKING = ("drafted", "approved", "sent", "acknowledged", "answered", "freeze_confirmed")
+
+# One server process is assumed, as everywhere in this single-workstation tool: drafting
+# and status changes queue here, so two clicks cannot both act on the same stored state.
+_LOCK = threading.RLock()
 
 
 @dataclass(frozen=True)
@@ -55,6 +66,10 @@ def _iso(t: datetime) -> str:
     return t.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _clean(text: str, limit: int) -> str:
+    return " ".join("".join(ch if ch.isprintable() else " " for ch in text).split())[:limit]
+
+
 class DeskService:
     def __init__(self, cases, requests, directory: Directory, gateway: SahyogGateway,
                  cfg: DeskConfig = DeskConfig(),
@@ -66,29 +81,33 @@ class DeskService:
     def _all_cases(self) -> list[dict]:
         return [self.cases.get(c["id"]) for c in self.cases.list(status="done")]
 
+    def _routed(self, case: dict, vasp: str) -> list[dict]:
+        return [w for w in routed_wallets(case, canonical=self.directory.canonical)
+                if w["vasp"] == vasp]
+
     def desk(self) -> dict:
-        return build_desk(self._all_cases(), self.requests.list(), self.now().date())
+        return build_desk(self._all_cases(), self.requests.list(), self.now().date(),
+                          canonical=self.directory.canonical)
 
     def vasp(self, name: str, label_counts: dict[str, int]) -> dict:
         return vasp_detail(name, self.directory, label_counts, self._all_cases(),
                            self.requests.list())
-
-    def knows(self, name: str) -> bool:
-        """Is this exchange in the directory, a case, or a request?"""
-        vasp = self.directory.canonical(name)
-        return (vasp in self.directory.names()
-                or any(r["vasp"] == vasp for r in self.requests.list())
-                or any(c["vasp"] == vasp for case in self._all_cases()
-                       for c in case.get("candidates", [])))
 
     def get(self, request_id: str) -> dict | None:
         req = self.requests.get(request_id)
         return self._view(req) if req else None
 
     def pdf(self, request_id: str) -> bytes:
+        """The letter. Once sent, the very bytes that were submitted (while the gateway
+        still holds them and they match the recorded hash); otherwise rendered now."""
         req = self.requests.get(request_id)
         if req is None:
             raise DeskError(404, f"No request {request_id}.")
+        if req.get("receipt"):
+            sent = self.gateway.sent_pdf(request_id)
+            if sent is not None and hashlib.sha256(sent).hexdigest() == \
+                    req["payload"]["documents"][0]["sha256"]:
+                return sent
         return letter_pdf(req, req["payload"]["generated_by"]["code_version"])
 
     @staticmethod
@@ -98,10 +117,19 @@ class DeskService:
     # ------------------------------------------------------------------ draft
     def create(self, vasp: str, case_ids: list[str], asks: list[str], officer: str,
                wallets: list[str] | None = None) -> dict:
-        vasp = self.directory.canonical(vasp.strip())
-        officer = " ".join(officer.split())[:200]
+        with _LOCK:
+            return self._view(self._create(vasp, case_ids, asks, officer, wallets))
+
+    def _create(self, vasp, case_ids, asks, officer, wallets) -> dict:
+        vasp = self.directory.canonical(_clean(vasp, 100))
+        officer = _clean(officer, 200)
         if not officer:
             raise DeskError(422, "Name the officer making the request.")
+        try:
+            officer.encode("cp1252")
+        except UnicodeEncodeError:
+            raise DeskError(422, "Write the officer's name and post in Latin letters: the "
+                                 "letter's typeface cannot print other scripts.") from None
         if vasp == UNROUTABLE:
             raise DeskError(422, "The source tags this address as an exchange but names no "
                                  "owner, so there is no one to address a request to.")
@@ -115,17 +143,15 @@ class DeskService:
                 raise DeskError(404, f"No case {cid}.")
             if case.get("status") != "done":
                 raise DeskError(409, f"Case {cid} has not finished tracing.")
-            mine = [w for w in routed_wallets(case) if w["vasp"] == vasp]
+            mine = self._routed(case, vasp)
             if not mine:
-                under = [c for c in case.get("candidates", [])
-                         if c["vasp"] == vasp and not routable(c)]
-                why = (f"it reaches {vasp} only with confidence "
-                       f"{max(c['confidence'] for c in under):.2f}, under the 0.60 needed to "
-                       "name an exchange" if any(c["direction"] == "outbound" for c in under)
-                       else f"{vasp} only funded the wallet; ask it which account withdrew"
-                       if under else f"it does not reach {vasp}")
-                raise DeskError(422, f"Case {cid} does not support a request to {vasp}: {why}.")
+                raise DeskError(422, f"Case {cid} does not support a request to {vasp}: "
+                                     f"{self._why_not(case, vasp)}.")
             found += mine
+
+        asked = {(w.get("case_id"), w["address"]): r["id"]
+                 for r in self.requests.list(vasp=vasp) if r["status"] in BLOCKING
+                 for w in r["letter"]["wallets"]}
         if wallets is not None:
             known = {w["address"] for w in found}
             unknown = [a for a in wallets if a not in known]
@@ -134,6 +160,17 @@ class DeskService:
             found = [w for w in found if w["address"] in set(wallets)]
             if not found:
                 raise DeskError(422, "Choose at least one wallet.")
+            taken = [w for w in found if (w["case_id"], w["address"]) in asked]
+            if taken:
+                w = taken[0]
+                raise DeskError(409, f"{w['address']} is already asked about in "
+                                     f"{asked[(w['case_id'], w['address'])]}.")
+        else:       # the default: every wallet not yet asked about
+            fresh = [w for w in found if (w["case_id"], w["address"]) not in asked]
+            if not fresh:
+                raise DeskError(409, f"Every wallet these cases route to {vasp} is already "
+                                     f"asked about in {', '.join(sorted(set(asked.values())))}.")
+            found = fresh
 
         now = self.now()
         rid, reference = self.requests.next_id(now.year)
@@ -152,10 +189,45 @@ class DeskService:
             "receipt": None,
         }
         self.requests.save(request)
-        return self._view(request)
+        return request
+
+    def _why_not(self, case: dict, vasp: str) -> str:
+        cands = [c for c in case.get("candidates", [])
+                 if self.directory.canonical(c["vasp"]) == vasp]
+        outbound = [c for c in cands if c["direction"] == "outbound"]
+        if not cands:
+            return f"it does not reach {vasp}"
+        if not outbound:
+            return f"{vasp} only funded the wallet; ask it which account withdrew"
+        best = max(outbound, key=lambda c: c["confidence"])
+        if best["hops"] == 0:
+            return (f"the wallet is {vasp}'s own; ask {vasp} about the transfers of "
+                    "interest directly")
+        if not routable({**best, "request_wallets": [1]}):
+            return (f"it reaches {vasp} only with confidence {best['confidence']:.2f}, "
+                    "under the 0.60 needed to name an exchange")
+        return ("the case was stored before the desk existed and does not say which "
+                "wallets to ask about; trace it again")
+
+    def _still_supported(self, req: dict) -> None:
+        """A request may only go forward if every wallet in it is still what its case
+        says: the case may have been traced again since the draft."""
+        for w in req["letter"]["wallets"]:
+            case = self.cases.get(w["case_id"]) if w.get("case_id") else None
+            now = [r for r in (self._routed(case, req["vasp"]) if case else [])
+                   if (r["address"], r["paid_into"]) == (w["address"], w.get("paid_into"))]
+            if not now or now[0]["amount"] != w["amount"] or now[0]["tier"] != w["tier"]:
+                raise DeskError(409, (
+                    f"Case {w.get('case_id')} no longer supports this request for "
+                    f"{w['address']}: it was traced again or removed since the draft. "
+                    "Withdraw this request and draft a new one."))
 
     # ------------------------------------------------------------------ status
     def patch(self, request_id: str, status: str, note: str | None = None) -> dict:
+        with _LOCK:
+            return self._view(self._patch(request_id, status, note))
+
+    def _patch(self, request_id: str, status: str, note: str | None) -> dict:
         req = self.requests.get(request_id)
         if req is None:
             raise DeskError(404, f"No request {request_id}.")
@@ -164,10 +236,12 @@ class DeskService:
             raise DeskError(409, f"A request that is {req['status']} cannot become {status}. "
                             + (f"Next: {' or '.join(allowed)}." if allowed
                                else "It is closed."))
+        if status in ("approved", "sent"):
+            self._still_supported(req)
         now = self.now()
-        note = " ".join(note.split())[:500] if note else None
-        req["letter"]["watermark"] = WATERMARK if status == "drafted" else None
-        req["payload"]["draft"] = status == "drafted"
+        note = _clean(note, 500) if note else None
+        req["letter"]["watermark"] = WATERMARK if status in ("drafted", "withdrawn") else None
+        req["payload"]["draft"] = req["letter"]["watermark"] is not None
         if status == "sent":
             pdf = letter_pdf(req, req["payload"]["generated_by"]["code_version"])
             req["payload"]["documents"] = [{
@@ -186,4 +260,4 @@ class DeskService:
         req["status"] = status
         req["status_history"].append({"status": status, "at": _iso(now), "note": note})
         self.requests.save(req)
-        return self._view(req)
+        return req

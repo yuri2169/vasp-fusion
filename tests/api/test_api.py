@@ -132,11 +132,13 @@ def test_unknown_or_hostile_case_ids_are_404(client, case_id):
 def test_patching_a_request_appends_to_its_history(client):
     rid = _rel(next(p for p in MOCK_FILES if _rel(p).startswith("requests/"))).split("/")[1]
     before = client.get(f"/api/requests/{rid}").json()
-    r = client.patch(f"/api/requests/{rid}", json={"status": "sent", "note": "via SAHYOG"})
+    r = client.patch(f"/api/requests/{rid}", json={"status": "acknowledged", "note": "by email"})
     assert r.status_code == 200
-    assert r.json()["status"] == "sent"
+    assert r.json()["status"] == "acknowledged"
     assert len(r.json()["status_history"]) == len(before["status_history"]) + 1
     assert r.json()["letter"]["watermark"] is None
+    # the mock follows the same steps as a live request
+    assert client.patch(f"/api/requests/{rid}", json={"status": "drafted"}).status_code == 409
 
 
 def test_cross_origin_writes_are_refused(client):

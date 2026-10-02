@@ -8,7 +8,7 @@ under the bar, an inbound one, or an exchange tag with no owner is never routed.
 """
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 
 from ..attribute.rules import UNROUTABLE, RuleConfig
 
@@ -25,6 +25,8 @@ NEXT_ACTION = {
     "freeze_confirmed": "Freeze confirmed: record it in the case file",
     "refused": "Refused: read the reason given and escalate",
 }
+OPEN = ("drafted", "approved", "sent", "acknowledged", "answered", "freeze_confirmed",
+        "refused")                      # every status but withdrawn: the wallets were asked about
 
 
 def day(d: date | str) -> str:
@@ -37,56 +39,44 @@ def _usd(amount: float | None, asset: str | None) -> float | None:
     return amount if amount is not None and asset in USD_ASSETS else None
 
 
-def _path_hashes(candidate: dict) -> list[str]:
-    """The transactions of the route, then any by which the account passed it all on."""
-    seen: list[str] = []
-    for item in candidate.get("evidence", []):
-        if item["kind"] == "path":
-            seen += [h for h in item.get("tx_hashes", []) if h not in seen]
-    return seen
-
-
-def _amount(case: dict, candidate: dict) -> float | None:
-    if candidate.get("amount") is not None:
-        return candidate["amount"]
-    # a case stored before B8: the exact sum is in where_funds_went, the share is rounded
-    for part in case.get("where_funds_went", []):
-        if part["kind"] == "vasp" and part["name"] == candidate["vasp"]:
-            return part["amount"]
-    return None
-
-
-def candidate_wallet(case: dict, c: dict) -> dict:
-    """One candidate of a case as a wallet row (routable or not)."""
-    amount = _amount(case, c)
-    return {
-        "vasp": c["vasp"], "category": c["category"], "direction": c["direction"],
-        "case_id": case["id"], "case_ref": case.get("case_ref"),
-        "complaint_no": case.get("complaint_no"), "chain": case["chain"],
-        "suspect": case["address"],
-        "address": c.get("account_address") or c["deposit_address"],
-        "entry_address": c["deposit_address"], "entry_label": c.get("entry_label"),
-        "entry_kind": c.get("entry_kind"),
-        "entry_addresses": c.get("entry_addresses") or [c["deposit_address"]],
-        "tier": c["label_tier"], "confidence": c["confidence"],
-        "confidence_interval": c.get("confidence_interval"),
-        "counterfactual_holds": c.get("counterfactual_holds"),
-        "hops": c["hops"], "share": c["share_of_funds"], "asset": case.get("asset"),
-        "amount": amount, "amount_usd": _usd(amount, case.get("asset")),
-        "reached_at": c.get("reached_at"), "tx_hashes": _path_hashes(c),
-    }
+def _same(name: str) -> str:
+    return name
 
 
 def routable(c: dict, bar: float = BAR) -> bool:
-    return (c["direction"] == "outbound" and c["confidence"] >= bar
-            and c["vasp"] != UNROUTABLE)
+    """Can a request be drafted on this candidate? Only if the wallet's own money went
+    there (outbound, at least one hop: the VASP's own wallet is asked about directly,
+    not by letter), the confidence clears the bar, the source names an owner, and the
+    case says which wallets to ask about (cases stored before B8 do not)."""
+    return (c["direction"] == "outbound" and c["hops"] >= 1 and c["confidence"] >= bar
+            and c["vasp"] != UNROUTABLE and bool(c.get("request_wallets")))
 
 
-def routed_wallets(case: dict, bar: float = BAR) -> list[dict]:
-    """The wallets of a finished case a request can be made about, nearest first."""
+def routed_wallets(case: dict, bar: float = BAR, canonical=_same) -> list[dict]:
+    """The wallets of a finished case a request can be made about: for each exchange the
+    case names (nearest first), every wallet the money went through, largest first, each
+    with its own amount. `canonical` maps a label's spelling of an exchange to the
+    directory's ("Coinswitch" and "CoinSwitch" are one exchange)."""
     if case.get("status") != "done":
         return []
-    return [candidate_wallet(case, c) for c in case.get("candidates", []) if routable(c, bar)]
+    out = []
+    for c in case.get("candidates", []):
+        if not routable(c, bar):
+            continue
+        for w in c["request_wallets"]:
+            out.append({
+                "vasp": canonical(c["vasp"]), "category": c["category"],
+                "case_id": case["id"], "case_ref": case.get("case_ref"),
+                "complaint_no": case.get("complaint_no"), "chain": case["chain"],
+                "suspect": case["address"], "address": w["address"],
+                "paid_into": w.get("paid_into"), "label": w.get("label"),
+                "kind": w.get("kind"), "tier": w["tier"], "confidence": c["confidence"],
+                "confidence_interval": c.get("confidence_interval"),
+                "counterfactual_holds": c.get("counterfactual_holds"), "hops": c["hops"],
+                "asset": case.get("asset"), "amount": w["amount"],
+                "amount_usd": _usd(w["amount"], case.get("asset")),
+                "reached_at": w["reached_at"], "tx_hashes": w["tx_hashes"]})
+    return out
 
 
 def _covered(requests: list[dict]) -> set[tuple[str, str]]:
@@ -104,15 +94,17 @@ def _overdue(request: dict, today: date) -> bool:
 
 
 def build_desk(cases: list[dict], requests: list[dict], today: date,
-               bar: float = BAR) -> dict:
-    """`Desk`: one row per exchange (largest sum first), and the follow-ups due."""
+               bar: float = BAR, canonical=_same) -> dict:
+    """`Desk`: one row per exchange (largest sum first), and the follow-ups due.
+    A withdrawn request counts for nothing here: its wallets are open again."""
     wallets: dict[str, list[dict]] = {}
     for case in cases:
-        for w in routed_wallets(case, bar):
+        for w in routed_wallets(case, bar, canonical):
             wallets.setdefault(w["vasp"], []).append(w)
     by_vasp: dict[str, list[dict]] = {}
     for r in requests:
-        by_vasp.setdefault(r["vasp"], []).append(r)
+        if r["status"] != "withdrawn":
+            by_vasp.setdefault(r["vasp"], []).append(r)
 
     rows = []
     for vasp in sorted(set(wallets) | set(by_vasp)):
@@ -163,28 +155,35 @@ SUMMARY_KEYS = ("id", "reference", "vasp", "status", "case_ids", "created_at", "
 def vasp_detail(name: str, directory, label_counts: dict[str, int], cases: list[dict],
                 requests: list[dict]) -> dict:
     """`VaspDetail`: the directory entry, how many labels we hold, every case wallet that
-    touches this exchange (routed or not, either direction), and the requests made."""
+    touches this exchange, and the requests made. Wallets a request can be drafted on
+    come first; the rest (under the bar, the exchange's own wallet, or the exchange
+    funded the wallet) are context, marked `routable: false`."""
     entry = directory.get(name)
     vasp = entry["name"]
     wallets = []
     for case in cases:
         if case.get("status") != "done":
             continue
+        for w in routed_wallets(case, canonical=directory.canonical):
+            if w["vasp"] == vasp:
+                wallets.append({"address": w["address"], "chain": w["chain"],
+                                "case_id": w["case_id"], "direction": "outbound",
+                                "amount_usd": w["amount_usd"], "tier": w["tier"],
+                                "confidence": w["confidence"], "routable": True})
         for c in case.get("candidates", []):
-            if c["vasp"] != vasp:
+            if directory.canonical(c["vasp"]) != vasp or routable(c):
                 continue
-            w = candidate_wallet(case, c)
-            wallets.append({"address": w["address"], "chain": w["chain"],
-                            "case_id": w["case_id"], "direction": w["direction"],
-                            "amount_usd": w["amount_usd"], "tier": w["tier"],
-                            "confidence": w["confidence"],
-                            "routable": routable(c)})
-    wallets.sort(key=lambda w: (not w["routable"], -(w["amount_usd"] or 0.0), w["case_id"]))
+            outbound = c["direction"] == "outbound"
+            wallets.append({"address": c["deposit_address"], "chain": case["chain"],
+                            "case_id": case["id"], "direction": c["direction"],
+                            # what an exchange sent the wallet is in the inbound asset,
+                            # which a case does not record: no dollar figure for it
+                            "amount_usd": _usd(c.get("amount"), case.get("asset"))
+                            if outbound else None,
+                            "tier": c["label_tier"], "confidence": c["confidence"],
+                            "routable": False})
+    wallets.sort(key=lambda w: (not w["routable"], -(w["amount_usd"] or 0.0), w["case_id"],
+                                w["address"]))
     mine = _newest_first([r for r in requests if r["vasp"] == vasp])
     return {"directory": entry, "label_counts": label_counts, "wallets": wallets,
             "requests": [{k: r.get(k) for k in SUMMARY_KEYS} for r in mine]}
-
-
-def parse_time(value) -> datetime:
-    return value if isinstance(value, datetime) else datetime.fromisoformat(
-        str(value).replace("Z", "+00:00"))

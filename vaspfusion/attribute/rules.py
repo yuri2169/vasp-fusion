@@ -119,6 +119,8 @@ class Candidate:
     # does the answer survive without its strongest evidence? (attribute/counterfactual.py)
     counterfactual: str | None = None
     counterfactual_holds: bool | None = None
+    # the wallets a request to this VASP lists, each with its own amount (B8)
+    request_wallets: list[dict] = field(default_factory=list)
 
     @property
     def label_tier(self) -> str:
@@ -201,13 +203,63 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
                         f"received from this trail to {vasp}"
                         + (f", within {fmt.duration(wait)}" if len(onward) == 1 else ""),
             })
+    wallets = _request_wallets(tr, entries) if side == "outbound" else []
     return Candidate(vasp=vasp, category=main.label.category, direction=side,
+                     request_wallets=wallets,
                      confidence=round(min(1.0, confidence), 4), hops=hop_count, share=share,
                      amount=amount, time_to_reach_s=took, label=main.label,
                      deposit_address=main.address, path=addresses, path_edges=edges,
                      entries=sorted(entries, key=lambda n: (-n.received, n.address)),
                      last_hop=last_hop, evidence=evidence, hops_min=hops_min,
                      hops_max=hops_max, passed_all=passed_all, confidence_interval=interval)
+
+
+def _request_wallets(tr: TraceResult, entries: list[TraceNode]) -> list[dict]:
+    """The wallets a request to this VASP asks about, each with the traced money that
+    went through it (B8). Together they add up to the candidate's amount.
+
+    A labelled deposit address is named itself. Money that entered another labelled
+    wallet (a hot wallet, a reserve) is named by the wallet that paid it in, but only if
+    that wallet passed on everything it got from this trail to this VASP: then it is
+    most likely the customer's deposit address. Otherwise the VASP's own wallet is
+    named, with the transactions that paid into it."""
+    mine = {n.address for n in entries}
+    into = {n.address: tr.edges_into("outbound", n.address) for n in entries}
+    passed: dict[str, Decimal] = {}          # sender -> what it paid into this VASP
+    for edges in into.values():
+        for e in edges:
+            passed[e.transfer.from_addr] = passed.get(e.transfer.from_addr, ZERO) + e.traced
+
+    def row(address: str, label: Label, edges: list[TraceEdge], paid_into: str | None,
+            arrivals: list[TraceEdge]) -> dict:
+        ordered = sorted(arrivals + ([] if arrivals is edges else edges),
+                         key=lambda e: (e.transfer.block_time, e.transfer.tx_hash))
+        return {"address": address, "amount": sum((e.traced for e in edges), ZERO),
+                "paid_into": paid_into, "tier": label.tier, "kind": label.kind,
+                "label": label.label,
+                "reached_at": min(e.transfer.block_time for e in arrivals),
+                "tx_hashes": list(dict.fromkeys(e.transfer.tx_hash for e in ordered))}
+
+    rows = []
+    for n in entries:
+        direct: list[TraceEdge] = []
+        by_sender: dict[str, list[TraceEdge]] = {}
+        for e in into[n.address]:
+            by_sender.setdefault(e.transfer.from_addr, []).append(e)
+        for sender, edges in by_sender.items():
+            node = tr.nodes.get(("outbound", sender))
+            through = (n.label.kind != "deposit" and node is not None and sender not in mine
+                       and node.label is None and node.received
+                       and passed[sender] == node.received)
+            if through:
+                rows.append(row(sender, n.label, edges, n.address,
+                                tr.edges_into("outbound", sender)))
+            else:
+                direct += edges
+        if direct:
+            rows.append(row(n.address, n.label, direct, None, direct))
+    rows.sort(key=lambda w: (-w["amount"], w["address"], w["paid_into"] or ""))
+    return rows
 
 
 def _self_candidate(tr: TraceResult) -> Candidate:

@@ -607,7 +607,7 @@ def cmd_request(args) -> None:
     vasp = svc.directory.canonical(args.vasp)
     case_ids = [c for c in (args.cases or "").split(",") if c] or sorted(
         case["id"] for case in svc._all_cases()
-        if any(w["vasp"] == vasp for w in routed_wallets(case)))
+        if any(w["vasp"] == vasp for w in routed_wallets(case, canonical=svc.directory.canonical)))
     try:
         if not case_ids:
             raise DeskError(422, f"No finished case routes a wallet to {vasp}. See `make desk`.")
@@ -631,7 +631,7 @@ def cmd_request(args) -> None:
     for w in letter["wallets"]:
         from .explain import fmt
         print(f"  wallet   {w['address']}  {fmt.amount(w['amount'], w['asset'])}  "
-              f"{w['tier']}  confidence {w['confidence']:.2f}")
+              f"{w['tier']}  confidence {fmt.prob(w['confidence'])}")
     print(f"  asks     {', '.join(letter['asks'])}")
     for note in letter["review_notes"]:
         print(f"  check    {note}")

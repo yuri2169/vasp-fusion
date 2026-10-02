@@ -12,12 +12,16 @@ Code: `vaspfusion/desk/gateway.py` (interface, mock), `vaspfusion/desk/letter.py
 class SahyogGateway(Protocol):
     name: str
     def submit(self, payload: dict, pdf: bytes, *, now: datetime) -> dict: ...
+    def sent_pdf(self, request_id: str) -> bytes | None: ...
 ```
 
 - Called once, when the officer moves an **approved** request to `sent` (`PATCH /api/requests/{id}` with `status: "sent"`).
 - `payload` is the JSON below with `draft: false`. `pdf` is the letter without the draft marks; its SHA-256 is in `payload.documents[0].sha256`.
 - Returns a **receipt**: `gateway`, `receipt_id`, `submitted_at` (UTC), `location`, `payload_sha256`. The receipt is stored on the request (`RequestDetail.receipt`).
-- Raises `GatewayError` if the payload is a draft, if the request was already submitted, or if the submission did not go through. The request then stays `approved`, with no due date and no receipt, and the API answers 502.
+- Raises `GatewayError` if the payload is a draft or the submission did not go through. The request then stays `approved`, with no due date and no receipt, and the API answers 502.
+- **Submitting the same payload and letter again must succeed without sending twice** (the desk may have failed after the first submission and will retry). A different payload under an id already submitted is refused.
+- `sent_pdf` returns the letter exactly as submitted, if the gateway keeps it. The desk serves those bytes for a sent request, after checking them against the recorded SHA-256.
+- Before a request is approved or sent the desk checks that every wallet in it is still what its case says; a gateway never sees a request whose case has changed since the draft.
 
 A real gateway replaces the mock in one place: `make_gateway()` in `vaspfusion/api/main.py`.
 
@@ -48,7 +52,7 @@ Written to the outbox as canonical JSON (sorted keys, UTF-8, no spaces), so `pay
 |---|---|
 | `address`, `chain` | the wallet, in full |
 | `case_id` | the case it comes from |
-| `asset`, `amount` | the traced funds that reached this exchange through it, exact |
+| `asset`, `amount` | the traced funds that went through this wallet to the exchange, exact. One row per wallet; the rows of a case add up to what reached the exchange |
 | `amount_usd` | the same amount when the asset is a US-dollar stablecoin, else `null` (no price feed) |
 | `evidence_tier` | of the label that names the exchange: `published_por`, `curated`, `explorer_tag`, `derived` |
 | `confidence` | the case's confidence for this exchange (0 to 1). An assessment, not proof |
