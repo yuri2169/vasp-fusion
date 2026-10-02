@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { FolderOpen, RotateCcw } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { api } from '../api/api'
-import type { CaseDetail, Chain, GraphNode, LabelOut, Severity, Tier, TypologyCode } from '../api/models'
+import type { CaseDetail, Chain, FundsSlice, GraphNode, LabelOut, Severity, Tier, TypologyCode } from '../api/models'
 import { AddressChip } from '../components/AddressChip'
 import { Amount } from '../components/Amount'
 import { Button } from '../components/Button'
@@ -12,10 +12,13 @@ import { Dialog } from '../components/Dialog'
 import { DualMeter } from '../components/DualMeter'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
+import { EvidenceList } from '../components/EvidenceList'
+import { FundsBar } from '../components/FundsBar'
 import { HopRail } from '../components/HopRail'
 import { OutcomeStamp } from '../components/OutcomeStamp'
 import { PageHeader } from '../components/PageHeader'
 import { Skeleton } from '../components/Skeleton'
+import { Tabs } from '../components/Tabs'
 import { TierTag } from '../components/TierTag'
 import { useToast } from '../components/Toast'
 import { TxHash } from '../components/TxHash'
@@ -35,6 +38,50 @@ const DEMO_CASES = ['demo-tron-okx', 'demo-eth-abstain', 'demo-tron-sanctioned']
 // Real wallets from demo/cases.json (PROGRESS.md, B3 and B5). Nothing about them is alleged.
 const HERO_TRON = 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c'
 const DEMO_BTC = 'bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6'
+
+// Where the money of three real demo wallets ended up (`where_funds_went` of tron-coindcx,
+// tron-ofac and eth-bridge as traced on 2 Oct 2026; PROGRESS.md, B3 and B7). The B1 fixtures
+// were recorded before that field existed, so the kit carries these figures itself.
+const FUNDS: { asset: string; total: number; named?: string; slices: FundsSlice[] }[] = [
+  {
+    asset: 'USDT',
+    total: 2652.22,
+    named: 'CoinDCX',
+    slices: [
+      { kind: 'vasp', name: 'CoinDCX', share: 0.5769, amount: 1530 },
+      { kind: 'hub', name: null, share: 0.4231, amount: 1122.22 },
+    ],
+  },
+  {
+    asset: 'USDT',
+    total: 101078.339672,
+    slices: [
+      { kind: 'sanctioned', name: 'OFAC SDN', share: 0.9894, amount: 100008 },
+      { kind: 'beyond_hop_limit', name: null, share: 0.0104, amount: 1052 },
+      { kind: 'not_followed', name: null, share: 0.0002, amount: 18.339672 },
+    ],
+  },
+  {
+    asset: 'USDT',
+    total: 13705.0531,
+    slices: [
+      { kind: 'bridge', name: 'Across Protocol', share: 0.602, amount: 8250 },
+      { kind: 'other_label', name: 'Uniswap V4', share: 0.2533, amount: 3471.123121 },
+      { kind: 'not_followed', name: null, share: 0.0429, amount: 587.37486 },
+      { kind: 'hub', name: null, share: 0.0414, amount: 567.877379 },
+      { kind: 'bridge', name: 'Optimism', share: 0.0365, amount: 500 },
+      { kind: 'beyond_hop_limit', name: null, share: 0.0233, amount: 320 },
+      { kind: 'returned', name: null, share: 0.0006, amount: 8.67774 },
+    ],
+  },
+]
+
+const KIT_TABS = [
+  { id: 'timeline', label: 'Timeline' },
+  { id: 'transfers', label: 'Transfers', count: 7 },
+  { id: 'wallets', label: 'Wallets', count: 8 },
+  { id: 'audit', label: 'Audit' },
+]
 
 // Every pattern code with the severity the contract gives it (docs/api_contract.md, B7 and B5).
 const PATTERNS: [TypologyCode, Severity][] = [
@@ -142,6 +189,7 @@ export function KitPage() {
   const toast = useToast()
   const [dialog, setDialog] = useState(false)
   const [replay, setReplay] = useState(0)
+  const [tab, setTab] = useState('timeline')
 
   const [okx, abstain, sanctioned] = cases.data ?? []
   // One real labelled wallet per tier, from the fixtures' graphs.
@@ -442,6 +490,39 @@ export function KitPage() {
         </Spec>
         <Spec label="While tracing" block wide>
           <HopRail suspect={{ address: HERO_TRON, chain: 'tron' }} hops={[]} stamp={{ outcome: null, status: 'running' }} state="tracing" />
+        </Spec>
+      </Section>
+
+      <Section title="Where the funds went" note="One bar for the whole of what the wallet sent. Kind is not told by hue: saffron is the exchange the case names, ink any other named party, red a sanctioned address or a mixer, and everything unresolved is hatched. Every part is named under the bar.">
+        {FUNDS.map((f) => (
+          <Spec key={f.total} label={f.named ? 'An exchange is named' : f.slices[0].kind === 'sanctioned' ? 'Sanctioned' : 'No exchange reached'} block wide>
+            <FundsBar slices={f.slices} asset={f.asset} total={f.total} named={f.named} />
+          </Spec>
+        ))}
+      </Section>
+
+      <Section title="Evidence" note="The reasons behind a named exchange, in the backend’s own sentences, each with the transactions that prove it. The deposit-address model’s reasons are drawn as signed bars.">
+        <Spec label="Sweep, path, fee payer" block>
+          {okx ? <EvidenceList items={okx.candidates[0].evidence} chain={okx.chain} /> : <Skeleton lines={4} />}
+        </Spec>
+        <Spec label="Model reasons" block>
+          <EvidenceList
+            chain="tron"
+            items={[
+              // The three reasons the model gave for the real deposit address TCw8j3…LLcoV5 (tron-coindcx).
+              { kind: 'model', text: 'Deposit-address model, for: it forwards 100% of what it receives to one wallet', weight: 2.2923, tx_hashes: [], tier: null },
+              { kind: 'model', text: 'Deposit-address model, for: every outgoing transfer goes to one wallet', weight: 1.9244, tx_hashes: [], tier: null },
+              { kind: 'model', text: 'Deposit-address model, for: it moves funds on about 21 seconds after they arrive', weight: 1.6002, tx_hashes: [], tier: null },
+            ]}
+          />
+        </Spec>
+      </Section>
+
+      <Section title="Tabs" note="The index tabs of a file. One tab stop; the arrow keys move along them, Home and End jump to the ends. A count says how many records a tab holds.">
+        <Spec label="Case records" block wide>
+          <Tabs label="Case records" tabs={KIT_TABS} active={tab} onChange={setTab}>
+            <p className="text-sm text-muted">The {KIT_TABS.find((t) => t.id === tab)!.label.toLowerCase()} of the case goes here.</p>
+          </Tabs>
         </Spec>
       </Section>
 

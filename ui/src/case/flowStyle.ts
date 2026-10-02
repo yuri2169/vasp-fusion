@@ -106,7 +106,7 @@ export function toElements(view: FlowView): ElementDefinition[] {
       elements.push({
         group: 'nodes',
         data: { id: `caption:${n.id}`, owner: n.id, label: caption },
-        position: { x: position.x, y: position.y - ROLE_SHAPES[n.role].height / 2 - 11 },
+        position: { x: position.x, y: position.y - ROLE_SHAPES[n.role].height / 2 - 9 },
         classes: 'caption',
         selectable: false,
         grabbable: false,
@@ -123,7 +123,7 @@ export function toElements(view: FlowView): ElementDefinition[] {
         inbound: e.direction === 'inbound' ? 1 : 0,
         onPath: e.onPath ? 1 : 0,
         // Written on the main path and on the larger flows; the rest say it on hover.
-        label: e.onPath || e.amount >= view.maxAmount * 0.1 ? formatAmount(e.amount, view.asset) : '',
+        label: e.onPath || e.amount >= view.maxAmount * 0.1 ? formatAmount(e.amount, e.asset) : '',
       },
     })
   return elements
@@ -157,10 +157,11 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         'border-color': t.ruleStrong,
         label: 'data(label)',
         'font-family': '"IBM Plex Mono", ui-monospace, monospace',
-        'font-size': 12,
+        // 14 on the canvas, so that a graph drawn at three-quarter size still reads at 10 or more.
+        'font-size': 14,
         color: t.muted,
         'text-valign': 'bottom',
-        'text-margin-y': 6,
+        'text-margin-y': 5,
         'min-zoomed-font-size': 7,
       },
     },
@@ -209,7 +210,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         events: 'no',
         'font-family': '"IBM Plex Sans", system-ui, sans-serif',
         'font-weight': 600,
-        'font-size': 12,
+        'font-size': 14,
         color: t.fg,
         'text-valign': 'top',
         'text-margin-y': 0,
@@ -224,6 +225,9 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
       selector: 'edge',
       style: {
         width: 'data(width)',
+        // Straight lines, one per pair of wallets. Square ("taxi") routing was tried and is tidier
+        // on a small case, but it runs different transfers along one trunk, and then the picture
+        // no longer says which wallet paid which.
         'curve-style': 'bezier',
         'line-color': t.ruleStrong,
         'target-arrow-color': t.ruleStrong,
@@ -231,7 +235,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         'arrow-scale': 0.9,
         label: 'data(label)',
         'font-family': '"IBM Plex Mono", ui-monospace, monospace',
-        'font-size': 12,
+        'font-size': 13,
         color: t.fg,
         'text-background-color': t.surface,
         'text-background-opacity': 1,
@@ -241,7 +245,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
       },
     },
     { selector: 'edge[onPath = 1]', style: { 'line-color': t.fg, 'target-arrow-color': t.fg } },
-    { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 4] } },
+    { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], 'line-opacity': 0.7 } },
 
     // --- looking at one wallet: its path stays, the rest steps back --------
     { selector: '.dim', style: { opacity: 0.2 } },

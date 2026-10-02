@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { AppRoutes } from '../App'
 import { api } from '../api/api'
+import { ApiError } from '../api/client'
 import type { CaseDetail, CaseSummary } from '../api/models'
 import { mockSettings } from '../api/mock'
 import { readCase } from '../test/files'
@@ -39,6 +40,8 @@ describe('a case that names an exchange', () => {
     expect(header).toHaveTextContent('Complaint 31509260001234')
     expect(header).toHaveTextContent('Reported loss ₹40,50,000')
     expect(header).toHaveTextContent('Opened 13 Sep 2026')
+    // a line that wraps never starts with a separator
+    expect(header).toHaveTextContent('Complaint 31509260001234 · Reported loss ₹40,50,000 · Opened 13 Sep 2026')
     expect(within(header).getByText('Demo')).toBeInTheDocument()
   })
 
@@ -198,6 +201,18 @@ describe('trace again', () => {
 
     await waitFor(() => expect(openCase).toHaveBeenCalledWith({ address: hero.address, chain: 'tron', max_hops: 4 }, true))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+})
+
+describe('a server that stumbles once', () => {
+  it('asks again, and shows the case', async () => {
+    // Seen against the real API: one read answered 500 while the case was being traced again.
+    vi.spyOn(api, 'case')
+      .mockRejectedValueOnce(new ApiError(500, 'The server could not answer this request. It has been logged.'))
+      .mockResolvedValue(hero)
+    open('/cases/tron-coindcx')
+    expect(await screen.findByRole('heading', { level: 2, name: 'Why CoinDCX?' }, { timeout: 4000 })).toBeInTheDocument()
+    expect(api.case).toHaveBeenCalledTimes(2)
   })
 })
 

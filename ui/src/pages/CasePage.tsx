@@ -57,19 +57,18 @@ function Meta({ c }: { c: CaseDetail }) {
     `Opened ${formatDate(c.created_at)}`,
   ].filter(Boolean) as string[]
   return (
-    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    // Plain running text, so a line that wraps breaks after a separator, never before one.
+    <p>
       {facts.map((fact, i) => (
-        <span key={fact} className="whitespace-nowrap">
-          {i > 0 && (
-            <span aria-hidden className="mr-2">
-              ·
-            </span>
-          )}
-          {fact}
+        <span key={fact}>
+          <span className="whitespace-nowrap">
+            {fact}
+            {i < facts.length - 1 && ' ·'}
+          </span>{' '}
         </span>
       ))}
-      {c.demo && <span className="rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">Demo</span>}
-    </span>
+      {c.demo && <span className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">Demo</span>}
+    </p>
   )
 }
 
@@ -170,9 +169,8 @@ export function CasePage() {
           </>
         )
       }
-    >
-      <Meta c={c} />
-    </PageHeader>
+      meta={<Meta c={c} />}
+    />
   )
 
   if (c.status === 'failed')

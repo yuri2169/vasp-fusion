@@ -51,6 +51,7 @@ export function CandidateCard({
   const named = candidate.confidence >= NAMING_BAR
   const scored = candidate.confidence_interval != null
   const canRequest = action !== 'none' && routable(candidate)
+  const listed = candidate.evidence.filter((e) => e.kind !== 'counterfactual').length
 
   return (
     <article aria-label={candidate.vasp} className={cx('flex flex-col gap-3', className)}>
@@ -89,7 +90,19 @@ export function CandidateCard({
       )}
 
       <Counterfactual candidate={candidate} />
-      {!isInbound(candidate) && <EvidenceList items={candidate.evidence} chain={c.chain} />}
+      {!isInbound(candidate) &&
+        (action === 'primary' ? (
+          <EvidenceList items={candidate.evidence} chain={c.chain} />
+        ) : (
+          listed > 0 && (
+            <details className="group">
+              <summary className="cursor-pointer select-none text-sm font-medium text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
+                Evidence ({listed})
+              </summary>
+              <EvidenceList items={candidate.evidence} chain={c.chain} className="mt-3" />
+            </details>
+          )
+        ))}
     </article>
   )
 }

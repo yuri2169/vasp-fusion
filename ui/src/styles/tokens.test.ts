@@ -51,6 +51,10 @@ describe.each(['light', 'dark'] as const)('%s theme contrast (WCAG AA)', (name) 
     ['verified-text', 'verified-wash'],
     ['seal-text', 'seal-wash'],
     ['fg-muted', 'slate-wash'],
+    // the verify result and the server's sentence on the case page (U2)
+    ['fg', 'verified-wash'],
+    ['fg-muted', 'verified-wash'],
+    ['fg', 'seal-wash'],
     ['rail-fg', 'rail-bg'],
     ['rail-fg-muted', 'rail-bg'],
     ['rail-fg', 'rail-active'],

@@ -10,7 +10,7 @@ import { DEFAULT_HOPS, HOP_LIMITS } from './rules'
 /** How far to follow the money: 1 to 5 hops out. One radio group, used on intake and here. */
 export function HopLimit({ value, onChange, name }: { value: number; onChange: (hops: number) => void; name: string }) {
   return (
-    <div role="radiogroup" aria-label="Hop limit" className="inline-flex rounded border border-rule-strong">
+    <div role="radiogroup" aria-label="Hop limit" className="inline-flex self-start rounded border border-rule-strong">
       {HOP_LIMITS.map((hops) => (
         <label
           key={hops}

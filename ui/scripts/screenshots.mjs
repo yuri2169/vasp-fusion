@@ -1,7 +1,11 @@
-// Screenshots of the component kit and the shell, in both themes, into docs/screenshots/.
+// Screenshots of the component kit, the shell and the case page, in both themes, into docs/screenshots/.
 //
 //   npm run dev                       (in another terminal; mock data, port 5173)
 //   npm run screenshots               (or: BASE_URL=http://localhost:5183 npm run screenshots)
+//   npm run screenshots -- case       (only the shots whose name starts with "case")
+//
+// LIVE_URL=http://localhost:5184 adds the shots of the real demo cases (`case-live-*`): the
+// interface run with VITE_API=live against `make serve`, after `make demo`.
 //
 // It drives a Chromium-family browser already on this machine (Chrome, Brave, Edge, Chromium;
 // or BROWSER=/path/to/binary) headless, over the DevTools protocol, with a throwaway profile.
@@ -13,22 +17,75 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173'
-const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', 'screenshots')
+const LIVE = process.env.LIVE_URL
+const ONLY = process.argv[2]
+const OUT = process.env.OUT_DIR ?? resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', 'screenshots')
 const PORT = 9333
 
+// A page has rendered once its fixtures are on it: a Hop Rail's stamp, or a table row's.
+const STAMP = `document.querySelectorAll('[aria-label="Path of the funds"] [data-testid="outcome-stamp"], tbody tr [data-testid="outcome-stamp"]').length > 0`
+// The case page: the stamp, and the graph's canvas drawn.
+const CASE = `${STAMP} && document.querySelectorAll('[role="img"] canvas').length > 0`
+const INTAKE = `document.querySelectorAll('[aria-label="Recorded demo cases"] button').length > 0`
+const click = (selector) => `document.querySelector(${JSON.stringify(selector)}).click()`
+const PICK_DEMO = click('[aria-label="Recorded demo cases"] button')
+const GROUP = `[...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === 'Group exchange wallets').click()`
+// Type the hero demo wallet (demo/cases.json, tron-coindcx) into the sheet, as React hears it.
+const TYPE_HERO = `(() => {
+  const input = document.querySelector('form[aria-label="Open a case"] input')
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c')
+  input.dispatchEvent(new Event('input', { bubbles: true }))
+})()`
+const TICK_AGAIN = click('form[aria-label="Open a case"] input[type="checkbox"]')
+const TRACE = click('form[aria-label="Open a case"] button[type="submit"]')
+
+const OKX = '/cases/demo-tron-okx'
 const SHOTS = [
-  // name, path, width, height, full page?
+  // name, path, width, height, full page?, { ready, steps: [js to run | ms to wait], live }
   ['kit-light-1440', '/kit?theme=light', 1440, 900, true],
   ['kit-dark-1440', '/kit?theme=dark', 1440, 900, true],
   ['kit-light-1280', '/kit?theme=light', 1280, 800, true],
   ['kit-dark-1280', '/kit?theme=dark', 1280, 800, true],
   ['kit-shell-cases-light', '/cases?theme=light', 1440, 900, false],
   ['kit-shell-cases-dark', '/cases?theme=dark', 1440, 900, false],
-  ['kit-shell-case-light', '/cases/demo-tron-okx?theme=light', 1440, 900, false],
-  ['kit-shell-case-dark', '/cases/demo-tron-okx?theme=dark', 1440, 900, false],
-  ['kit-shell-case-light-1280', '/cases/demo-tron-okx?theme=light', 1280, 800, false],
-  ['kit-shell-case-tablet', '/cases/demo-eth-abstain?theme=light', 820, 1000, false],
-]
+
+  // --- U2: intake, the trace, the case page ------------------------------------------------
+  ['case-intake-light', '/cases/new?theme=light', 1440, 900, false, { ready: INTAKE, steps: [PICK_DEMO, 200] }],
+  ['case-intake-dark', '/cases/new?theme=dark', 1440, 900, false, { ready: INTAKE }],
+  ['case-tracing-light', '/cases/new?theme=light', 1440, 900, false, { ready: INTAKE, steps: [PICK_DEMO, 200, TRACE, 1500] }],
+  ['case-attributed-light', `${OKX}?theme=light`, 1440, 900, true, { ready: CASE }],
+  ['case-attributed-dark', `${OKX}?theme=dark`, 1440, 900, true, { ready: CASE }],
+  ['case-attributed-fold-1440', `${OKX}?theme=light`, 1440, 900, false, { ready: CASE }],
+  ['case-attributed-fold-1280', `${OKX}?theme=light`, 1280, 800, false, { ready: CASE }],
+  ['case-attributed-tablet', `${OKX}?theme=light`, 820, 1100, true, { ready: CASE }],
+  ['case-wallet-selected', `${OKX}?theme=light&wallet=THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR`, 1440, 900, false, { ready: CASE }],
+  ['case-grouped', `${OKX}?theme=light`, 1440, 900, false, { ready: CASE, steps: [GROUP, 600] }],
+  ['case-tab-transfers', `${OKX}?theme=light&tab=transfers`, 1440, 900, true, { ready: CASE }],
+  ['case-tab-wallets', `${OKX}?theme=light&tab=wallets`, 1440, 900, true, { ready: CASE }],
+  ['case-tab-patterns', `${OKX}?theme=light&tab=patterns`, 1440, 900, true, { ready: CASE }],
+  ['case-tab-audit', `${OKX}?theme=light&tab=audit`, 1440, 900, true, { ready: CASE }],
+  ['case-insufficient-light', '/cases/demo-eth-abstain?theme=light', 1440, 900, true, { ready: CASE }],
+  ['case-insufficient-dark', '/cases/demo-eth-abstain?theme=dark', 1440, 900, true, { ready: CASE }],
+  ['case-sanctioned-light', '/cases/demo-tron-sanctioned?theme=light', 1440, 900, true, { ready: CASE }],
+  ['case-sanctioned-dark', '/cases/demo-tron-sanctioned?theme=dark', 1440, 900, true, { ready: CASE }],
+
+  // --- the real demo wallets, through the live API -----------------------------------------
+  ['case-live-coindcx-light', '/cases/tron-coindcx?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-coindcx-dark', '/cases/tron-coindcx?theme=dark', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-coindcx-inbound', '/cases/tron-coindcx?theme=light&tab=inbound', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-coindcx-audit', '/cases/tron-coindcx?theme=light&tab=audit', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-two-exchanges', '/cases/tron-htx-coindcx?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-insufficient', '/cases/tron-abstain?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-insufficient-fold', '/cases/tron-abstain?theme=light', 1440, 900, false, { ready: CASE, live: true }],
+  ['case-live-insufficient-fold-dark', '/cases/tron-abstain?theme=dark', 1440, 900, false, { ready: CASE, live: true }],
+  ['case-live-insufficient-patterns', '/cases/tron-abstain?theme=light&tab=patterns', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-bridge', '/cases/eth-bridge?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-sanctioned', '/cases/tron-ofac?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  ['case-live-bitcoin', '/cases/btc-htx?theme=light', 1440, 900, true, { ready: CASE, live: true }],
+  // Last, because it changes the stored case: the hero wallet traced again from the cache while
+  // watching (intake → trace → the rail extended, "Trace finished").
+  ['case-live-traced', '/cases/new?theme=light', 1440, 900, false, { ready: INTAKE, live: true, steps: [TYPE_HERO, 200, TICK_AGAIN, TRACE, 4000] }],
+].filter(([name, , , , , opts]) => (!ONLY || name.startsWith(ONLY)) && (!opts?.live || LIVE))
 
 const CANDIDATES = [
   process.env.BROWSER,
@@ -93,11 +150,13 @@ if (!browserPath) {
   process.exit(1)
 }
 
-try {
-  await fetch(BASE)
-} catch {
-  console.error(`Nothing answers at ${BASE}. Start the interface first (npm run dev), or set BASE_URL`)
-  process.exit(1)
+for (const url of [BASE, LIVE].filter(Boolean)) {
+  try {
+    await fetch(url)
+  } catch {
+    console.error(`Nothing answers at ${url}. Start the interface first (npm run dev), or set BASE_URL / LIVE_URL`)
+    process.exit(1)
+  }
 }
 
 const profile = mkdtempSync(join(tmpdir(), 'vaspfusion-shots-'))
@@ -122,32 +181,38 @@ try {
   const page = session(targets.find((t) => t.type === 'page').webSocketDebuggerUrl)
   await page.send('Page.enable')
 
-  for (const [name, path, width, height, full] of SHOTS) {
+  for (const [name, path, width, height, full, opts = {}] of SHOTS) {
     const metrics = { width, height, deviceScaleFactor: 1, mobile: false }
     await page.send('Emulation.setDeviceMetricsOverride', metrics)
     await page.send('Emulation.setEmulatedMedia', {
       features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
     })
-    await page.send('Page.navigate', { url: BASE + path })
-    // Loaded = fonts in, and the fixtures on the page (a Hop Rail or a table row has rendered).
+    // A fresh document for every shot: the same route with another theme is otherwise not reloaded.
+    await page.send('Page.navigate', { url: 'about:blank' })
+    await page.send('Page.navigate', { url: (opts.live ? LIVE : BASE) + path })
+    // Loaded = fonts in, and what the page shows is on it.
     await waitFor(
       () =>
         page.evaluate(`document.fonts.ready.then(() =>
           location.pathname + location.search === ${JSON.stringify(path)} &&
           document.fonts.check('16px "IBM Plex Sans"') &&
-          document.querySelectorAll('[aria-label="Path of the funds"] [data-testid="outcome-stamp"], tbody tr [data-testid="outcome-stamp"]').length > 0)`),
+          (${opts.ready ?? STAMP}))`),
       `${path} to render`,
     )
     await sleep(300)
+    for (const step of opts.steps ?? []) {
+      if (typeof step === 'number') await sleep(step)
+      else await page.evaluate(step)
+    }
     if (full) {
       // Make the window as tall as the page, so the rail runs the whole height of the picture.
       const pageHeight = await page.evaluate('document.documentElement.scrollHeight')
       await page.send('Emulation.setDeviceMetricsOverride', { ...metrics, height: pageHeight })
-      await sleep(300)
+      await sleep(400)
     }
     const { data } = await page.send('Page.captureScreenshot', { format: 'png' })
     writeFileSync(join(OUT, `${name}.png`), Buffer.from(data, 'base64'))
-    console.log(`docs/screenshots/${name}.png`)
+    console.log(`${name}.png`)
   }
   page.close()
 } finally {

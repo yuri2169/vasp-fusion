@@ -5,7 +5,7 @@ import type { CaseDetail } from '../api/models'
 import { Button } from '../components/Button'
 import { TIERS } from '../components/TierTag'
 import { Tip } from '../components/Tip'
-import { buildFlow, clusterable, pathTo, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
+import { buildFlow, clusterable, focusOf, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
 import { cx } from '../lib/cx'
 import { downloadText, downloadUrl } from '../lib/download'
 import { formatAmount, formatDateTime } from '../lib/format'
@@ -48,7 +48,8 @@ type Hover = { anchor: DOMRect; node?: FlowNode; edge?: FlowEdge }
 const rectAt = (left: number, top: number, width: number, height: number) =>
   ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) }) as DOMRect
 
-const MAX_ZOOM = 1.2
+/** Never drawn larger than life: the type on the canvas is then 14, as on the page. */
+const MAX_ZOOM = 1
 
 /** Cytoscape draws on a 2D canvas. Where there is none, the Wallets and Transfers tabs carry the same content. */
 function canDraw(): boolean {
@@ -92,7 +93,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const fit = (onlyPath = false) => {
     const cy = cyRef.current
     if (!cy) return
-    cy.fit(onlyPath ? cy.nodes('[onPath = 1]') : undefined, onlyPath ? 70 : 40)
+    cy.fit(onlyPath ? cy.nodes('[onPath = 1]') : undefined, onlyPath ? 70 : 32)
     // A graph of four wallets should not be blown up to fill the frame.
     if (cy.zoom() > MAX_ZOOM) {
       cy.zoom(MAX_ZOOM)
@@ -182,17 +183,18 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     cy.batch(() => {
       cy.elements().removeClass('dim sel')
       if (!shown) return
-      const path = pathTo(view, shown)
+      cy.getElementById(shown).addClass('sel')
+      const focus = focusOf(view, shown)
+      if (!focus) return
       cy.elements().forEach((el) => {
         const id = el.data('owner') ?? el.id()
-        if (!path.nodes.has(id) && !path.edges.has(id)) el.addClass('dim')
+        if (!focus.nodes.has(id) && !focus.edges.has(id)) el.addClass('dim')
       })
-      cy.getElementById(shown).addClass('sel')
     })
   }, [view, elements, shown])
 
   const rows = view.nodes.reduce((max, n) => Math.max(max, n.row), 0) + 1
-  const height = Math.min(600, Math.max(340, rows * 92 + 110))
+  const height = Math.min(640, Math.max(320, rows * 90 + 96))
   const transfers = view.edges.reduce((n, e) => n + e.transfers.length, 0)
   const wallets = view.nodes.reduce((n, node) => n + node.members.length, 0)
 
@@ -216,31 +218,37 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
               size="sm"
               variant={collapse ? 'secondary' : 'ghost'}
               aria-pressed={collapse}
+              aria-label="Group exchange wallets"
+              title="Draw the wallets of one exchange as one node"
               icon={<Layers size={13} aria-hidden />}
               onClick={() => setCollapse((v) => !v)}
             >
-              Group exchange wallets
+              Group
             </Button>
           )}
           <span aria-hidden className="mx-1 h-4 w-px bg-rule" />
           <Button
             size="sm"
             variant="ghost"
+            aria-label="Export PNG"
+            title="Save the picture as a PNG"
             icon={<Image size={13} aria-hidden />}
             onClick={() => {
               const cy = cyRef.current
               if (cy) downloadUrl(`case-${c.id}-graph.png`, cy.png({ full: true, scale: 2, bg: theme.surface, output: 'base64uri' }))
             }}
           >
-            Export PNG
+            PNG
           </Button>
           <Button
             size="sm"
             variant="ghost"
+            aria-label="Export GraphML"
+            title="Save the graph as GraphML (Gephi, yEd, Maltego)"
             icon={<FileCode size={13} aria-hidden />}
             onClick={() => downloadText(`case-${c.id}.graphml`, toGraphML(c), 'application/graphml+xml')}
           >
-            Export GraphML
+            GraphML
           </Button>
         </div>
       </div>
@@ -262,7 +270,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
 
       <Tip id={tipId} anchor={hover?.anchor ?? null}>
         {hover?.node && <NodeCard node={hover.node} />}
-        {hover?.edge && <EdgeCard edge={hover.edge} asset={view.asset} />}
+        {hover?.edge && <EdgeCard edge={hover.edge} />}
       </Tip>
     </section>
   )
@@ -296,13 +304,13 @@ function NodeCard({ node }: { node: FlowNode }) {
 
 const LISTED = 4
 
-function EdgeCard({ edge, asset }: { edge: FlowEdge; asset: string }) {
+function EdgeCard({ edge }: { edge: FlowEdge }) {
   const many = edge.transfers.length > 1
   return (
     <>
       <span className="tabular block font-mono font-medium">
         {many && <span className="font-sans">{edge.transfers.length} transfers · </span>}
-        {formatAmount(edge.amount, asset)}
+        {formatAmount(edge.amount, edge.asset)}
       </span>
       {edge.transfers.slice(0, LISTED).map((t) => (
         <span key={t.id} className="mt-1.5 block">

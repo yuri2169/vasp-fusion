@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CaseDetail } from '../api/models'
 import { MOCK_CASES, REAL_CASES, readCase, readMock } from '../test/files'
-import { buildFlow, clusterable, edgeWidth, ledgerOf, mainPath, nodeXY, pathTo, traced } from './caseGraph'
+import { buildFlow, clusterable, edgeWidth, focusOf, ledgerOf, mainPath, nodeXY, pathTo, traced } from './caseGraph'
 
 const mock = (id: string) => readMock<CaseDetail>(`cases/${id}.json`)
 const real = (id: string) => readCase<CaseDetail>(id)
@@ -172,6 +172,22 @@ describe('pathTo', () => {
   })
 })
 
+describe('focusOf', () => {
+  it('is the path to the wallet being looked at: everything else steps back', () => {
+    const view = buildFlow(okx)
+    const focus = focusOf(view, node(view, 'TAuUCi').id)!
+    expect(focus.nodes.size).toBe(5)
+    expect(focus.edges.size).toBe(4)
+  })
+
+  it('is nothing for the suspect wallet (every transfer is its own), for no selection, and for an unknown wallet', () => {
+    const view = buildFlow(okx)
+    expect(focusOf(view, okx.address)).toBeNull()
+    expect(focusOf(view, null)).toBeNull()
+    expect(focusOf(view, 'nope')).toBeNull()
+  })
+})
+
 describe('nodeXY and edgeWidth', () => {
   it('lays columns left to right and rows downwards', () => {
     expect(nodeXY({ column: 0, row: 0 })).toEqual({ x: 0, y: 0 })
@@ -180,9 +196,9 @@ describe('nodeXY and edgeWidth', () => {
     expect(nodeXY({ column: 1, row: 2 }).y).toBeGreaterThan(nodeXY({ column: 1, row: 1 }).y)
   })
 
-  it('is 1.5 for nothing, 10 for the largest, and grows with the amount', () => {
+  it('is 1.5 for nothing, 8 for the largest, and grows with the amount', () => {
     expect(edgeWidth(0, 100)).toBe(1.5)
-    expect(edgeWidth(100, 100)).toBe(10)
+    expect(edgeWidth(100, 100)).toBe(8)
     expect(edgeWidth(25, 100)).toBeGreaterThan(edgeWidth(4, 100))
     expect(edgeWidth(25, 100)).toBeLessThan(edgeWidth(100, 100))
     expect(edgeWidth(5, 0)).toBe(1.5)

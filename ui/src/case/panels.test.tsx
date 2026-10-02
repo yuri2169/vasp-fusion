@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { api } from '../api/api'
 import { ApiError } from '../api/client'
@@ -50,6 +50,17 @@ describe('AnswerPanel, an exchange is named', () => {
     expect(within(htx).getByRole('meter', { name: 'Confidence' })).toHaveAttribute('aria-valuetext', expect.stringMatching(/^rule confidence 0\.71/))
     // a second exchange at or above the bar can be written to as well, as a secondary action
     expect(within(htx).getByRole('link', { name: 'Draft request to HTX' })).toHaveAttribute('href', '/desk?vasp=HTX&case=tron-htx-coindcx')
+  })
+
+  it('folds the evidence of an exchange that is not the answer', async () => {
+    const { user } = renderApp(<AnswerPanel c={two} onSelect={noop} />)
+    const htx = screen.getByRole('article', { name: 'HTX' })
+    const fold = within(htx).getByText('Evidence (3)')
+    expect(fold.closest('details')).not.toHaveAttribute('open')
+    await user.click(fold)
+    expect(fold.closest('details')).toHaveAttribute('open')
+    // the answer's own evidence is open
+    expect(within(screen.getByRole('article', { name: 'CoinDCX' })).queryByText(/^Evidence \(/)).not.toBeInTheDocument()
   })
 
   it('lists the evidence in the backend’s words', () => {
@@ -220,10 +231,11 @@ describe('WalletPanel', () => {
     const { user } = renderApp(<WalletPanel c={hero} id={lead.id} onSelect={noop} onClose={noop} />)
     await user.click(screen.getByRole('button', { name: 'Open a case for this wallet' }))
     expect(open).toHaveBeenCalledWith({ address: lead.id, chain: 'tron' }, undefined)
-    expect(await screen.findByTestId('location')).toHaveTextContent('/cases/c-0123456789')
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/cases/c-0123456789'))
 
     open.mockRejectedValueOnce(new ApiError(422, 'OFFLINE=1 and not cached. Trace it with the network on.'))
-    await user.click(screen.getByRole('button', { name: 'Open a case for this wallet' }))
+    // the button is disabled while the first request settles
+    await user.click(await screen.findByRole('button', { name: 'Open a case for this wallet' }))
     expect(await screen.findByText('OFFLINE=1 and not cached. Trace it with the network on.')).toBeInTheDocument()
   })
 

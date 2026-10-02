@@ -39,8 +39,9 @@ export interface FlowEdge {
   source: string
   target: string
   direction: 'outbound' | 'inbound'
-  /** The traced parts of every transfer between the two, added up. */
+  /** The traced parts of every transfer between the two, added up, in `asset`. */
   amount: number
+  asset: string
   /** In time order. */
   transfers: GraphEdge[]
   onPath: boolean
@@ -53,8 +54,8 @@ export interface FlowView {
   asset: string
 }
 
-const COLUMN_GAP = 210
-const ROW_GAP = 92
+const COLUMN_GAP = 184
+const ROW_GAP = 90
 
 /** The part of a transfer that is the suspect wallet's money (the whole of it when the trace did not split it). */
 export const traced = (e: { amount: number; traced_amount?: number | null }): number => e.traced_amount ?? e.amount
@@ -134,7 +135,7 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
     const target = idOf.get(e.target)
     if (!source || !target || source === target) continue
     const id = `${source}>${target}`
-    const edge = flowEdges.get(id) ?? { id, source, target, direction: isInbound(e) ? 'inbound' : 'outbound', amount: 0, transfers: [], onPath: false }
+    const edge = flowEdges.get(id) ?? { id, source, target, direction: isInbound(e) ? 'inbound' : 'outbound', amount: 0, asset: e.asset, transfers: [], onPath: false }
     edge.amount += traced(e)
     edge.transfers.push(e)
     flowEdges.set(id, edge)
@@ -222,14 +223,25 @@ export function pathTo(view: FlowView, id: string): { nodes: Set<string>; edges:
   return { nodes: new Set([chain[0].source, ...chain.map((e) => e.target)]), edges: new Set(chain.map((e) => e.id)) }
 }
 
+/** What stays in view when one wallet is looked at: the path to it. Everything else steps back.
+ *  null = nothing steps back: no selection, an unknown wallet, or the suspect wallet itself
+ *  (every transfer in the case is its own). */
+export function focusOf(view: FlowView, id: string | null): { nodes: Set<string>; edges: Set<string> } | null {
+  if (!id) return null
+  const node = view.nodes.find((n) => n.id === id)
+  if (!node || node.column === 0) return null
+  return pathTo(view, id)
+}
+
 export function nodeXY(n: Pick<FlowNode, 'column' | 'row'>): { x: number; y: number } {
   return { x: n.column * COLUMN_GAP, y: n.row * ROW_GAP }
 }
 
-/** Edge width in pixels: 1.5 for nothing, 10 for the largest flow, by the square root (so area, not length, reads as amount). */
+/** Edge width in pixels: 1.5 for nothing, 8 for the largest flow, by the square root (a
+ *  linear scale would draw every small transfer as a hairline beside one large one). */
 export function edgeWidth(amount: number, max: number): number {
   if (max <= 0 || amount <= 0) return 1.5
-  return Math.round((1.5 + 8.5 * Math.sqrt(Math.min(1, amount / max))) * 10) / 10
+  return Math.round((1.5 + 6.5 * Math.sqrt(Math.min(1, amount / max))) * 10) / 10
 }
 
 /** What came into and went out of one wallet on this trail, in time order. */

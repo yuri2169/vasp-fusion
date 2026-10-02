@@ -92,6 +92,7 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 ```
 
 - Rail: 224px, icons only (64px) under 1024px. Content column: at most 1240px.
+- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case).
 - The top bar holds the search and the data-source tag, nothing else.
 - A page starts with `PageHeader` (optional eyebrow, title, one line of purpose, actions on the right).
 - Sections inside a page are headed by an `eyebrow` `<h2>`.
@@ -108,6 +109,53 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 - A long path scrolls sideways under the stamp. The stamp stays in view: the answer is never off-screen.
 - While a case is queued or running the rail shows the suspect wallet and a line still being drawn.
 - **The one orchestrated animation in the app:** when a result arrives while the officer is watching, pass `animate` and the rail extends hop by hop, the stamp landing last. Nothing else in the app animates. Under `prefers-reduced-motion` it does not animate either.
+
+## The case page (`/cases/:id`)
+
+```
+Case DEMO/2026/101
+[TRON] TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c                    [Case file] [Trace again]
+Complaint 3150… · Reported loss ₹40,50,000 · Opened 2 Oct 2026
+┌ Hop Rail ─────────────────────────────────────────────────────────── [stamp] ┐
+│ Where the 2,652.22 USDT went  ▇▇▇▇▇▇▇▇ CoinDCX 58%  ▨▨▨▨▨ busy wallets 42%      │
+└────────────────────────────────────────────────────────────────────────────────┘
+┌ Fund flow ── Fit · Focus path · + − · Group · PNG · GraphML ┐ ┌ Why CoinDCX? ─────┐
+│ funders ▸ SUSPECT ━━━━▶ deposit ▸ exchange    (the rail's path is the │ │ name · tier · chip │
+│               ╲                                 first line)           │ │ two meters         │
+│                ╲──▶ wallet ──▶ busy wallet                            │ │ [Draft request to] │
+│ legend: shape = role, border = label tier, line = transfer            │ │ counterfactual     │
+└───────────────────────────────────────────────────────────────────────┘ │ evidence + hashes  │
+  sticks under the top bar while the right column is read                 │ others · leads     │
+                                                                          │ next steps·summary │
+[ Timeline | Transfers 8 | Wallets 7 | Patterns 1 | Inbound funding 5 | Audit ]
+```
+
+- **The answer panel holds the one saffron button**, under the meters it follows from. The page header has only secondary actions ("Case file", "Trace again").
+- **The selected wallet and the open tab are in the address** (`?wallet=<address>&tab=<id>`), so a view can be linked to and the back button undoes a selection. A wallet can be selected from the graph, the Hop Rail, any address chip in the panel or the tabs; the panel then shows that wallet ("Back to the answer" returns), and the rail marks the path to it.
+- **INSUFFICIENT EVIDENCE is the same frame with its own panel**: slate, dashed, headed "No exchange is named"; the reason verbatim at 16px, what was reached (meters hatched under the bar), what would change this, next steps, leads. Nothing on that screen is saffron.
+- **SANCTIONED OR MIXER REACHED** leads with the alert in a red-bordered panel; a nearest exchange follows only if the trace kept one, and a request is offered only at or above the bar.
+- **The evidence of an exchange that is not the answer is folded** ("Evidence (3)"); the answer's own is open.
+- **A running trace says only what is known**: queued or reading, the chain, how long the officer has waited. The server reports no steps and has no cancel, so the button is "Stop waiting" and says the trace goes on. When the result arrives while the officer watches, the rail extends and one line reports what the run read.
+- **Under 1024px** the graph and the panel stack; the graph stops being sticky.
+
+## The fund-flow graph
+
+Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/caseGraph.ts`. The layout is ours: a column per hop, **the Hop Rail's path on the first line**, side branches under it, funders to the left of the suspect wallet. Same case, same picture.
+
+| What | Encodes | How |
+|---|---|---|
+| Shape | The wallet's role | Suspect: filled ink circle. On the trail: circle. Not followed further: small circle. Busy wallet: hexagon. Deposit address: tag. Exchange wallet: rounded rectangle. Custodial: barrel. Swap service: rhomboid. Bridge: diamond with two opposed arrows. Mixer: concave hexagon, red, crossing arrows. Sanctioned: octagon, red, a bar |
+| Border | The tier of its label | The `TierTag` vocabulary: published by exchange = double teal; curated = solid teal on a tint; explorer tag = dotted teal; derived = solid slate; unlabelled = dashed slate |
+| Saffron fill | A wallet of the exchange the case names | Nothing else on the canvas is saffron |
+| Line width | The amount (square-root scale, 1.5 to 8px) | Several transfers between two wallets are one line; the hover card lists them |
+| Line colour and dash | Ink = the path on the Hop Rail; slate = other transfers; dashed = money coming in | |
+
+- The legend under the canvas names, in words, every shape, border and line **this case** uses.
+- The owner's name is written over a labelled wallet, the short address under every wallet (14px on the canvas; the picture is never drawn above life size, so type stays at or under the page's).
+- Hover: a wallet's whole address, role and label; a transfer's amount, time and whole hash. Click: selects. With a selection, everything off the path to it steps back to 20%; the suspect wallet dims nothing (every transfer is its own).
+- The mouse wheel scrolls the page; zoom is on the buttons. Nodes are not draggable.
+- **Nothing is reachable by mouse only.** The canvas is `role="img"` with a sentence; the Wallets tab lists every wallet and selects it the same way a click does, the Transfers tab every transfer.
+- Straight lines, not square ("taxi") routing: square routing runs different transfers along one trunk, and the picture then no longer says which wallet paid which.
 
 ## Encoding rules
 
@@ -132,6 +180,8 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 - **Patterns** (`TypologyFlag`): severity is a word and an icon as well as a colour: Alert (high), Pattern (warn), Note (info). A `deposit_like` flag is a **Lead**: dashed teal, kept apart from the answer.
 - **Addresses** (`AddressChip`): shortened in the middle as the backend writes them (`TVZpWt…KjUtzR`, six and six; four and four on the rail). The whole address is one hover, one Tab or one click (copy) away. **Copy always copies the whole address.** Letters and tables of record print it whole (`full`).
 - **Numbers** follow `vaspfusion/explain/fmt.py` (`src/lib/format.ts`), so a figure in a meter reads the same as in the backend's sentence: `48,500 USDT`, `252,163.80 USDT`, `0.002428 ETH`, `85%`, `under 1%`, `₹40,50,000`. Times are UTC and say so.
+- **Where the funds went** (`FundsBar`) is one stacked bar of the whole of what the wallet sent. Kind is **not** told by hue: the six brand colours are not a categorical palette (checked with the dataviz validator: slate and teal are too close for a protan reader, saffron is under 3:1 on white). Three fills, each a status: saffron = the exchange named, ink = another named party, seal = sanctioned or mixer; everything unresolved is one hatch. Every slice is named under the bar with its share and amount, slices are 2px apart, and each has a hover card.
+- **Model reasons** (`EvidenceList`) are signed bars: solid = speaks for, hatched = against, with the SHAP value in mono. The model's probability is a sentence, never a bar.
 - **Demo data is marked.** The top bar shows "Demo data" or "Includes demo data" whenever the API's `X-Data-Source` is not `live`.
 
 ## Copy rules
@@ -158,13 +208,20 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 | `DualMeter` | Proximity and confidence of one candidate; `layout="stack"` in a narrow column |
 | `Amount` | An amount in its asset, with US dollars when that adds something |
 | `TypologyFlag` | A pattern or a lead; `compact` for the name alone |
-| `HopRail` | The path of the funds, ending in the stamp |
+| `HopRail` | The path of the funds, ending in the stamp. `selected`, `marked`, `onSelect` tie it to the page's selection; `footer` sits inside its card |
+| `FundsBar` | Where the money ended up: one bar, every part named |
+| `EvidenceList` | Evidence items in the backend's words, with hashes; model reasons as signed bars |
+| `Tabs` | The index tabs of a file: arrow keys, Home/End, counts |
 | `DataTable` | Any list of records: sortable, sticky header, rows open with a click or Enter |
 | `PageHeader` | The top of a screen |
 | `EmptyState`, `ErrorState`, `Skeleton` | Nothing yet, something failed, on its way |
 | `ToastProvider`, `useToast` | Confirm an action; errors stay until dismissed |
 | `Dialog` | A decision that should not be made in passing |
 | `Tip`, `useTip` | A small card on hover and focus, drawn in `<body>` so nothing clips it |
+
+The case page's own parts are in `src/case/` (they are not general components): `FlowGraph` + `GraphLegend` + `flowStyle.ts`, `AnswerPanel`, `AbstainPanel`, `CandidateCard`, `WalletPanel`, `TraceProgress`, `TraceAgain` (with `HopLimit`), the six `tabs/`, `caseText.ts` (words for roles, checks, audit actions) and `rules.ts` (the naming bar, what can be routed to the desk).
+
+`AddressChip` takes `onSelect` / `selected` / `marked`: the address then is a button that shows the wallet on the case page.
 
 Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-in page when a login is required), `NavRail`, `GlobalSearch`.
 
@@ -188,4 +245,5 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
-- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png` in both themes, using a Chromium-family browser already installed (`BROWSER=` to choose).
+- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png` and `case-*.png` in both themes, using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
+- In mock mode a demo wallet's trace appears to take 2.4 seconds (`mockSettings.traceMs` in `src/api/mock.ts`), so the trace screen and the rail's animation can be seen with no server. Tests set it to 0.
