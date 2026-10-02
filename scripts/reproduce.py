@@ -115,7 +115,9 @@ class Run:
             return True
         started = time.monotonic()
         print(f"\n== {name}: {what}", flush=True)
-        done = subprocess.run([sys.executable, *cmd], cwd=ROOT, env={**self.env, **(env or {})})
+        merged = {**self.env, **(env or {})}
+        done = subprocess.run([sys.executable, *cmd], cwd=ROOT,
+                              env={k: v for k, v in merged.items() if v is not None})
         took = f"{time.monotonic() - started:.0f} s"
         good = done.returncode == 0
         self.failed |= not good
@@ -187,7 +189,10 @@ def main() -> None:
     run.step("golden", "the demo figures (expected.json)", "tests/refresh_expected.py")
     run.step("mocks", "the mock files", "scripts/make_mocks.py")
     run.step("openapi", "the OpenAPI schema", *cli, "openapi", "--out", "docs/openapi.json")
-    run.step("tests", "the test suite", "-m", "pytest", "-q", "-p", "no:cacheprovider")
+    # the tests set OFFLINE themselves, case by case: they get the caller's environment
+    run.step("tests", "the test suite", "-m", "pytest", "-q", "-p", "no:cacheprovider",
+             env={"OFFLINE": os.environ.get("OFFLINE"),
+                  "ETHERSCAN_API_KEY": os.environ.get("ETHERSCAN_API_KEY")})
 
     changed, stamped, new = tracked_changes()
     for path in stamped:                       # only `trained_at` moved: put the file back
