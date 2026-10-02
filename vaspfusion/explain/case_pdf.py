@@ -213,6 +213,8 @@ def _story(blocks: list[dict]) -> list:
             story.append(Paragraph(_t(b["text"]), H2))
         elif t == "p":
             story.append(Paragraph(_t(b["text"]), PARA))
+        elif t == "small":
+            story.append(Paragraph(_t(b["text"]), SMALL))
         elif t == "note":
             story += [_boxed([Paragraph(_t(b["text"]), NOTICE)], DRAFT, colors.white),
                       Spacer(1, 6)]

@@ -25,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SECRET_FILE = ROOT / "data" / "auth_secret"
 HEADER = {"alg": "HS256", "typ": "JWT"}
 TTL_S = 8 * 3600                      # one shift
+MAX_TOKEN = 4096                      # ours are about 250 characters
 
 
 class TokenError(ValueError):
@@ -57,20 +58,21 @@ def issue(claims: dict, secret: bytes, ttl_s: int = TTL_S, now: float | None = N
 def check(token: str, secret: bytes, now: float | None = None) -> dict:
     """The claims of a valid token. Raises `TokenError` for anything else."""
     parts = token.split(".") if isinstance(token, str) else []
-    if len(parts) != 3 or not all(parts):
+    if len(parts) != 3 or not all(parts) or len(token) > MAX_TOKEN or not token.isascii():
         raise TokenError("not a token")
     head, body, sig = parts
     try:
         header = json.loads(_unb64(head))
-    except ValueError as e:
+    except (ValueError, RecursionError) as e:
         raise TokenError("not a token") from e
     if not isinstance(header, dict) or header.get("alg") != "HS256":
         raise TokenError("only HS256 tokens are accepted")
-    if not hmac.compare_digest(_sign(f"{head}.{body}".encode(), secret), sig):
+    if not hmac.compare_digest(_sign(f"{head}.{body}".encode(), secret).encode(),
+                               sig.encode()):
         raise TokenError("bad signature")
     try:
         claims = json.loads(_unb64(body))
-    except ValueError as e:
+    except (ValueError, RecursionError) as e:
         raise TokenError("not a token") from e
     if not isinstance(claims, dict) or not isinstance(claims.get("exp"), (int, float)):
         raise TokenError("the token has no expiry")
@@ -96,4 +98,8 @@ def load_secret(path: Path | str | None = None) -> bytes:
         else:
             with os.fdopen(fd, "w") as f:
                 f.write(secrets.token_hex(32))
-    return path.read_text().strip().encode()
+    secret = path.read_text().strip()
+    if len(secret) < 32:                  # an emptied file must not become an empty key
+        raise ValueError(f"{path} must hold at least 32 characters; delete it to have a "
+                         f"new secret made (everyone signs in again)")
+    return secret.encode()

@@ -307,6 +307,7 @@ def with_receipt(case: dict) -> dict:
         model_sha256=None, git_commit=None, git_dirty=None)
     stored = S.CaseDetail.model_validate(case).model_dump(mode="json")   # as the API serves it
     case["provenance"]["findings_sha256"] = P.findings_sha256(stored)
+    case["provenance"]["content_sha256"] = P.content_sha256(stored)
     return case
 
 

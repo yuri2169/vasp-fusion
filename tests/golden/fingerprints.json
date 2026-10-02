@@ -1,36 +1,36 @@
 {
  "eth-abstain": {
-  "findings_sha256": "d80898234b50f626efcec897890d0e39f8a17d23c99759a633a45d8db6d09de9",
+  "findings_sha256": "ad5dddb1b524acf564c79175fb04189b65271d81e0ada26cd33ab2a3e20eb636",
   "responses_sha256": "3d5f183b9ee65cb05508cf516b25cad78e7666e1c332fa68007f966f153e3c80",
   "pages": 20
  },
  "eth-bitget": {
-  "findings_sha256": "3e68b597b5e1d16b4d5eba9c2c22235c63bb712e29b1407803c94a73fe6dc8b1",
+  "findings_sha256": "c9c146ea45559eb4de10206fa6b6dab9e5f7d6e0ba1db42769323b4023ef3f7c",
   "responses_sha256": "4215910970b1cc0fbb1c011eca93b4b3288bdc2699d247dea9ab3d41e7acfd3d",
   "pages": 5
  },
  "eth-bridge": {
-  "findings_sha256": "14c92774990bb29b3c44bc6b3aca04a0eff273537016ea8e62a9aa44b1d983fc",
+  "findings_sha256": "23dc4404ad5dec800da124698f6ba3d65da4a6ccd45aa02f1f656ed919d38ad5",
   "responses_sha256": "d0ddae6afe46fb92b7e183130ac44a2a20eda527cbc279e0d47b7ed1304a8023",
   "pages": 24
  },
  "tron-abstain": {
-  "findings_sha256": "af4bc3b32b3dfee4b4ee887131a5c2a27f2889d2a3ae88b08bf60f77cc3f7d56",
+  "findings_sha256": "d425646a16be4ff53d1c8fb1eadfec8c6d2edf5e975dd12e20f788b7da3d0a76",
   "responses_sha256": "d787a9471b8ba4f96a9dca874cec96edc8f296adbcc1e64a4180f2ef6b12fd7c",
   "pages": 31
  },
  "tron-coindcx": {
-  "findings_sha256": "a3addce9fa9bf98d8b124372221a831147315aa3c6e875135c1e9761154b82a9",
+  "findings_sha256": "2593ec939d7380fdbc218eadd5d76f69f3f312a23f1a47684107b96bb3117a18",
   "responses_sha256": "c38ab3939c89d5a03e27dcca24a0ea8daa7b5bac73004243d4cedf0d4a5fe5b4",
   "pages": 10
  },
  "tron-htx-coindcx": {
-  "findings_sha256": "42684cc108170f0041d217f3746080c0541b04453a4ee7e6d362d206b3680c05",
+  "findings_sha256": "b97dee5bbd8c3a2189ae07ff928c6f6ab5ad5f5cc82fc1843ebb2b70074c36ae",
   "responses_sha256": "faa8c2e601b95b36f25e44f14c62b739e8493358c03ffb5616f0e0b77d54404a",
   "pages": 14
  },
  "tron-ofac": {
-  "findings_sha256": "5c54c44c0992a642ad095d73864f35060b1dc270642f842a2e9594e0086264c2",
+  "findings_sha256": "958a5a5f447c041d3394b6632f2c618ba42e916043dbc834ec5eea77be692fd9",
   "responses_sha256": "6686fbafe24f7bfde1dbd94d82e8b4dfc992dbcd82f2efcc86aa5f253b0fb26e",
   "pages": 6
  }

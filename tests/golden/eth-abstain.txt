@@ -25,11 +25,16 @@ reads; under 1% split into parts too small to follow.
 
 SUMMARY
 -------
-Wallet 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb sent 22,214.70 USDT on Ethereum in 2 transfers
-between 4 Apr 2024 and 23 Sep 2024. No exchange is named. None of the 22,214.70 USDT this wallet
-sent reached a labelled exchange within 3 hops. 55% has not moved on from the wallets it
-reached; 45% is in wallets with more transfers than one fetch reads; under 1% split into parts
-too small to follow. Not followed in this run: 270.30 ETH in 4 transfers.
+Wallet 0x0bad…2424bb sent 22,214.70 USDT on Ethereum in 2 transfers between 4 Apr 2024 and 23
+Sep 2024. No exchange is named. None of the 22,214.70 USDT this wallet sent reached a labelled
+exchange within 3 hops. 55% has not moved on from the wallets it reached; 45% is in wallets with
+more transfers than one fetch reads; under 1% split into parts too small to follow. Not followed
+in this run: 270.30 ETH in 4 transfers.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -104,9 +109,9 @@ The bar has not been measured on this chain.
 
 WHAT WOULD CHANGE THIS
 ----------------------
-  - Watching 0x172243a85a00afb20810224860bf2e17d41bd259: 55% of the funds is still there
-  - A full history of 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 (43% of the funds)
-  - A full history of 0x505fedb20789614d21ed9d454e5146a5f61845f2 (2% of the funds)
+  - Watching 0x1722…1bd259: 55% of the funds is still there
+  - A full history of 0x6f48…68b679 (43% of the funds)
+  - A full history of 0x505f…1845f2 (2% of the funds)
 
 LIMITATIONS
 -----------
@@ -130,11 +135,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify eth-abstain
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify eth-abstain
 
-  Findings fingerprint    d80898234b50f626efcec897890d0e39f8a17d23c99759a633a45d8db6d09de9
+  Findings fingerprint    ad5dddb1b524acf564c79175fb04189b65271d81e0ada26cd33ab2a3e20eb636
   Input                   ethereum 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb, hop limit 3
   Input SHA-256           a7bab30d21be672c412ef4c25eace92fcc8af08c14f0e6bb01f8fe98f8933ea1
   Chain responses         20 read from api.etherscan.io
@@ -144,7 +151,8 @@ python -m vaspfusion.cli verify eth-abstain
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         550c8891dfbb50ef0f01d19e8b868ef334ed883d860eb579ee4c20e12e9022ce
+  Content SHA-256         35a95689cddf222e5ca98ac9472227c7fa021c988cddb601671045eed70ec707
+  Receipt SHA-256         b90bc9e51d06bba5d7a53f877e9ac4cb7230c5e5bc61d59f6d887bfcd26a6fe4
 
   Chain responses read
     d1cf3197bedffbb9da89547235bed857d685ed9e4b806eaf4faa85e912d7de9d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1712267195

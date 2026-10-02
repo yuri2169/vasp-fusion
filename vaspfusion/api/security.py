@@ -67,16 +67,20 @@ def describe(method: str, template: str | None, path_params: dict, query) -> tup
 
 
 def is_repeat(method: str, key: tuple) -> bool:
-    """True for a read that this officer made, with this result, under 30 seconds ago."""
+    """True for a read that this officer made, from this address, with this result, under
+    30 seconds ago. Nothing is remembered here: `remember` does that once the row is
+    written, so a row that failed to write is tried again on the next request."""
     if method != "GET":
         return False
     now = _now()
     for k in [k for k, t in _recent.items() if now - t > FOLD_S]:
         del _recent[k]
-    if key in _recent:
-        return True
-    _recent[key] = now
-    return False
+    return key in _recent
+
+
+def remember(method: str, key: tuple) -> None:
+    if method == "GET":
+        _recent[key] = _now()
 
 
 def forget() -> None:

@@ -25,22 +25,25 @@ Also named: HTX, confidence 0.71 (rule confidence), 54% of the funds in 2 hops.
 
 SUMMARY
 -------
-Wallet TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul
-2024 and 26 Aug 2024. 6,000 USDT (46%) reached CoinDCX in 1 hop, at
-TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk ("CoinDCX deposit address (derived: sweep + gas payer)",
-derived by VASP-FUSION). 7,000 USDT (54%) reached HTX in 2 to 3 hops, at
-TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu ("HTX (Huobi) (proof-of-reserves)", published by the exchange
-itself). The wallet before it, THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a, passed on everything it
-received from this trail. Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01).
-The range comes from the deposit-address model, which is calibrated against the addresses the
-discovery rules derived; the weight of the exchange wallet's label and the hop decay are
-rule-set. Checked without its strongest evidence: Still CoinDCX without the label on
-TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk: 46% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated
-list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding:
-THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a behaves like an exchange deposit address: 54% of the funds
-(7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than
-0.01); see the flags. Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes:
+Wallet TGfoGr…q49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul 2024 and 26 Aug
+2024. 6,000 USDT (46%) reached CoinDCX in 1 hop, at TLUQsV…2NHPYk ("CoinDCX deposit address
+(derived: sweep + gas payer)", derived by VASP-FUSION). 7,000 USDT (54%) reached HTX in 2 to 3
+hops, at TFTWNg…8x5jLu ("HTX (Huobi) (proof-of-reserves)", published by the exchange itself).
+The wallet before it, THW7GJ…uUJt6a, passed on everything it received from this trail. Nearest
+exchange: CoinDCX, confidence 0.85 (range narrower than 0.01). The range comes from the
+deposit-address model, which is calibrated against the addresses the discovery rules derived;
+the weight of the exchange wallet's label and the hop decay are rule-set. Checked without its
+strongest evidence: Still CoinDCX without the label on TLUQsV…2NHPYk: 46% of the funds reach
+CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a
+finding: THW7GJ…uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT)
+reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01); see the
+flags. Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes:
 a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -87,17 +90,16 @@ funds reached belongs to that exchange.
   Address reached  TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk
   Route            W0  ->  W2
   Time to reach    0 seconds
-    [Label] TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk is labelled CoinDCX ("CoinDCX deposit address
-    (derived: sweep + gas payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep
-    rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet
-    TU7BbA…vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule:
-    TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree.
-    Model: over 0.99 that an address behaving like this is an exchange deposit address (range
-    narrower than 0.01), from a model that did not train on this address. Label confidence 0.85
-    = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability. [weight
-    0.85]
-    [Model] Deposit-address model: over 0.99 that an address behaving like
-    TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk is an exchange deposit address (range narrower than 0.01)
+    [Label] TLUQsV…2NHPYk is labelled CoinDCX ("CoinDCX deposit address (derived: sweep + gas
+    payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of
+    the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list)
+    in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH…aEznGd, labelled CoinDCX,
+    sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address
+    behaving like this is an exchange deposit address (range narrower than 0.01), from a model
+    that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's
+    label (curated list) × the model's probability. [weight 0.85]
+    [Model] Deposit-address model: over 0.99 that an address behaving like TLUQsV…2NHPYk is an
+    exchange deposit address (range narrower than 0.01)
     [Model] Deposit-address model, for: it forwards 100% of what it receives to one wallet [SHAP
     +2.86]
     [Model] Deposit-address model, for: every outgoing transfer goes to one wallet [SHAP +2.53]
@@ -105,9 +107,9 @@ funds reached belongs to that exchange.
     receives, as a collecting wallet does [SHAP +1.69]
     [Route] 46% of the wallet's USDT (6,000 USDT) reached it in 1 hop [weight 1.00]
         tx a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae
-    [Without its label] Still CoinDCX without the label on TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk:
-    46% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72
-    (was 0.85). [weight -0.13]
+    [Without its label] Still CoinDCX without the label on TLUQsV…2NHPYk: 46% of the funds reach
+    CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). [weight
+    -0.13]
         tx a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae
         tx f025b7edf2492726bc07a76c39550b323ba9469e3a2a2bbc88b319d03ba82f4a
 
@@ -115,17 +117,16 @@ funds reached belongs to that exchange.
   Address reached  TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu
   Route            W0  ->  W1  ->  W4
   Time to reach    4 minutes
-    [Label] TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu is labelled HTX ("HTX (Huobi)
-    (proof-of-reserves)"): published by the exchange itself, source defillama-cex [weight 0.95]
+    [Label] TFTWNg…8x5jLu is labelled HTX ("HTX (Huobi) (proof-of-reserves)"): published by the
+    exchange itself, source defillama-cex [weight 0.95]
     [Route] 54% of the wallet's USDT (7,000 USDT) reached it in 2 to 3 hops [weight 0.74]
         tx a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d
         tx b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645
-    [Route] THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a passed on all 7,000 USDT it received from this
-    trail to HTX
+    [Route] THW7GJ…uUJt6a passed on all 7,000 USDT it received from this trail to HTX
         tx 9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354
         tx b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645
-    [Without its label] Without the label on TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu, HTX is not
-    reached at all: naming HTX rests on that one label. [weight -0.71]
+    [Without its label] Without the label on TFTWNg…8x5jLu, HTX is not reached at all: naming
+    HTX rests on that one label. [weight -0.71]
 
 PATH TO THE NAMED EXCHANGE
 --------------------------
@@ -147,15 +148,14 @@ LEADS TO CHECK
 Unlabelled wallets that behave like an exchange deposit address. A lead is not a finding and
 does not change the result.
 
-    [Lead] THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a: THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a behaves like
-    an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the
-    deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it:
-    forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet;
-    the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. The
-    wallet it pays most, TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu, is labelled HTX (published by the
-    exchange itself), so it may be a deposit address of HTX that the discovery rules have not
-    derived. A lead to check, not a finding: the model was measured on exchange customers and
-    deposit addresses only.
+    [Lead] THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a: THW7GJ…uUJt6a behaves like an exchange deposit
+    address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over
+    0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to
+    one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or
+    spreads what it receives, as a collecting wallet does. The wallet it pays most,
+    TFTWNg…8x5jLu, is labelled HTX (published by the exchange itself), so it may be a deposit
+    address of HTX that the discovery rules have not derived. A lead to check, not a finding:
+    the model was measured on exchange customers and deposit addresses only.
         tx 9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081
         tx a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d
 
@@ -187,14 +187,12 @@ is a check on a label hold-out, not a calibration.
 
 NEXT STEPS
 ----------
-  - Draft a request to CoinDCX for KYC and a freeze on the account behind
-    TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk
-  - Draft a request to HTX for KYC and a freeze on the account behind
-    THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a (54% of the funds)
+  - Draft a request to CoinDCX for KYC and a freeze on the account behind TLUQsV…2NHPYk
+  - Draft a request to HTX for KYC and a freeze on the account behind THW7GJ…uUJt6a (54% of the
+    funds)
   - Preserve the transaction records listed in the evidence
-  - Ask HTX whether THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a is one of its deposit addresses: it
-    behaves like one and pays into TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu (54% of the funds reached
-    it)
+  - Ask HTX whether THW7GJ…uUJt6a is one of its deposit addresses: it behaves like one and pays
+    into TFTWNg…8x5jLu (54% of the funds reached it)
 
 LIMITATIONS
 -----------
@@ -218,11 +216,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify tron-htx-coindcx
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify tron-htx-coindcx
 
-  Findings fingerprint    42684cc108170f0041d217f3746080c0541b04453a4ee7e6d362d206b3680c05
+  Findings fingerprint    b97dee5bbd8c3a2189ae07ff928c6f6ab5ad5f5cc82fc1843ebb2b70074c36ae
   Input                   tron TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr, hop limit 3
   Input SHA-256           4422631f86e23d4bf57e0b3f177d12868012272513f06df025c68cdc7f0fbae2
   Chain responses         14 read from api.trongrid.io
@@ -232,7 +232,8 @@ python -m vaspfusion.cli verify tron-htx-coindcx
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         22f7a3bdac967521ad9468c6c82d49e11f34ab3316db23b1d81aaa271df0a479
+  Content SHA-256         10d83d14acb4364ded39a9611da7ef251d0fac2951645fa029e41899eeb26112
+  Receipt SHA-256         72733280206b2960371d26a6f85c0f7e31254da76d880b966471d984acc849ac
 
   Chain responses read
     0f711c046cd64e3c1ead3e5aeae5f9fb0e25a4702c8a7f7ab0a6b70abd821e9a  https://api.trongrid.io/v1/accounts/TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1722524721000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

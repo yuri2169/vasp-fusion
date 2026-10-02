@@ -41,7 +41,7 @@ def test_disable(monkeypatch, capsys):
     cli.main(["officer", "add", "a.rao", "--name", "Insp. A. Rao", "--password-stdin"])
     cli.main(["officer", "disable", "a.rao"])
     cli.main(["officer", "list"])
-    assert "not required" in capsys.readouterr().out
+    assert "every account is disabled: nobody can sign in" in capsys.readouterr().out
     assert Officers().verify("a.rao", "a long demo password") is None
 
 

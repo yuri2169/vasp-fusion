@@ -60,6 +60,7 @@ def test_an_edited_receipt_is_caught_by_the_replay(stored):
     edited = copy.deepcopy(case)
     edited["candidates"][0]["confidence"] = edited["confidence"] = 0.99
     edited["provenance"]["findings_sha256"] = P.findings_sha256(edited)   # receipt forged too
+    edited["provenance"]["content_sha256"] = P.content_sha256(edited)
     result = verify(edited, cache)
     core = {c["name"]: c for c in result["checks"]}
     assert result["matches"] is False

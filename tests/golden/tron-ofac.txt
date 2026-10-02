@@ -17,18 +17,23 @@ case reference is not a real complaint.
 RESULT
 ------
 SANCTIONED OR MIXING ADDRESS REACHED
-The funds reached a sanctioned or mixing address. No exchange is named.
-99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux43bs21qRsygv5WQWfgtbQeT6nXey
-(OFAC SDN), 1 hop away
+The funds reached a sanctioned or mixing address.
+99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop
+away
+No exchange is named.
 
 
 SUMMARY
 -------
-Wallet TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25
-Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address,
-TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop away. No labelled exchange was reached. Not
-followed in this run: 200 TRX in 1 transfer. Transaction hashes:
-30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.
+Wallet TU1D9S…WpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25 Nov 2024 and 7 Dec
+2024. 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1
+hop away. No labelled exchange was reached. Not followed in this run: 200 TRX in 1 transfer.
+Transaction hashes: 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -82,14 +87,12 @@ PATTERNS SEEN
 Patterns in the traced funds. They describe how the money moved and never decide the result.
 
     [Sanctioned contact (high)] TFdHux43bs21qRsygv5WQWfgtbQeT6nXey: 99% of the funds (100,008
-    USDT) reached a sanctioned address, TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop
-    away
+    USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away
         tx 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
         tx 7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07
         tx cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9
-    [Rapid forwarding (warn)] TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS:
-    TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS passed on 100% of the 1,052 USDT that reached it within
-    36 seconds of its arrival
+    [Rapid forwarding (warn)] TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS: TQ7Ujg…drwJrS passed on 100%
+    of the 1,052 USDT that reached it within 36 seconds of its arrival
         tx 8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7
         tx ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240
 
@@ -121,8 +124,8 @@ is a check on a label hold-out, not a calibration.
 
 NEXT STEPS
 ----------
-  - Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address,
-    TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop away
+  - Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC
+    SDN), 1 hop away
 
 LIMITATIONS
 -----------
@@ -146,11 +149,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify tron-ofac
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify tron-ofac
 
-  Findings fingerprint    5c54c44c0992a642ad095d73864f35060b1dc270642f842a2e9594e0086264c2
+  Findings fingerprint    958a5a5f447c041d3394b6632f2c618ba42e916043dbc834ec5eea77be692fd9
   Input                   tron TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV, hop limit 3
   Input SHA-256           927b99f596dfde318847ce8848ee70d6f58e8d959b8d80cc24c10b377c57b834
   Chain responses         6 read from api.trongrid.io
@@ -160,7 +165,8 @@ python -m vaspfusion.cli verify tron-ofac
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         4d22c9396b4c7d415392c2c78c4b0b61688273919b14618a9df6de0bb8f59aa1
+  Content SHA-256         dc798ae342c0b29f02b6f0fc5ad25aede1c3e241a1e54f4b4841042bc052a330
+  Receipt SHA-256         fd003935a242b0eeed60749298b8475d1149b89754c1ce0593a20e022f1ce78e
 
   Chain responses read
     504ae4b2812e8569a0b820842873403b0f2ffca06ffbc94313a9eddc1502eafa  https://api.trongrid.io/v1/accounts/TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733483190000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

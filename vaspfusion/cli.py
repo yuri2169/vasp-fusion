@@ -792,8 +792,10 @@ def cmd_officer(args) -> None:
             for r in rows:
                 print(f"  {r['username']:<20}{r['name']:<32}{r['post'] or '-':<28}"
                       f"{'disabled' if r['disabled'] else 'active'}")
-            print(f"{len(rows)} officer(s) in {book.path} | login "
-                  f"{'required' if book.active() else 'not required (no active account)'}")
+            state = "not required (no account)" if not rows else \
+                "required" if book.active() else \
+                "required, and every account is disabled: nobody can sign in"
+            print(f"{len(rows)} officer(s) in {book.path} | login {state}")
         elif args.do == "disable":
             book.disable(args.username)
             print(f"disabled {args.username}")

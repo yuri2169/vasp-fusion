@@ -8,13 +8,22 @@ A receipt answers "is this real, and would I get it again?":
                       is listed, so one changed page can be named);
 * `label_db_sha256`   the label database file;
 * `model_sha256`      the deposit-address model, when the run used it;
-* `findings_sha256`   the findings fingerprint: every figure, address and transaction
-                      hash of the result, and none of its wording;
+* `findings_sha256`   the findings fingerprint: every figure, address, time and
+                      transaction hash of the result, and none of its wording (so the
+                      wording can improve without the fingerprint moving);
+* `content_sha256`    the whole result as stored, wording included: any edit to a stored
+                      case shows against it, and a replay by the same code reproduces it;
 * `git_commit`, `code_version`, `seed`   the code that ran.
 
 Digests are taken over canonical JSON: keys sorted, no spaces, floats rounded to six
 places (so the last bits of a float cannot differ between machines and still be the
 same finding).
+
+What no digest here can prove: the digests are not keyed, so whoever can rewrite a stored
+case can recompute them. That is why `verify` does not trust them: it traces the wallet
+again and compares. What it cannot re-derive from the chain is not covered at all: the
+case reference, the complaint number, the amount reported lost, the creation time and
+the demo flag are the officer's entries, not findings.
 """
 from __future__ import annotations
 
@@ -96,10 +105,18 @@ def case_headline(case: dict) -> dict:
     }
 
 
+def _label_facts(label: dict | None) -> list:
+    lab = label or {}
+    return [lab.get(k) for k in ("entity", "category", "kind", "tier", "confidence",
+                                 "confidence_low", "confidence_high")] + \
+        [(lab.get("model") or {}).get("p")]
+
+
 def findings(case: dict) -> dict:
     """Everything a finished case found, without its wording: the headline figures, every
-    transfer the money was followed through, the wallets and their labels, the evidence
-    hashes behind each candidate, and what a request to each exchange would list."""
+    transfer the money was followed through with its time, the wallets and their labels,
+    the evidence behind each candidate (hashes and weights), and what a request to each
+    exchange would list."""
     g = case["graph"]
     return {
         "address": case["address"], "chain": case["chain"],
@@ -107,16 +124,19 @@ def findings(case: dict) -> dict:
         "total_received": case.get("total_received"),
         "abstain_reason_given": case.get("abstain_reason") is not None,
         "hop_rail": [[h["tx_hash"], h["from_address"], h["to_address"], h["amount"],
-                      h.get("traced_amount")] for h in case["hop_rail"]],
-        "wallets": sorted([n["id"], n["role"], n["hop"],
-                           (n["label"] or {}).get("entity"), (n["label"] or {}).get("tier")]
-                          for n in g["nodes"]),
+                      h.get("traced_amount"), h["block_time"], h.get("elapsed_s")]
+                     for h in case["hop_rail"]],
+        "wallets": sorted(([n["id"], n["role"], n["hop"], *_label_facts(n.get("label"))]
+                           for n in g["nodes"]), key=lambda w: w[0]),
         "transfers": sorted([e["tx_hash"], e["source"], e["target"], e["asset"], e["amount"],
-                             e.get("traced_amount"), e.get("direction", "outbound")]
-                            for e in g["edges"]),
+                             e.get("traced_amount"), e.get("direction", "outbound"),
+                             e["block_time"]] for e in g["edges"]),
         "evidence": [[c["vasp"], c["direction"], c["path"], c.get("amount"),
-                      sorted({h for ev in c["evidence"] for h in ev["tx_hashes"]}),
-                      [[w["address"], w["amount"], w.get("paid_into"), w["tx_hashes"]]
+                      c.get("time_to_reach_s"),
+                      [[ev["kind"], ev.get("tier"), ev.get("weight"), sorted(ev["tx_hashes"])]
+                       for ev in c["evidence"]],
+                      [[w["address"], w["amount"], w.get("paid_into"), w["tier"], w["kind"],
+                        w["reached_at"], w["tx_hashes"]]
                        for w in (c.get("request_wallets") or [])]]
                      for c in case["candidates"]],
         "flag_hashes": [[f["code"], f["wallet"], f["severity"], sorted(f["tx_hashes"])]
@@ -126,6 +146,18 @@ def findings(case: dict) -> dict:
 
 def findings_sha256(case: dict) -> str:
     return sha256_of(findings(case))
+
+
+# What a stored case holds that is not the result of the trace: its identity and state,
+# what the officer entered, and the receipt itself.
+NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "complaint_no",
+                         "amount_lost_inr", "demo", "provenance"})
+
+
+def content_sha256(case: dict) -> str:
+    """The whole result as stored and served, wording included. Tracing the same wallet
+    again with the same code, labels and responses gives the same digest."""
+    return sha256_of({k: v for k, v in case.items() if k not in NOT_CONTENT})
 
 
 def file_sha256(path: str | Path) -> str:
@@ -155,7 +187,9 @@ def git_state() -> tuple[str | None, bool | None]:
     checkout, so the image build passes the commit in VASPFUSION_GIT_COMMIT."""
     env = os.environ.get("VASPFUSION_GIT_COMMIT", "").strip()
     if env:
-        return env, os.environ.get("VASPFUSION_GIT_DIRTY", "").strip() in ("1", "true")
+        dirty = os.environ.get("VASPFUSION_GIT_DIRTY", "").strip().lower()
+        # the commit was handed in; whether the tree was clean is known only if said
+        return env, {"1": True, "true": True, "0": False, "false": False}.get(dirty)
     try:
         def git(*args: str) -> str:
             return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True,
@@ -183,8 +217,8 @@ def run_provenance(case_in: dict, trail: list[dict], *, model_dir: str | Path | 
 # ------------------------------------------------------------------ the receipt document
 RECEIPT_KEYS = ("seed", "code_version", "git_commit", "git_dirty", "input", "input_sha256",
                 "pages", "responses_sha256", "label_db_sha256", "model_version",
-                "model_sha256", "findings_sha256", "fetched_at", "offline_replay",
-                "data_sources", "responses")
+                "model_sha256", "findings_sha256", "content_sha256", "fetched_at",
+                "offline_replay", "data_sources", "responses")
 
 
 def receipt(case: dict) -> dict | None:
@@ -203,8 +237,24 @@ def receipt(case: dict) -> dict | None:
 
 
 # ------------------------------------------------------------------ verify
+NEEDED = ("findings_sha256", "input", "input_sha256", "responses", "responses_sha256", "pages")
+HEADLINE = ("outcome", "top_vasp", "confidence")
+
+
 def _check(name: str, result: str, detail: str, stored=None, now=None) -> dict:
     return {"name": name, "result": result, "detail": detail, "stored": stored, "now": now}
+
+
+def _inconsistent(prov: dict) -> str | None:
+    """What in a receipt contradicts itself, if anything: each digest in it must be the
+    digest of the part it is said to cover."""
+    if sha256_of(prov["input"]) != prov["input_sha256"]:
+        return "its input does not match its input digest"
+    if responses_sha256(prov["responses"]) != prov["responses_sha256"]:
+        return "its list of chain responses does not match its responses digest"
+    if prov["pages"] != len(prov["responses"]):
+        return "its page count is not the length of its list of chain responses"
+    return None
 
 
 def verify_case(case: dict, rerun: Callable[[dict], dict], *,
@@ -212,20 +262,29 @@ def verify_case(case: dict, rerun: Callable[[dict], dict], *,
     """Compute a stored case again and say whether it is the same case.
 
     `rerun(input)` traces the wallet again **from the cache only** and returns the new
-    case. The stored case verifies when (1) its own fingerprint is still the one in its
-    receipt, (2) the pages read are the same bytes, and (3) the new findings have the
-    same fingerprint. A changed label database, model or commit is reported beside
-    those: it is the usual reason for (3) to differ, not a failure in itself."""
+    case. The stored case verifies when (1) it still has the digests in its receipt
+    (findings and whole content) and the receipt agrees with itself, (2) the pages read
+    are the same bytes, (3) the new findings have the same fingerprint, and (4) the new
+    result is the same content, wording included, unless the code or the label database
+    has changed since, which is then said. A changed label database, model or commit is
+    reported beside those: it is the usual reason for (3) to differ."""
     prov = case.get("provenance") or {}
-    if case.get("status") != "done" or not prov.get("findings_sha256") or not prov.get("input"):
+    if case.get("status") != "done" or any(prov.get(k) is None for k in NEEDED):
         return _no_receipt(case.get("id"), now)
     stored_fp = prov["findings_sha256"]
     own = findings_sha256(case)
+    wrong = None
+    if own != stored_fp:
+        wrong = "its figures are not the ones its fingerprint was taken from"
+    elif prov.get("content_sha256") and content_sha256(case) != prov["content_sha256"]:
+        wrong = "its text is not the text its content digest was taken from"
+    else:
+        wrong = _inconsistent(prov)
     itself = _check(
-        "stored_case", "same" if own == stored_fp else "different",
-        "The stored case still has the fingerprint in its receipt." if own == stored_fp else
-        "The stored case no longer matches its own receipt: it was changed after it was "
-        "computed.", stored_fp, own)
+        "stored_case", "different" if wrong else "same",
+        f"The stored case no longer matches its own receipt: {wrong}. It was changed after "
+        f"it was computed." if wrong else
+        "The stored case still has the digests in its receipt.", stored_fp, own)
     return _verify(case.get("id"), prov, itself, rerun, label_db_sha256, now,
                    describe=lambda fresh: _what_changed(case, fresh))
 
@@ -233,23 +292,27 @@ def verify_case(case: dict, rerun: Callable[[dict], dict], *,
 def verify_receipt(doc: dict, rerun: Callable[[dict], dict], *,
                    label_db_sha256: str | None = None, now: datetime | None = None) -> dict:
     """The same check for a receipt that left the machine without its case (an exported
-    `<case>.receipt.json`): the receipt must still have its own digest, and the wallet
-    traced again must give the fingerprint it states."""
-    if not doc.get("findings_sha256") or not doc.get("input"):
+    `<case>.receipt.json`): the receipt must agree with itself, and the wallet traced
+    again must give the fingerprint AND the headline (outcome, exchange, confidence) it
+    states. The receipt's own digest is not keyed, so it proves nothing alone; the
+    replay does. Its case reference, creation time and demo flag are not checked: the
+    chain cannot say what they were."""
+    if any(doc.get(k) is None for k in NEEDED):
         return _no_receipt(doc.get("case_id"), now)
     own = sha256_of({k: v for k, v in doc.items() if k != "receipt_sha256"})
-    intact = own == doc.get("receipt_sha256")
+    wrong = "it does not have its own digest" if own != doc.get("receipt_sha256") \
+        else _inconsistent(doc)
     itself = _check(
-        "stored_case", "same" if intact else "different",
-        "The receipt still has its own digest." if intact else
-        "The receipt no longer matches its own digest: it was changed after it was issued.",
-        doc.get("receipt_sha256"), own)
+        "stored_case", "different" if wrong else "same",
+        f"The receipt was changed after it was issued: {wrong}." if wrong else
+        "The receipt agrees with itself.", doc.get("receipt_sha256"), own)
 
     def describe(fresh: dict) -> str:
         said = [f"{k.replace('_', ' ')} {doc.get(k)!r} -> {fresh[k]!r}"
-                for k in ("outcome", "top_vasp", "confidence") if doc.get(k) != fresh[k]]
+                for k in HEADLINE if _norm(doc.get(k)) != _norm(fresh[k])]
         return ", ".join(said) + "." if said else "the figures behind the headline differ."
-    return _verify(doc.get("case_id"), doc, itself, rerun, label_db_sha256, now, describe)
+    return _verify(doc.get("case_id"), doc, itself, rerun, label_db_sha256, now, describe,
+                   headline={k: doc.get(k) for k in HEADLINE})
 
 
 def _no_receipt(case_id, now) -> dict:
@@ -260,7 +323,7 @@ def _no_receipt(case_id, now) -> dict:
 
 
 def _verify(case_id, prov: dict, itself: dict, rerun, label_db_sha256, now,
-            describe: Callable[[dict], str]) -> dict:
+            describe: Callable[[dict], str], headline: dict | None = None) -> dict:
     out = {"case_id": case_id, "matches": False, "checks": [itself],
            "checked_at": iso(now or datetime.now(timezone.utc))}
     checks = out["checks"]
@@ -276,11 +339,11 @@ def _verify(case_id, prov: dict, itself: dict, rerun, label_db_sha256, now,
         return out
     new = fresh["provenance"]
 
-    old_pages = {p["query"]: p["sha256"] for p in prov.get("responses") or []}
-    new_pages = {p["query"]: p["sha256"] for p in new.get("responses") or []}
+    old_pages = {p["query"]: p["sha256"] for p in prov["responses"]}
+    new_pages = {p["query"]: p["sha256"] for p in new["responses"]}
     if new["responses_sha256"] == prov["responses_sha256"]:
         checks.append(_check("responses", "same",
-                             f"The same {prov['pages']} chain responses were read, byte for "
+                             f"The same {len(new_pages)} chain responses were read, byte for "
                              f"byte.", prov["responses_sha256"], new["responses_sha256"]))
     else:
         changed = sorted(q for q in old_pages if q in new_pages and old_pages[q] != new_pages[q])
@@ -289,18 +352,23 @@ def _verify(case_id, prov: dict, itself: dict, rerun, label_db_sha256, now,
         parts = [f"{len(v)} {word}" for v, word in ((changed, "changed"),
                                                     (gone, "no longer read"),
                                                     (added, "newly read")) if v]
-        first = (changed or gone or added or ["(the list of responses was not recorded)"])[0]
+        first = (changed or gone or added or ["(the receipt lists other responses)"])[0]
         checks.append(_check("responses", "different",
                              f"The chain responses differ: {', '.join(parts) or 'digest'}. "
                              f"First: {first}",
                              prov["responses_sha256"], new["responses_sha256"]))
 
     same_findings = new["findings_sha256"] == stored_fp
-    checks.append(_check(
-        "findings", "same" if same_findings else "different",
-        "Traced again, the result has the same fingerprint." if same_findings else
-        "Traced again, the result is different: " + describe(fresh),
-        stored_fp, new["findings_sha256"]))
+    # a receipt states its headline in the open: it has to be the one the trace gives
+    told = headline is None or all(_norm(headline[k]) == _norm(fresh[k]) for k in HEADLINE)
+    if same_findings and told:
+        detail = "Traced again, the result has the same fingerprint."
+    elif same_findings:
+        detail = ("The headline stated is not what the trace gives: " + describe(fresh))
+    else:
+        detail = "Traced again, the result is different: " + describe(fresh)
+    checks.append(_check("findings", "same" if same_findings and told else "different",
+                         detail, stored_fp, new["findings_sha256"]))
 
     for name, old, cur, words in (
             ("labels", prov.get("label_db_sha256"), label_db_sha256, "label database"),
@@ -319,7 +387,27 @@ def _verify(case_id, prov: dict, itself: dict, rerun, label_db_sha256, now,
                                  old, cur))
 
     core = {c["name"]: c["result"] for c in checks}
-    out["matches"] = all(core[k] == "same" for k in ("stored_case", "responses", "findings"))
+    explained = [words for name, words in (("labels", "the label database"),
+                                           ("code", "the code")) if core.get(name) == "different"]
+    content_ok = True
+    stored_content = prov.get("content_sha256")
+    if stored_content:
+        same_content = new.get("content_sha256") == stored_content
+        if same_content:
+            detail = "Traced again, the whole result is the same, wording included."
+        elif explained:
+            detail = (f"The wording of the result differs, and {' and '.join(explained)} "
+                      f"changed since it was computed.")
+        else:
+            detail = ("Traced again by the same code with the same labels, the text of the "
+                      "result is different from the stored one.")
+            content_ok = False
+        checks.append(_check("content", "same" if same_content else "different", detail,
+                             stored_content, new.get("content_sha256")))
+        core["content"] = "same" if content_ok else "different"
+
+    blocking = ("stored_case", "responses", "findings") + (("content",) if not content_ok else ())
+    out["matches"] = all(core[k] == "same" for k in blocking)
     if out["matches"]:
         out["summary"] = ("Verified: traced again from the cached chain responses, the case "
                           "has the same findings fingerprint.")
@@ -329,7 +417,7 @@ def _verify(case_id, prov: dict, itself: dict, rerun, label_db_sha256, now,
                if core.get(name) == "different"]
         out["summary"] = ("Not verified: " + " ".join(
             c["detail"] for c in checks
-            if c["name"] in ("stored_case", "responses", "findings") and c["result"] != "same")
+            if c["name"] in blocking and c["result"] != "same")
             + (f" Changed since: {', '.join(why)}." if why else ""))
     return out
 
@@ -340,7 +428,7 @@ def _what_changed(old: dict, new: dict) -> str:
     keys = [f"headline.{k}" for k in ha if ha[k] != hb.get(k)] + \
            [k for k in a if a[k] != b.get(k)]
     said = []
-    for k in ("outcome", "top_vasp", "confidence"):
+    for k in HEADLINE:
         if ha[k] != hb[k]:
             said.append(f"{k.replace('_', ' ')} {ha[k]!r} -> {hb[k]!r}")
     return (", ".join(said) + ". " if said else "") + "Parts that differ: " + ", ".join(keys) + "."

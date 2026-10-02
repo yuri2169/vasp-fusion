@@ -1621,6 +1621,11 @@ export interface components {
              */
             findings_sha256?: string | null;
             /**
+             * Content Sha256
+             * @description Digest of the whole result as stored, wording included: any edit to a stored case shows against it
+             */
+            content_sha256?: string | null;
+            /**
              * Model Version
              * @description Set when the deposit-address model scored a wallet in this run, e.g. model_v1/tron
              */
@@ -1692,6 +1697,8 @@ export interface components {
             model_sha256?: string | null;
             /** Findings Sha256 */
             findings_sha256: string;
+            /** Content Sha256 */
+            content_sha256?: string | null;
             /** Fetched At */
             fetched_at?: string | null;
             /**
@@ -2112,7 +2119,7 @@ export interface components {
              * Name
              * @enum {string}
              */
-            name: "stored_case" | "replay" | "responses" | "findings" | "labels" | "model" | "code";
+            name: "stored_case" | "replay" | "responses" | "findings" | "content" | "labels" | "model" | "code";
             /**
              * Result
              * @enum {string}
@@ -2137,7 +2144,7 @@ export interface components {
             case_id: string;
             /**
              * Matches
-             * @description true only when the stored case still has its receipt's fingerprint, the same responses were read, and the new findings have the same fingerprint
+             * @description true only when the stored case still has its receipt's digests, the same responses were read, the new findings have the same fingerprint, and the new result has the same text (unless the code or the label database changed since)
              */
             matches: boolean;
             /** Summary */

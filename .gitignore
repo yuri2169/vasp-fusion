@@ -34,6 +34,7 @@ data/officers.json
 data/officers.json.tmp
 data/auth_secret
 data/audit.duckdb
+data/audit.duckdb.key
 # The demo's chain cache, built from tests/fixtures/demo by `make demo-cache`.
 data/demo_cache.duckdb
 # `make reproduce` writes its demo cache and cases here, not to the working stores.

@@ -1,7 +1,10 @@
 """Officer accounts: `data/officers.json` (or VASPFUSION_OFFICERS), git-ignored.
 
 A password is stored only as its scrypt hash with a salt of its own. Five wrong
-passwords in a row lock the account for five minutes (counted in this process).
+passwords in a row lock a user name for five minutes (counted in this process). The
+attempt is counted before the password is hashed, so guesses sent at once cannot
+outrun the count, and a name with no account locks the same way as a real one, so the
+lock does not say which names exist.
 Accounts are added from the command line (`cli officer add`), not through the API:
 whoever can run the tool on the workstation decides who may sign in.
 """
@@ -25,6 +28,7 @@ SCRYPT = {"n": 2 ** 14, "r": 8, "p": 1}
 USERNAME = re.compile(r"^[a-z0-9][a-z0-9._-]{1,31}$")
 MIN_PASSWORD = 10
 MAX_FAILS, LOCK_S = 5, 300
+MAX_TRACKED = 5000                    # user names remembered for the lockout count
 
 _LOCK = threading.Lock()
 _FAILS: dict[tuple[str, str], tuple[int, float]] = {}    # (file, user) -> (fails, locked until)
@@ -37,6 +41,22 @@ class Locked(Exception):
 def _hash(password: str, salt: bytes, params: dict) -> str:
     return hashlib.scrypt(password.encode(), salt=salt, n=params["n"], r=params["r"],
                           p=params["p"], dklen=32).hex()
+
+
+def _note_attempt(key: tuple[str, str], now: float) -> None:
+    """Count one attempt on `key`, under the lock, before any hashing. Raises `Locked`
+    while the name is locked. The fifth attempt in a row sets the lock."""
+    with _LOCK:
+        fails, until = _FAILS.get(key, (0, 0.0))
+        if until > now:
+            raise Locked(f"Too many wrong passwords. Try again in {LOCK_S // 60} minutes.")
+        if until:                           # the lock has run out: start counting again
+            fails = 0
+        if key not in _FAILS and len(_FAILS) >= MAX_TRACKED:
+            for k in [k for k, (_, u) in _FAILS.items() if u <= now]:
+                del _FAILS[k]               # names that are not locked right now
+        fails += 1
+        _FAILS[key] = (fails, now + LOCK_S if fails >= MAX_FAILS else 0.0)
 
 
 def _public(row: dict) -> dict:
@@ -109,19 +129,19 @@ class Officers:
         """Is there anyone who could sign in?"""
         return any(not r.get("disabled") for r in self._rows())
 
+    def exists(self) -> bool:
+        """Is there any account at all, disabled or not? (Then a login is required.)"""
+        return bool(self._rows())
+
+    def known(self, username: str) -> bool:
+        return any(r["username"] == username for r in self._rows())
+
     # ------------------------------------------------------------------ sign in
     def verify(self, username: str, password: str) -> dict | None:
         """The officer for a right password, None for a wrong one or an unknown or
         disabled account. Raises `Locked` while the account is locked."""
         key = (str(self.path), username)
-        now = self.clock()
-        with _LOCK:
-            fails, until = _FAILS.get(key, (0, 0.0))
-            if until > now:
-                raise Locked(f"Too many wrong passwords. Try again in "
-                             f"{LOCK_S // 60} minutes.")
-            if until:                       # the lock has run out: start counting again
-                fails = 0
+        _note_attempt(key, self.clock())
         row = next((r for r in self._rows() if r["username"] == username), None)
         if row is None:
             # same work as for a real account, so the reply time does not say who exists
@@ -131,10 +151,7 @@ class Officers:
             good = hmac.compare_digest(
                 _hash(password or "", bytes.fromhex(row["salt"]), row["scrypt"]), row["hash"]
             ) and not row.get("disabled")
-        with _LOCK:
-            if good:
+        if good:
+            with _LOCK:
                 _FAILS.pop(key, None)
-            elif row is not None:
-                fails += 1
-                _FAILS[key] = (fails, now + LOCK_S if fails >= MAX_FAILS else 0.0)
         return _public(row) if good else None

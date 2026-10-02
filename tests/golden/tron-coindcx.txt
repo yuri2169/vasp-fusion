@@ -24,19 +24,23 @@ Nearest exchange: CoinDCX. Confidence 0.85 (range narrower than 0.01).
 
 SUMMARY
 -------
-Wallet TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c sent 2,652.22 USDT on Tron in 2 transfers between 25
-May 2025 and 14 Jul 2025. 1,530 USDT (58%) reached CoinDCX in 1 hop, at
-TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 ("CoinDCX deposit address (derived: sweep + gas payer)",
-derived by VASP-FUSION). Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01).
-The range comes from the deposit-address model, which is calibrated against the addresses the
-discovery rules derived; the weight of the exchange wallet's label and the hop decay are
-rule-set. Checked without its strongest evidence: Still CoinDCX without the label on
-TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5: 58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated
-list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding:
-TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ behaves like an exchange deposit address: 42% of the funds
-(1,122.22 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than
-0.01); see the flags. Not followed in this run: 36.50 TRX in 1 transfer. Transaction hashes:
+Wallet TYJD2h…e2HP1c sent 2,652.22 USDT on Tron in 2 transfers between 25 May 2025 and 14 Jul
+2025. 1,530 USDT (58%) reached CoinDCX in 1 hop, at TCw8j3…LLcoV5 ("CoinDCX deposit address
+(derived: sweep + gas payer)", derived by VASP-FUSION). Nearest exchange: CoinDCX, confidence
+0.85 (range narrower than 0.01). The range comes from the deposit-address model, which is
+calibrated against the addresses the discovery rules derived; the weight of the exchange
+wallet's label and the hop decay are rule-set. Checked without its strongest evidence: Still
+CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach CoinDCX at TU7BbA…vZbsFs
+(curated list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding: TDYCQE…yPdsUJ behaves
+like an exchange deposit address: 42% of the funds (1,122.22 USDT) reached it, and the
+deposit-address model gives over 0.99 (range narrower than 0.01); see the flags. Not followed in
+this run: 36.50 TRX in 1 transfer. Transaction hashes:
 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -84,17 +88,17 @@ funds reached belongs to that exchange.
   Address reached  TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
   Route            W0  ->  W1
   Time to reach    0 seconds
-    [Label] TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 is labelled CoinDCX ("CoinDCX deposit address
-    (derived: sweep + gas payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep
-    rule: forwarded 100% of the 847,730 USDT it received from 2 senders to CoinDCX wallet
-    TU7BbA…vZbsFs (curated list) in 22 sweeps, typically 33 seconds after arrival. Its gas
-    listing was not read to the end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee
-    money for 7 of 22 sweeps. Both rules agree. Model: over 0.99 that an address behaving like
-    this is an exchange deposit address (range narrower than 0.01), from a model that did not
-    train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated
-    list) × the model's probability. [weight 0.85]
-    [Model] Deposit-address model: over 0.99 that an address behaving like
-    TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 is an exchange deposit address (range narrower than 0.01)
+    [Label] TCw8j3…LLcoV5 is labelled CoinDCX ("CoinDCX deposit address (derived: sweep + gas
+    payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of
+    the 847,730 USDT it received from 2 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list)
+    in 22 sweeps, typically 33 seconds after arrival. Its gas listing was not read to the end.
+    Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 7 of 22 sweeps. Both rules
+    agree. Model: over 0.99 that an address behaving like this is an exchange deposit address
+    (range narrower than 0.01), from a model that did not train on this address. Label
+    confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's
+    probability. [weight 0.85]
+    [Model] Deposit-address model: over 0.99 that an address behaving like TCw8j3…LLcoV5 is an
+    exchange deposit address (range narrower than 0.01)
     [Model] Deposit-address model, for: it forwards 100% of what it receives to one wallet [SHAP
     +2.29]
     [Model] Deposit-address model, for: every outgoing transfer goes to one wallet [SHAP +1.92]
@@ -102,9 +106,9 @@ funds reached belongs to that exchange.
     [SHAP +1.60]
     [Route] 58% of the wallet's USDT (1,530 USDT) reached it in 1 hop [weight 1.00]
         tx 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
-    [Without its label] Still CoinDCX without the label on TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5:
-    58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72
-    (was 0.85). [weight -0.13]
+    [Without its label] Still CoinDCX without the label on TCw8j3…LLcoV5: 58% of the funds reach
+    CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). [weight
+    -0.13]
         tx 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
         tx 1878e14b6c3b9a8f72b63f69276cd838ee349b03861e6710a96f0793854b7df4
 
@@ -118,14 +122,13 @@ LEADS TO CHECK
 Unlabelled wallets that behave like an exchange deposit address. A lead is not a finding and
 does not change the result.
 
-    [Lead] TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ: TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ behaves like
-    an exchange deposit address: 42% of the funds (1,122.22 USDT) reached it, and the
-    deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it:
-    forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet;
-    the wallet it pays most keeps or spreads what it receives, as a collecting wallet does.
-    Neither it nor TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf, the wallet it sweeps into, is labelled,
-    so the exchange cannot be named. A lead to check, not a finding: the model was measured on
-    exchange customers and deposit addresses only.
+    [Lead] TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ: TDYCQE…yPdsUJ behaves like an exchange deposit
+    address: 42% of the funds (1,122.22 USDT) reached it, and the deposit-address model gives
+    over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives
+    to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or
+    spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu…dkhSCf, the
+    wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a
+    finding: the model was measured on exchange customers and deposit addresses only.
         tx f2c8d4336de880bdf3e1fc9b1f69837edf7a4a2d6cf3193fc55d5afc9822a128
 
 HOW THE CONFIDENCE WAS WORKED OUT
@@ -156,12 +159,10 @@ is a check on a label hold-out, not a calibration.
 
 NEXT STEPS
 ----------
-  - Draft a request to CoinDCX for KYC and a freeze on the account behind
-    TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
+  - Draft a request to CoinDCX for KYC and a freeze on the account behind TCw8j3…LLcoV5
   - Preserve the transaction records listed in the evidence
-  - Identify TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf: TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ, which
-    received 42% of the funds, behaves like a deposit address and sweeps into it (check other
-    label sources and block explorers)
+  - Identify TDqSqu…dkhSCf: TDYCQE…yPdsUJ, which received 42% of the funds, behaves like a
+    deposit address and sweeps into it (check other label sources and block explorers)
 
 LIMITATIONS
 -----------
@@ -185,11 +186,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify tron-coindcx
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify tron-coindcx
 
-  Findings fingerprint    a3addce9fa9bf98d8b124372221a831147315aa3c6e875135c1e9761154b82a9
+  Findings fingerprint    2593ec939d7380fdbc218eadd5d76f69f3f312a23f1a47684107b96bb3117a18
   Input                   tron TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c, hop limit 3
   Input SHA-256           c119775e7de0dac678376ffc87af6819c033e76dedc3c20a8c58d63388101ee7
   Chain responses         10 read from api.trongrid.io
@@ -199,7 +202,8 @@ python -m vaspfusion.cli verify tron-coindcx
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         bcba664b22fefb96061e989a9599f67cec4c77ae07234e229931411ad5d8d307
+  Content SHA-256         ad3ad9e1ba31f83c9f57bf4866f0ce5659b4e5b6acad93ade5e17433beaa1a14
+  Receipt SHA-256         b2f98826943838a63a568f9dc899bcea64d23259c0f9825b65b6863c34d9a3e0
 
   Chain responses read
     1480b684a7cda1e82e4fa0ed673aa5610f0898c21c829af76965a96169297de3  https://api.trongrid.io/v1/accounts/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1748143335000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

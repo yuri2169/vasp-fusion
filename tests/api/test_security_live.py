@@ -135,7 +135,7 @@ def test_a_wrong_password_is_401_and_logged_without_the_password(client, officer
     assert sign_in(client, username="nobody").json() == r.json()       # same words either way
     rows = audit()
     assert [(r["action"], r["target"], r["status"]) for r in rows] == \
-        [("auth.login", "a.rao", 401), ("auth.login", "nobody", 401)]
+        [("auth.login", "a.rao", 401), ("auth.login", "(unknown user name)", 401)]
     assert "not the password" not in json.dumps(rows) and PASSWORD not in json.dumps(rows)
 
 
@@ -288,3 +288,66 @@ def test_a_cross_origin_login_is_refused(client, officer):
     r = client.post("/api/auth/login", json={"username": "a.rao", "password": PASSWORD},
                     headers={"Origin": "https://evil.example"})
     assert r.status_code == 403 and "set-cookie" not in r.headers
+
+
+# ------------------------------------------------------------------ from the code review
+def test_a_password_typed_into_the_user_name_box_is_not_logged(client, officer):
+    sign_in(client, username=PASSWORD.replace(" ", "-"), password="x")
+    sign_in(client, username="vasp-fusion-demo-2026", password="x")     # looks like a user name
+    assert [r["target"] for r in audit()] == ["(unknown user name)"] * 2
+
+
+def test_disabling_the_only_officer_does_not_open_the_tool(client, officer):
+    Officers(main.OFFICERS).disable("a.rao")
+    assert client.get("/api/cases").status_code == 401
+    assert client.get("/api/auth/me").json()["auth_required"] is True
+    assert sign_in(client).status_code == 401
+
+
+def test_a_request_is_logged_once_the_log_can_be_written_again(client, officer, monkeypatch):
+    """The failed row must not be remembered as written: the next read is logged."""
+    sign_in(client)
+    real, calls = security.write_row, []
+
+    def flaky(*a, **k):
+        calls.append(1)
+        if len(calls) == 1:
+            raise OSError("disk full")
+        return real(*a, **k)
+    monkeypatch.setattr(security, "write_row", flaky)
+    assert client.get("/api/cases/demo-tron-okx").status_code == 503
+    assert client.get("/api/cases/demo-tron-okx").status_code == 200
+    assert [r["action"] for r in audit()].count("case.view") == 1 and len(calls) == 2
+
+
+def test_a_request_that_breaks_the_server_is_logged_as_a_500(client, officer, monkeypatch):
+    sign_in(client)
+
+    def broken():
+        raise RuntimeError("the case store is gone")
+    monkeypatch.setattr(main, "_cases", broken)
+    r = client.get("/api/cases")
+    assert r.status_code == 500 and "logged" in r.json()["detail"]
+    assert "case store is gone" not in r.text                       # no internals in the reply
+    row = audit()[-1]
+    assert (row["officer"], row["action"], row["status"]) == ("a.rao", "case.list", 500)
+
+
+@pytest.mark.parametrize("token", [b"a.b.\xe9", b"a.b." + b"c" * 9000, b"\xe9.\xe9.\xe9"])
+def test_a_hostile_token_is_a_401_and_a_log_row_not_a_500(client, officer, token):
+    r = client.get("/api/cases", headers={"Authorization": b"Bearer " + token})
+    assert r.status_code == 401
+    assert (audit()[-1]["action"], audit()[-1]["status"]) == ("case.list", 401)
+
+
+def test_reads_from_two_addresses_are_two_rows_when_nobody_is_signed_in(client, monkeypatch):
+    seen = iter(["10.0.0.1", "10.0.0.2", "10.0.0.2"])
+
+    class Client:
+        @property
+        def host(self):
+            return next(seen)
+    monkeypatch.setattr("starlette.requests.HTTPConnection.client", Client())
+    for _ in range(3):
+        client.get("/api/cases/demo-tron-okx")
+    assert [r["client"] for r in audit()] == ["10.0.0.1", "10.0.0.2"]

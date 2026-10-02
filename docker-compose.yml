@@ -18,6 +18,9 @@ services:
       OFFLINE: ${OFFLINE:-1}
       # auto: a login is required because the demo officer account exists. "off" removes it.
       VASPFUSION_AUTH: ${VASPFUSION_AUTH:-auto}
+      # The audit log's key. Unset: a key file is made beside the log, inside the volume.
+      # Set (32 characters or more), it stays out of the volume, which is stronger.
+      VASPFUSION_AUDIT_KEY: ${VASPFUSION_AUDIT_KEY:-}
     volumes:
       # cases, requests, the audit log and the token secret outlive the container.
       # A rebuilt image does NOT replace what is already in this volume:

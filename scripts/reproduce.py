@@ -46,28 +46,32 @@ SCRATCH = ROOT / "data" / "reproduce"
 
 
 # ------------------------------------------------------------------ comparing
-def _without(obj, keys):
-    if isinstance(obj, dict):
-        return {k: _without(v, keys) for k, v in obj.items() if k not in keys}
-    if isinstance(obj, list):
-        return [_without(v, keys) for v in obj]
-    return obj
+def _stamped(path: str) -> bool:
+    """The files whose only run-dependent field is a top-level `trained_at`: a model's
+    metrics.json, and the mock built from it."""
+    return (path.startswith("artifacts/") and path.endswith("/metrics.json")) \
+        or path == "mocks/model.json"
 
 
 def classify(path: str, before: bytes | None, after: bytes | None) -> str:
-    """How a tracked file changed: `same`, `only_timestamp` (a JSON file that differs in
-    nothing but its volatile fields), or `changed` (also: deleted, or newly created)."""
+    """How a tracked file changed: `same`; `only_timestamp` (a metrics file whose
+    top-level `trained_at` string moved and nothing else did); or `changed` (also:
+    deleted, or newly created). Everything but that one field is compared as text, so
+    1 and true, or 1 and 1.0, are different."""
     if before == after:
         return "same"
-    if before is None or after is None:
+    if before is None or after is None or not _stamped(path):
         return "changed"
-    if path.endswith(".json"):
-        try:
-            if _without(json.loads(before), VOLATILE) == _without(json.loads(after), VOLATILE):
-                return "only_timestamp"
-        except ValueError:
-            pass
-    return "changed"
+    try:
+        old, new = json.loads(before), json.loads(after)
+    except ValueError:
+        return "changed"
+    if not (isinstance(old, dict) and isinstance(new, dict)
+            and all(isinstance(d.get(k), str) for d in (old, new) for k in VOLATILE)):
+        return "changed"
+    level = {**new, **{k: old[k] for k in VOLATILE}}
+    same = json.dumps(old, sort_keys=True) == json.dumps(level, sort_keys=True)
+    return "only_timestamp" if same else "changed"
 
 
 def git(*args: str, binary: bool = False):
@@ -211,7 +215,11 @@ def main() -> None:
     if changed or run.failed:
         print("\nREPRODUCE: FAILED")
         raise SystemExit(1)
-    print("\nREPRODUCE: GREEN. Every artifact regenerated to what git holds.")
+    skipped = sorted({name for name, state, _, _ in run.rows if state == "skipped"})
+    if skipped:
+        print(f"\nREPRODUCE: GREEN for the steps that ran. Skipped: {', '.join(skipped)}.")
+    else:
+        print("\nREPRODUCE: GREEN. Every artifact regenerated to what git holds.")
 
 
 if __name__ == "__main__":

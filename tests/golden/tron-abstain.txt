@@ -25,17 +25,21 @@ from many senders mix; 16% went past the 3 hops that were traced.
 
 SUMMARY
 -------
-Wallet TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr
-2025 and 21 Apr 2026. 150 USDT (10%) reached CoinDCX in 1 hop, at
-THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 ("CoinDCX deposit address (derived: sweep + gas payer)",
-derived by VASP-FUSION). No exchange is named. Only 10% of the funds reached a labelled VASP
-(CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at
-unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops
-that were traced. Lead, not a finding: TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ behaves like an
+Wallet TXXvb9…BCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr 2025 and 21 Apr 2026.
+150 USDT (10%) reached CoinDCX in 1 hop, at THuWri…8CRkY9 ("CoinDCX deposit address (derived:
+sweep + gas payer)", derived by VASP-FUSION). No exchange is named. Only 10% of the funds
+reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to
+name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix;
+16% went past the 3 hops that were traced. Lead, not a finding: TMPJaN…YyzeAJ behaves like an
 exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model
 gives over 0.99 (range narrower than 0.01), and 1 more; see the flags. Not followed in this run:
 64.83 TRX in 4 transfers. Transaction hashes:
 a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -114,18 +118,18 @@ funds reached belongs to that exchange.
   Address reached  THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9
   Route            W0  ->  W6
   Time to reach    0 seconds
-    [Label] THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 is labelled CoinDCX ("CoinDCX deposit address
-    (derived: sweep + gas payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep
-    rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet
-    TU7BbA…vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its
-    first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas
-    listing was not read to the end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee
-    money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like
-    this is an exchange deposit address (range narrower than 0.01), from a model that did not
-    train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated
-    list) × the model's probability. [weight 0.85]
-    [Model] Deposit-address model: over 0.99 that an address behaving like
-    THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 is an exchange deposit address (range narrower than 0.01)
+    [Label] THuWri…8CRkY9 is labelled CoinDCX ("CoinDCX deposit address (derived: sweep + gas
+    payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of
+    the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list)
+    in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since
+    2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the
+    end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both
+    rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit
+    address (range narrower than 0.01), from a model that did not train on this address. Label
+    confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's
+    probability. [weight 0.85]
+    [Model] Deposit-address model: over 0.99 that an address behaving like THuWri…8CRkY9 is an
+    exchange deposit address (range narrower than 0.01)
     [Model] Deposit-address model, for: it moves funds on about 37 seconds after they arrive
     [SHAP +2.66]
     [Model] Deposit-address model, for: it forwards 100% of what it receives to one wallet [SHAP
@@ -143,34 +147,28 @@ PATTERNS SEEN
 -------------
 Patterns in the traced funds. They describe how the money moved and never decide the result.
 
-    [Rapid forwarding (warn)] TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ:
-    TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ passed on 100% of the 395 USDT that reached it within 2
-    minutes of its arrival
+    [Rapid forwarding (warn)] TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ: TMPJaN…YyzeAJ passed on 100%
+    of the 395 USDT that reached it within 2 minutes of its arrival
         tx 41df004f1d76cadbe81f462f1671e9396918cab0a2574b13e2cdeeefd7b69da7
         tx 94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4
-    [Rapid forwarding (warn)] TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv:
-    TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv passed on 100% of the 250 USDT that reached it within 2
-    minutes of its arrival
+    [Rapid forwarding (warn)] TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv: TLCykn…VSdqGv passed on 100%
+    of the 250 USDT that reached it within 2 minutes of its arrival
         tx 998e00d6106ae1008fe848514a9484489854352e26ce4f7ca37fcedf8530c5a4
         tx db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40
-    [Rapid forwarding (warn)] TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz:
-    TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz passed on 100% of the 250 USDT that reached it within 2
-    minutes of its arrival
+    [Rapid forwarding (warn)] TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz: TVHpZB…LUr5Mz passed on 100%
+    of the 250 USDT that reached it within 2 minutes of its arrival
         tx db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40
         tx f52000d4262de7ef891bdc77f9127191f03223946a2e58eba0335d026eb51a5b
-    [Rapid forwarding (warn)] TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE:
-    TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE passed on 100% of the 24 USDT that reached it within 5
-    minutes of its arrival
+    [Rapid forwarding (warn)] TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE: TSe4Za…zShRtE passed on 100%
+    of the 24 USDT that reached it within 5 minutes of its arrival
         tx ab73419d07a9f4a210469bbc21cc46e12b6eb112c9880e17c4d5eb15526d97ff
         tx df52b4090ee98826571e05e404ddb09176d32f1f7ddb501ffb586f39f268414a
-    [Rapid forwarding (warn)] THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi:
-    THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi passed on 100% of the 20 USDT that reached it within 7
-    minutes of its arrival
+    [Rapid forwarding (warn)] THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi: THbT14…bdZfWi passed on 100%
+    of the 20 USDT that reached it within 7 minutes of its arrival
         tx a112fc81abc5f942d4508493828e0b97767a6499bb2c94a5d06cad2f6d20adf6
         tx dc4a477ab22ff14a86fddd321e5ea72c82ea69107ee4620d8d248685c3e1c33f
     [Fan-in (info)] TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf: 721 USDT of the wallet's money came
-    together again at TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf, from 3 wallets it had been split
-    across
+    together again at TDqSqu…dkhSCf, from 3 wallets it had been split across
         tx 25b27b4f46b4d6acf67ac83f7967c5430e818aab54dae9f92781dce50654d57b
         tx 6c03cfe08829d7d1976621c81733d7a7008d00aa175864b66d94edc861946cbe
         tx 9b5cbbe6a6f68fc446d5515baf8de7f0ac77a1abf24aced5eb3418325d33eb38
@@ -181,23 +179,21 @@ LEADS TO CHECK
 Unlabelled wallets that behave like an exchange deposit address. A lead is not a finding and
 does not change the result.
 
-    [Lead] TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ: TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ behaves like
-    an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address
-    model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what
-    it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays
-    most keeps or spreads what it receives, as a collecting wallet does. Neither it nor
-    TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ, the wallet it sweeps into, is labelled, so the exchange
-    cannot be named. A lead to check, not a finding: the model was measured on exchange
-    customers and deposit addresses only.
+    [Lead] TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ: TMPJaN…YyzeAJ behaves like an exchange deposit
+    address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over
+    0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to
+    one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or
+    spreads what it receives, as a collecting wallet does. Neither it nor TWBPGL…yJW1JJ, the
+    wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a
+    finding: the model was measured on exchange customers and deposit addresses only.
         tx 94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4
-    [Lead] TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr: TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr behaves like
-    an exchange deposit address: 15% of the funds (241 USDT) reached it, and the deposit-address
-    model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what
-    it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays
-    most keeps or spreads what it receives, as a collecting wallet does. Neither it nor
-    TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf, the wallet it sweeps into, is labelled, so the exchange
-    cannot be named. A lead to check, not a finding: the model was measured on exchange
-    customers and deposit addresses only.
+    [Lead] TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr: TLfVvt…tYbRGr behaves like an exchange deposit
+    address: 15% of the funds (241 USDT) reached it, and the deposit-address model gives over
+    0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to
+    one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or
+    spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu…dkhSCf, the
+    wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a
+    finding: the model was measured on exchange customers and deposit addresses only.
         tx f1405d6658101c8f734bc8f12fd438cae6ba2d72231bfbe77a4901f06f21be9f
 
 HOW THE CONFIDENCE WAS WORKED OUT
@@ -228,34 +224,30 @@ is a check on a label hold-out, not a calibration.
 
 WHAT WOULD CHANGE THIS
 ----------------------
-  - A label for TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ, the wallet
-    TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ sweeps into: if it is an exchange's wallet,
-    TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ is that exchange's deposit address (25% of the funds)
-  - A label for TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf, the wallet
-    TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr sweeps into: if it is an exchange's wallet,
-    TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr is that exchange's deposit address (15% of the funds)
+  - A label for TWBPGL…yJW1JJ, the wallet TMPJaN…YyzeAJ sweeps into: if it is an exchange's
+    wallet, TMPJaN…YyzeAJ is that exchange's deposit address (25% of the funds)
+  - A label for TDqSqu…dkhSCf, the wallet TLfVvt…tYbRGr sweeps into: if it is an exchange's
+    wallet, TLfVvt…tYbRGr is that exchange's deposit address (15% of the funds)
   - A larger part of the funds reaching CoinDCX (now 10%; 25% or more counts in full)
-  - A label for TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (holds 46% of the funds; it pays out to many
-    wallets and may be an exchange or payment service)
-  - A label for TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ (holds 25% of the funds; it pays out to many
-    wallets and may be an exchange or payment service)
-  - Tracing deeper than 3 hops from TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b (16% of the funds)
-  - A stronger label for THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 (now: derived by VASP-FUSION)
+  - A label for TDqSqu…dkhSCf (holds 46% of the funds; it pays out to many wallets and may be an
+    exchange or payment service)
+  - A label for TWBPGL…yJW1JJ (holds 25% of the funds; it pays out to many wallets and may be an
+    exchange or payment service)
+  - Tracing deeper than 3 hops from TF4tag…rg6M1b (16% of the funds)
+  - A stronger label for THuWri…8CRkY9 (now: derived by VASP-FUSION)
 
 NEXT STEPS
 ----------
-  - Identify TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ: TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ, which
-    received 25% of the funds, behaves like a deposit address and sweeps into it (check other
-    label sources and block explorers)
-  - Identify TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf: TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr, which
-    received 15% of the funds, behaves like a deposit address and sweeps into it (check other
-    label sources and block explorers)
-  - Identify TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf: 46% of the funds stopped there and it behaves
-    like a service wallet (check other label sources and block explorers)
-  - Identify TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ: 25% of the funds stopped there and it behaves
-    like a service wallet (check other label sources and block explorers)
-  - CoinDCX did receive 10% of the funds (150 USDT) at THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9; a
-    request limited to that deposit can still be drafted
+  - Identify TWBPGL…yJW1JJ: TMPJaN…YyzeAJ, which received 25% of the funds, behaves like a
+    deposit address and sweeps into it (check other label sources and block explorers)
+  - Identify TDqSqu…dkhSCf: TLfVvt…tYbRGr, which received 15% of the funds, behaves like a
+    deposit address and sweeps into it (check other label sources and block explorers)
+  - Identify TDqSqu…dkhSCf: 46% of the funds stopped there and it behaves like a service wallet
+    (check other label sources and block explorers)
+  - Identify TWBPGL…yJW1JJ: 25% of the funds stopped there and it behaves like a service wallet
+    (check other label sources and block explorers)
+  - CoinDCX did receive 10% of the funds (150 USDT) at THuWri…8CRkY9; a request limited to that
+    deposit can still be drafted
   - Run the trace again with more than 3 hops
 
 LIMITATIONS
@@ -280,11 +272,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify tron-abstain
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify tron-abstain
 
-  Findings fingerprint    af4bc3b32b3dfee4b4ee887131a5c2a27f2889d2a3ae88b08bf60f77cc3f7d56
+  Findings fingerprint    d425646a16be4ff53d1c8fb1eadfec8c6d2edf5e975dd12e20f788b7da3d0a76
   Input                   tron TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW, hop limit 3
   Input SHA-256           ec333a7c0ee76ededc4cc8a1621fb6b129cac5a2f56bac361193e5525ecd0f29
   Chain responses         31 read from api.trongrid.io
@@ -294,7 +288,8 @@ python -m vaspfusion.cli verify tron-abstain
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         140cd511b55a2d8da7cae9924abc298c9fa0500192842755991df8a2539ad940
+  Content SHA-256         688e7a698901a7548fb07971d103408aaecc1554a887fbf1bc3426f70e9c274f
+  Receipt SHA-256         b6ef43dbf4461f3e647d8bb1262b0c3e4a7481fc1107c2d784364730b693a42b
 
   Chain responses read
     41af7419b1a67ba8c60255447fc67248388bc4e6021394dd196ab54e38d262f3  https://api.trongrid.io/v1/accounts/TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775665866000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

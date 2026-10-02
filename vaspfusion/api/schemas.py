@@ -285,6 +285,9 @@ class Provenance(_M):
     findings_sha256: str | None = Field(None, description=(
         "The findings fingerprint: every figure, address and transaction hash of the "
         "result, none of its wording. `verify` must reproduce it"))
+    content_sha256: str | None = Field(None, description=(
+        "Digest of the whole result as stored, wording included: any edit to a stored case "
+        "shows against it"))
     model_version: str | None = Field(None, description="Set when the deposit-address model "
                                       "scored a wallet in this run, e.g. model_v1/tron")
     model_sha256: str | None = None
@@ -704,6 +707,7 @@ class Receipt(_M):
     model_version: str | None = None
     model_sha256: str | None = None
     findings_sha256: str
+    content_sha256: str | None = None
     fetched_at: datetime | None = None
     offline_replay: bool = False
     data_sources: list[str] = []
@@ -715,7 +719,8 @@ VerifyOutcome = Literal["same", "different", "not_checked"]
 
 
 class VerifyCheck(_M):
-    name: Literal["stored_case", "replay", "responses", "findings", "labels", "model", "code"]
+    name: Literal["stored_case", "replay", "responses", "findings", "content", "labels",
+                  "model", "code"]
     result: VerifyOutcome
     detail: str = Field(description="Plain English")
     stored: str | None = None
@@ -726,8 +731,9 @@ class VerifyResult(_M):
     """A stored case traced again from the cached chain responses only, and compared."""
     case_id: str
     matches: bool = Field(description=(
-        "true only when the stored case still has its receipt's fingerprint, the same "
-        "responses were read, and the new findings have the same fingerprint"))
+        "true only when the stored case still has its receipt's digests, the same "
+        "responses were read, the new findings have the same fingerprint, and the new "
+        "result has the same text (unless the code or the label database changed since)"))
     summary: str
     checked_at: datetime
     checks: list[VerifyCheck]

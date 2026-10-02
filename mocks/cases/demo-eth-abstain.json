@@ -287,6 +287,7 @@
     "model_sha256": null,
     "git_commit": null,
     "git_dirty": null,
-    "findings_sha256": "046989f41183fbfbdc768ef30cb0350ed0c14cdad55d68eb809451ab18afab2e"
+    "findings_sha256": "0ffe1ce4f0721735c4cc1d27a0fbde73547b40fec66e014a0d206afd6f4ef601",
+    "content_sha256": "1644c1c2832d6388fcc24fb6d4f380221b29ec042e41ab82e2878c51e0accb56"
   }
 }

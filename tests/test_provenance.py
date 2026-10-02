@@ -119,7 +119,7 @@ def test_the_input_digest_changes_with_the_hop_limit():
 def test_the_commit_comes_from_the_environment_first(monkeypatch):
     P.git_state.cache_clear()
     monkeypatch.setenv("VASPFUSION_GIT_COMMIT", "a" * 40)
-    assert P.git_state() == ("a" * 40, False)
+    assert P.git_state() == ("a" * 40, None)       # whether the tree was clean was not said
     P.git_state.cache_clear()
 
 

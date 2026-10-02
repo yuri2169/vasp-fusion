@@ -6,13 +6,16 @@ tables, lists). `case_pdf.py` draws them on A4; `case_file_text` writes the same
 blocks as text (the golden files in tests/golden/ are that text). The blocks are
 built from the stored case alone, so the same case always gives the same file.
 
-Addresses and transaction hashes are written in full. Sentences produced by the
-trace (the narrative, the evidence) shorten addresses for the screen; here every
-short form the case can resolve is written out again.
+Addresses and transaction hashes are written in full wherever the file states them
+itself: the tables, the routes, the address each exchange was reached at. Sentences
+produced by the trace (the narrative, the evidence) shorten addresses for the screen,
+and they are printed as they are. A short form is NOT written out again: a look-alike
+address (same first and last characters, which is what address poisoning produces)
+would be indistinguishable from the wallet it imitates, and the file would print the
+wrong one. The file says so, and the wallet table resolves every wallet of the case.
 """
 from __future__ import annotations
 
-import re
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -54,7 +57,11 @@ DEMO_NOTICE = ("Demonstration case. This is a real public wallet, chosen because
                "alleges wrongdoing by whoever controls it, and the case reference is not a "
                "real complaint.")
 
-_SHORT = re.compile(r"([A-Za-z0-9]{6})…([A-Za-z0-9]{6})")
+SHORT_NOTE = ("In the sentences of this file a long address is written as its first six and "
+              "last six characters. Every wallet of this case is listed in full under 'Flow "
+              "of funds'. A short address that matches none of them is a wallet outside "
+              "this case; two addresses can share those twelve characters, so check the "
+              "full address before acting on it.")
 
 
 class NotReady(ValueError):
@@ -73,30 +80,6 @@ def when(value) -> str:
     t = value if isinstance(value, datetime) else \
         datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     return f"{t.day} {t:%b %Y, %H:%M:%S} UTC"
-
-
-def known_addresses(case: dict) -> set[str]:
-    out = {case["address"]} | {n["id"] for n in case["graph"]["nodes"]}
-    for c in case["candidates"]:
-        out.update(c["path"])
-        out.add(c["deposit_address"])
-        for w in c.get("request_wallets") or []:
-            out.update(a for a in (w["address"], w.get("paid_into")) if a)
-    out.update(f["wallet"] for f in case["typology_flags"])
-    return out
-
-
-def expander(case: dict):
-    """A function that writes the short addresses in a sentence out in full, where the
-    case holds exactly one address with that beginning and end."""
-    known = known_addresses(case)
-
-    def full(text: str) -> str:
-        def one(m: re.Match) -> str:
-            hits = [a for a in known if a.startswith(m.group(1)) and a.endswith(m.group(2))]
-            return hits[0] if len(hits) == 1 else m.group(0)
-        return _SHORT.sub(one, text or "")
-    return full
 
 
 def bar_check_for(chain: str, directory: Path | str = ABSTAIN_DIR) -> dict | None:
@@ -139,32 +122,48 @@ def _header(case: dict) -> list[dict]:
     return out
 
 
-def _result(case: dict, bar: float, full) -> list[dict]:
-    named = [c for c in case["candidates"]
-             if c["direction"] == "outbound" and c["confidence"] >= bar]
-    lines = []
-    if case["outcome"] == "ATTRIBUTED" and case["top_vasp"]:
-        top = next(c for c in named if c["vasp"] == case["top_vasp"])
-        lines.append(f"Nearest exchange: {top['vasp']}. Confidence {_confidence_words(top)}.")
+def _nearest(case: dict, bar: float) -> list[str]:
+    """The lines that name the nearest exchange, or [] when the case names none."""
+    name = case.get("top_vasp")
+    if not name:
+        return []
+    outbound = [c for c in case["candidates"] if c["direction"] == "outbound"]
+    top = next((c for c in outbound if c["vasp"] == name), None)
+    if top is None:                       # named, but its candidate is not in the case
+        return [f"Nearest exchange: {name}."]
+    lines = [f"Nearest exchange: {top['vasp']}. Confidence {_confidence_words(top)}."]
+    if top["hops"] == 0:
+        lines.append(f"The traced wallet itself is labelled {top['vasp']} "
+                     f"({fmt.tier_words(top['label_tier'])}): it is one of the exchange's "
+                     f"own addresses, not a wallet that paid into it.")
+    else:
         lines.append(
             f"{fmt.pct(top['share_of_funds'])} of the funds "
             f"({_amount(top.get('amount'), case.get('asset'))}) reached it in "
             f"{fmt.hops(top['hops'])}, at {top['deposit_address']} "
             f"({fmt.tier_words(top['label_tier'])}).")
-        others = [c for c in named if c is not top]
-        if others:
-            lines.append("Also named: " + "; ".join(
-                f"{c['vasp']}, confidence {_confidence_words(c)}, "
-                f"{fmt.pct(c['share_of_funds'])} of the funds in {fmt.hops(c['hops'])}"
-                for c in others) + ".")
-    elif case["outcome"] == "SANCTIONED_OR_MIXER_REACHED":
-        alerts = [f for f in case["typology_flags"] if f["severity"] == "high"]
-        lines.append("The funds reached a sanctioned or mixing address. No exchange is named.")
-        lines += [full(f["text"]) for f in alerts[:2]]
+    others = [c for c in outbound if c is not top and c["confidence"] >= bar]
+    if others:
+        lines.append("Also named: " + "; ".join(
+            f"{c['vasp']}, confidence {_confidence_words(c)}, "
+            f"{fmt.pct(c['share_of_funds'])} of the funds in {fmt.hops(c['hops'])}"
+            for c in others) + ".")
+    return lines
+
+
+def _result(case: dict, bar: float) -> list[dict]:
+    nearest = _nearest(case, bar)
+    if case["outcome"] == "SANCTIONED_OR_MIXER_REACHED":
+        # the nearest exchange is still named when there is one: both are findings
+        alerts = [f["text"] for f in case["typology_flags"] if f["severity"] == "high"]
+        lines = ["The funds reached a sanctioned or mixing address.", *alerts[:2],
+                 *(nearest or ["No exchange is named."])]
+    elif nearest:
+        lines = nearest
     else:
-        lines.append("No exchange is named.")
+        lines = ["No exchange is named."]
         if case.get("abstain_reason"):
-            lines.append(full(case["abstain_reason"]))
+            lines.append(case["abstain_reason"])
     return [{"t": "h", "text": "Result"},
             {"t": "result", "outcome": OUTCOME_WORDS[case["outcome"]], "lines": lines}]
 
@@ -203,7 +202,7 @@ def _flow(case: dict, index: list[dict]) -> list[dict]:
              "rows": rows, "widths": [7, 45, 25, 8, 15], "mono": [1]}]
 
 
-def _candidates(case: dict, bar: float, full, number: dict[str, int]) -> list[dict]:
+def _candidates(case: dict, bar: float, number: dict[str, int]) -> list[dict]:
     asset = case.get("asset")
     cands = case["candidates"]
     if not cands:
@@ -213,6 +212,8 @@ def _candidates(case: dict, bar: float, full, number: dict[str, int]) -> list[di
     for c in cands:
         if c["direction"] == "inbound":
             standing = "funded the wallet"
+        elif c["hops"] == 0:
+            standing = "the traced wallet itself"
         else:
             standing = "named" if c["confidence"] >= bar else f"under {bar:.2f}: not named"
         rows.append([str(c["proximity_rank"]), c["vasp"], standing, _confidence_words(c),
@@ -241,7 +242,7 @@ def _candidates(case: dict, bar: float, full, number: dict[str, int]) -> list[di
                 weight = (f" [SHAP {ev['weight']:+.2f}]" if ev["kind"] == "model"
                           else f" [weight {ev['weight']:.2f}]")
             out.append({"t": "evidence", "kind": EVIDENCE_WORDS[ev["kind"]],
-                        "text": full(ev["text"]) + weight,
+                        "text": ev["text"] + weight,
                         "hashes": ev["tx_hashes"]})
     return out
 
@@ -266,7 +267,7 @@ def _rail(case: dict, number: dict[str, int]) -> list[dict]:
              "rows": rows, "widths": [5, 12, 15, 18, 9, 41], "mono": [5]}]
 
 
-def _flags(case: dict, full) -> list[dict]:
+def _flags(case: dict) -> list[dict]:
     flags = [f for f in case["typology_flags"] if f["code"] != "deposit_like"]
     leads = [f for f in case["typology_flags"] if f["code"] == "deposit_like"]
     out: list[dict] = []
@@ -276,14 +277,14 @@ def _flags(case: dict, full) -> list[dict]:
                     "money moved and never decide the result."})
         for f in flags:
             out.append({"t": "evidence", "kind": f"{FLAG_WORDS[f['code']]} ({f['severity']})",
-                        "text": f"{f['wallet']}: {full(f['text'])}", "hashes": f["tx_hashes"]})
+                        "text": f"{f['wallet']}: {f['text']}", "hashes": f["tx_hashes"]})
     if leads:
         out.append({"t": "h", "text": "Leads to check"})
         out.append({"t": "p", "text": "Unlabelled wallets that behave like an exchange deposit "
                     "address. A lead is not a finding and does not change the result."})
         for f in leads:
             out.append({"t": "evidence", "kind": "Lead",
-                        "text": f"{f['wallet']}: {full(f['text'])}", "hashes": f["tx_hashes"]})
+                        "text": f"{f['wallet']}: {f['text']}", "hashes": f["tx_hashes"]})
     return out
 
 
@@ -325,13 +326,13 @@ def _confidence(case: dict, rules: RuleConfig, bar_check: dict | None) -> list[d
             *({"t": "p", "text": p} for p in paras)]
 
 
-def _lists(case: dict, full) -> list[dict]:
+def _lists(case: dict) -> list[dict]:
     out = []
     for title, key in (("What would change this", "what_would_change"),
                        ("Next steps", "next_steps")):
         if case.get(key):
             out += [{"t": "h", "text": title},
-                    {"t": "list", "items": [full(x) for x in case[key]]}]
+                    {"t": "list", "items": list(case[key])}]
     return out
 
 
@@ -386,12 +387,15 @@ def _receipt(case: dict) -> list[dict]:
             ("Seed", str(r["seed"])),
             ("Fetched", when(r["fetched_at"]) if r["fetched_at"]
              else "replayed from the cache (no network)"),
+            ("Content SHA-256", r.get("content_sha256") or "not recorded"),
             ("Receipt SHA-256", r["receipt_sha256"])]
     return [{"t": "h", "text": "Provenance receipt"},
             {"t": "p", "text": "What this case was computed from. The fingerprint covers "
-             "every figure, address and transaction hash above and none of the wording. To "
-             f"check it, trace the wallet again from the same responses: python -m "
-             f"vaspfusion.cli verify {case['id']}"},
+             "every figure, address, time and transaction hash of the result and none of "
+             "its wording; the content digest covers the wording too. Neither covers the "
+             "case reference, complaint number or amount reported lost: those are the "
+             "officer's entries. To check it, trace the wallet again from the same "
+             f"responses: python -m vaspfusion.cli verify {case['id']}"},
             {"t": "kv", "rows": rows},
             {"t": "h2", "text": "Chain responses read"},
             {"t": "pages", "rows": [(p["sha256"], p["query"]) for p in r["responses"]]}]
@@ -403,19 +407,19 @@ def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
     if case.get("status") != "done" or case.get("outcome") is None:
         raise NotReady(f"Case {case.get('id')} has no result yet (status "
                        f"{case.get('status')}).")
-    full = expander(case)
     index = wallet_index(case)
     number = {r["address"]: r["n"] for r in index}
     blocks = _header(case)
-    blocks += _result(case, rules.attribute_min, full)
-    blocks += [{"t": "h", "text": "Summary"}, {"t": "p", "text": full(case["narrative"])}]
+    blocks += _result(case, rules.attribute_min)
+    blocks += [{"t": "h", "text": "Summary"}, {"t": "p", "text": case["narrative"]},
+               {"t": "small", "text": SHORT_NOTE}]
     blocks += _funds(case)
     blocks += _flow(case, index)
-    blocks += _candidates(case, rules.attribute_min, full, number)
+    blocks += _candidates(case, rules.attribute_min, number)
     blocks += _rail(case, number)
-    blocks += _flags(case, full)
+    blocks += _flags(case)
     blocks += _confidence(case, rules, bar_check)
-    blocks += _lists(case, full)
+    blocks += _lists(case)
     blocks += [{"t": "h", "text": "Limitations"}, {"t": "list", "items": limitations(case)}]
     blocks += _receipt(case)
     return blocks
@@ -443,7 +447,7 @@ def blocks_text(blocks: list[dict]) -> str:
             out += ["", b["text"].upper(), "-" * len(b["text"])]
         elif t == "h2":
             out += ["", f"  {b['text']}"]
-        elif t in ("p", "note"):
+        elif t in ("p", "note", "small"):
             out += _wrap(b["text"]) + [""]
         elif t == "result":
             out += [b["outcome"].upper()] + [ln for line in b["lines"] for ln in _wrap(line)] + [""]

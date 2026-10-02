@@ -4225,6 +4225,18 @@
             "title": "Findings Sha256",
             "description": "The findings fingerprint: every figure, address and transaction hash of the result, none of its wording. `verify` must reproduce it"
           },
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256",
+            "description": "Digest of the whole result as stored, wording included: any edit to a stored case shows against it"
+          },
           "model_version": {
             "anyOf": [
               {
@@ -4424,6 +4436,17 @@
           "findings_sha256": {
             "type": "string",
             "title": "Findings Sha256"
+          },
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256"
           },
           "fetched_at": {
             "anyOf": [
@@ -5501,6 +5524,7 @@
               "replay",
               "responses",
               "findings",
+              "content",
               "labels",
               "model",
               "code"
@@ -5562,7 +5586,7 @@
           "matches": {
             "type": "boolean",
             "title": "Matches",
-            "description": "true only when the stored case still has its receipt's fingerprint, the same responses were read, and the new findings have the same fingerprint"
+            "description": "true only when the stored case still has its receipt's digests, the same responses were read, the new findings have the same fingerprint, and the new result has the same text (unless the code or the label database changed since)"
           },
           "summary": {
             "type": "string",

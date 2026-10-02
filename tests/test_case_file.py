@@ -1,7 +1,6 @@
 """The case file of each demo wallet: what it says (golden text), that it says all of
 it, and its A4 PDF. Recorded demo wallets; no network."""
 import copy
-import re
 from pathlib import Path
 
 import pytest
@@ -46,9 +45,10 @@ def test_it_holds_every_finding(case_id, cases):
     for n in case["graph"]["nodes"]:
         assert n["id"] in text                         # the wallet table lists every wallet
     if case["abstain_reason"]:
-        assert " ".join(CF.expander(case)(case["abstain_reason"]).split()) in flat
+        assert " ".join(case["abstain_reason"].split()) in flat
     for step in case["next_steps"]:
-        assert " ".join(CF.expander(case)(step).split()) in flat
+        assert " ".join(step.split()) in flat
+    assert " ".join(case["narrative"].split()) in flat          # printed as the trace wrote it
     prov = case["provenance"]
     for digest in (prov["findings_sha256"], prov["input_sha256"], prov["responses_sha256"]):
         assert digest in text
@@ -58,12 +58,18 @@ def test_it_holds_every_finding(case_id, cases):
 
 
 @pytest.mark.parametrize("case_id", list(SPECS))
-def test_no_address_the_case_holds_is_shortened(case_id, cases):
+def test_what_the_file_states_itself_is_in_full_and_short_forms_are_explained(case_id, cases):
     case = cases[case_id]
-    known = CF.known_addresses(case)
-    for start, end in re.findall(r"([A-Za-z0-9]{6})…([A-Za-z0-9]{6})", CF.case_file_text(case)):
-        hits = [a for a in known if a.startswith(start) and a.endswith(end)]
-        assert not hits, f"{start}…{end} could have been written out: {hits}"
+    blocks = CF.case_file(case)
+    for b in blocks:                       # tables, key/value rows, hashes: never shortened
+        if b["t"] == "table":
+            assert not any("…" in cell for row in b["rows"] for cell in row)
+        elif b["t"] == "kv":
+            assert not any("…" in v for _, v in b["rows"])
+        elif b["t"] == "evidence":
+            assert not any("…" in h for h in b["hashes"])
+    assert any(b["t"] == "small" and "first six and last six characters" in b["text"]
+               for b in blocks)
 
 
 def test_an_attributed_case_says_what_its_confidence_is_made_of(cases):

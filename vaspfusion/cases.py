@@ -242,6 +242,7 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
                         rules=rules, now=now, demo=demo, provenance=prov)
     # the fingerprint is taken from the case as it is stored and served (JSON form)
     detail["provenance"]["findings_sha256"] = P.findings_sha256(detail)
+    detail["provenance"]["content_sha256"] = P.content_sha256(detail)
     return detail
 
 

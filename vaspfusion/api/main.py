@@ -94,7 +94,8 @@ def auth_required() -> bool:
         return False
     if mode == "required":
         return True
-    return Officers(OFFICERS).active()
+    # any account, disabled or not: disabling the last officer must not open the tool
+    return Officers(OFFICERS).exists()
 
 
 def _officer_of(request: Request) -> dict | None:
@@ -106,10 +107,12 @@ def _officer_of(request: Request) -> dict | None:
         return None
     try:
         claims = tokens.check(token, tokens.load_secret(AUTH_SECRET))
+        sub = claims.get("sub")
+        return Officers(OFFICERS).get(sub) if isinstance(sub, str) else None
     except tokens.TokenError:
         return None
-    sub = claims.get("sub")
-    return Officers(OFFICERS).get(sub) if isinstance(sub, str) else None
+    except Exception:  # noqa: BLE001 - whatever a hostile header breaks, it is not a login
+        return None
 
 
 def _route_of(request: Request) -> tuple[str | None, dict]:
@@ -153,22 +156,28 @@ async def login_and_audit(request: Request, call_next):
         response = JSONResponse({"detail": "Sign in to continue."}, status_code=401,
                                 headers={"WWW-Authenticate": "Bearer"})
     else:
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception:  # noqa: BLE001 - a request that broke the server is logged too
+            response = JSONResponse({"detail": "The server could not answer this request. "
+                                               "It has been logged."}, status_code=500)
     template, params = _route_of(request)
     if (request.method, template) not in security.NOT_LOGGED:
         action, target = security.describe(request.method, template, params,
                                            request.query_params)
         target = request.state.audit.get("target", target)
         who = officer["username"] if officer else None
-        if not security.is_repeat(request.method, (who, action, target, response.status_code)):
+        client = request.client.host if request.client else None
+        fold = (who, client, action, target, response.status_code)
+        if not security.is_repeat(request.method, fold):
             try:
                 security.write_row(
                     AuditLog(AUDIT_DB), officer=who, action=action, target=target,
                     method=request.method,
                     path=path + (f"?{request.url.query}" if request.url.query else ""),
-                    status=response.status_code,
-                    client=request.client.host if request.client else None,
+                    status=response.status_code, client=client,
                     detail=request.state.audit.get("detail"))
+                security.remember(request.method, fold)
             except Exception:  # noqa: BLE001 - no reply without its audit row
                 response = JSONResponse(
                     {"detail": "The audit log could not be written, so the reply is "
@@ -266,10 +275,13 @@ def login(body: S.Login, request: Request, response: Response):
     is accepted on later requests. 401 for a wrong user name or password (the same words
     for both), 429 while an account is locked after five wrong passwords."""
     username = body.username.strip().lower()
-    # what was typed is logged only if it could be a user name (never a stray password)
-    _note(request, target=username if USERNAME.match(username) else "(not a user name)")
+    book = Officers(OFFICERS)
+    # what was typed is logged only when it is the name of an account: a password typed
+    # into the wrong box must not end up in the log
+    known = bool(USERNAME.match(username)) and book.known(username)
+    _note(request, target=username if known else "(unknown user name)")
     try:
-        officer = Officers(OFFICERS).verify(username, body.password)
+        officer = book.verify(username, body.password)
     except Locked as e:
         raise HTTPException(429, str(e)) from None
     if officer is None:

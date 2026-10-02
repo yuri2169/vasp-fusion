@@ -69,7 +69,9 @@ def test_an_edit_with_a_recomputed_hash_breaks_the_next_row(log):
     _, rows = log.list()
     row = {**next(r for r in rows if r["seq"] == 2), "officer": "someone.else"}
     row["detail"] = '{"case_id": "c-2"}'
-    sql(log, "UPDATE audit SET officer = ?, hash = ? WHERE seq = 2", row["officer"], row_hash(row))
+    # someone who holds the key can rehash the row itself, but not without breaking the next
+    sql(log, "UPDATE audit SET officer = ?, hash = ? WHERE seq = 2", row["officer"],
+        row_hash(row, log.key))
     check = log.verify_chain()
     assert (check["ok"], check["broken_at"]) == (False, 3)
     assert "does not follow" in check["reason"]

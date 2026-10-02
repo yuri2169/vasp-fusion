@@ -24,15 +24,19 @@ Nearest exchange: Bitget. Confidence 0.75 (rule confidence).
 
 SUMMARY
 -------
-Wallet 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 sent 552,163.80 USDT on Ethereum in 2
-transfers between 23 Jan 2024 and 6 Apr 2024. 552,163.80 USDT (100%) reached Bitget in 1 hop, at
-0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 ("Bitget Dep:
+Wallet 0x8971…b0eda9 sent 552,163.80 USDT on Ethereum in 2 transfers between 23 Jan 2024 and 6
+Apr 2024. 552,163.80 USDT (100%) reached Bitget in 1 hop, at 0x0008…0c8f24 ("Bitget Dep:
 0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24", explorer tag). Nearest exchange: Bitget, rule
 confidence 0.75 (rule-based, not calibrated). Checked without its strongest evidence: Still
-Bitget without the label on 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24: 100% of the funds reach
-Bitget at 0x1ab4…8f8f23 (explorer tag) in 2 hops, confidence 0.64 (was 0.75). Not followed in
-this run: 325.56 ETH in 6 transfers. Transaction hashes:
+Bitget without the label on 0x0008…0c8f24: 100% of the funds reach Bitget at 0x1ab4…8f8f23
+(explorer tag) in 2 hops, confidence 0.64 (was 0.75). Not followed in this run: 325.56 ETH in 6
+transfers. Transaction hashes:
 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
 
 
 WHERE THE FUNDS WENT
@@ -73,13 +77,12 @@ funds reached belongs to that exchange.
   Address reached  0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24
   Route            W0  ->  W1
   Time to reach    0 seconds
-    [Label] 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 is labelled Bitget ("Bitget Dep:
+    [Label] 0x0008…0c8f24 is labelled Bitget ("Bitget Dep:
     0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24"): explorer tag, source eth-labels [weight 0.75]
     [Route] 100% of the wallet's USDT (552,163.80 USDT) reached it in 1 hop [weight 1.00]
         tx 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
-    [Without its label] Still Bitget without the label on
-    0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24: 100% of the funds reach Bitget at 0x1ab4…8f8f23
-    (explorer tag) in 2 hops, confidence 0.64 (was 0.75). [weight -0.11]
+    [Without its label] Still Bitget without the label on 0x0008…0c8f24: 100% of the funds reach
+    Bitget at 0x1ab4…8f8f23 (explorer tag) in 2 hops, confidence 0.64 (was 0.75). [weight -0.11]
         tx 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
         tx 0x4572b609f425db1d24b33220861dda6ad6b36805caf0abe0032ade55acccecbb
 
@@ -114,8 +117,7 @@ The bar has not been measured on this chain.
 
 NEXT STEPS
 ----------
-  - Draft a request to Bitget for KYC and a freeze on the account behind
-    0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24
+  - Draft a request to Bitget for KYC and a freeze on the account behind 0x0008…0c8f24
   - Preserve the transaction records listed in the evidence
 
 LIMITATIONS
@@ -140,11 +142,13 @@ LIMITATIONS
 
 PROVENANCE RECEIPT
 ------------------
-What this case was computed from. The fingerprint covers every figure, address and transaction
-hash above and none of the wording. To check it, trace the wallet again from the same responses:
-python -m vaspfusion.cli verify eth-bitget
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify eth-bitget
 
-  Findings fingerprint    3e68b597b5e1d16b4d5eba9c2c22235c63bb712e29b1407803c94a73fe6dc8b1
+  Findings fingerprint    c9c146ea45559eb4de10206fa6b6dab9e5f7d6e0ba1db42769323b4023ef3f7c
   Input                   ethereum 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9, hop limit 3
   Input SHA-256           f10c9f3f7e1e3b7d92b5e1b02563db8d48b3c8637c56bcf1b0e6eb2996d549ad
   Chain responses         5 read from api.etherscan.io
@@ -154,7 +158,8 @@ python -m vaspfusion.cli verify eth-bitget
   Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Receipt SHA-256         ddc11772824de0b39f185ee8015bb99cb6437c4ba2c9b8ea12d8915c2480af9e
+  Content SHA-256         30d4c8d0a6e479ac64c3b6d868362072c2736ada35e21baea0f5515a45b9d3bb
+  Receipt SHA-256         d1251b945fff0bc378ce1d84d8131cf4b3b951131b034e3e5ff842e2641c1c9c
 
   Chain responses read
     ff9e592eee27ddb05c43b2ba9f3521e51e72c2b49aa6dc1add6174bbc36f752d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1706030459
