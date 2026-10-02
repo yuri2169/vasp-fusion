@@ -49,7 +49,21 @@ _TIER_OF_SOURCE = (
     ("post-incident report", "curated"),    # operator's own statement (WazirX)
     ("eth-labels", "explorer_tag"),
     ("etherscan", "explorer_tag"),
+    # GraphSense TagPacks (B5). WalletExplorer's names are an explorer's own clustering;
+    # the exchange-wallets packs each cite the exchange's own publication.
+    ("graphsense-tagpack:walletexplorer", "explorer_tag"),
+    ("graphsense-tagpack:", "curated"),
 )
+
+# TagPack `actor` slugs -> the name the rest of the store uses for that owner.
+_TAGPACK_ACTORS = {
+    "bitmex": "BitMEX", "cryptocom": "Crypto.com", "swissborg": "SwissBorg",
+    "bitstamp": "Bitstamp", "hitbtc": "HitBTC", "korbit": "Korbit", "luno": "Luno",
+    "bittrex": "Bittrex", "okcoin": "Okcoin", "paxful": "Paxful", "bitso": "Bitso",
+    "cex": "CEX.IO", "yobit": "Yobit", "exmo": "Exmo", "btce": "BTC-e",
+    "coinspot": "CoinSpot", "coinhako": "Coinhako", "maicoin": "MaiCoin",
+    "mercadobitcoin": "Mercado Bitcoin", "bitpanda": "Bitpanda",
+}
 
 # Upstream `entity` values that name a tag, not an owner. The owner is then read
 # from the label ("ChangeNOW 10" -> ChangeNOW).
@@ -168,6 +182,22 @@ def canonical_entity(raw_entity: str, label: str) -> str:
             return derived
         return " ".join(w.capitalize() for w in re.split(r"[-_ ]+", raw) if w)
     return raw
+
+
+def tagpack_entity(actor: str, label: str) -> str:
+    """The owner of a TagPack tag. A known `actor` gets the store's spelling (huobi ->
+    HTX). Otherwise WalletExplorer's own name for the site is kept whole
+    ("QuadrigaCX.com"), and a pack with a descriptive label ("swisborg reserve
+    wallets") falls back to the actor slug."""
+    key = (actor or "").strip().lower()
+    if key in _TAGPACK_ACTORS:
+        return _TAGPACK_ACTORS[key]
+    if key in _CANONICAL:
+        return _CANONICAL[key]
+    label = (label or "").strip()
+    if label and " " not in label:
+        return label
+    return " ".join(w.capitalize() for w in re.split(r"[-_ ]+", key) if w) or label
 
 
 def map_category(raw_category: str, entity: str, label: str, raw_entity: str = "") -> str:

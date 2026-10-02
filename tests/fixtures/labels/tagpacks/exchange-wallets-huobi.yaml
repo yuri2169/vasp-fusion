@@ -1,0 +1,21 @@
+title: Huobi reserve wallets
+creator: GraphSense Core Team
+confidence: service_data
+category: exchange
+source: https://www.huobi.com/support/en-us/detail/24922606430831
+lastmod: 2022-11-16
+is_cluster_definer: true
+actor: huobi
+tags:
+- address: 143gLvWYUojXaWZRrxquRKpVNTkhmr415B
+  currency: BTC
+  label: huobi reserve wallets BTC
+- address: TYh6mgoMNZTCsgpYHBz7gttEfrQmDMABub
+  currency: TRX
+  label: huobi reserve wallets TRX
+- address: DFCT8ZPq6MytZU3HSvbTJevxt4MLq2Xasu
+  currency: DOGE
+  label: huobi reserve wallets DOGE
+- address: '0x0511509A39377F1C6c78DB4330FBfcC16D8A602f'
+  currency: ETH
+  label: huobi reserve wallets HT

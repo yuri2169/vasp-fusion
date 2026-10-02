@@ -16,16 +16,38 @@ def _table(title: str, counts: dict, total: int) -> str:
     return "\n".join(lines)
 
 
+TAGPACKS_CSV = "graphsense_tagpacks_exchange.csv"
+
+
+def cmd_tagpacks(args) -> None:
+    from collections import Counter
+
+    from .labels.tagpacks import read_packs, write_csv
+    rows = read_packs(args.packs)
+    write_csv(rows, args.out)
+    by = Counter(r["currency"] for r in rows)
+    print(f"tagpacks -> {args.out}")
+    print(f"  {len(rows):,} exchange tags from {len({r['source'] for r in rows})} packs: "
+          + ", ".join(f"{c} {n:,}" for c, n in sorted(by.items())))
+    for source, n in sorted(Counter(r["source"] for r in rows).items()):
+        print(f"    {source:<52}{n:>8,}")
+
+
 def cmd_labels(args) -> None:
     from .labels.load import build_labels
     research = Path(args.research)
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
                          research / "indian_vasps_dune_spellbook.csv",
-                         derived_dir=Path(args.derived), model_dir=Path(args.model))
+                         derived_dir=Path(args.derived), model_dir=Path(args.model),
+                         tagpacks_csv=research / TAGPACKS_CSV)
     t = stats["total"]
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
           f"{stats['duplicates_dropped']:,}  unique (address, chain) {t:,}")
+    print(f"  GraphSense TagPacks (exchange packs): {stats['tagpack_rows']:,} rows, "
+          f"{stats['tagpack_kept']:,} kept as the label of their address (the rest are "
+          "addresses a stronger or equal source already labels). `make tagpacks` writes "
+          f"{TAGPACKS_CSV}.")
     print(f"  unusable addresses dropped {stats['invalid_dropped']:,} (valid on no chain, e.g. "
           f"truncated upstream)  re-filed to their real chain {stats['chain_refiled']:,}")
     ex = stats["by_category"].get("exchange", 0)
@@ -874,6 +896,13 @@ def main(argv: list[str] | None = None) -> None:
                    help="folder of the deposit-address model: its <chain>/scores.csv set the "
                         "confidence of the derived labels it scored")
     s.set_defaults(fn=cmd_labels)
+
+    research = ROOT.parent / "research" / "data"
+    s = sub.add_parser("tagpacks", help="flatten the GraphSense exchange TagPacks into the CSV "
+                                        "`labels` reads")
+    s.add_argument("--packs", default=str(research / "graphsense-tagpacks" / "packs"))
+    s.add_argument("--out", default=str(research / TAGPACKS_CSV))
+    s.set_defaults(fn=cmd_tagpacks)
 
     s = sub.add_parser("fetch", help="fetch an address's transfers (cached; OFFLINE=1 = cache only)")
     s.add_argument("address")

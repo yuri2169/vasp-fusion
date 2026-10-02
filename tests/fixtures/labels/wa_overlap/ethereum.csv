@@ -1,0 +1,2 @@
+address,network,entity,label,category,source,source_url,confidence,last_updated
+0x0511509A39377F1C6c78DB4330FBfcC16D8A602f,ethereum,HTX (Huobi),HTX (Huobi) (proof-of-reserves),exchange,defillama-cex,https://github.com/DefiLlama/DefiLlama-Adapters,high,2026-07-17

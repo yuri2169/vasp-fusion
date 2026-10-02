@@ -1,0 +1,47 @@
+title: WalletExplorer Tag Pack
+creator: GraphSense Core Team
+currency: BTC
+is_cluster_definer: true
+confidence: service_data
+lastmod: 2021-11-11
+tags:
+- address: 1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG
+  label: Huobi.com
+  source: https://www.walletexplorer.com/address/1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG
+  category: exchange
+  actor: huobi
+- address: 3Fh9p2W79ZHG54ettRJupkPTs23XcjrkT2
+  label: Bitstamp.net
+  source: https://www.walletexplorer.com/address/3Fh9p2W79ZHG54ettRJupkPTs23XcjrkT2
+  category: exchange
+  actor: bitstamp
+- address: 19jQz2ajiCN1hmavUkCrxKWnZwCfhQgJ9e
+  label: Bitstamp.net
+  source: https://www.walletexplorer.com/address/19jQz2ajiCN1hmavUkCrxKWnZwCfhQgJ9e
+  category: exchange
+  actor: bitstamp
+- address: 3G3VG4X1WquWjqXT27JRwrRoyZgdyWf1dT
+  label: Kraken.com
+  source: https://www.walletexplorer.com/address/3G3VG4X1WquWjqXT27JRwrRoyZgdyWf1dT
+  category: exchange
+  actor: kraken
+- address: 3L1smrPn5chgVCehpUhvs5h5nJGxGQe6sD
+  label: MercadoBitcoin.com.br
+  source: https://www.walletexplorer.com/address/3L1smrPn5chgVCehpUhvs5h5nJGxGQe6sD
+  category: exchange
+  actor: mercadobitcoin
+- address: 189sx3cvfJjJ13qKcEu1BZpV23Nz3pe5Gh
+  label: HelixMixer
+  source: https://www.walletexplorer.com/address/189sx3cvfJjJ13qKcEu1BZpV23Nz3pe5Gh
+  category: mixing_service
+  actor: helixmixer
+- address: 1GwePtfuQKtV8YfUADi77RDVX5YKxNbFmp
+  label: Cex.io
+  source: https://www.walletexplorer.com/address/1GwePtfuQKtV8YfUADi77RDVX5YKxNbFmp
+  category: exchange
+  actor: cex
+- address: 16xAAvXw4H2m2i1ASEeTAfg4sMVbWGBYkc
+  label: QuadrigaCX.com
+  source: https://www.walletexplorer.com/address/16xAAvXw4H2m2i1ASEeTAfg4sMVbWGBYkc
+  category: exchange
+  actor: quadrigacx

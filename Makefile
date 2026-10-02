@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -14,6 +14,10 @@ setup:            ## create the venv and install everything (needs network ONCE)
 
 labels:           ## build data/labels.duckdb from the research label CSVs + derived/, print stats
 	$(PY) -m vaspfusion.cli labels --research "$(RESEARCH)" --db data/labels.duckdb
+
+tagpacks:         ## flatten the GraphSense exchange TagPacks ($(RESEARCH)/graphsense-tagpacks/packs) into the CSV `make labels` reads
+	$(PY) -m vaspfusion.cli tagpacks --packs "$(RESEARCH)/graphsense-tagpacks/packs" \
+		--out "$(RESEARCH)/graphsense_tagpacks_exchange.csv"
 
 discover:         ## derive Tron deposit addresses into derived/ (cached; OFFLINE=1 replays), then `make labels`
 	$(PY) -m vaspfusion.cli discover --chain tron

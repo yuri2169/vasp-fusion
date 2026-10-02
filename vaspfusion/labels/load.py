@@ -6,6 +6,10 @@ Inputs (both real, both in ../research/data):
     would be counted twice.
   * indian_vasps_dune_spellbook.csv - CoinDCX, WazirX and CoinSwitch addresses.
 
+  * graphsense_tagpacks_exchange.csv (optional) - the exchange packs of the GraphSense
+    TagPacks (MIT), flattened by `cli tagpacks` (labels/tagpacks.py): BTC, ETH and TRX
+    addresses of exchanges, among them WalletExplorer's named exchange wallets.
+
   * data/derived/<chain>.csv (optional) - deposit addresses derived by B4's discovery
     rules (`make discover`). Only rows with status `derived` are loaded, as tier
     `derived`, each with its rule confidence and evidence text.
@@ -27,7 +31,7 @@ import polars as pl
 from .normalize import (
     address_chain,
     CATEGORY_RANK, DERIVED_SOURCE, TIER_RANK, canonical_entity, infer_kind, map_category,
-    normalize_address, normalize_chain, tier_for,
+    normalize_address, normalize_chain, tagpack_entity, tier_for,
 )
 
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
@@ -105,6 +109,16 @@ def read_dune(csv_path: Path) -> list[dict]:
     # Every row in this extract is a VASP wallet (the file lists exchanges only).
     return [_row(r["address"], r["chain"], r["exchange"], r["name_tag"], "exchange",
                  r["source"], DUNE_SOURCE_URL) for r in _read(Path(csv_path))]
+
+
+def read_tagpacks(csv_path: Path | None) -> list[dict]:
+    """The exchange tags of the GraphSense TagPacks, from the CSV `cli tagpacks` writes
+    (labels/tagpacks.py). No file, no rows: the source is optional."""
+    if csv_path is None or not Path(csv_path).is_file():
+        return []
+    return [_row(r["address"], r["currency"], tagpack_entity(r["actor"], r["label"]),
+                 r["label"], r["category"], r["source"], r["source_url"])
+            for r in _read(Path(csv_path))]
 
 
 def read_model_scores(model_dir: Path | None) -> dict[tuple[str, str], dict]:
@@ -222,11 +236,13 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
-                 derived_dir: Path | None = None, model_dir: Path | None = None) -> dict:
+                 derived_dir: Path | None = None, model_dir: Path | None = None,
+                 tagpacks_csv: Path | None = None) -> dict:
     read = read_derived(derived_dir, model_dir)
     derived, conflicting = _drop_conflicting(read)
     derived, dropped_derived, _ = _validate(derived)
-    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv)
+    tagpacks = read_tagpacks(tagpacks_csv)
+    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv) + tagpacks
     kept, dropped, refiled = _validate(rows)
     df = _dedupe(kept + derived)
     db_path = Path(db_path)
@@ -244,11 +260,14 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
         ).fetchone()[0]
         stats["derived_model_scored"] = con.execute(
             "SELECT count(*) FROM labels WHERE confidence_low IS NOT NULL").fetchone()[0]
+        stats["tagpack_kept"] = con.execute(
+            "SELECT count(*) FROM labels WHERE source LIKE 'graphsense-tagpack:%'").fetchone()[0]
         stats["derived_model_unconfirmed"] = con.execute(
             "SELECT count(*) FROM labels WHERE model IS NOT NULL AND confidence_low IS NULL"
         ).fetchone()[0]
     os.replace(tmp, db_path)  # readers never see a half-built DB
     stats["raw_rows"] = len(rows)
+    stats["tagpack_rows"] = len(tagpacks)
     stats["derived_loaded"] = len(read)
     stats["derived_conflicting"] = conflicting
     # derived rows that lost to a label of a higher tier, or that two runs both named
