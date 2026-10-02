@@ -151,18 +151,20 @@
   }
 }
 
+/* The stamp comes down from above the page, a little askew, and settles. (Its resting
+   1.5 degree tilt is on the stamp itself; this is only the landing.) */
 @keyframes stamp-land {
   0% {
     opacity: 0;
-    transform: rotate(-7deg) scale(1.35);
+    transform: rotate(-6deg) scale(1.35);
   }
   60% {
     opacity: 1;
-    transform: rotate(-1deg) scale(0.97);
+    transform: rotate(0.5deg) scale(0.97);
   }
   100% {
     opacity: 1;
-    transform: rotate(-1.5deg) scale(1);
+    transform: rotate(0deg) scale(1);
   }
 }
 
@@ -211,9 +213,6 @@
   .rail-tracing,
   .skeleton {
     animation: none;
-  }
-  .rail-stamp {
-    transform: rotate(-1.5deg);
   }
   * {
     scroll-behavior: auto !important;

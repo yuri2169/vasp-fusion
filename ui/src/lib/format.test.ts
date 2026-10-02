@@ -13,13 +13,13 @@ import {
 
 describe('truncateMiddle', () => {
   it('keeps six characters at each end, as the backend writes them', () => {
-    expect(truncateMiddle('TCw8j3hdWgpB6S8gRYNrSwhfDVYnLLcoV5')).toBe('TCw8j3…LLcoV5')
+    expect(truncateMiddle('TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c')).toBe('TYJD2h…e2HP1c')
   })
   it('leaves anything of 16 characters or fewer whole', () => {
     expect(truncateMiddle('0123456789abcdef')).toBe('0123456789abcdef')
   })
   it('takes other lengths', () => {
-    expect(truncateMiddle('TCw8j3hdWgpB6S8gRYNrSwhfDVYnLLcoV5', 4, 4)).toBe('TCw8…coV5')
+    expect(truncateMiddle('TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c', 4, 4)).toBe('TYJD…HP1c')
   })
 })
 
