@@ -45,3 +45,8 @@ tags:
   source: https://www.walletexplorer.com/address/16xAAvXw4H2m2i1ASEeTAfg4sMVbWGBYkc
   category: exchange
   actor: quadrigacx
+- address: 1Empt7dGo7ZR7QemR2mBon6NdbLa4tMaSU
+  label: Cryptsy.com
+  source: https://www.walletexplorer.com/address/1Empt7dGo7ZR7QemR2mBon6NdbLa4tMaSU
+  category: exchange
+  actor: cryptsy

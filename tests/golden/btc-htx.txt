@@ -27,10 +27,10 @@ SUMMARY
 Wallet bc1qw7…t7q3x6 sent 0.364594 BTC on Bitcoin in 2 transfers on 1 Oct 2026. 0.364594 BTC
 (100%) reached HTX in 1 hop, at 19vP8b…16BxSV ("HTX wallet (derived: spent together with 1
 labelled HTX address)", derived by VASP-FUSION). Nearest exchange: HTX, rule confidence 0.85
-(rule-based, not calibrated). Checked without its strongest evidence: Still HTX without the
-label on 19vP8b…16BxSV: 99% of the funds reach HTX at 1AQLXA…bWSEjg (published by the exchange
-itself) in 2 to 3 hops, confidence 0.75 (was 0.85). Transaction hashes:
-18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747.
+(rule-based, not calibrated). Checked without its strongest evidence: Without the label on
+19vP8b…16BxSV, 14% of the funds reach HTX at 1AQLXA…bWSEjg (published by the exchange itself) in
+2 hops, but confidence falls to 0.46, below the 0.60 needed to name an exchange (was 0.85).
+Transaction hashes: 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747.
 
 In the sentences of this file a long address is written as its first six and last six
 characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
@@ -56,7 +56,7 @@ FLOW OF FUNDS
     arrow bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8 -> bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 (inbound, 1 transfer, 0.051664 BTC)
   No. | Address | What it is | Hop | Traced funds
   W0 | bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 | Traced wallet | - | 0.364594 BTC
-  W1 | 19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV | Exchange deposit address: HTX | 1 | 0.364594 BTC
+  W1 | 19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV | Exchange wallet: HTX | 1 | 0.364594 BTC
   W2 | bc1qtdrr5teg5c5xcdnpa8rguk8lvsc84tlqcq2pya | Unlabelled wallet (not followed) | funded it | 0.312938 BTC
   W3 | bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8 | Unlabelled wallet (not followed) | funded it | 0.051664 BTC
 
@@ -75,18 +75,20 @@ funds reached belongs to that exchange.
   Time to reach    0 seconds
     [Label] 19vP8b…16BxSV is labelled HTX ("HTX wallet (derived: spent together with 1 labelled
     HTX address)"): derived by VASP-FUSION, source vaspfusion-cluster. Wallet cluster: cluster
-    of 288 addresses, 1 labelled HTX. 19vP8b…16BxSV was spent together with 287 other addresses
-    in 9 transactions (the inputs of one transaction are signed by one owner; CoinJoin-shaped
-    transactions are left out). Labelled member: 1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg ("HTX
-    (Huobi) (proof-of-reserves)"), published by the exchange itself, source defillama-cex.
-    Linking transaction: f96b97dd0536ff795186ce75302b808e1f4fd388a71895ccde5eab4566d46db6. Rule
-    confidence 0.85 = 0.95 (that label) x 0.90 (spent together), hand-set, not calibrated. Read
-    from the 25 most recent transactions of the address; it has more. [weight 0.85]
+    of 288 addresses, 1 labelled HTX. 19vP8b…16BxSV was itself spent together with 287 other
+    addresses in 9 transactions (the inputs of one transaction are signed by one owner;
+    transactions with the shape of a CoinJoin or another joint payment are left out). Labelled
+    address spent with it: 1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg ("HTX (Huobi)
+    (proof-of-reserves)"), published by the exchange itself, source defillama-cex. Transaction
+    with both among its inputs:
+    f96b97dd0536ff795186ce75302b808e1f4fd388a71895ccde5eab4566d46db6. Rule confidence 0.855 =
+    0.95 (that label) x 0.90 (spent together), hand-set, not calibrated. Read from the 25 most
+    recent transactions of the address; older ones, if it has any, were not read. [weight 0.85]
     [Route] 100% of the wallet's BTC (0.364594 BTC) reached it in 1 hop [weight 1.00]
         tx 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747
-    [Without its label] Still HTX without the label on 19vP8b…16BxSV: 99% of the funds reach HTX
-    at 1AQLXA…bWSEjg (published by the exchange itself) in 2 to 3 hops, confidence 0.75 (was
-    0.85). [weight -0.10]
+    [Without its label] Without the label on 19vP8b…16BxSV, 14% of the funds reach HTX at
+    1AQLXA…bWSEjg (published by the exchange itself) in 2 hops, but confidence falls to 0.46,
+    below the 0.60 needed to name an exchange (was 0.85). [weight -0.40]
         tx 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747
         tx 14c5c7c169641c48df7539653fb454ecc3a794bf904435d960e4778c6788cdb1
 
@@ -126,7 +128,8 @@ The bar has not been measured on this chain.
 
 NEXT STEPS
 ----------
-  - Draft a request to HTX for KYC and a freeze on the account behind 19vP8b…16BxSV
+  - Draft a request to HTX for KYC and a freeze on the account that received the funds at
+    19vP8b…16BxSV
   - Preserve the transaction records listed in the evidence
 
 LIMITATIONS
@@ -141,17 +144,22 @@ LIMITATIONS
     busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
     wallets. Funds beyond those points are counted under 'Where the funds went' and not
     followed.
-  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
-    order. Where a wallet held other money too, that matching is a convention, not a fact
-    recorded on the chain.
-  - A Bitcoin transaction has many inputs and many outputs and does not say which input paid
-    which output. Each address is taken to have sent its share of each output in proportion to
-    what it put in. Outputs that return to one of the transaction's own input addresses are that
-    wallet's change. Change is not guessed: an output to any other address is followed like a
-    payment. Miner fees are counted under 'Where the funds went'.
+  - Money that entered an address is matched to that address's next outgoing transactions in
+    time order. Bitcoin does record which coin each transaction spent; this tool does not read
+    that yet, so where an address held other coins too the matching is a convention.
+  - A Bitcoin transaction has many inputs and many outputs and does not record which input paid
+    which output. An address's coins are followed through a transaction only where that has one
+    answer: the address is the transaction's only funding address, or everything goes to one
+    destination. Where several addresses fund a transaction that pays several destinations, the
+    coins are counted as not followed at that point. The traced wallet's own transactions are
+    the exception: the addresses it is spent with are taken to be its own, and each destination
+    gets its share in proportion to what the address put in. Change is not guessed: an output to
+    another address is followed like a payment. Miner fees are counted under 'Where the funds
+    went'.
   - Addresses spent together in one transaction are treated as one owner. That is not true of a
-    CoinJoin: a transaction with the shape of one is left out of the clustering and ends the
-    trace. The shape test is a rule; it can miss a CoinJoin or flag an ordinary payment.
+    CoinJoin or another joint payment: a transaction with that shape is not used for a wallet
+    cluster and is not followed. The shape test is a rule; it can miss a joint transaction or
+    take an ordinary payment for one.
   - Flags and leads describe patterns. They never decide the result.
   - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
   - The result is as of the chain responses listed in the receipt. Transfers made after they
@@ -165,22 +173,21 @@ too. Neither covers the case reference, complaint number or amount reported lost
 officer's entries. To check it, trace the wallet again from the same responses: python -m
 vaspfusion.cli verify btc-htx
 
-  Findings fingerprint    7a106812763d0c94b02592f47d5072b9c35e5d6747851b1d21633991888d9cfb
+  Findings fingerprint    9e16ad1315e5a5f808ce5b9609e525954e6acf1f5b336ff347ea5e48fe6332da
   Input                   bitcoin bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6, hop limit 3
   Input SHA-256           8e8ff661eed8c7f7509bc3d9cb022fa22c8fc2f866f3a8a44e55a2edc9354625
-  Chain responses         5 read from blockstream.info
-  Responses SHA-256       89984a42a75661a9de549f0b7a5e1feccd696591e4092826a39f3aa40ade3899
+  Chain responses         4 read from blockstream.info
+  Responses SHA-256       31f4cac4eed2540f8cccddd12e31887b0caee0e669499a9a43fe066beccd183c
   Label database SHA-256  not recorded
   Model                   not used in this case
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         ea5ed07ecca17e17b144a5809b43104d08c68e2b58aca9a9ae96c2ff380b8db3
-  Receipt SHA-256         7795c6aa1f7e3b19d5754f5d22dbd78a86db37490d1a76545b3541b134bc7449
+  Content SHA-256         8d6bb4f42cf7543bcc8bafb72edbb625b6c37c6b8451360c35f9a687bfa3f804
+  Receipt SHA-256         d8e7e11fd74bdc7868266e407a0340bccd39a67d49b706b11cc1ef1fbccdf266
 
   Chain responses read
     a52a243a8c1dbbbd74a6e77afc92df258b145169adf565a5ad3fd8d3c1ca57dc  https://blockstream.info/api/address/19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV/txs
-    f12c786c24db65c7db63c6714b67b5dbf191e04092f4327d0382c5bd86009f81  https://blockstream.info/api/address/3EpyhpDRu2wz5LtS4sPAmXaGozuxYWdRkN/txs
     cb1a57299c9b01558eba0bd09727d523c88de1c36366f66ff9d7b71a9365c42d  https://blockstream.info/api/address/bc1qtdrr5teg5c5xcdnpa8rguk8lvsc84tlqcq2pya/txs
     7978351337720065e03c5000a788dc64790be27e42123ca59c169c703a038203  https://blockstream.info/api/address/bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6/txs
     53aae72efa7c937ac070da31b16cca11a065479f3d971ef52a91e77b70ed252d  https://blockstream.info/api/address/bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8/txs

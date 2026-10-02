@@ -1979,7 +1979,7 @@ export interface components {
              * @description deposit_like is a lead from the deposit-address model on an unlabelled wallet (figures: p, low, high, share, amount); it never changes the outcome
              * @enum {string}
              */
-            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact" | "deposit_like";
+            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact" | "deposit_like" | "coinjoin_shape";
             /**
              * Severity
              * @enum {string}

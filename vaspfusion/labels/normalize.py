@@ -49,10 +49,11 @@ _TIER_OF_SOURCE = (
     ("post-incident report", "curated"),    # operator's own statement (WazirX)
     ("eth-labels", "explorer_tag"),
     ("etherscan", "explorer_tag"),
-    # GraphSense TagPacks (B5). WalletExplorer's names are an explorer's own clustering;
-    # the exchange-wallets packs each cite the exchange's own publication.
-    ("graphsense-tagpack:walletexplorer", "explorer_tag"),
-    ("graphsense-tagpack:", "curated"),
+    # GraphSense TagPacks (B5). The exchange-wallets packs each cite the exchange's own
+    # publication. Every other pack is an outside observation (WalletExplorer's own
+    # clustering, a news report), like an explorer's tag.
+    ("graphsense-tagpack:exchange-wallets-", "curated"),
+    ("graphsense-tagpack:", "explorer_tag"),
 )
 
 # TagPack `actor` slugs -> the name the rest of the store uses for that owner.
@@ -63,6 +64,8 @@ _TAGPACK_ACTORS = {
     "cex": "CEX.IO", "yobit": "Yobit", "exmo": "Exmo", "btce": "BTC-e",
     "coinspot": "CoinSpot", "coinhako": "Coinhako", "maicoin": "MaiCoin",
     "mercadobitcoin": "Mercado Bitcoin", "bitpanda": "Bitpanda",
+    "bitzlato": "Bitzlato", "blocktrades": "BlockTrades Exchange", "btcmarkets": "BTC Markets",
+    "litebit": "LiteBit", "quadrigacx": "QuadrigaCX",
 }
 
 # Upstream `entity` values that name a tag, not an owner. The owner is then read

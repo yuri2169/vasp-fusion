@@ -117,6 +117,26 @@ def test_review_notes_say_what_the_officer_should_check(desk):
     assert "No published law-enforcement channel is on file for CoinDCX" in coindcx
     assert ("CoinDCX's FIU-IND registration is as of 4 Dec 2023 (an official list). "
             "Confirm it is still current.") in coindcx
+    assert "sweeps into a labelled CoinDCX wallet" in coindcx
+
+
+def test_a_bitcoin_request_names_the_exchanges_address_and_says_how_it_was_labelled(tmp_path):
+    cases = CaseStore(tmp_path / "case.duckdb")
+    cases.save(demo_cases("btc-htx")[0])
+    desk = DeskService(cases, RequestStore(tmp_path / "desk.duckdb"), Directory.load(),
+                       MockSahyogGateway(tmp_path / "outbox"), now=Clock())
+    letter = _draft(desk, vasp="HTX", cases=["btc-htx"])["letter"]
+    w, = letter["wallets"]
+    assert (w["address"], w["paid_into"], w["tier"], w["asset"]) == (
+        "19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV", None, "derived", "BTC")
+    notes = " ".join(letter["review_notes"])
+    # how the label came about is the cluster, not a sweep; and what the address is, is not known
+    assert "spent in one transaction together with a labelled HTX address" in notes
+    assert "sweeps into a labelled HTX wallet" not in notes
+    assert "is in HTX's wallet cluster" in notes and "is not known" in notes
+    assert "is HTX's own labelled wallet, not a customer's deposit address" not in notes
+    assert "rests on one label" in notes
+    assert "is not a US-dollar stablecoin" in notes
 
 
 def test_the_payload_follows_the_documented_contract(desk):

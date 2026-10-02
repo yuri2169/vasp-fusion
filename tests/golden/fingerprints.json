@@ -1,8 +1,8 @@
 {
  "btc-htx": {
-  "findings_sha256": "7a106812763d0c94b02592f47d5072b9c35e5d6747851b1d21633991888d9cfb",
-  "responses_sha256": "89984a42a75661a9de549f0b7a5e1feccd696591e4092826a39f3aa40ade3899",
-  "pages": 5
+  "findings_sha256": "9e16ad1315e5a5f808ce5b9609e525954e6acf1f5b336ff347ea5e48fe6332da",
+  "responses_sha256": "31f4cac4eed2540f8cccddd12e31887b0caee0e669499a9a43fe066beccd183c",
+  "pages": 4
  },
  "eth-abstain": {
   "findings_sha256": "ad5dddb1b524acf564c79175fb04189b65271d81e0ada26cd33ab2a3e20eb636",

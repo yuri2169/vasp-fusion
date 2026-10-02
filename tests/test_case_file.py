@@ -133,14 +133,18 @@ def test_a_case_stored_before_receipts_still_gets_a_file(cases):
 def test_a_bitcoin_case_file_states_the_rules_that_only_apply_to_bitcoin(cases):
     flat = " ".join(CF.case_file_text(cases["btc-htx"]).split())
     # how a transaction with many inputs and outputs became transfers
-    assert "share of each output in proportion to what it put in" in flat
+    assert "only where that has one answer" in flat
     assert "Change is not guessed" in flat
+    # the generic "not a fact recorded on the chain" is not true of Bitcoin
+    assert "Bitcoin does record which coin each transaction spent" in flat
+    assert "not a fact recorded on the chain" not in flat
     # what a cluster label is, and that it is a rule
     assert "spent together with a labelled address" in flat
     assert "0.90 for having been spent together" in flat
     # and none of it leaks into the other chains' files
     other = " ".join(CF.case_file_text(cases["tron-coindcx"]).split())
-    assert "spent together" not in other and "in proportion to what it put in" not in other
+    assert "spent together" not in other and "has one answer" not in other
+    assert "not a fact recorded on the chain" in other
 
 
 # ------------------------------------------------------------------ the flow diagram

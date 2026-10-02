@@ -67,6 +67,12 @@ def _registration_note(entry: dict) -> str:
             "no official list naming it was found.")
 
 
+def _by_cluster(w: dict) -> bool:
+    """The wallet's label was derived from its Bitcoin wallet cluster (cluster.py)."""
+    from ..cluster import CLUSTER_MARK
+    return CLUSTER_MARK in (w.get("label") or "")
+
+
 def review_notes(wallets: list[dict], entry: dict) -> list[str]:
     """What the reviewing officer should know before approving. Not sent."""
     notes = []
@@ -77,6 +83,12 @@ def review_notes(wallets: list[dict], entry: dict) -> list[str]:
                 f"everything it received from this trail to {w['vasp']}'s wallet "
                 f"{w['paid_into']}; it may be a customer's deposit address or an "
                 "intermediary.")
+        elif _by_cluster(w):
+            notes.append(
+                f"{w['address']} is in {w['vasp']}'s wallet cluster. Whether it is a "
+                f"customer's deposit address or one of {w['vasp']}'s own wallets is not "
+                f"known; {w['vasp']} can identify the account from the transactions listed "
+                "for it.")
         elif w["kind"] != "deposit":
             notes.append(
                 f"{w['address']} is {w['vasp']}'s own labelled wallet, not a customer's "
@@ -88,9 +100,12 @@ def review_notes(wallets: list[dict], entry: dict) -> list[str]:
                 f"({fmt.tier_words(w['tier'])}): without it the trace does not reach "
                 f"{w['vasp']}.")
         if w["tier"] == "derived":
+            how = (f"it was spent in one transaction together with a labelled {w['vasp']} "
+                   "address" if _by_cluster(w) else
+                   f"it sweeps into a labelled {w['vasp']} wallet")
             notes.append(
-                f"{w['address']} was labelled by VASP-FUSION's own rules (it sweeps into a "
-                f"labelled {w['vasp']} wallet), not by an outside source.")
+                f"{w['address']} was labelled by VASP-FUSION's own rules ({how}), not by an "
+                "outside source.")
         if w["amount_usd"] is None:
             notes.append(f"{fmt.amount(w['amount'], w['asset'])} is not a US-dollar "
                          "stablecoin; no rupee or dollar value is stated.")

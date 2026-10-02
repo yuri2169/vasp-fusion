@@ -34,10 +34,17 @@ def _opening(tr: TraceResult) -> str:
     first = sorted((e.transfer for e in tr.edges if e.side == "outbound" and e.hop == 1),
                    key=lambda t: t.block_time)
     n = len(first)
+    sent = f"Wallet {who} sent {fmt.amount(tr.total_out, tr.asset)} on {chain}"
+    if not first:       # Bitcoin: every spend went into a transaction that is not followed
+        return f"{sent}, and none of it could be followed past the wallet's own transactions."
     when = (f"on {_day(first[0].block_time)}" if _day(first[0].block_time) == _day(first[-1].block_time)
             else f"between {_day(first[0].block_time)} and {_day(first[-1].block_time)}")
-    return (f"Wallet {who} sent {fmt.amount(tr.total_out, tr.asset)} on {chain} in {n} "
-            f"transfer{'s' if n != 1 else ''} {when}.")
+    followed = sum((t.amount for t in first), tr.total_out * 0)
+    if followed < tr.total_out:
+        return (f"{sent}: {fmt.amount(followed, tr.asset)} in {n} transfer{'s' if n != 1 else ''} "
+                f"{when}, and {fmt.amount(tr.total_out - followed, tr.asset)} in transactions "
+                "that could not be followed.")
+    return f"{sent} in {n} transfer{'s' if n != 1 else ''} {when}."
 
 
 def _reached(tr: TraceResult, c: Candidate) -> str:

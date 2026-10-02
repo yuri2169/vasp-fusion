@@ -9,62 +9,79 @@ is still tied to the exchange by the labelled addresses it was swept with.
 
 What is used, and what is not:
 
-* `graph/resolve.py` on the address's own page of transactions, with the CoinJoin guard
-  (`graph/coinjoin.py`): a CoinJoin's inputs belong to different people.
+* `graph/resolve.py` on the address's own page of transactions, without the
+  transactions whose inputs are several people's by their shape: a CoinJoin
+  (`chains.btc.coinjoin_ids`) and any other joint payment (`chains.btc.join_like`).
 * NOT the change heuristic. "This output has never been seen before, so it is the
   sender's change" cannot be checked from one address's page, and when it is wrong it
   puts an exchange's label on the exchange's customer. Only co-spending carries a label.
-* A cluster whose labelled members name two owners, or an owner that is not a VASP,
-  gives no label (and a note). Nothing is settled by picking a side.
+* A label needs a labelled address that was spent WITH this address, in one
+  transaction that can be named. A labelled address that is only in the same cluster
+  through other addresses is counted ("M labelled") but does not carry the label.
+* A cluster whose labelled members name two owners, or an owner that is not a VASP, or
+  no owner at all (an "exchange" tag with no name), gives no label, and a note says
+  why. Nothing is settled by picking a side.
 
-The label is `derived`: its confidence is the weight of the strongest labelled member
-times CO_SPEND (hand-set, not calibrated), and its evidence says how many addresses the
-cluster has, how many are labelled, and which transaction links them.
+The label is `derived`, kind `unknown`: co-spending shows the exchange controls the
+address, not whether it is a customer's deposit address or one of the exchange's own
+wallets. Its confidence is the weight of the strongest labelled address it was spent
+with, times CO_SPEND (hand-set, not calibrated). Its evidence says how many addresses
+the cluster has, how many are labelled, and which transaction links them.
 
-`ClusterLabels` wraps the label store for a Bitcoin trace. `lookup_many` is the store's
-(plus names for the two things that are not addresses: a CoinJoin sink and newly mined
-coins). `infer` is the cluster step; the trace calls it for the traced wallet and for
-each unlabelled wallet that holds enough of the funds to matter (trace.py).
+`ClusterLabels` wraps the label store for a Bitcoin trace. `lookup_many` is the store's.
+`infer` is the cluster step; the trace calls it for the traced wallet and for each
+unlabelled wallet that holds enough of the funds to matter (trace.py).
 """
 from __future__ import annotations
 
-from collections import Counter
 from dataclasses import dataclass
-from decimal import Decimal
 
 from .chains.base import InvalidAddress, ProviderError
-from .chains.btc import COINBASE, COINJOIN_SINK, UtxoTx, coinjoin_ids, tx_frame
+from .chains.btc import UtxoTx, coinjoin_ids, join_like, tx_frame
 from .explain import fmt
 from .graph.resolve import resolve_entities
 from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
 
 CLUSTER_SOURCE = "vaspfusion-cluster"
+CLUSTER_MARK = "derived: spent together with"   # in the `label` of every cluster label
 CO_SPEND = 0.90         # weight of "spent together with a labelled address" (hand-set)
 PAGES = 1               # pages of the address's history read for its cluster
+NO_OWNER = "Unidentified exchange"      # labels.normalize: a tag that names nobody
 
 
 @dataclass(frozen=True)
 class Cluster:
     address: str
-    members: tuple[str, ...]        # the address and everything co-spent with it, sorted
-    links: tuple[str, ...]          # transactions in which it was co-spent, oldest first
-    coinjoin_skipped: int           # CoinJoin-shaped transactions left out of the clustering
+    members: tuple[str, ...]            # the address and every address of its owner, sorted
+    direct: dict[str, tuple[str, ...]]  # addresses spent WITH it -> the transactions, oldest first
+    links: tuple[str, ...]              # transactions in which it was spent with others
+    left_out: int                       # joint-payment-shaped transactions not used
 
 
 def cluster_of(address: str, txs: list[UtxoTx]) -> Cluster:
     """The addresses that share an owner with `address`, by co-spending in `txs`."""
     if not txs:
-        return Cluster(address, (address,), (), 0)
-    mapping, stats = resolve_entities(tx_frame(txs), change=False, coinjoin=coinjoin_ids(txs))
+        return Cluster(address, (address,), {}, (), 0)
+    joint = coinjoin_ids(txs) | {t.txid for t in txs if join_like(t)}
+    mapping, _ = resolve_entities(tx_frame(txs), change=False, coinjoin=joint)
     owner = dict(zip(mapping["address"].to_list(), mapping["entity_id"].to_list()))
     mine = owner.get(address)
     members = tuple(sorted(a for a, e in owner.items() if e == mine)) if mine else (address,)
-    inside = set(members)
-    links = tuple(t.txid for t in sorted(txs, key=lambda t: (t.time, t.txid))
-                  if address in t.input_addresses and len(inside & set(t.input_addresses)) > 1)
-    return Cluster(address, members, links if len(members) > 1 else (),
-                   stats.get("coinjoin_txs_skipped", 0))
+    direct: dict[str, list[str]] = {}
+    links, left_out = [], 0
+    for t in sorted({t.txid: t for t in txs}.values(), key=lambda t: (t.time, t.txid)):
+        others = [a for a in t.input_addresses if a != address]
+        if address not in t.input_addresses or not others:
+            continue
+        if t.txid in joint:
+            left_out += 1
+            continue
+        links.append(t.txid)
+        for a in others:
+            direct.setdefault(a, []).append(t.txid)
+    return Cluster(address, members, {a: tuple(v) for a, v in direct.items()}, tuple(links),
+                   left_out)
 
 
 def _weight(label: Label) -> float:
@@ -72,19 +89,8 @@ def _weight(label: Label) -> float:
     return label_weight(label)
 
 
-def _coinjoin_label(address: str, chain: str, tx: UtxoTx | None) -> Label:
-    txid = address[len(COINJOIN_SINK):]
-    shape = ""
-    if tx is not None:
-        value, equal = Counter(v for a, v in tx.outputs if a).most_common(1)[0]
-        shape = (f": {len(tx.input_addresses)} input addresses, and {equal} of its "
-                 f"{sum(1 for a, _ in tx.outputs if a)} outputs are "
-                 f"{fmt.amount(Decimal(value).scaleb(-8), 'BTC')} each")
-    return Label(address, chain, "CoinJoin", "mixer", "unknown", "derived", "vaspfusion-coinjoin",
-                 None, "CoinJoin-shaped transaction", None,
-                 f"Transaction {txid} has the shape of a collaborative CoinJoin{shape}. Several "
-                 "owners put coins in and took equal amounts out, so which output is whose "
-                 "cannot be told and the trace stops here. The shape is a rule, not a proof.")
+def _plural(n: int, word: str, many: str | None = None) -> str:
+    return f"{n} {word if n == 1 else many or word + 's'}"
 
 
 class ClusterLabels:
@@ -93,26 +99,12 @@ class ClusterLabels:
         self.notes: list[str] = []
         self._inferred: dict[str, Label | None] = {}
 
-    # -------------------------------------------------------------- direct labels
     def lookup_many(self, pairs):
-        pairs = list(pairs)
-        found = dict(self.store.lookup_many(pairs))
-        for address, chain in pairs:
-            if address.startswith(COINJOIN_SINK):
-                seen = getattr(self.provider, "_seen", {})
-                found[(address, chain)] = _coinjoin_label(
-                    address, chain, seen.get(address[len(COINJOIN_SINK):]))
-            elif address == COINBASE:
-                found[(address, chain)] = Label(
-                    address, chain, "Newly mined coins", "entity", "unknown", "derived",
-                    "vaspfusion-coinbase", None, "Block reward (coinbase)", None,
-                    "These coins were created by the block that paid them out; they have no "
-                    "sender.")
-        return found
+        return self.store.lookup_many(pairs)
 
     # -------------------------------------------------------------- the cluster step
     def infer(self, address: str, chain: str) -> Label | None:
-        if chain != "bitcoin" or address == COINBASE or address.startswith(COINJOIN_SINK):
+        if chain != "bitcoin":
             return None
         if address not in self._inferred:
             self._inferred[address] = self._infer(address, chain)
@@ -136,42 +128,52 @@ class ClusterLabels:
         found = self.store.lookup_many([(m, chain) for m in others])
         if not found:
             return None
+        who = fmt.short(address)
         owners = sorted({lab.entity for lab in found.values()})
         if len(owners) > 1:
-            self._note(f"{fmt.short(address)} was spent together with addresses labelled "
+            self._note(f"{who} was spent together with addresses labelled "
                        f"{' and '.join(owners)}: two owners in one cluster, so no label was "
                        "derived from it.")
             return None
-        best = max(found.values(), key=lambda lab: (_weight(lab), lab.address))
-        if best.category not in VASP_CATEGORIES:
+        with_it = [lab for lab in found.values() if lab.address in cluster.direct]
+        if not with_it:
+            self._note(f"{who} is in one wallet cluster with addresses labelled {owners[0]}, "
+                       "but only through other addresses: it was never spent in one "
+                       "transaction with any of them, so no label was derived from it.")
             return None
-        return self._label(address, chain, cluster, found, best, len(txs), whole)
+        best = max(with_it, key=lambda lab: (_weight(lab), lab.address))
+        if best.category not in VASP_CATEGORIES or best.entity == NO_OWNER:
+            what = "an exchange tag that names no owner" if best.entity == NO_OWNER \
+                else f"{best.entity} ({best.category})"
+            self._note(f"{who} was spent together with {best.address}, which is labelled "
+                       f"{what}. A cluster label is only derived for a named exchange, so "
+                       "none was; look at that address.")
+            return None
+        return self._label(address, chain, cluster, len(found), with_it, best, len(txs), whole)
 
-    def _label(self, address: str, chain: str, cluster: Cluster, found: dict, best: Label,
-               n_txs: int, whole: bool) -> Label:
-        n, m = len(cluster.members), len(found)
-        confidence = round(_weight(best) * CO_SPEND, 4)
-        seen = getattr(self.provider, "_seen", {})
-        # the transaction that has both this address and the labelled one among its inputs
-        shared = [t for t in cluster.links
-                  if t in seen and best.address in seen[t].input_addresses] or cluster.links
+    def _label(self, address: str, chain: str, cluster: Cluster, labelled: int,
+               with_it: list[Label], best: Label, n_txs: int, whole: bool) -> Label:
+        n, confidence = len(cluster.members), round(_weight(best) * CO_SPEND, 4)
         said = f" (\"{best.label}\")" if best.label else ""
+        read = (f"all {_plural(n_txs, 'transaction')} of the address" if whole else
+                f"the {_plural(n_txs, 'most recent transaction')} of the address; older ones, "
+                "if it has any, were not read")
         evidence = (
-            f"Wallet cluster: cluster of {n} addresses, {m} labelled {best.entity}. "
-            f"{fmt.short(address)} was spent together with {n - 1} other "
-            f"address{'es' if n != 2 else ''} in {len(cluster.links)} "
-            f"transaction{'s' if len(cluster.links) != 1 else ''} (the inputs of one "
-            "transaction are signed by one owner; CoinJoin-shaped transactions are left out). "
-            f"Labelled member: {best.address}{said}, {fmt.tier_words(best.tier)}, source "
-            f"{best.source}. Linking transaction: {shared[0]}. Rule confidence "
-            f"{confidence:.2f} = {_weight(best):.2f} (that label) x {CO_SPEND:.2f} (spent "
-            f"together), hand-set, not calibrated. Read from the {n_txs} "
-            f"{'' if whole else 'most recent '}transaction{'s' if n_txs != 1 else ''} of the "
-            f"address{'' if whole else '; it has more'}.")
+            f"Wallet cluster: cluster of {n} addresses, {labelled} labelled {best.entity}. "
+            f"{fmt.short(address)} was itself spent together with "
+            f"{_plural(len(cluster.direct), 'other address', 'other addresses')} in "
+            f"{_plural(len(cluster.links), 'transaction')} (the inputs of one transaction are "
+            "signed by one owner; transactions with the shape of a CoinJoin or another joint "
+            f"payment are left out). Labelled address spent with it: {best.address}{said}, "
+            f"{fmt.tier_words(best.tier)}, source {best.source}. Transaction with both among "
+            f"its inputs: {cluster.direct[best.address][0]}. Rule confidence {confidence:.3f} "
+            f"= {_weight(best):.2f} (that label) x {CO_SPEND:.2f} (spent together), hand-set, "
+            f"not calibrated. Read from {read}.")
+        many = _plural(len(with_it), f"labelled {best.entity} address",
+                       f"labelled {best.entity} addresses")
         return Label(address=address, chain=chain, entity=best.entity, category=best.category,
-                     kind="deposit", tier="derived", source=CLUSTER_SOURCE, source_url=None,
-                     label=f"{best.entity} wallet (derived: spent together with {m} labelled "
-                           f"{best.entity} address{'es' if m != 1 else ''})",
+                     kind="unknown", tier="derived", source=CLUSTER_SOURCE, source_url=None,
+                     label=f"{best.entity} wallet ({CLUSTER_MARK} {many})",
                      confidence=confidence, evidence=evidence)
 
 

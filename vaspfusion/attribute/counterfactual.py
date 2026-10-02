@@ -29,7 +29,9 @@ MAX_CHECKED = 3
 # why traced money stopped without the trace having seen where it went
 _BLIND = {"error": "a listing could not be read", "depth_limit": "the hop limit was reached",
           "budget": "the trace budget was spent", "truncated": "a listing was cut short",
-          "small": "the parts became too small to follow"}
+          "small": "the parts became too small to follow",
+          "pooled": "the money was pooled with other wallets' coins in one transaction",
+          "coinjoin": "the money entered a CoinJoin-shaped transaction"}
 
 
 def _blind_spots(first: TraceResult, second: TraceResult) -> list[str]:

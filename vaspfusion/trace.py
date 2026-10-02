@@ -25,7 +25,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 from typing import Iterable, Protocol
 
 from .chains.base import ProviderError, Transfer
@@ -33,6 +33,7 @@ from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
 
 ZERO = Decimal(0)
+_UNIT = Decimal("0.00000001")    # a satoshi: proportional parts on Bitcoin are whole satoshis
 # Native-coin transfers below this are dust (address poisoning, gas refunds).
 DUST_NATIVE = {"TRX": Decimal(1), "BTC": Decimal("0.00001")}
 # A wallet with one of these labels is a service: its transfers are not "its money".
@@ -82,6 +83,9 @@ class TraceNode:
     held: Decimal = ZERO         # the part that stopped here
     holds: dict[str, Decimal] = field(default_factory=dict)   # ... and why: reason -> amount
     note: str | None = None
+    # money that left this wallet into a transaction it cannot be followed through
+    # (Bitcoin sinks): (side, reason, tx_hash, amount)
+    sunk: list[tuple[str, str, str, Decimal]] = field(default_factory=list)
 
 
 @dataclass
@@ -199,10 +203,14 @@ class _Walk:
         # when the wallet has none of its own and holds enough of the funds to matter.
         # `fee_of`: the wallet's share of a transaction's miner fee, which leaves with the
         # money it spends and would otherwise be counted as "has not moved on".
+        # `sink`: the stop reason of a transfer's far end when that is not an address but
+        # a transaction the money cannot be followed through (chains/btc.py).
         self.infer = getattr(labels, "infer", None)
         self.inferred: set[str] = set()
         self.fee_of = getattr(provider, "fee_share", None) if side == "outbound" else None
         self.fee_used: dict[tuple[str, str], Decimal] = defaultdict(lambda: ZERO)
+        self.sink = getattr(provider, "sink_reason", None) or (lambda address: None)
+        self.by_tx = getattr(provider, "fee_share", None) is not None   # a UTXO chain
 
     # the wallet at the far end of a transfer, seen from the origin
     def far(self, t: Transfer) -> str:
@@ -224,11 +232,21 @@ class _Walk:
             node.holds[reason] = node.holds.get(reason, ZERO) + amount
             self.stopped[reason] = self.stopped.get(reason, ZERO) + amount
 
+    def sink_into(self, node: TraceNode, t: Transfer, amount: Decimal, reason: str) -> None:
+        """`amount` of the wallet's money went into a transaction it cannot be followed
+        through: it stops at the wallet, with the reason and the transaction."""
+        self.hold(node, amount, reason)
+        node.sunk.append((self.side, reason, t.tx_hash, amount))
+
     # ---------------------------------------------------------------- origin
     def start(self, asset: str, rows: list[Transfer], total: Decimal) -> None:
         self.asset, self.total = asset, total
         arrivals: dict[str, list[TraceEdge]] = defaultdict(list)
         for t in rows:
+            reason = self.sink(self.far(t))
+            if reason is not None:
+                self.sink_into(self.r.nodes[("origin", self.r.address)], t, t.amount, reason)
+                continue
             edge = TraceEdge(t, self.side, t.amount, 1)
             self.r.edges.append(edge)
             arrivals[self.far(t)].append(edge)
@@ -259,6 +277,15 @@ class _Walk:
                     and (not self.total or node.received / self.total >= self.cfg.min_share):
                 self.inferred.add(addr)
                 node.label = self.infer(addr, chain)
+                if node.label is not None and node.held:
+                    # it was holding money under another reason (too small to follow)
+                    # before it had a name: that money is at a labelled wallet now
+                    for was, amount in node.holds.items():
+                        self.stopped[was] -= amount
+                        if not self.stopped[was]:
+                            del self.stopped[was]
+                    held, node.held, node.holds, node.state = node.held, ZERO, {}, "labelled"
+                    self.hold(node, held, "labelled")
             reason = self.why_not_expand(node, hop)
             if reason is None:
                 try:
@@ -274,7 +301,7 @@ class _Walk:
                 continue
             node.state = "expanded"
             self.expanded.add(addr)
-            left, fee = self.allocate(addr, edges, rows, hop, nxt)
+            left, fee = self.allocate(node, edges, rows, hop, nxt)
             self.hold(node, fee, "fee")
             # behind a cut-off fetch the rest may well have moved on; we did not see it
             self.hold(node, left, "unspent" if complete else "truncated")
@@ -314,45 +341,87 @@ class _Walk:
             return "truncated"
         return None
 
-    def allocate(self, addr: str, edges: list[TraceEdge], rows: list[Transfer], hop: int,
+    def allocate(self, node: TraceNode, edges: list[TraceEdge], rows: list[Transfer], hop: int,
                  nxt: dict[str, list[TraceEdge]]) -> tuple[Decimal, Decimal]:
         """Hand the money that arrived over `edges` to the wallet's next transfers in
-        time order. Returns (what was left over, what went to network fees). A fee is
-        only known on UTXO chains: there a transaction's fee is paid first, once, out of
-        the money that is spent in it."""
+        time order. Returns (what was left over, what went to network fees).
+
+        On a UTXO chain the outputs of one transaction happen at once and its fee is
+        paid with them, so they are served together: when the traced money does not
+        cover all the wallet spent in that transaction, each output and the fee get
+        their proportional part (not whichever address sorts first)."""
+        addr = node.address
         arrived = sorted(edges, key=lambda e: (self.when(e.transfer), e.transfer.tx_hash))
         rows = sorted(rows, key=lambda t: (self.when(t), t.tx_hash, self.far(t), t.amount))
         seen: Counter = Counter()
         pool, i, fees = ZERO, 0, ZERO
-        for t in rows:
-            key = (t, seen[t])
-            seen[t] += 1
-            while i < len(arrived) and self.when(arrived[i].transfer) <= self.when(t):
+        for group in self._together(rows):
+            first = group[0]
+            while i < len(arrived) and self.when(arrived[i].transfer) <= self.when(first):
                 pool += arrived[i].traced
                 i += 1
-            if self.fee_of is not None:
-                paid = (addr, t.tx_hash)
-                fee = min(pool, self.fee_of(addr, t.tx_hash) - self.fee_used[paid])
-                if fee > 0:
-                    self.fee_used[paid] += fee
-                    pool -= fee
-                    fees += fee
-            take = min(pool, t.amount - self.used[key])
-            if take <= 0:
+            items = []
+            for t in group:
+                key = (t, seen[t])
+                seen[t] += 1
+                items.append((key, t, max(ZERO, t.amount - self.used[key])))
+            paid = (addr, first.tx_hash)
+            due = ZERO if self.fee_of is None else \
+                max(ZERO, self.fee_of(addr, first.tx_hash) - self.fee_used[paid])
+            want = due + sum((a for _, _, a in items), ZERO)
+            give = min(pool, want)
+            if give <= 0:
                 continue
-            self.used[key] += take
-            pool -= take
-            edge = TraceEdge(t, self.side, take, hop + 1)
-            self.r.edges.append(edge)
-            nxt[self.far(t)].append(edge)
+            if give == want:
+                takes, fee = [a for _, _, a in items], due
+            elif len(items) == 1 and not due:
+                takes, fee = [give], ZERO
+            else:
+                takes = [(give * a / want).quantize(_UNIT, rounding=ROUND_DOWN)
+                         for _, _, a in items]
+                fee = (give * due / want).quantize(_UNIT, rounding=ROUND_DOWN)
+                # the few units rounding left over go to the largest part that has room
+                j = max(range(len(items)), key=lambda k: (items[k][2], -k))
+                takes[j] += min(give - sum(takes, ZERO) - fee, items[j][2] - takes[j])
+            if fee > 0:
+                self.fee_used[paid] += fee
+                fees += fee
+            pool -= fee + sum(takes, ZERO)
+            for (key, t, _), take in zip(items, takes):
+                if take <= 0:
+                    continue
+                self.used[key] += take
+                reason = self.sink(self.far(t))
+                if reason is not None:
+                    self.sink_into(node, t, take, reason)
+                    continue
+                edge = TraceEdge(t, self.side, take, hop + 1)
+                self.r.edges.append(edge)
+                nxt[self.far(t)].append(edge)
         return pool + sum((e.traced for e in arrived[i:]), ZERO), fees
+
+    def _together(self, rows: list[Transfer]) -> list[list[Transfer]]:
+        """The rows that are served together: one transaction's rows on a UTXO chain,
+        each row on its own everywhere else."""
+        if not self.by_tx:
+            return [[t] for t in rows]
+        groups: list[list[Transfer]] = []
+        for t in rows:
+            if groups and groups[-1][0].tx_hash == t.tx_hash:
+                groups[-1].append(t)
+            else:
+                groups.append([t])
+        return groups
 
 
 def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: str
                 ) -> tuple[str | None, list[Transfer], bool, dict[str, tuple[int, Decimal]]]:
     """Fetch each traceable asset on its own and choose the one to follow: the
-    stablecoin with the largest total, else the native coin."""
+    stablecoin with the largest total, else the native coin. With nothing to follow,
+    the third value says whether that is because a listing could not be read at all (an
+    adapter that returns nothing and says it is not the whole answer)."""
     per: dict[str, tuple[list[Transfer], bool]] = {}
+    unread = False
     for asset in provider.traceable_assets:
         raw = provider.transfers(address, direction, since=cfg.since, limit=cfg.fetch_limit,
                                  asset=asset)
@@ -361,6 +430,8 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
                 and mine(t) == address]
         if rows:
             per[asset] = (rows, not _complete(raw, cfg.fetch_limit))
+        elif not len(raw) and not getattr(raw, "complete", True):
+            unread = True
     stable = {a: sum((t.amount_usd for t in rows), ZERO)
               for a, (rows, _) in per.items() if rows[0].amount_usd is not None}
     order = list(provider.traceable_assets)
@@ -369,7 +440,7 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
     else:
         chosen = next((a for a in order if a in per), None)
     if chosen is None:
-        return None, [], False, {}
+        return None, [], unread, {}
     rows, truncated = per[chosen]
     untraced = {a: (len(r), sum((t.amount for t in r), ZERO))
                 for a, (r, _) in per.items() if a != chosen}
@@ -388,6 +459,8 @@ def trace(address: str, chain: str, provider, labels: LabelLookup,
         r.notes.append(f"The address is itself labelled {r.origin_label.entity} "
                        f"({r.origin_label.category}); a service wallet is not traced.")
         return r
+    if hasattr(provider, "trace_from"):
+        provider.trace_from(address)    # Bitcoin: whose multi-address spends may be split
     _walks(r, provider, labels, cfg)
     # what the label layer could not settle (Bitcoin clusters: an unread listing, two owners)
     r.notes += [n for n in getattr(labels, "notes", ()) if n not in r.notes]
@@ -402,7 +475,12 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> N
     asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound")
     r.asset, r.untraced, r.truncated = asset, untraced, truncated
     r.total_out = sum((t.amount for t in rows), ZERO)
-    if truncated:
+    if asset is None and truncated:
+        since = f" back to {cfg.since.day} {cfg.since:%b %Y}" if cfg.since else ""
+        r.notes.insert(0, f"The wallet's outgoing transfers could not be read{since}: it has "
+                          "more transactions since then than one trace reads, so it was not "
+                          "traced. A later start date will be within reach.")
+    elif truncated:
         r.notes.append(f"Only the {which} {len(rows)} outgoing {asset} transfers were traced; "
                        "the wallet has more.")
     if asset is not None:
@@ -413,7 +491,7 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> N
     in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
     r.in_asset = in_asset
     r.total_in = sum((t.amount for t in rows), ZERO)
-    if truncated:
+    if truncated and in_asset is not None:
         r.notes.append(f"Only the {which} {len(rows)} incoming {in_asset} transfers were "
                        "looked at; the wallet has more.")
     if in_asset is not None:

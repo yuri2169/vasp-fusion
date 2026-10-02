@@ -141,6 +141,27 @@ def test_since_and_direction(fixture_fetcher):
     assert inbound and all(r.to_addr == ADDR and r.from_addr != ADDR for r in inbound)
 
 
+def test_a_history_that_cannot_be_read_back_to_since_returns_nothing(fixture_fetcher):
+    """One page reaches back to some date. Asked for the transfers since an earlier one,
+    the newest page is not an answer: the transfers nearest to `since` are the unread
+    ones. Returning them made a trace hand money to payments made long afterwards."""
+    first_page = next(iter(load_fixture("btc_pages")["responses"].values()))["body"]
+    oldest_read = min(t["status"]["block_time"] for t in first_page)
+    earlier = datetime.fromtimestamp(oldest_read - 86_400, tz=timezone.utc)
+    p = BtcProvider(fixture_fetcher("btc_pages"), max_pages=1)
+    rows = p.transfers(ADDR, "out", since=earlier, limit=500)
+    assert rows == [] and rows.complete is False
+    # with both pages read the same question has an answer
+    rows = BtcProvider(fixture_fetcher("btc_pages"), max_pages=3).transfers(
+        ADDR, "out", since=earlier, limit=500)
+    assert rows and rows.complete is True and rows[0].block_time >= earlier
+    # and a date inside the page that was read is answered from that page
+    inside = datetime.fromtimestamp(oldest_read + 86_400, tz=timezone.utc)
+    rows = BtcProvider(fixture_fetcher("btc_pages"), max_pages=1).transfers(
+        ADDR, "out", since=inside, limit=500)
+    assert rows.complete is True and all(r.block_time >= inside for r in rows)
+
+
 def test_offline_replay_identical(fixture_fetcher):
     live = all_rows(fixture_fetcher, limit=500)
     f2 = fixture_fetcher("btc_pages", offline=True)

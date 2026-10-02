@@ -66,7 +66,7 @@
     },
     {
       "id": "btc-htx",
-      "title": "Bitcoin, into an HTX deposit address known only by its wallet cluster",
+      "title": "Bitcoin, into an HTX address known only by its wallet cluster",
       "address": "bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6",
       "chain": "bitcoin",
       "max_hops": 3,

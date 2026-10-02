@@ -29,6 +29,7 @@ import json
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from ..cluster import CLUSTER_SOURCE
 from ..detect.typologies import ALERT_CATEGORIES, typology_flags
 from ..explain import fmt
 from ..labels.lookup import Label
@@ -254,7 +255,10 @@ def _request_wallets(tr: TraceResult, entries: list[TraceNode]) -> list[dict]:
             by_sender.setdefault(e.transfer.from_addr, []).append(e)
         for sender, edges in by_sender.items():
             node = tr.nodes.get(("outbound", sender))
-            through = (n.label.kind != "deposit" and node is not None and sender not in mine
+            # a Bitcoin cluster label names an address the exchange controls: that is the
+            # address to ask about, whoever paid it
+            through = (n.label.kind != "deposit" and n.label.source != CLUSTER_SOURCE
+                       and node is not None and sender not in mine
                        and node.label is None and node.received
                        and passed[sender] == _spendable(node))
             if through:
@@ -355,6 +359,15 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
         "error": ("is in wallets whose transfers could not be fetched",
                   "Fetching {a} again ({p} of the funds; the request failed)"),
         "returned": ("came back to the wallet itself", None),
+        # Bitcoin only (chains/btc.py): transactions the money cannot be followed through
+        "pooled": ("was spent together with other addresses' coins in transactions that "
+                   "paid several addresses, so which of them it paid cannot be told",
+                   "A label for {a}: {p} of the funds was pooled there with other coins (a "
+                   "wallet that spends many addresses at once may be an exchange or a "
+                   "payment service)"),
+        "coinjoin": ("entered a transaction with the shape of a CoinJoin, where several "
+                     "owners' coins go in and equal amounts come out", None),
+        "no_address": ("went to outputs with no address form, which are not followed", None),
     }
     for reason, (text, hint) in phrases.items():
         held = tr.stopped.get(reason, ZERO)
@@ -370,8 +383,8 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
 
 
 def _abstain(tr: TraceResult, cands: list[Candidate], cfg: RuleConfig) -> tuple[str, list[str]]:
-    if tr.origin_label is not None and tr.asset is None and not tr.total_out \
-            and tr.notes and "not traced" in tr.notes[0]:
+    # a service wallet, or a history that could not be read: the trace says why itself
+    if tr.asset is None and not tr.total_out and tr.notes and "not traced" in tr.notes[0]:
         return (tr.notes[0], [])
     if tr.asset is None:
         return ("The wallet has not sent any funds that can be traced (no outgoing stablecoin "
@@ -474,9 +487,14 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
             continue
         # the customer's deposit wallet is the labelled deposit address itself, or else
         # the hop before the exchange wallet, but only if it forwarded everything
-        where = c.last_hop if c.passed_all and c.label.kind != "deposit" else c.deposit_address
+        by_cluster = c.label.source == CLUSTER_SOURCE
+        where = c.last_hop if c.passed_all and c.label.kind != "deposit" and not by_cluster \
+            else c.deposit_address
+        # a cluster label says the exchange controls the address, not that it is one
+        # customer's deposit address
+        whose = "the account that received the funds at" if by_cluster else "the account behind"
         att.next_steps.append(
-            f"Draft a request to {c.vasp} for KYC and a freeze on the account behind "
+            f"Draft a request to {c.vasp} for KYC and a freeze on {whose} "
             f"{fmt.short(where)}" + ("" if c is top else f" ({fmt.pct(c.share)} of the funds)"))
     if clearing:
         att.next_steps.append("Preserve the transaction records listed in the evidence")

@@ -49,7 +49,7 @@ def test_only_exchange_tags_on_traced_chains_are_kept():
     assert {r["currency"] for r in rows} == {"BTC", "ETH", "TRX"}          # the DOGE tag is gone
     assert all(r["category"] == "exchange" for r in rows)
     assert not [r for r in rows if r["label"] == "HelixMixer"]             # a mixing service
-    assert len(rows) == 16
+    assert len(rows) == 19
 
 
 def test_the_csv_is_sorted_and_the_same_on_a_rerun(tmp_path):
@@ -75,7 +75,7 @@ def test_exchange_wallet_packs_load_as_curated_and_walletexplorer_as_explorer_ta
     we = _one(db, "3Fh9p2W79ZHG54ettRJupkPTs23XcjrkT2", "bitcoin")
     assert (we["entity"], we["tier"], we["label"]) == ("Bitstamp", "explorer_tag", "Bitstamp.net")
     assert we["source_url"].startswith("https://www.walletexplorer.com/address/")
-    assert stats["tagpack_rows"] == 16
+    assert stats["tagpack_rows"] == 19
 
 
 def test_owner_names_match_the_rest_of_the_store(tmp_path):
@@ -86,9 +86,29 @@ def test_owner_names_match_the_rest_of_the_store(tmp_path):
     assert _one(db, "bc1qpy4jwethqenp4r7hqls660wy8287vw0my32lmy", "bitcoin")["entity"] == "Crypto.com"
     assert _one(db, "3G3VG4X1WquWjqXT27JRwrRoyZgdyWf1dT", "bitcoin")["entity"] == "Kraken"
     assert _one(db, "3L1smrPn5chgVCehpUhvs5h5nJGxGQe6sD", "bitcoin")["entity"] == "Mercado Bitcoin"
-    # a site the store has no name for keeps the name WalletExplorer gave it
-    assert _one(db, "16xAAvXw4H2m2i1ASEeTAfg4sMVbWGBYkc", "bitcoin")["entity"] == "QuadrigaCX.com"
+    assert _one(db, "16xAAvXw4H2m2i1ASEeTAfg4sMVbWGBYkc", "bitcoin")["entity"] == "QuadrigaCX"
     assert _one(db, "1GwePtfuQKtV8YfUADi77RDVX5YKxNbFmp", "bitcoin")["entity"] == "CEX.IO"
+    # a site the store has no name for keeps the name WalletExplorer gave it
+    assert _one(db, "1Empt7dGo7ZR7QemR2mBon6NdbLa4tMaSU", "bitcoin")["entity"] == "Cryptsy.com"
+
+
+def test_only_the_exchange_wallets_packs_are_curated(tmp_path):
+    """Those packs each cite the exchange's own publication. `binance.yaml` cites a news
+    report about the 2019 theft: an outside observation, like an explorer's tag."""
+    db, _ = _db(tmp_path)
+    row = _one(db, "1NDyJtNTjmwk5xPNhjgAMu4HDHigtobu1s", "bitcoin")
+    assert (row["entity"], row["source"], row["tier"]) == \
+        ("Binance", "graphsense-tagpack:binance", "explorer_tag")
+    assert _one(db, "143gLvWYUojXaWZRrxquRKpVNTkhmr415B", "bitcoin")["tier"] == "curated"
+
+
+def test_bitmex_addresses_are_customer_deposit_addresses_not_reserve_wallets(tmp_path):
+    """BitMEX's published list is every address it holds coins at, one per customer
+    (336,208 of them): a request names the address itself, not the wallet that paid it."""
+    db, _ = _db(tmp_path)
+    row = _one(db, "3BMEXbSSrK2K7cRgqxrtqUWfxowBBrW1BE", "bitcoin")
+    assert (row["kind"], row["label"]) == ("deposit", "bitmex reserve wallet")
+    assert _one(db, "16rF2zwSJ9goQ9fZfYoti5LsUqqegb5RnA", "bitcoin")["kind"] == "reserve"   # OKX
 
 
 def test_currencies_map_to_chains_and_evm_is_lowercased(tmp_path):
@@ -117,9 +137,9 @@ def test_cli_tagpacks_writes_the_csv_and_says_what_it_kept(tmp_path, capsys):
     out = tmp_path / "research" / "graphsense_tagpacks_exchange.csv"
     main(["tagpacks", "--packs", str(PACKS), "--out", str(out)])
     said = capsys.readouterr().out
-    assert "16 exchange tags" in said and "BTC 13" in said and "ETH 2" in said and "TRX 1" in said
+    assert "19 exchange tags" in said and "BTC 16" in said and "ETH 2" in said and "TRX 1" in said
     with out.open(newline="") as fh:
-        assert len(list(csv.DictReader(fh))) == 16
+        assert len(list(csv.DictReader(fh))) == 19
 
 
 def test_cli_labels_picks_the_csv_up_from_the_research_folder(tmp_path, capsys):
@@ -134,5 +154,5 @@ def test_cli_labels_picks_the_csv_up_from_the_research_folder(tmp_path, capsys):
     main(["labels", "--research", str(research), "--db", str(tmp_path / "l.duckdb"),
           "--derived", str(tmp_path / "none"), "--model", str(tmp_path / "none")])
     said = capsys.readouterr().out
-    assert "GraphSense TagPacks (exchange packs): 16 rows, 16 kept" in said
+    assert "GraphSense TagPacks (exchange packs): 19 rows, 19 kept" in said
     assert _one(tmp_path / "l.duckdb", "3BMEXbSSrK2K7cRgqxrtqUWfxowBBrW1BE", "bitcoin")

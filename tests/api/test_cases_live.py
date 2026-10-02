@@ -54,7 +54,7 @@ def test_an_evm_address_is_traced_on_ethereum_and_stored_lowercase(client):
     assert (case["chain"], case["top_vasp"]) == ("ethereum", "Bitget")
 
 
-def test_a_bitcoin_wallet_is_traced_and_named_by_its_deposit_addresses_cluster(client):
+def test_a_bitcoin_wallet_is_traced_and_named_by_the_cluster_of_the_address_it_paid(client):
     btc = SPECS["btc-htx"]["address"]
     r = client.post("/api/cases", json={"address": btc.upper()})     # bech32 is case-insensitive
     assert r.status_code == 202 and (r.json()["chain"], r.json()["address"]) == ("bitcoin", btc)
@@ -64,10 +64,14 @@ def test_a_bitcoin_wallet_is_traced_and_named_by_its_deposit_addresses_cluster(c
     top = case["candidates"][0]
     assert (top["label_tier"], top["hops"], top["confidence"]) == ("derived", 1, 0.855)
     assert "cluster of 288 addresses, 1 labelled HTX" in top["evidence"][0]["text"]
-    assert top["counterfactual_holds"] is True
+    # without the cluster label only what was swept straight into HTX's published wallet is
+    # followed (14%): its other sweeps pay several addresses, and those are not split
+    assert top["counterfactual_holds"] is False
+    assert "14% of the funds reach HTX" in top["counterfactual"]
     assert case["provenance"]["data_sources"] == ["blockstream.info", "label store"]
     node = next(n for n in case["graph"]["nodes"] if n["id"] == top["deposit_address"])
-    assert (node["role"], node["label"]["source"]) == ("exchange_deposit", "vaspfusion-cluster")
+    assert (node["role"], node["label"]["source"]) == ("exchange", "vaspfusion-cluster")
+    assert "the account that received the funds at" in case["next_steps"][0]
 
 
 def test_max_hops_is_passed_to_the_trace(client):

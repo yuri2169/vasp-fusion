@@ -16,7 +16,7 @@
     "share_of_funds": 1.0,
     "deposit_address": "19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV",
     "label_tier": "derived",
-    "counterfactual_holds": true
+    "counterfactual_holds": false
    }
   ],
   "where_funds_went": [

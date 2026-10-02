@@ -5186,7 +5186,8 @@
               "bridge_hop",
               "mixer_contact",
               "sanctioned_contact",
-              "deposit_like"
+              "deposit_like",
+              "coinjoin_shape"
             ],
             "title": "Code",
             "description": "deposit_like is a lead from the deposit-address model on an unlabelled wallet (figures: p, low, high, share, amount); it never changes the outcome"

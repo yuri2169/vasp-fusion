@@ -50,6 +50,7 @@ FLAG_WORDS = {
     "rapid_forwarding": "Rapid forwarding", "round_amounts": "Round amounts",
     "bridge_hop": "Bridge", "mixer_contact": "Mixer contact",
     "sanctioned_contact": "Sanctioned contact", "deposit_like": "Lead",
+    "coinjoin_shape": "CoinJoin-shaped transaction",
 }
 EVIDENCE_WORDS = {"label": "Label", "path": "Route", "sweep": "Sweep", "gas_payer": "Gas payer",
                   "model": "Model", "counterfactual": "Without its label"}
@@ -348,18 +349,32 @@ def _lists(case: dict) -> list[dict]:
 def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
     asset = case.get("asset") or "one asset"
     hops = (case["provenance"].get("input") or {}).get("max_hops") or trace.max_hops
+    bitcoin = case["chain"] == "bitcoin"
     utxo = [
-        "A Bitcoin transaction has many inputs and many outputs and does not say which input "
-        "paid which output. Each address is taken to have sent its share of each output in "
-        "proportion to what it put in. Outputs that return to one of the transaction's own "
-        "input addresses are that wallet's change. Change is not guessed: an output to any "
-        "other address is followed like a payment. Miner fees are counted under 'Where the "
-        "funds went'.",
+        "A Bitcoin transaction has many inputs and many outputs and does not record which "
+        "input paid which output. An address's coins are followed through a transaction "
+        "only where that has one answer: the address is the transaction's only funding "
+        "address, or everything goes to one destination. Where several addresses fund a "
+        "transaction that pays several destinations, the coins are counted as not followed "
+        "at that point. The traced wallet's own transactions are the exception: the "
+        "addresses it is spent with are taken to be its own, and each destination gets its "
+        "share in proportion to what the address put in. Change is not guessed: an output "
+        "to another address is followed like a payment. Miner fees are counted under 'Where "
+        "the funds went'.",
         "Addresses spent together in one transaction are treated as one owner. That is not "
-        "true of a CoinJoin: a transaction with the shape of one is left out of the "
-        "clustering and ends the trace. The shape test is a rule; it can miss a CoinJoin or "
-        "flag an ordinary payment.",
-    ] if case["chain"] == "bitcoin" else []
+        "true of a CoinJoin or another joint payment: a transaction with that shape is not "
+        "used for a wallet cluster and is not followed. The shape test is a rule; it can "
+        "miss a joint transaction or take an ordinary payment for one.",
+    ] if bitcoin else []
+    matching = (
+        "Money that entered an address is matched to that address's next outgoing "
+        "transactions in time order. Bitcoin does record which coin each transaction "
+        "spent; this tool does not read that yet, so where an address held other coins too "
+        "the matching is a convention."
+        if bitcoin else
+        "Money that entered a wallet is matched to that wallet's next outgoing transfers in "
+        "time order. Where a wallet held other money too, that matching is a convention, "
+        "not a fact recorded on the chain.")
     return [
         "This file reads public blockchain records and address labels. It does not identify "
         "a person. Only the exchange's own customer records (KYC) can say who holds the "
@@ -374,9 +389,7 @@ def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
         f"hops, at shares under {fmt.pct(trace.min_share)}, and after {trace.max_nodes} "
         "wallets. Funds beyond those points are counted under 'Where the funds went' and "
         "not followed.",
-        "Money that entered a wallet is matched to that wallet's next outgoing transfers in "
-        "time order. Where a wallet held other money too, that matching is a convention, "
-        "not a fact recorded on the chain.",
+        matching,
         *utxo,
         "Flags and leads describe patterns. They never decide the result.",
         "All times are UTC. Amounts are in the asset followed; no exchange rate is applied.",

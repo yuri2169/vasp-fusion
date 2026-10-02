@@ -29,7 +29,8 @@ CODE_VERSION = "b5-bitcoin-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
-             "error": "not_followed", "returned": "returned", "fee": "fee"}
+             "error": "not_followed", "returned": "returned", "fee": "fee",
+             "pooled": "not_followed", "coinjoin": "not_followed", "no_address": "not_followed"}
 
 
 TRACE_MAX_PAGES = 5

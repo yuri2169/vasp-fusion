@@ -116,9 +116,16 @@ def read_tagpacks(csv_path: Path | None) -> list[dict]:
     (labels/tagpacks.py). No file, no rows: the source is optional."""
     if csv_path is None or not Path(csv_path).is_file():
         return []
-    return [_row(r["address"], r["currency"], tagpack_entity(r["actor"], r["label"]),
-                 r["label"], r["category"], r["source"], r["source_url"])
-            for r in _read(Path(csv_path))]
+    rows = []
+    for r in _read(Path(csv_path)):
+        row = _row(r["address"], r["currency"], tagpack_entity(r["actor"], r["label"]),
+                   r["label"], r["category"], r["source"], r["source_url"])
+        # BitMEX's published list ("bitmex reserve wallet") is every address it holds
+        # coins at, one per customer: deposit addresses, not a handful of reserve wallets
+        if r["source"].startswith("graphsense-tagpack:exchange-wallets-bitmex"):
+            row["kind"] = "deposit"
+        rows.append(row)
+    return rows
 
 
 def read_model_scores(model_dir: Path | None) -> dict[tuple[str, str], dict]:

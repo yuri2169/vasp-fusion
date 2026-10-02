@@ -31,7 +31,8 @@ NodeRole = Literal["suspect", "intermediary", "exchange_hot", "exchange_deposit"
                    "sanctioned", "hub", "unknown"]
 TypologyCode = Literal["peel_chain", "fan_out", "fan_in", "rapid_forwarding",
                        "round_amounts", "bridge_hop", "mixer_contact", "sanctioned_contact",
-                       "deposit_like"]
+                       "deposit_like",
+                       "coinjoin_shape"]   # Bitcoin: a pattern, never an alert (B5)
 Severity = Literal["info", "warn", "high"]
 EvidenceKind = Literal["label", "path", "sweep", "gas_payer", "model", "counterfactual"]
 RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered",

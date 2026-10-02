@@ -11,6 +11,8 @@ history: "fan-out" means this wallet's money was spread, not that the wallet is 
 
 * sanctioned_contact / mixer_contact / bridge_hop: traced money reached (or the
   wallet was funded by) an address with that label.
+* coinjoin_shape (Bitcoin): traced money entered, or the wallet was paid out of, a
+  transaction with the shape of a CoinJoin. A warning: the shape is a rule, not a label.
 * peel_chain: consecutive wallets that each send most of the money on to one next
   wallet and peel the rest off to others.
 * rapid_forwarding: an unlabelled wallet passed on nearly everything that reached
@@ -30,8 +32,8 @@ from ..trace import ZERO, TraceEdge, TraceResult
 
 ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"}
 _SEVERITY = {"high": 0, "warn": 1, "info": 2}
-_CODES = ["sanctioned_contact", "mixer_contact", "bridge_hop", "peel_chain", "rapid_forwarding",
-          "fan_out", "fan_in", "round_amounts"]
+_CODES = ["sanctioned_contact", "mixer_contact", "bridge_hop", "coinjoin_shape", "peel_chain",
+          "rapid_forwarding", "fan_out", "fan_in", "round_amounts"]
 
 
 @dataclass(frozen=True)
@@ -115,6 +117,40 @@ def _label_flags(tr: TraceResult) -> list[dict]:
                            "high" if cat in ALERT_CATEGORIES else "warn", addr, text,
                            {"share": round(share, 4), "amount": node.received, "hops": node.hop},
                            tr.edges_into(side, addr)))
+    return flags
+
+
+def _coinjoin_flags(tr: TraceResult) -> list[dict]:
+    """Bitcoin: traced money went into (or the wallet was paid out of) a transaction with
+    the shape of a CoinJoin. A shape is a rule, not a label: the flag is a warning and
+    never sets the outcome."""
+    flags = []
+    for (_, addr), node in tr.nodes.items():
+        for side in ("outbound", "inbound"):
+            sunk = [(tx, amount) for s, reason, tx, amount in node.sunk
+                    if s == side and reason == "coinjoin"]
+            total = tr.total_out if side == "outbound" else tr.total_in
+            if not sunk or not total:
+                continue
+            amount = sum((a for _, a in sunk), ZERO)
+            asset = tr.asset if side == "outbound" else tr.in_asset
+            share = float(amount / total)
+            if side == "outbound":
+                where = "from the wallet itself" if node.side == "origin" else \
+                    f"at {fmt.short(addr)}, {fmt.hops(node.hop)} away"
+                text = (f"{fmt.pct(share)} of the funds ({fmt.amount(amount, asset)}) entered a "
+                        f"transaction with the shape of a CoinJoin {where}: several owners put "
+                        "coins in and equal amounts come out, so the trail cannot be followed "
+                        "past it. The shape is a rule, not a proof")
+            else:
+                text = (f"{fmt.pct(share)} of what the wallet received "
+                        f"({fmt.amount(amount, asset)}) came out of a transaction with the "
+                        "shape of a CoinJoin, so who sent it cannot be told. The shape is a "
+                        "rule, not a proof")
+            flags.append({"code": "coinjoin_shape", "severity": "warn", "wallet": addr,
+                          "text": text, "tx_hashes": sorted({tx for tx, _ in sunk}),
+                          "figures": {"share": round(share, 4), "amount": float(amount),
+                                      "hops": float(node.hop)}})
     return flags
 
 
@@ -269,7 +305,7 @@ def _round_amounts(v: _View, cfg: TypologyConfig) -> list[dict]:
 
 
 def typology_flags(tr: TraceResult, cfg: TypologyConfig = TypologyConfig()) -> list[dict]:
-    flags = _label_flags(tr)
+    flags = _label_flags(tr) + _coinjoin_flags(tr)
     if tr.asset is not None:
         v = _View(tr)
         flags += _peel_chain(v, cfg) + _rapid(v, cfg) + _fan_out(v, cfg) + _fan_in(v, cfg) \
