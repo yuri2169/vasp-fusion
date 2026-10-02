@@ -73,11 +73,17 @@ def to_transactions(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def resolve_entities(txs: pl.DataFrame, coinjoin_guard: bool = True,
-                     min_equal: int = 3) -> tuple[pl.DataFrame, dict]:
-    """Return (address -> entity_id mapping, stats)."""
-    ins = txs.select(["txid", "input_addresses"]).explode("input_addresses") \
+                     min_equal: int = 3, change: bool = True) -> tuple[pl.DataFrame, dict]:
+    """Return (address -> entity_id mapping, stats).
+
+    `change=False` leaves H2 out, so entities are common-input ownership alone. H2's
+    "never seen before" is only true of the table it is given: on a slice of the chain
+    (one address's page, as in vaspfusion/cluster.py) an old address can look fresh."""
+    ins = txs.select(["txid", "input_addresses"]) \
+             .explode("input_addresses", empty_as_null=True) \
              .rename({"input_addresses": "address"}).drop_nulls()
-    outs = txs.select(["txid", "timestamp", "output_addresses"]).explode("output_addresses") \
+    outs = txs.select(["txid", "timestamp", "output_addresses"]) \
+              .explode("output_addresses", empty_as_null=True) \
               .rename({"output_addresses": "address"}).drop_nulls()
 
     addresses = (pl.concat([ins.select("address"), outs.select("address")])
@@ -133,7 +139,8 @@ def resolve_entities(txs: pl.DataFrame, coinjoin_guard: bool = True,
     small_out = txs.filter((pl.col("output_addresses").list.len() >= 2)
                            & (pl.col("output_addresses").list.len() <= 6)) \
                    .select(["txid", "input_addresses", "output_addresses", "script_type"])
-    cand = (small_out.explode("output_addresses").rename({"output_addresses": "address"})
+    cand = (small_out.explode("output_addresses", empty_as_null=True)
+            .rename({"output_addresses": "address"})
             .join(first_seen, on="address", how="left"))
     cand = cand.filter(pl.col("first_txid") == pl.col("txid"))
     cand = cand.with_columns(script_of_address(pl.col("address")).alias("out_script"))
@@ -141,12 +148,14 @@ def resolve_entities(txs: pl.DataFrame, coinjoin_guard: bool = True,
     cand = cand.filter(pl.col("out_script") == pl.col("script_type"))
     # ...and require it to be unambiguous within the transaction
     counts = cand.group_by("txid").len().filter(pl.col("len") == 1).select("txid")
-    change = cand.join(counts, on="txid", how="inner")
+    fresh = cand.join(counts, on="txid", how="inner")
     if skip:
-        change = change.filter(~pl.col("txid").is_in(list(skip)))
+        fresh = fresh.filter(~pl.col("txid").is_in(list(skip)))
+    if not change:
+        fresh = fresh.clear()
 
     n_change_edges = 0
-    for row in change.select(["input_addresses", "address"]).iter_rows():
+    for row in fresh.select(["input_addresses", "address"]).iter_rows():
         inputs, chg = row
         if not inputs or chg not in index:
             continue
