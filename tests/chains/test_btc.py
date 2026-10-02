@@ -8,7 +8,8 @@ import pytest
 from chainfix import load_fixture
 from vaspfusion.chains import get_provider
 from vaspfusion.chains.base import CacheMiss, InvalidAddress, UnsupportedChain
-from vaspfusion.chains.btc import BtcProvider
+from vaspfusion.chains.btc import (BtcProvider, UtxoTx, coinjoin_ids, fee_share, out_transfers,
+                                   tx_frame)
 
 ADDR = "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"   # Poloniex (label CSV), 72 txs
 
@@ -60,6 +61,36 @@ def test_every_satoshi_of_a_spend_is_a_transfer_change_or_fee(fixture_fetcher):
         fee = p.fee_share(ADDR, tx["txid"])
         assert fee == Decimal(tx["fee"]).scaleb(-8)          # the only input address pays it all
         assert sent + fee + Decimal(change).scaleb(-8) == Decimal(put_in).scaleb(-8)
+
+
+def wasabi():
+    """The Wasabi 1.x coordinator's sweep of its own fees, then two real CoinJoin rounds."""
+    return [UtxoTx.from_esplora(t) for t in load_fixture("btc_wasabi_rounds")["transactions"]]
+
+
+def test_real_wasabi_rounds_are_recognised_and_the_coordinators_own_sweep_is_not():
+    sweep, *rounds = wasabi()
+    assert len(sweep.input_addresses) == 1 and len(sweep.inputs) == 244
+    assert [(len(t.input_addresses), len(t.outputs)) for t in rounds] == [(81, 161), (70, 136)]
+    assert coinjoin_ids([sweep, *rounds]) == {t.txid for t in rounds}
+
+
+def test_the_shape_rule_as_inherited_misses_real_rounds():
+    """Why Bitcoin has its own settings. BTC-FUSION's rule asks for the equal outputs to
+    be half of all outputs; it was only ever measured on generated data. A real Wasabi
+    round also pays change and a second denomination: 67 equal outputs of 161."""
+    from vaspfusion.graph.coinjoin import coinjoin_txids
+    frame = tx_frame(wasabi())
+    assert coinjoin_txids(frame) == set()
+    assert len(coinjoin_txids(frame, min_equal=5, min_share=0.25)) == 2
+
+
+def test_a_participant_of_a_real_round_sends_into_the_sink():
+    _, round_, _ = wasabi()
+    who = round_.input_addresses[0]
+    t, = out_transfers(round_, who, coinjoin=round_.txid in coinjoin_ids([round_]))
+    assert t.to_addr == "coinjoin:" + round_.txid
+    assert t.amount + fee_share(round_, who) == Decimal(round_.put_in(who)).scaleb(-8)
 
 
 def test_the_newest_page_alone_and_whether_it_is_the_whole_history(fixture_fetcher):

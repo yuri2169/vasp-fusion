@@ -73,12 +73,16 @@ def to_transactions(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def resolve_entities(txs: pl.DataFrame, coinjoin_guard: bool = True,
-                     min_equal: int = 3, change: bool = True) -> tuple[pl.DataFrame, dict]:
+                     min_equal: int = 3, change: bool = True,
+                     coinjoin: set[str] | None = None) -> tuple[pl.DataFrame, dict]:
     """Return (address -> entity_id mapping, stats).
 
     `change=False` leaves H2 out, so entities are common-input ownership alone. H2's
     "never seen before" is only true of the table it is given: on a slice of the chain
-    (one address's page, as in vaspfusion/cluster.py) an old address can look fresh."""
+    (one address's page, as in vaspfusion/cluster.py) an old address can look fresh.
+
+    `coinjoin`: the transactions to keep out of both heuristics, when the caller has
+    decided that itself (Bitcoin uses its own measured settings, chains/btc.py)."""
     ins = txs.select(["txid", "input_addresses"]) \
              .explode("input_addresses", empty_as_null=True) \
              .rename({"input_addresses": "address"}).drop_nulls()
@@ -95,7 +99,10 @@ def resolve_entities(txs: pl.DataFrame, coinjoin_guard: bool = True,
 
     # CoinJoin-shaped transactions are excluded from BOTH heuristics: their
     # inputs belong to different people (graph/coinjoin.py).
-    skip = coinjoin_txids(txs, min_equal) if coinjoin_guard else set()
+    if coinjoin is not None:
+        skip = set(coinjoin)
+    else:
+        skip = coinjoin_txids(txs, min_equal) if coinjoin_guard else set()
     if skip:
         ins = ins.filter(~pl.col("txid").is_in(list(skip)))
 

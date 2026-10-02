@@ -63,6 +63,15 @@
       "max_hops": 3,
       "case_ref": "DEMO/2026/107",
       "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+    },
+    {
+      "id": "btc-htx",
+      "title": "Bitcoin, into an HTX deposit address known only by its wallet cluster",
+      "address": "bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6",
+      "chain": "bitcoin",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/108",
+      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "HTX"}
     }
   ]
 }

@@ -309,6 +309,14 @@ def _confidence(case: dict, rules: RuleConfig, bar_check: dict | None) -> list[d
         "marked 'rule confidence' has no calibrated part. Confidence is not the probability "
         "that the named exchange is right.",
     ]
+    if case["chain"] == "bitcoin":
+        from ..cluster import CO_SPEND
+        paras.insert(2, (
+            "On Bitcoin an address with no label of its own takes the label of its wallet "
+            "cluster when it was spent together with a labelled address of one exchange (the "
+            "inputs of one transaction are signed by one owner). Its weight is the weight of "
+            f"that labelled address x {CO_SPEND:.2f} for having been spent together; the "
+            f"{CO_SPEND:.2f} is set by rule, not measured."))
     if bar_check:
         used = next((b for b in bar_check["bars"]
                      if abs(b["threshold"] - bar_check["current_threshold"]) < 1e-9), None)
@@ -340,6 +348,18 @@ def _lists(case: dict) -> list[dict]:
 def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
     asset = case.get("asset") or "one asset"
     hops = (case["provenance"].get("input") or {}).get("max_hops") or trace.max_hops
+    utxo = [
+        "A Bitcoin transaction has many inputs and many outputs and does not say which input "
+        "paid which output. Each address is taken to have sent its share of each output in "
+        "proportion to what it put in. Outputs that return to one of the transaction's own "
+        "input addresses are that wallet's change. Change is not guessed: an output to any "
+        "other address is followed like a payment. Miner fees are counted under 'Where the "
+        "funds went'.",
+        "Addresses spent together in one transaction are treated as one owner. That is not "
+        "true of a CoinJoin: a transaction with the shape of one is left out of the "
+        "clustering and ends the trace. The shape test is a rule; it can miss a CoinJoin or "
+        "flag an ordinary payment.",
+    ] if case["chain"] == "bitcoin" else []
     return [
         "This file reads public blockchain records and address labels. It does not identify "
         "a person. Only the exchange's own customer records (KYC) can say who holds the "
@@ -357,6 +377,7 @@ def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
         "Money that entered a wallet is matched to that wallet's next outgoing transfers in "
         "time order. Where a wallet held other money too, that matching is a convention, "
         "not a fact recorded on the chain.",
+        *utxo,
         "Flags and leads describe patterns. They never decide the result.",
         "All times are UTC. Amounts are in the asset followed; no exchange rate is applied.",
         "The result is as of the chain responses listed in the receipt. Transfers made "

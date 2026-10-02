@@ -1,6 +1,23 @@
 {
  "_source": "rows of the label DB returned while tracing the demo wallets (real labels; derived rows come from derived/*.csv)",
  "labels": {
+  "bitcoin:1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg": {
+   "address": "1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg",
+   "category": "exchange",
+   "chain": "bitcoin",
+   "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
+   "entity": "HTX",
+   "evidence": null,
+   "kind": "reserve",
+   "label": "HTX (Huobi) (proof-of-reserves)",
+   "model": null,
+   "query_chain": "bitcoin",
+   "source": "defillama-cex",
+   "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+   "tier": "published_por"
+  },
   "ethereum:0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24": {
    "address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
    "category": "exchange",

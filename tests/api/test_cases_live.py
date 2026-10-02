@@ -54,6 +54,22 @@ def test_an_evm_address_is_traced_on_ethereum_and_stored_lowercase(client):
     assert (case["chain"], case["top_vasp"]) == ("ethereum", "Bitget")
 
 
+def test_a_bitcoin_wallet_is_traced_and_named_by_its_deposit_addresses_cluster(client):
+    btc = SPECS["btc-htx"]["address"]
+    r = client.post("/api/cases", json={"address": btc.upper()})     # bech32 is case-insensitive
+    assert r.status_code == 202 and (r.json()["chain"], r.json()["address"]) == ("bitcoin", btc)
+    case = client.get(f"/api/cases/{r.json()['id']}").json()
+    S.CaseDetail.model_validate(case)
+    assert (case["status"], case["outcome"], case["top_vasp"]) == ("done", "ATTRIBUTED", "HTX")
+    top = case["candidates"][0]
+    assert (top["label_tier"], top["hops"], top["confidence"]) == ("derived", 1, 0.855)
+    assert "cluster of 288 addresses, 1 labelled HTX" in top["evidence"][0]["text"]
+    assert top["counterfactual_holds"] is True
+    assert case["provenance"]["data_sources"] == ["blockstream.info", "label store"]
+    node = next(n for n in case["graph"]["nodes"] if n["id"] == top["deposit_address"])
+    assert (node["role"], node["label"]["source"]) == ("exchange_deposit", "vaspfusion-cluster")
+
+
 def test_max_hops_is_passed_to_the_trace(client):
     split = "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr"           # CoinDCX at 1 hop, HTX at 2 to 3
     cid = client.post("/api/cases", json={"address": split, "max_hops": 1}).json()["id"]
@@ -135,7 +151,6 @@ def test_a_case_left_unfinished_by_a_restart_is_run_again(client, tmp_path, stuc
     ({"address": COINDCX, "chain": "ethereum"}, "not a valid ethereum address"),
     ({"address": "0x8894e0a0c962cb723c1976a4421c95949be2d4e3", "chain": "bsc"}, "bsc"),
     ({"address": "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"}, "solana"),
-    ({"address": "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"}, "bitcoin"),
 ])
 def test_addresses_we_cannot_trace_are_a_readable_422(client, body, needle):
     r = client.post("/api/cases", json=body)

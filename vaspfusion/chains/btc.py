@@ -48,6 +48,8 @@ DEFAULT_API = "blockstream.info"
 LAST_PAGE_BELOW = 25
 COINJOIN_SINK = "coinjoin:"
 MIN_MIX = 10_000    # satoshis: equal outputs smaller than this are dust, not a mix
+MIN_EQUAL = 5       # equal-value outputs a CoinJoin has at least (Whirlpool has exactly 5)
+MIN_SHARE = 0.25    # ... and their part of all outputs (real Wasabi 1.x rounds: 26% to 51%)
 COINBASE = "coinbase"
 
 
@@ -160,16 +162,17 @@ def tx_frame(txs: list[UtxoTx]):
 
 def coinjoin_ids(txs: list[UtxoTx]) -> set[str]:
     """Which of these transactions have the shape of a collaborative CoinJoin: the shape
-    rule of graph/coinjoin.py, less the transactions whose equal outputs are dust. On
-    4,706 real exchange transactions (2 Oct 2026) the shape alone flagged 7, and 6 of
-    them were token transfers with n outputs of 546 satoshis each."""
+    rule of graph/coinjoin.py with the settings measured on real transactions (see its
+    docstring), less the transactions whose equal outputs are dust. On the 7,334 real
+    exchange transactions of that measurement the shape alone flagged 6 token transfers
+    with n outputs of 546 satoshis each."""
     from collections import Counter
 
     from ..graph.coinjoin import coinjoin_txids
     if not txs:
         return set()
     by_id = {t.txid: t for t in txs}
-    return {txid for txid in coinjoin_txids(tx_frame(txs))
+    return {txid for txid in coinjoin_txids(tx_frame(txs), MIN_EQUAL, MIN_SHARE)
             if Counter(v for a, v in by_id[txid].outputs if a).most_common(1)[0][0] >= MIN_MIX}
 
 

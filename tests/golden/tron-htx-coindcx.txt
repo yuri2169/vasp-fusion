@@ -229,11 +229,11 @@ vaspfusion.cli verify tron-htx-coindcx
   Responses SHA-256       faa8c2e601b95b36f25e44f14c62b739e8493358c03ffb5616f0e0b77d54404a
   Label database SHA-256  not recorded
   Model                   model_v1/tron, SHA-256 d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2
-  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
   Content SHA-256         10d83d14acb4364ded39a9611da7ef251d0fac2951645fa029e41899eeb26112
-  Receipt SHA-256         72733280206b2960371d26a6f85c0f7e31254da76d880b966471d984acc849ac
+  Receipt SHA-256         cb69a4c441fc23590624a517c77e4096880ce3aef695bba4bf751eafb297b3e0
 
   Chain responses read
     0f711c046cd64e3c1ead3e5aeae5f9fb0e25a4702c8a7f7ab0a6b70abd821e9a  https://api.trongrid.io/v1/accounts/TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1722524721000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

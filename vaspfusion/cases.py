@@ -25,7 +25,7 @@ from .provenance import case_headline, file_sha256  # noqa: F401 - re-exported
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
 SEED = 26182
-CODE_VERSION = "b9-receipt-1"
+CODE_VERSION = "b5-bitcoin-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",

@@ -162,11 +162,11 @@ vaspfusion.cli verify tron-ofac
   Responses SHA-256       6686fbafe24f7bfde1dbd94d82e8b4dfc992dbcd82f2efcc86aa5f253b0fb26e
   Label database SHA-256  not recorded
   Model                   model_v1/tron, SHA-256 d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2
-  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
   Content SHA-256         dc798ae342c0b29f02b6f0fc5ad25aede1c3e241a1e54f4b4841042bc052a330
-  Receipt SHA-256         fd003935a242b0eeed60749298b8475d1149b89754c1ce0593a20e022f1ce78e
+  Receipt SHA-256         f374441b9532b7c69e9740859026fe70332e7e036b7c37edaad5b9b5b507f462
 
   Chain responses read
     504ae4b2812e8569a0b820842873403b0f2ffca06ffbc94313a9eddc1502eafa  https://api.trongrid.io/v1/accounts/TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733483190000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

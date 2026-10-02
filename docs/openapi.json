@@ -2774,7 +2774,8 @@
               "beyond_hop_limit",
               "not_moved",
               "not_followed",
-              "returned"
+              "returned",
+              "fee"
             ],
             "title": "Kind"
           },

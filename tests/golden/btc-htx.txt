@@ -1,0 +1,186 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/108
+  Complaint number  -
+  Wallet traced     bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6
+  Chain             Bitcoin
+  Asset followed    BTC
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           btc-htx
+  Hop limit         3
+
+RESULT
+------
+EXCHANGE NAMED
+Nearest exchange: HTX. Confidence 0.85 (rule confidence).
+100% of the funds (0.364594 BTC) reached it in 1 hop, at 19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV
+(derived by VASP-FUSION).
+
+
+SUMMARY
+-------
+Wallet bc1qw7…t7q3x6 sent 0.364594 BTC on Bitcoin in 2 transfers on 1 Oct 2026. 0.364594 BTC
+(100%) reached HTX in 1 hop, at 19vP8b…16BxSV ("HTX wallet (derived: spent together with 1
+labelled HTX address)", derived by VASP-FUSION). Nearest exchange: HTX, rule confidence 0.85
+(rule-based, not calibrated). Checked without its strongest evidence: Still HTX without the
+label on 19vP8b…16BxSV: 99% of the funds reach HTX at 1AQLXA…bWSEjg (published by the exchange
+itself) in 2 to 3 hops, confidence 0.75 (was 0.85). Transaction hashes:
+18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  100% | 0.364594 BTC | Reached an exchange or custodian: HTX
+  100% | 0.364594 BTC | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  4 wallets, 4 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W2  column Funded the wallet, row 1: Unlabelled wallet
+    W3  column Funded the wallet, row 2: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: HTX
+    arrow bc1qtdrr5teg5c5xcdnpa8rguk8lvsc84tlqcq2pya -> bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 (inbound, 1 transfer, 0.312938 BTC)
+    arrow bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 -> 19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV (outbound, 2 transfers, 0.364594 BTC)
+    arrow bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8 -> bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 (inbound, 1 transfer, 0.051664 BTC)
+  No. | Address | What it is | Hop | Traced funds
+  W0 | bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6 | Traced wallet | - | 0.364594 BTC
+  W1 | 19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV | Exchange deposit address: HTX | 1 | 0.364594 BTC
+  W2 | bc1qtdrr5teg5c5xcdnpa8rguk8lvsc84tlqcq2pya | Unlabelled wallet (not followed) | funded it | 0.312938 BTC
+  W3 | bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8 | Unlabelled wallet (not followed) | funded it | 0.051664 BTC
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | HTX | named | 0.85 (rule confidence) | 1 | 100% | 0.364594 BTC | derived by VASP-FUSION
+
+  HTX (rank 1)
+  Address reached  19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV
+  Route            W0  ->  W1
+  Time to reach    0 seconds
+    [Label] 19vP8b…16BxSV is labelled HTX ("HTX wallet (derived: spent together with 1 labelled
+    HTX address)"): derived by VASP-FUSION, source vaspfusion-cluster. Wallet cluster: cluster
+    of 288 addresses, 1 labelled HTX. 19vP8b…16BxSV was spent together with 287 other addresses
+    in 9 transactions (the inputs of one transaction are signed by one owner; CoinJoin-shaped
+    transactions are left out). Labelled member: 1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg ("HTX
+    (Huobi) (proof-of-reserves)"), published by the exchange itself, source defillama-cex.
+    Linking transaction: f96b97dd0536ff795186ce75302b808e1f4fd388a71895ccde5eab4566d46db6. Rule
+    confidence 0.85 = 0.95 (that label) x 0.90 (spent together), hand-set, not calibrated. Read
+    from the 25 most recent transactions of the address; it has more. [weight 0.85]
+    [Route] 100% of the wallet's BTC (0.364594 BTC) reached it in 1 hop [weight 1.00]
+        tx 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747
+    [Without its label] Still HTX without the label on 19vP8b…16BxSV: 99% of the funds reach HTX
+    at 1AQLXA…bWSEjg (published by the exchange itself) in 2 to 3 hops, confidence 0.75 (was
+    0.85). [weight -0.10]
+        tx 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747
+        tx 14c5c7c169641c48df7539653fb454ecc3a794bf904435d960e4778c6788cdb1
+
+PATH TO THE NAMED EXCHANGE
+--------------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 0.312933 BTC | 1 Oct 2026, 13:57:24 UTC | - | 18512894939e158712f3057ffb3bfbb4a246f0fd34469f5047d150991a37b747
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+On Bitcoin an address with no label of its own takes the label of its wallet cluster when it was
+spent together with a labelled address of one exchange (the inputs of one transaction are signed
+by one owner). Its weight is the weight of that labelled address x 0.90 for having been spent
+together; the 0.90 is set by rule, not measured.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+NEXT STEPS
+----------
+  - Draft a request to HTX for KYC and a freeze on the account behind 19vP8b…16BxSV
+  - Preserve the transaction records listed in the evidence
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only BTC was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - A Bitcoin transaction has many inputs and many outputs and does not say which input paid
+    which output. Each address is taken to have sent its share of each output in proportion to
+    what it put in. Outputs that return to one of the transaction's own input addresses are that
+    wallet's change. Change is not guessed: an output to any other address is followed like a
+    payment. Miner fees are counted under 'Where the funds went'.
+  - Addresses spent together in one transaction are treated as one owner. That is not true of a
+    CoinJoin: a transaction with the shape of one is left out of the clustering and ends the
+    trace. The shape test is a rule; it can miss a CoinJoin or flag an ordinary payment.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify btc-htx
+
+  Findings fingerprint    7a106812763d0c94b02592f47d5072b9c35e5d6747851b1d21633991888d9cfb
+  Input                   bitcoin bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6, hop limit 3
+  Input SHA-256           8e8ff661eed8c7f7509bc3d9cb022fa22c8fc2f866f3a8a44e55a2edc9354625
+  Chain responses         5 read from blockstream.info
+  Responses SHA-256       89984a42a75661a9de549f0b7a5e1feccd696591e4092826a39f3aa40ade3899
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Content SHA-256         ea5ed07ecca17e17b144a5809b43104d08c68e2b58aca9a9ae96c2ff380b8db3
+  Receipt SHA-256         7795c6aa1f7e3b19d5754f5d22dbd78a86db37490d1a76545b3541b134bc7449
+
+  Chain responses read
+    a52a243a8c1dbbbd74a6e77afc92df258b145169adf565a5ad3fd8d3c1ca57dc  https://blockstream.info/api/address/19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV/txs
+    f12c786c24db65c7db63c6714b67b5dbf191e04092f4327d0382c5bd86009f81  https://blockstream.info/api/address/3EpyhpDRu2wz5LtS4sPAmXaGozuxYWdRkN/txs
+    cb1a57299c9b01558eba0bd09727d523c88de1c36366f66ff9d7b71a9365c42d  https://blockstream.info/api/address/bc1qtdrr5teg5c5xcdnpa8rguk8lvsc84tlqcq2pya/txs
+    7978351337720065e03c5000a788dc64790be27e42123ca59c169c703a038203  https://blockstream.info/api/address/bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6/txs
+    53aae72efa7c937ac070da31b16cca11a065479f3d971ef52a91e77b70ed252d  https://blockstream.info/api/address/bc1qygdhckhc2xa23q5zmsly7w4ah9dzk23mg7qxm8/txs

@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from .chains.base import InvalidAddress, ProviderError
-from .chains.btc import COINBASE, COINJOIN_SINK, UtxoTx, tx_frame
+from .chains.btc import COINBASE, COINJOIN_SINK, UtxoTx, coinjoin_ids, tx_frame
 from .explain import fmt
 from .graph.resolve import resolve_entities
 from .labels.lookup import Label
@@ -56,7 +56,7 @@ def cluster_of(address: str, txs: list[UtxoTx]) -> Cluster:
     """The addresses that share an owner with `address`, by co-spending in `txs`."""
     if not txs:
         return Cluster(address, (address,), (), 0)
-    mapping, stats = resolve_entities(tx_frame(txs), change=False)
+    mapping, stats = resolve_entities(tx_frame(txs), change=False, coinjoin=coinjoin_ids(txs))
     owner = dict(zip(mapping["address"].to_list(), mapping["entity_id"].to_list()))
     mine = owner.get(address)
     members = tuple(sorted(a for a, e in owner.items() if e == mine)) if mine else (address,)

@@ -1039,7 +1039,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "vasp" | "sanctioned" | "mixer" | "bridge" | "other_label" | "hub" | "beyond_hop_limit" | "not_moved" | "not_followed" | "returned";
+            kind: "vasp" | "sanctioned" | "mixer" | "bridge" | "other_label" | "hub" | "beyond_hop_limit" | "not_moved" | "not_followed" | "returned" | "fee";
             /**
              * Name
              * @description The VASP or labelled party, when there is one

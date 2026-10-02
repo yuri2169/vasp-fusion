@@ -45,7 +45,7 @@ def test_a_case_carries_its_receipt(hero):
     assert prov["responses_sha256"] == P.responses_sha256(prov["responses"])
     assert prov["findings_sha256"] == P.findings_sha256(hero)
     assert prov["model_version"] == "model_v1/tron" and len(prov["model_sha256"]) == 64
-    assert prov["seed"] == 26182 and prov["code_version"].startswith("b9-")
+    assert prov["seed"] == 26182 and prov["code_version"].startswith("b5-")
 
 
 def test_no_api_key_is_in_a_receipt(hero):

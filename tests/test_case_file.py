@@ -130,6 +130,19 @@ def test_a_case_stored_before_receipts_still_gets_a_file(cases):
     assert "This case carries no receipt" in " ".join(text.split())
 
 
+def test_a_bitcoin_case_file_states_the_rules_that_only_apply_to_bitcoin(cases):
+    flat = " ".join(CF.case_file_text(cases["btc-htx"]).split())
+    # how a transaction with many inputs and outputs became transfers
+    assert "share of each output in proportion to what it put in" in flat
+    assert "Change is not guessed" in flat
+    # what a cluster label is, and that it is a rule
+    assert "spent together with a labelled address" in flat
+    assert "0.90 for having been spent together" in flat
+    # and none of it leaks into the other chains' files
+    other = " ".join(CF.case_file_text(cases["tron-coindcx"]).split())
+    assert "spent together" not in other and "in proportion to what it put in" not in other
+
+
 # ------------------------------------------------------------------ the flow diagram
 @pytest.mark.parametrize("case_id", list(SPECS))
 def test_every_wallet_is_numbered_once_and_the_traced_wallet_is_w0(case_id, cases):

@@ -148,11 +148,11 @@ vaspfusion.cli verify eth-abstain
   Responses SHA-256       3d5f183b9ee65cb05508cf516b25cad78e7666e1c332fa68007f966f153e3c80
   Label database SHA-256  not recorded
   Model                   not used in this case
-  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
   Content SHA-256         35a95689cddf222e5ca98ac9472227c7fa021c988cddb601671045eed70ec707
-  Receipt SHA-256         b90bc9e51d06bba5d7a53f877e9ac4cb7230c5e5bc61d59f6d887bfcd26a6fe4
+  Receipt SHA-256         62b5d1a31e80c8f13645f5a8cf33d52d3356c7126b2ef50c606330c5c8fedf6d
 
   Chain responses read
     d1cf3197bedffbb9da89547235bed857d685ed9e4b806eaf4faa85e912d7de9d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1712267195

@@ -1,4 +1,36 @@
 {
+ "btc-htx": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "HTX",
+  "confidence": 0.855,
+  "asset": "BTC",
+  "total_sent": 0.36459394,
+  "candidates": [
+   {
+    "vasp": "HTX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.855,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 1.0,
+    "deposit_address": "19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV",
+    "label_tier": "derived",
+    "counterfactual_holds": true
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "HTX",
+    "share": 1.0,
+    "amount": 0.36459394
+   }
+  ],
+  "nodes": 4,
+  "edges": 4,
+  "flags": []
+ },
  "eth-abstain": {
   "outcome": "INSUFFICIENT_EVIDENCE",
   "top_vasp": null,

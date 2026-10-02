@@ -26,13 +26,24 @@ transaction must also show evidence of several owners, either of:
 Measured on synthetic data only (b2: 120 of 120 CoinJoins, 0 false flags). The
 generator gives every participant one input; real rounds where participants
 bring several small inputs AND take no change would be missed.
+
+MEASURED ON REAL TRANSACTIONS (B5, 2 Oct 2026). With the defaults above ("at least
+half the outputs") the rule recognised 1 of 99 real Wasabi 1.x rounds (the pages of the
+coordinator's fee address): a real round also pays change and a second denomination,
+so its largest block of equal outputs is 26% to 51% of the outputs (median 37%). With
+`min_share=0.25` and `min_equal=5` it recognised 99 of 99, and flagged 1 of 7,334
+transactions read from the pages of 460 labelled exchange addresses (2,362 of them
+with two or more input addresses). chains/btc.py uses those settings on Bitcoin; the
+defaults here are unchanged. Not measured: Wasabi 2 (WabiSabi) and JoinMarket rounds.
 """
 from __future__ import annotations
 
 import polars as pl
 
 
-def coinjoin_txids(txs: pl.DataFrame, min_equal: int = 3) -> set[str]:
+def coinjoin_txids(txs: pl.DataFrame, min_equal: int = 3, min_share: float = 0.5) -> set[str]:
+    """`min_share`: the largest block of equal-value outputs must be at least this part
+    of all outputs."""
     if "output_amounts" not in txs.columns or txs.height == 0:
         return set()
     eq = (txs.select(["txid", "output_amounts"])
@@ -58,7 +69,7 @@ def coinjoin_txids(txs: pl.DataFrame, min_equal: int = 3) -> set[str]:
         hit = hit.with_columns(pl.lit(0).alias("n_funded"))
     hit = hit.filter((pl.col("max_equal") >= min_equal)
                      & (pl.col("n_in") >= pl.col("max_equal"))
-                     & (pl.col("max_equal") * 2 >= pl.col("n_out"))
+                     & (pl.col("max_equal") >= min_share * pl.col("n_out"))
                      & ((pl.col("n_out") - pl.col("max_equal") >= 2)
                         | (pl.col("n_funded").fill_null(0) >= pl.col("max_equal"))))
     return set(hit.get_column("txid").to_list())

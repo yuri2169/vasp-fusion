@@ -65,6 +65,34 @@ def test_inputs_of_a_coinjoin_are_not_one_owner():
     assert cluster_of("D", [mix]).coinjoin_skipped == 1
 
 
+def test_the_participants_of_a_real_wasabi_round_stay_apart():
+    import json
+    from pathlib import Path
+
+    from vaspfusion.chains.btc import UtxoTx
+    doc = json.loads((Path(__file__).parent / "fixtures" / "chains"
+                      / "btc_wasabi_rounds.json").read_text())
+    round_ = UtxoTx.from_esplora(doc["transactions"][1])
+    who = round_.input_addresses[0]
+    c = cluster_of(who, [round_])
+    assert len(round_.input_addresses) == 81
+    assert c.members == (who,) and c.coinjoin_skipped == 1
+
+
+def test_the_real_demo_deposit_address_is_clustered_with_the_exchanges_published_wallet():
+    import json
+    from pathlib import Path
+
+    from vaspfusion.chains.btc import UtxoTx, coinjoin_ids
+    doc = json.loads((Path(__file__).parent / "fixtures" / "demo" / "btc-htx.json").read_text())
+    deposit, published = "19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV", "1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg"
+    page = doc["responses"][f"https://blockstream.info/api/address/{deposit}/txs"]["body"]
+    txs = [UtxoTx.from_esplora(t) for t in page if t["status"]["confirmed"]]
+    c = cluster_of(deposit, txs)
+    assert len(c.members) == 288 and published in c.members and len(c.links) == 9
+    assert coinjoin_ids(txs) == set() and c.coinjoin_skipped == 0
+
+
 def test_a_change_guess_never_carries_a_label():
     """OLD funds S; S then pays the exchange's HOT wallet and sends its change to OLD.
     HOT is the only output never seen before, so the change heuristic calls it S's own
