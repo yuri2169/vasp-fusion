@@ -9,9 +9,9 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 from decimal import Decimal
-from pathlib import Path
 from urllib.parse import urlsplit
 
+from . import provenance as P
 from .api import schemas as S
 from .chains import get_provider
 from .attribute.counterfactual import add_counterfactuals
@@ -20,10 +20,11 @@ from .attribute.rules import Attribution, Candidate, RuleConfig, attribute
 from .explain.case_narrative import narrative, path_hashes
 from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
+from .provenance import case_headline, file_sha256  # noqa: F401 - re-exported
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
 SEED = 26182
-CODE_VERSION = "b8-desk-1"
+CODE_VERSION = "b9-receipt-1"
 # why traced money stopped -> the slice the UI shows
 STOP_KIND = {"hub": "hub", "depth_limit": "beyond_hop_limit", "unspent": "not_moved",
              "truncated": "not_followed", "small": "not_followed", "budget": "not_followed",
@@ -42,14 +43,6 @@ def trace_provider(chain: str, fetcher, cfg: TraceConfig = TraceConfig(), **opts
 
 def case_id_for(chain: str, address: str) -> str:
     return "c-" + hashlib.sha256(f"{chain}:{address}".encode()).hexdigest()[:10]
-
-
-def file_sha256(path: str | Path) -> str:
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for block in iter(lambda: f.read(1 << 20), b""):
-            h.update(block)
-    return h.hexdigest()
 
 
 def _f(d: Decimal | None) -> float | None:
@@ -237,27 +230,61 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
     notes = add_leads(tr, att, scorer, labels)
     now = now or datetime.now(timezone.utc)
     prov: dict = {"label_db_sha256": label_db_sha256, "notes": notes}
+    trail = fetcher.trail[pages_before:] if fetcher is not None else []
     if fetcher is not None:
         went_live = fetcher.stats["live"] > live_before
-        hosts = sorted({urlsplit(p["query"]).netloc for p in fetcher.trail[pages_before:]})
+        hosts = sorted({urlsplit(p["query"]).netloc for p in trail})
         prov.update(offline_replay=not went_live, fetched_at=now if went_live else None,
                     data_sources=hosts + ["label store"])
-    return build_case(tr, att, case_id=case_id or case_id_for(chain, address), meta=meta,
-                      rules=rules, now=now, demo=demo, provenance=prov)
+    prov.update(P.run_provenance(P.case_input(address, chain, cfg.max_hops, cfg.since), trail,
+                                 model_dir=getattr(scorer, "model_dir", None)))
+    detail = build_case(tr, att, case_id=case_id or case_id_for(chain, address), meta=meta,
+                        rules=rules, now=now, demo=demo, provenance=prov)
+    # the fingerprint is taken from the case as it is stored and served (JSON form)
+    detail["provenance"]["findings_sha256"] = P.findings_sha256(detail)
+    return detail
 
 
-def case_headline(case: dict) -> dict:
-    """The figures of a case: what a replay, or a later code change, must reproduce.
-    (The wording of the narrative is free to improve, so it is not part of this.)"""
-    return {
-        "outcome": case["outcome"], "top_vasp": case["top_vasp"], "confidence": case["confidence"],
-        "asset": case["asset"], "total_sent": case["total_sent"],
-        "candidates": [{k: c[k] for k in ("vasp", "direction", "proximity_rank", "confidence",
-                                          "confidence_interval", "hops", "share_of_funds",
-                                          "deposit_address", "label_tier",
-                                          "counterfactual_holds")}
-                       for c in case["candidates"]],
-        "where_funds_went": case["where_funds_went"],
-        "nodes": len(case["graph"]["nodes"]), "edges": len(case["graph"]["edges"]),
-        "flags": [[f["code"], f["wallet"], f["figures"]] for f in case["typology_flags"]],
-    }
+# ------------------------------------------------------------------ verify (B9)
+def replay_case(case_in: dict, fetcher, labels, *, label_db_sha256: str | None = None,
+                **provider_opts) -> dict:
+    """Trace the wallet of a receipt's `input` again, exactly as a case run does."""
+    since = case_in.get("since")
+    if isinstance(since, str):
+        since = datetime.fromisoformat(since.replace("Z", "+00:00"))
+    cfg = TraceConfig(max_hops=case_in["max_hops"], since=since)
+    chain = case_in["chain"]
+    scorer = "auto"
+    if provider_opts:
+        from .classify.runtime import make_scorer
+        scorer = make_scorer(chain, fetcher, **provider_opts)
+    return run_case(case_in["address"], chain,
+                    trace_provider(chain, fetcher, cfg, **provider_opts), labels, cfg=cfg,
+                    fetcher=fetcher, label_db_sha256=label_db_sha256, scorer=scorer)
+
+
+def _cache_only(fetcher) -> None:
+    if not fetcher.offline:
+        raise ValueError("verify reads the cache only: give it an offline fetcher "
+                         "(chains.cache_only_fetcher())")
+
+
+def verify_stored(case: dict, fetcher, labels, *, label_db_sha256: str | None = None,
+                  now: datetime | None = None, **provider_opts) -> dict:
+    """`provenance.verify_case` on the real pipeline. `fetcher` must be cache-only: a
+    verification that fetched fresh pages would be checking the chain as it is now, not
+    the responses the case was computed from."""
+    _cache_only(fetcher)
+    return P.verify_case(
+        case, lambda case_in: replay_case(case_in, fetcher, labels,
+                                          label_db_sha256=label_db_sha256, **provider_opts),
+        label_db_sha256=label_db_sha256, now=now)
+
+
+def verify_receipt(doc: dict, fetcher, labels, *, label_db_sha256: str | None = None,
+                   now: datetime | None = None, **provider_opts) -> dict:
+    _cache_only(fetcher)
+    return P.verify_receipt(
+        doc, lambda case_in: replay_case(case_in, fetcher, labels,
+                                         label_db_sha256=label_db_sha256, **provider_opts),
+        label_db_sha256=label_db_sha256, now=now)

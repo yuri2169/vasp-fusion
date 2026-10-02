@@ -11,13 +11,20 @@ from .base import (CacheMiss, ChainProvider, Direction, InvalidAddress, Provider
 from .cache import ChainCache, Fetcher, LayeredCache
 from .http import UrllibTransport
 
+from . import cache  # noqa: F401
+
 __all__ = ["CacheMiss", "ChainCache", "ChainProvider", "Direction", "Fetcher", "InvalidAddress",
-           "LayeredCache", "ProviderError", "Transfer", "UnsupportedChain", "UrllibTransport", "default_fetcher",
+           "LayeredCache", "ProviderError", "Transfer", "UnsupportedChain", "UrllibTransport", "cache_only_fetcher", "default_fetcher",
            "detect_chain", "get_provider", "validate"]
 
 
 def default_fetcher() -> Fetcher:
     return Fetcher(ChainCache(), UrllibTransport())
+
+
+def cache_only_fetcher(path=None) -> Fetcher:
+    """Reads the cache and nothing else, whatever OFFLINE says (`verify`)."""
+    return Fetcher(ChainCache(path), None, offline=True)
 
 
 def get_provider(chain: str, fetcher: Fetcher | None = None, **opts) -> ChainProvider:

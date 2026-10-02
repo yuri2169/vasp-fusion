@@ -53,8 +53,10 @@ class Score:
 
 class Scorer:
     def __init__(self, model: Fitted, provider, rules: DiscoverConfig = DiscoverConfig(),
-                 limit: int = 50, lookback_days: float = 7.0, horizon_days: float = 14.0):
+                 limit: int = 50, lookback_days: float = 7.0, horizon_days: float = 14.0,
+                 model_dir: Path | str | None = None):
         self.model, self.provider, self.rules = model, provider, rules
+        self.model_dir = Path(model_dir) if model_dir is not None else None   # for the receipt
         self.limit = limit
         self.lookback = timedelta(days=lookback_days)
         self.horizon = timedelta(days=horizon_days)
@@ -93,4 +95,5 @@ def make_scorer(chain: str, fetcher, model_dir: Path | str = MODEL_DIR, **opts) 
     except FileNotFoundError:
         return None
     # the training set's protocol: one page of 50 rows per listing
-    return Scorer(model, get_provider(chain, fetcher, page_size=50, max_pages=1, **opts))
+    return Scorer(model, get_provider(chain, fetcher, page_size=50, max_pages=1, **opts),
+                  model_dir=Path(model_dir) / chain)

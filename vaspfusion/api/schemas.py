@@ -253,6 +253,19 @@ class TypologyFlag(_M):
     tx_hashes: list[str] = []
 
 
+class CaseInput(_M):
+    """The question a case answers (everything else a trace depends on is code)."""
+    address: str
+    chain: str
+    max_hops: int
+    since: datetime | None = None
+
+
+class PageDigest(_M):
+    query: str = Field(description="The chain API request, API keys removed")
+    sha256: str = Field(description="SHA-256 of the response body as it was received")
+
+
 class Provenance(_M):
     seed: int
     code_version: str
@@ -262,6 +275,21 @@ class Provenance(_M):
     data_sources: list[str] = []
     notes: list[str] = Field([], description="What this run did or could not do, e.g. how "
                              "many unlabelled wallets the deposit-address model scored")
+    # the receipt (B9): null in a case stored before it existed
+    input: CaseInput | None = None
+    input_sha256: str | None = None
+    responses: list[PageDigest] | None = Field(None, description=(
+        "Every chain API response this run read, each once, sorted by request"))
+    responses_sha256: str | None = Field(None, description="One digest over `responses`")
+    pages: int | None = None
+    findings_sha256: str | None = Field(None, description=(
+        "The findings fingerprint: every figure, address and transaction hash of the "
+        "result, none of its wording. `verify` must reproduce it"))
+    model_version: str | None = Field(None, description="Set when the deposit-address model "
+                                      "scored a wallet in this run, e.g. model_v1/tron")
+    model_sha256: str | None = None
+    git_commit: str | None = None
+    git_dirty: bool | None = Field(None, description="true: the code had uncommitted changes")
 
 
 class FundsSlice(_M):
@@ -648,6 +676,59 @@ class ModelInfo(_M):
     abstain: AbstainInfo | None = Field(None, description=(
         "How the bar below which no exchange is named was measured on this chain; null "
         "when it was not"))
+
+
+# ------------------------------------------------------------------ receipt / verify (B9)
+class Receipt(_M):
+    """What a case was computed from, as digests anyone can recompute. The same document
+    is the last page of the case file."""
+    schema_: str = Field(alias="schema", description="vaspfusion-receipt/1")
+    case_id: str
+    case_ref: str | None = None
+    outcome: Outcome
+    top_vasp: str | None = None
+    confidence: float | None = None
+    created_at: datetime
+    demo: bool = False
+    seed: int
+    code_version: str
+    git_commit: str | None = None
+    git_dirty: bool | None = None
+    input: CaseInput
+    input_sha256: str
+    pages: int
+    responses_sha256: str
+    label_db_sha256: str | None = None
+    model_version: str | None = None
+    model_sha256: str | None = None
+    findings_sha256: str
+    fetched_at: datetime | None = None
+    offline_replay: bool = False
+    data_sources: list[str] = []
+    responses: list[PageDigest]
+    receipt_sha256: str = Field(description="SHA-256 of every other field of this document")
+
+
+VerifyOutcome = Literal["same", "different", "not_checked"]
+
+
+class VerifyCheck(_M):
+    name: Literal["stored_case", "replay", "responses", "findings", "labels", "model", "code"]
+    result: VerifyOutcome
+    detail: str = Field(description="Plain English")
+    stored: str | None = None
+    now: str | None = None
+
+
+class VerifyResult(_M):
+    """A stored case traced again from the cached chain responses only, and compared."""
+    case_id: str
+    matches: bool = Field(description=(
+        "true only when the stored case still has its receipt's fingerprint, the same "
+        "responses were read, and the new findings have the same fingerprint"))
+    summary: str
+    checked_at: datetime
+    checks: list[VerifyCheck]
 
 
 class Health(_M):

@@ -562,7 +562,121 @@ def cmd_demo(args) -> None:
               f"{case['top_vasp'] or '-':<10}{conf:>5}  {s['live']} live, {s['hits']} cached"
               + ("" if good else f"   !! expected {want[0]} / {want[1]}"))
     print(f"{ok}/{len(specs)} as expected | cases stored in {store.path}")
-    if ok != len(specs):
+    same = len(specs)
+    if args.golden:
+        same = _golden(args.golden, [store.get(spec["id"]) for spec in specs])
+    if ok != len(specs) or same != len(specs):
+        raise SystemExit(1)
+
+
+def _golden(path: str, cases: list) -> int:
+    """How many stored demo cases have the findings fingerprint the repository records
+    for them (tests/golden/fingerprints.json)."""
+    golden = json.loads(Path(path).read_text())
+    same = 0
+    for case in cases:
+        if case is None:
+            continue
+        got = (case.get("provenance") or {}).get("findings_sha256")
+        want = golden.get(case["id"], {}).get("findings_sha256")
+        if got == want:
+            same += 1
+        else:
+            print(f"  !! {case['id']}: fingerprint {got}, golden {want}")
+    print(f"{same}/{len(cases)} golden fingerprints reproduced ({path})")
+    return same
+
+
+def cmd_demo_cache(args) -> None:
+    """Build a chain cache holding exactly the pages the demo wallets' traces read, from
+    the recorded fixtures (no network). The offline image ships this file."""
+    import os
+
+    from . import chains
+    from .cases import file_sha256, run_case, trace_provider
+    from .chains.replay import RecordedTransport
+    from .classify.runtime import make_scorer
+    from .labels.lookup import LabelStore
+    from .trace import TraceConfig
+
+    specs = json.loads(Path(args.file).read_text())["cases"]
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out.with_name(out.name + ".tmp")
+    tmp.unlink(missing_ok=True)
+    sha = file_sha256(args.labels_db)
+    try:
+        cache = chains.ChainCache(tmp)
+        with LabelStore(args.labels_db) as labels:
+            for spec in specs:
+                transport = RecordedTransport(Path(args.fixtures) / f"{spec['id']}.json")
+                fetcher = chains.Fetcher(cache, transport, offline=False, sleep=lambda s: None)
+                cfg = TraceConfig(max_hops=spec.get("max_hops", 3))
+                # any key selects the backend the fixtures were recorded from; none is sent
+                case = run_case(spec["address"], spec["chain"],
+                                trace_provider(spec["chain"], fetcher, cfg, key="recorded"),
+                                labels, case_id=spec["id"], cfg=cfg, fetcher=fetcher,
+                                label_db_sha256=sha, demo=True,
+                                scorer=make_scorer(spec["chain"], fetcher, key="recorded"))
+                print(f"  {spec['id']:<19}{case['outcome']:<29}{case['top_vasp'] or '-':<10}"
+                      f"{case['provenance']['pages']} pages")
+    except chains.ProviderError as e:
+        tmp.unlink(missing_ok=True)
+        print(f"error: {e}\nThe trace asked for a page the fixtures do not hold: the label "
+              f"DB is not the one they were recorded with, or the code reads more pages. "
+              f"Re-record them (scripts/record_demo_fixtures.py --extend) or rebuild the "
+              f"label DB (`make labels`).", file=sys.stderr)
+        raise SystemExit(1) from e
+    pages = cache.count()
+    os.replace(tmp, out)
+    print(f"wrote {out} ({pages} pages, no network)")
+
+
+def cmd_verify(args) -> None:
+    """Trace stored cases again from the cache only and compare the fingerprints."""
+    from . import chains
+    from .cases import file_sha256, verify_receipt, verify_stored
+    from .labels.lookup import LabelStore
+    from .store.cases import CaseStore
+
+    sha = file_sha256(args.labels_db)
+    fetcher = chains.cache_only_fetcher()
+    with LabelStore(args.labels_db) as labels:
+        if args.receipt:
+            doc = json.loads(Path(args.receipt).read_text())
+            results = [verify_receipt(doc, fetcher, labels, label_db_sha256=sha)]
+        else:
+            store = CaseStore()
+            if args.all:
+                ids = [c["id"] for c in reversed(store.list(status="done"))]
+            elif args.case_id:
+                ids = [args.case_id]
+            else:
+                print("error: name a case id, or use --all or --receipt FILE", file=sys.stderr)
+                raise SystemExit(1)
+            results = []
+            for cid in ids:
+                case = store.get(cid)
+                if case is None:
+                    print(f"error: no case {cid} in {store.path}", file=sys.stderr)
+                    raise SystemExit(1)
+                results.append(verify_stored(case, fetcher, labels, label_db_sha256=sha))
+    good = sum(r["matches"] for r in results)
+    if args.json:
+        print(json.dumps(results, indent=2))
+    else:
+        detail = len(results) == 1
+        for r in results:
+            fp = next((c["stored"] for c in r["checks"] if c["name"] == "findings"), None)
+            print(f"  {r['case_id'] or '-':<19}{'VERIFIED' if r['matches'] else 'NOT VERIFIED':<14}"
+                  + (f"fingerprint {fp}" if fp else ""))
+            if detail or not r["matches"]:
+                for c in r["checks"]:
+                    print(f"      {c['name']:<12}{c['result']:<12}{c['detail']}")
+                if not r["checks"]:
+                    print(f"      {r['summary']}")
+        print(f"{good}/{len(results)} verified | cache {fetcher.cache.path} (read only, no network)")
+    if good != len(results):
         raise SystemExit(1)
 
 
@@ -773,7 +887,26 @@ def main(argv: list[str] | None = None) -> None:
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.add_argument("--golden", help="also require each case's findings fingerprint to equal "
+                                    "the one in this file (tests/golden/fingerprints.json)")
     s.set_defaults(fn=cmd_demo)
+
+    s = sub.add_parser("demo-cache", help="build the demo's chain cache from the recorded "
+                                          "fixtures (no network)")
+    s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
+    s.add_argument("--fixtures", default=str(ROOT / "tests" / "fixtures" / "demo"))
+    s.add_argument("--out", default=str(ROOT / "data" / "demo_cache.duckdb"))
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_demo_cache)
+
+    s = sub.add_parser("verify", help="trace a stored case again from the cache only and "
+                                      "compare its findings fingerprint")
+    s.add_argument("case_id", nargs="?")
+    s.add_argument("--all", action="store_true", help="every finished case in the store")
+    s.add_argument("--receipt", help="verify an exported receipt file instead of a stored case")
+    s.add_argument("--json", action="store_true")
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_verify)
 
     s = sub.add_parser("desk", help="the request desk: exchanges the finished cases route to")
     s.add_argument("--json", action="store_true")
