@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseDetail, Tier } from '../api/models'
 import { useCase } from '../api/queries'
+import { FlowGraph } from '../case/FlowGraph'
 import { AddressChip } from '../components/AddressChip'
 import { buttonClass } from '../components/Button'
 import { ChainBadge } from '../components/ChainBadge'
@@ -95,6 +96,8 @@ export function CasePage() {
           }}
         />
       )}
+
+      {c.status === 'done' && <FlowGraph c={c} selected={null} onSelect={() => {}} className="mt-4" />}
 
       {c.narrative && (
         <section aria-labelledby="summary" className="mt-8 max-w-prose">

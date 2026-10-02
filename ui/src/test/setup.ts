@@ -38,6 +38,10 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 })
 
+/** jsdom has no canvas: say so quietly (its own getContext logs "not implemented"). The
+ *  fund-flow graph then shows its "cannot draw" note; FlowGraph.test.tsx stands a canvas in. */
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext
+
 /** jsdom's <dialog> has no showModal/close. Enough of both for the Dialog component. */
 if (!HTMLDialogElement.prototype.showModal) {
   HTMLDialogElement.prototype.showModal = vi.fn(function (this: HTMLDialogElement) {
