@@ -76,7 +76,8 @@ python -m vaspfusion.cli audit --verify
 | Path | What |
 |---|---|
 | `vaspfusion/labels/` | Label store: normalise → build (tier-ranked dedupe) → lookup/search |
-| `vaspfusion/chains/` | Chain adapters (Tron, EVM, BTC basic, Solana stub) behind a cache-first fetcher; the only code that reaches the network |
+| `vaspfusion/chains/` | Chain adapters (Tron, EVM, Bitcoin, Solana stub) behind a cache-first fetcher; the only code that reaches the network |
+| `vaspfusion/cluster.py` | Bitcoin: an address spent together with a labelled exchange address takes that exchange's label, with the cluster as evidence |
 | `vaspfusion/trace.py` | Bidirectional trace: follows the wallet's money hop by hop, allocating by amount |
 | `vaspfusion/attribute/rules.py` | Candidates, proximity rank, rule confidence, the three outcomes |
 | `vaspfusion/discover/` | Deposit-address discovery: the sweep and gas-payer rules, the crawler, the hold-out evaluation |
@@ -107,6 +108,7 @@ One row per `(address, chain)`: `entity, category, kind, tier, source, source_ur
 - Tier priority: `published_por > curated > explorer_tag > derived`. A derived row never replaces a label from another source.
 - EVM addresses are lowercased; Tron and BTC keep their case.
 - Dune "EVM" rows are stored as chain `evm` and match any EVM chain on lookup.
+- Sources: the wallet-attribution set and the Dune spellbook extract (115,242 labels), the derived deposit addresses, and the exchange packs of the **GraphSense TagPacks** (MIT, pinned to one commit): 336,531 exchange tags on Bitcoin, Ethereum and Tron, of which 336,208 are BitMEX's own published address list and 120 are WalletExplorer's named exchange wallets. `make tagpacks` flattens the packs in `research/data/graphsense-tagpacks/` into the CSV `make labels` reads.
 
 ```python
 from vaspfusion.labels.lookup import lookup, LabelStore
@@ -126,7 +128,7 @@ p.transfers("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw", "in", since=None, limit=200)
 | ethereum, polygon, arbitrum | Etherscan v2 with a key, else Blockscout | `ETHERSCAN_API_KEY` |
 | base, optimism | Blockscout (keyless) | – |
 | bsc | Etherscan v2 **paid** plan only (the free plan refuses) | `ETHERSCAN_API_KEY` |
-| bitcoin | mempool.space `/api/address/{a}/txs` | – |
+| bitcoin | Esplora `/api/address/{a}/txs`: blockstream.info, or mempool.space with `VASPFUSION_BTC_API=mempool.space` (same API; a replay needs the backend it was recorded from) | – |
 | solana | address check only | – |
 
 - Keys come from the process env, then `.env` (never committed). They are never printed, cached or written to fixtures.
@@ -214,10 +216,25 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 - **One asset is followed:** the stablecoin the wallet sent most of, else the native coin. Unknown tokens are never followed (this is what keeps address-poisoning spoofs out). Whatever else the wallet sent is listed as "not followed".
 - **Allocation, "first out after arrival":** money that reached a wallet at time *t* is assigned to that wallet's next outgoing transfers at or after *t*, in time order. So every unit the wallet sent ends in exactly one place, and the case says where: an exchange, a sanctioned address, a hub, past the hop limit, or not moved.
 - **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
-- **Chains:** Tron and the EVM chains with a free data source (Ethereum, Polygon, Arbitrum, Base, Optimism). Bitcoin tracing arrives with B5.
+- **Chains:** Tron, Bitcoin, and the EVM chains with a free data source (Ethereum, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below.
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
 - **Confidence:** the average over the traced money of *label weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Label weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75; a derived deposit address weighs its own confidence. A VASP is named at 0.60 or more.
 - **What is calibrated and what is not.** Where the money reached a deposit address the model confirmed, the candidate carries a `confidence_interval` (the model's range through the same formula) and the model's reasons as evidence. The label weights, the hop decay and the share factor are rule-set, so a case confidence is not a calibrated probability end to end; every screen and narrative says which part is which. A candidate without a range is "rule confidence".
 - **Outcomes:** `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (with the reason and what would change it) · `SANCTIONED_OR_MIXER_REACHED` (1% or more of the funds reached a sanctioned or mixer label).
 - Demo wallets are real addresses chosen for their on-chain shape; nothing alleges wrongdoing by their owners. Their traces are recorded in `tests/fixtures/demo/` (`scripts/record_demo_fixtures.py`) and replay with no network.
 - Offline replay must pick the same EVM backend as the run that filled the cache: set `ETHERSCAN_API_KEY` to any non-empty value (it is never sent when `OFFLINE=1`).
+
+## Bitcoin
+A Bitcoin transaction has many inputs and many outputs and does not say which input paid which output. Three rules turn it into something the trace can follow, and none of them guesses.
+
+- **Pro rata.** An address that put in `v` of a transaction's `V` input value sent each output `v / V` of that output's value, rounded down to a satoshi. Outputs back to one of the transaction's own input addresses are change, not transfers. **No change heuristic is used**: an output to any other address is followed like a payment. The miner fee is what is left, and is its own slice of "where the funds went" (`fee`).
+- **Cluster labels** (`vaspfusion/cluster.py`). The inputs of one transaction are signed by one owner, so an address that was spent together with a labelled exchange address belongs to that exchange. That is how an exchange's deposit addresses are found on Bitcoin: they are swept together with its own wallets. The traced wallet, and every unlabelled wallet that received 1% or more of the funds, is checked on its own most recent page of transactions (the page the trace reads anyway). The label is `derived`, source `vaspfusion-cluster`, and its evidence says "cluster of N addresses, M labelled", the labelled address in full, and the linking transaction. Confidence = the weight of the strongest labelled member × 0.90 (hand-set, not calibrated). Two owners in one cluster give no label.
+- **CoinJoin.** A transaction with the shape of a CoinJoin is left out of the clustering, and a wallet's coins that enter one go into a sink (`coinjoin:<txid>`) named as a mixer: the trace stops there.
+
+`graph/resolve.py` (BTC-FUSION's clustering) is reused with its change heuristic switched off: "this output was never seen before" cannot be checked from one address's page, and a wrong guess would put an exchange's label on its customer.
+
+**The CoinJoin rule, measured on real transactions (2 Oct 2026).** BTC-FUSION's rule had only been measured on generated data. On the pages of the Wasabi 1.x coordinator's fee address it recognised **1 of 99** real rounds (it asks for the equal outputs to be half of all outputs; in real rounds they are 26% to 51%). With the equal outputs at a quarter of all outputs, five or more of them, and not dust, it recognises **99 of 99**, and flags **1 of 7,334** transactions read from the pages of 460 labelled exchange addresses (a 2014 transaction with five outputs of exactly 1 BTC). Not measured: Wasabi 2 and JoinMarket rounds.
+
+**The demo case** (`btc-htx`, real): `bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6` sent 0.364594 BTC on 1 Oct 2026 to `19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV`, which no list names. That address was spent together with 287 others in 9 transactions, one of them `1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg`, which HTX published in its proof of reserves: ATTRIBUTED → HTX, rule confidence 0.855, and still HTX without the cluster label (the sweep itself pays HTX's published wallet).
+
+**Limits.** The trace follows addresses, not individual coins: where an address holds other money too, "first out after arrival" is a convention. A cluster is read from one page (the 25 to 50 most recent transactions of the address). Outputs with no address form (pay-to-pubkey, bare multisig) are not followed. The 0.60 bar has not been measured on Bitcoin. mempool.space did not resolve from the development network on 2 Oct 2026, which is why blockstream.info is the default backend.

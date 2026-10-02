@@ -51,7 +51,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 ### Cases are live (B3)
 - `POST /api/cases` validates the address (base58check / EIP-55 / bech32), stores the case as `queued`, answers 202 at once, then traces in the background: `queued → running → done | failed`. **Poll `GET /api/cases/{id}`** until the status is `done` or `failed`. A real trace takes about 1–10 s live, and well under a second from the cache.
 - `chain` is optional: Tron, Bitcoin and Solana addresses are unambiguous, and an EVM address is taken as `ethereum` unless the officer picks another chain. EVM addresses are stored lowercase.
-- 422 with a plain-English `detail` when: the chain can't be told from the address; the address is not valid on the chosen chain; or the chain can't be traced yet (traceable today: tron, ethereum, polygon, arbitrum, base, optimism; Bitcoin arrives with B5).
+- 422 with a plain-English `detail` when: the chain can't be told from the address; the address is not valid on the chosen chain; or the chain can't be traced yet (traceable today: tron, bitcoin, ethereum, polygon, arbitrum, base, optimism).
 - Posting a wallet that already has a finished case returns that case (same `id`, no second trace), **even if `max_hops` or `incident_date` differ: send `?refresh=true` to trace again.** A `failed` case, and one left `queued`/`running` by a server restart, is always run again.
 - During a refresh the case keeps showing the previous result with status `queued`/`running`. If the refresh fails, the previous result stays, status goes back to `done`, and `error` says "Refresh failed (…)". The case reference, complaint number and amount are kept unless the refresh sends new ones.
 - A `failed` case has `error` set (for example `CacheMiss: OFFLINE=1 and not cached: …`) and empty lists.
@@ -214,6 +214,17 @@ All additive. `make mocks types` has been run; the three mock cases now carry th
 - The same read by the same officer from the same address with the same result within 30 seconds is one row (a page polling a running trace); writes are never folded. A request body is never logged. A request that breaks the server is a row with status 500, and the reply is `{"detail": "The server could not answer this request. It has been logged."}`.
 - Rows are hash-chained: `hash` is an HMAC-SHA256, under the audit key, of the row and `prev_hash`. An edited, removed or reordered row breaks the chain from there, and `chain.broken_at` names it; without the key the log cannot be rewritten and rehashed. The key is `VASPFUSION_AUDIT_KEY`, or a file beside the log. Whoever holds both the log and the key can rewrite it, and rows cut off the end leave a valid chain: both are only caught against a `head` noted somewhere else.
 - Every `/api` reply carries `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
+
+### Bitcoin (B5)
+`POST /api/cases` accepts a Bitcoin address (the chain is detected; bech32 is stored lowercase). The case has the same shape as any other. What is different, all additive:
+- **`where_funds_went[].kind` has a new value, `fee`**: miner fees paid along the trail (Bitcoin only). Show it as its own small slice ("network fees"); the slices still add up to the whole.
+- **A label with `source: "vaspfusion-cluster"`** (`tier: "derived"`, `kind: "deposit"`, `confidence` set, `model` null): the address has no label of its own and was spent together with a labelled address of that exchange. `evidence` is the paragraph to show verbatim ("cluster of N addresses, M labelled …", the labelled address, the linking transaction). `Candidate.confidence_interval` is null: call it "rule confidence". The graph node's role is `exchange_deposit`.
+- **A graph node whose id starts with `coinjoin:`** is not an address: it is a CoinJoin-shaped transaction (the id after the colon is the transaction id), role `mixer`, with the shape described in `label.evidence`. Do not link it to a wallet page. `coinbase` (newly mined coins, inbound only) is the other id that is not an address.
+- `asset` is `BTC` and every `amount_usd` is null (no price feed). `time_to_reach_s` is 0 for a one-hop route.
+- `provenance.data_sources` names the backend (`blockstream.info`).
+- Amounts on an edge are the wallet's pro-rata share of a transaction output, so `amount` can be smaller than the output on a block explorer when several addresses funded the transaction; `tx_hash` is the transaction.
+- Leads (`deposit_like`) are not produced on Bitcoin; `provenance.notes[]` says so when there were wallets to score. What the cluster step could not settle ("two owners in one cluster", "could not be read") is a sentence in `narrative`.
+- A new live demo case: **`btc-htx`** (eight demo cases now).
 
 **`ModelInfo`**: `status: "measured"` once `make model` has run (see "The deposit-address model (B6)"). With no `metrics.json` for the chain the route answers `status: "not_measured"`: every metric is null and the lists are empty, and the UI shows "not yet measured". Every number is measured; there are no placeholders.
 
