@@ -5,9 +5,33 @@
     "name": "OKX",
     "legal_name": null,
     "fiu_ind_registered": null,
+    "fiu_ind_as_of": null,
     "jurisdiction": null,
-    "le_request_channel": null,
-    "source_urls": []
+    "le_request_channel": "https://app.kodexglobal.com/okx/signin",
+    "notes": [
+      "OKX asks that requests be addressed to \"OKX\" rather than to a specific legal entity; enforcement@okx.com is its channel for extraordinary circumstances."
+    ],
+    "sources": [
+      {
+        "field": "le_request_channel",
+        "title": "OKX Law Enforcement Request Guide",
+        "publisher": "OKX",
+        "url": "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide",
+        "published": null,
+        "accessed": "2026-10-02"
+      },
+      {
+        "field": "notes",
+        "title": "OKX Law Enforcement Request Guide",
+        "publisher": "OKX",
+        "url": "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide",
+        "published": null,
+        "accessed": "2026-10-02"
+      }
+    ],
+    "source_urls": [
+      "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide"
+    ]
   },
   "label_counts": {
     "tron": 1763,

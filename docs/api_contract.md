@@ -32,12 +32,12 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | GET | `/api/cases/{id}` | – | `CaseDetail` | `cases/{id}.json` (only for the mock ids) | **live** | B3 (B4, B7 fill evidence/flags) |
 | GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` | **labels and `cases` live**, the rest mock | B3/B6 |
 | GET | `/api/labels/search?q=&chain=&category=&tier=&limit=&offset=` | – | `LabelSearch` | `labels/search.json` (fallback) | **live** | B1 |
-| GET | `/api/desk` | – | `Desk` | `desk.json` | mock | B8 |
-| GET | `/api/vasps/{name}` | – | `VaspDetail` | `vasps/{name}.json` | mock | B8 |
-| POST | `/api/requests` | `RequestCreate` | `RequestDetail` (201) | the demo request for that VASP | mock | B8 |
-| GET | `/api/requests/{id}` | – | `RequestDetail` (letter JSON + `pdf_url`) | `requests/{id}.json` | mock | B8 |
-| PATCH | `/api/requests/{id}` | `RequestPatch` | `RequestDetail` | applied to the mock, not persisted | mock | B8 |
-| GET | `/api/requests/{id}/pdf` | – | `application/pdf` | – | 501 until B8 | B8 |
+| GET | `/api/desk` | – | `Desk` | `desk.json` (until a finished case names an exchange) | **live** | B8 |
+| GET | `/api/vasps/{name}` | – | `VaspDetail` | `vasps/{name}.json` (only while no live case or request touches it) | **live** | B8 |
+| POST | `/api/requests` | `RequestCreate` | `RequestDetail` (201) | the demo request, if every case id is a mock demo id | **live** | B8 |
+| GET | `/api/requests/{id}` | – | `RequestDetail` (letter JSON + `pdf_url`) | `requests/{id}.json` (only for the mock id) | **live** | B8 |
+| PATCH | `/api/requests/{id}` | `RequestPatch` | `RequestDetail` | applied to the mock, not persisted (mock id only) | **live** | B8 |
+| GET | `/api/requests/{id}/pdf` (also `/api/requests/{id}.pdf`) | – | `application/pdf` | the mock request, marked "Demo fixture - not evidence" | **live** | B8 |
 | GET | `/api/dashboard` | – | `Dashboard` | `dashboard.json` | **label_coverage live**, the rest mock | B7/B9 |
 | GET | `/api/model` | `?chain=tron` (default) or `ethereum` | `ModelInfo` | `model.json` (the measured Tron model) | **live** from `artifacts/model_v1/<chain>/metrics.json` | B6 |
 
@@ -150,7 +150,24 @@ All additive; `make mocks types` has been run. `provenance.code_version` is `b7-
 - `typology_flags: TypologyFlag[]`: `code` (peel_chain, fan_out, fan_in, rapid_forwarding, round_amounts, bridge_hop, mixer_contact, sanctioned_contact), `severity`, `wallet`, `text`, `figures`, `tx_hashes`.
 - `narrative`, `abstain_reason`, `what_would_change[]`, `next_steps[]`, `provenance` (seed, code version, label DB hash, offline replay flag, data sources).
 
-**`RequestDetail`**: `status` (drafted → approved → sent → acknowledged → answered | freeze_confirmed | refused), `status_history[]`, `letter` (reference, date, to, subject, numbered `paragraphs`, `wallets` table with tier, `asks` (kyc, transactions, freeze, preservation), `legal_basis` (§94 BNSS 2023 notice; §63 BSA 2023 certificate), `officer`, `watermark` (the draft watermark text; null once approved)), `pdf_url`, and `payload` (the SAHYOG JSON, specified in `docs/sahyog_contract.md` in B8).
+**`RequestDetail`**: `status` (drafted → approved → sent → acknowledged → answered | freeze_confirmed | refused), `status_history[]`, `allowed_next[]`, `letter` (reference, date, to, subject, numbered `paragraphs`, `cases`, `wallets` table with tier, `asks` (kyc, transactions, freeze, preservation), `legal_basis` + `legal_citations` (§94 BNSS 2023 notice; §63 BSA 2023 certificate; §106 BNSS when a freeze is asked), `officer`, `channel`, `review_notes`, `watermark` (the draft watermark text; null once approved)), `pdf_url`, `receipt` (once sent) and `payload` (the SAHYOG JSON, specified in `docs/sahyog_contract.md`). See "The request desk is live (B8)".
+
+### The request desk is live (B8)
+The unit of work is an exchange, not a complaint. Everything is read from finished cases in the case store; no route here touches a chain.
+
+- **Which wallets reach the desk.** For each finished case, every candidate that is outbound, at or above the bar (0.60) and names an owner. A candidate under the bar, an inbound one ("this exchange funded the wallet"), or an `Unidentified exchange` never does. So `tron-abstain` gives no row.
+- **`Desk.rows[]`**, one per exchange, largest sum first: `wallet_count`, `total_usd` (US-dollar stablecoins only; other assets add 0), `case_ids`, `status` (of the newest request, or `not_requested`), `next_action` (a sentence), `last_request_id`, and **`unrequested_wallets`** (new): routed wallets no request asks about yet. When it is above 0 and a request exists, `next_action` says "Draft a request for N wallets not yet requested".
+- **`Desk.follow_ups[]`**: only `reply_overdue` is produced, from the day after `due` while the request is `sent` or `acknowledged`. `due` is set when a request is sent: 7 days later (`DeskConfig.reply_days`, an office reminder, not a period set by law). `freeze_lapsing` and `preservation_closing` stay in the enum but are never produced: no period we could cite fixes them.
+- **`VaspDetail.directory`** (`data/vasp_directory.yaml`, cited facts only): `legal_name`, `fiu_ind_registered` (true / false / null), **`fiu_ind_as_of`** (always show it with the registration: "registered, as of 4 Dec 2023"), `jurisdiction`, `le_request_channel`, **`notes[]`** (show verbatim), **`sources[]`** (`field`, `title`, `publisher`, `url`, `published`, `accessed`: link each fact to its source), `source_urls[]`. **null means "no source found", never "no".** An exchange the file does not list comes back with only its name.
+- **`VaspDetail.wallets[]`**: every case wallet that touches the exchange, with **`routable`** (new). `routable: false` rows are context (under the bar, or the exchange funded the wallet): show them, but offer no "draft request" on them.
+- **`POST /api/requests`** drafts one consolidated request: `vasp` (name or alias, any case), `case_ids`, `asks`, `officer`, optional `wallets` (addresses; default every routed wallet of that exchange in those cases). 201 with the request in status `drafted`. Errors come as a sentence in `detail`: **404** unknown case, **409** case still tracing, **422** the case does not support a request to that exchange (with the reason: under the bar, only funded the wallet, not reached, no named owner, unknown wallet).
+- **`PATCH /api/requests/{id}`** moves it: `drafted → approved → sent → acknowledged → answered | freeze_confirmed | refused` (`approved → drafted` sends it back; `answered → freeze_confirmed` is allowed). **`allowed_next[]`** on every request says which statuses the buttons may offer now. A step that is not allowed is **409**. A draft cannot be sent: it has to be approved first.
+  - `approved` clears `letter.watermark` and sets `payload.draft` to false.
+  - `sent` hands the payload and the letter PDF to the gateway (a local outbox: nothing leaves the machine), sets `due`, fills **`receipt`** (`gateway`, `receipt_id`, `submitted_at`, `location`, `payload_sha256`) and `payload.documents[0].sha256` (the letter's SHA-256). **502** if the gateway fails; the request stays `approved`.
+- **The letter** (`RequestDetail.letter`) is fixed when drafted: tracing a case again does not change a request already made. New fields: `cases[]` (`case_id`, `case_ref`, `complaint_no`, `wallet`, `chain`), `legal_citations[]` (`section`, `act`, `heading`, `url`), `channel`, and **`review_notes[]`**: what the officer should check before approving (an unlabelled wallet named because it passed everything on; a naming that rests on one label; a label derived by our own rules; an exchange with no cited FIU-IND registration, channel or legal name). Show them beside the letter, not in it. Each `LetterWallet` also has `case_id`, `case_ref`, `asset`, `amount`, `confidence`, `paid_into`, `label`. Addresses and hashes in a letter are always in full.
+- **`GET /api/requests/{id}/pdf`** (or `.pdf`): A4, `Content-Disposition: inline`. A draft carries a banner on every page, a diagonal watermark and a last sheet of review notes; an approved letter has none of them. The same request always gives the same bytes.
+- **`Candidate`** has six new optional fields the desk is built from: `amount` (exact), `account_address` (the wallet a request asks about), `reached_at`, `entry_label`, `entry_kind`, `entry_addresses[]`. Cases stored before B8 lack them; the desk falls back to `deposit_address` and `where_funds_went`.
+- CLI: `make desk`, `make letter VASP=CoinDCX OFFICER="…" [CASES=a,b] [SEND=1]`.
 
 **`ModelInfo`**: `status: "measured"` once `make model` has run (see "The deposit-address model (B6)"). With no `metrics.json` for the chain the route answers `status: "not_measured"`: every metric is null and the lists are empty, and the UI shows "not yet measured". Every number is measured; there are no placeholders.
 
@@ -165,6 +182,6 @@ Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per o
 
 **Real:** every labelled address (and its entity, tier and source) comes from `data/labels.duckdb`, as do the label-search results and the label coverage counts.
 
-**Demo:** suspect, hop and deposit addresses (valid format, derived from `sha256("vaspfusion-demo:…")`, unlabelled), plus tx hashes, amounts, times and confidences. The one `derived`-tier label (the OKX deposit address) says `DEMO` in its `source`. VASP directory fields are empty, because B8 fills only facts it can cite.
+**Demo:** suspect, hop and deposit addresses (valid format, derived from `sha256("vaspfusion-demo:…")`, unlabelled), plus tx hashes, amounts, times and confidences. The one `derived`-tier label (the OKX deposit address) says `DEMO` in its `source`. VASP directory fields in `vasps/*.json` are the real cited entries from `data/vasp_directory.yaml` (blank where no source was found).
 
 UI mock client rule: `GET /api/<path>` → `mocks/<path>.json`, minus the keys that start with `_`.

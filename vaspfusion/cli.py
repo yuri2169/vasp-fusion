@@ -566,6 +566,81 @@ def cmd_demo(args) -> None:
         raise SystemExit(1)
 
 
+def _desk_service():
+    from .desk.directory import Directory
+    from .desk.gateway import MockSahyogGateway
+    from .desk.service import DeskService
+    from .store.cases import CaseStore
+    from .store.requests import RequestStore
+    return DeskService(CaseStore(), RequestStore(), Directory.load(), MockSahyogGateway())
+
+
+def cmd_desk(args) -> None:
+    """The request desk: one row per exchange, from every finished case in the store."""
+    svc = _desk_service()
+    desk = svc.desk()
+    if args.json:
+        print(json.dumps(desk, indent=1))
+        return
+    if not desk["rows"]:
+        print("No finished case names an exchange yet. Run `make demo` or trace a wallet.")
+        return
+    print(f"  {'exchange':<12}{'wallets':>8}{'USD':>14}  {'status':<17}{'FIU-IND':<22}next")
+    for r in desk["rows"]:
+        e = svc.directory.get(r["vasp"])
+        fiu = "no source" if e["fiu_ind_registered"] is None else (
+            ("registered" if e["fiu_ind_registered"] else "not registered")
+            + f" ({e['fiu_ind_as_of']:%b %Y})")
+        print(f"  {r['vasp']:<12}{r['wallet_count']:>8}{r['total_usd']:>14,.2f}  "
+              f"{r['status']:<17}{fiu:<22}{r['next_action']}"
+              + (f"  [{r['last_request_id']}]" if r["last_request_id"] else ""))
+        print(f"  {'':<12}cases: {', '.join(r['case_ids'])}")
+    for f in desk["follow_ups"]:
+        print(f"  !! {f['text']}  [{f['request_id']}]")
+
+
+def cmd_request(args) -> None:
+    """Draft one consolidated request to an exchange and write its letter as a PDF."""
+    from .desk.routing import routed_wallets
+    from .desk.service import DeskError
+    svc = _desk_service()
+    vasp = svc.directory.canonical(args.vasp)
+    case_ids = [c for c in (args.cases or "").split(",") if c] or sorted(
+        case["id"] for case in svc._all_cases()
+        if any(w["vasp"] == vasp for w in routed_wallets(case)))
+    try:
+        if not case_ids:
+            raise DeskError(422, f"No finished case routes a wallet to {vasp}. See `make desk`.")
+        req = svc.create(vasp, case_ids, args.asks.split(","), args.officer)
+        if args.approve or args.send:
+            req = svc.patch(req["id"], "approved")
+        if args.send:
+            req = svc.patch(req["id"], "sent")
+    except DeskError as e:
+        raise SystemExit(f"{e}") from None
+    out = Path(args.out) if args.out else ROOT / "data" / "exports" / f"{req['id']}.pdf"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(svc.pdf(req["id"]))
+    letter = req["letter"]
+    print(f"{req['id']}  {req['reference']}  {req['status']}"
+          + (f"  (reply due {req['due']})" if req["due"] else ""))
+    print(f"  to       {letter['to']}")
+    if letter["channel"]:
+        print(f"  channel  {letter['channel']}")
+    print(f"  cases    {', '.join(c['case_ref'] or c['case_id'] for c in letter['cases'])}")
+    for w in letter["wallets"]:
+        from .explain import fmt
+        print(f"  wallet   {w['address']}  {fmt.amount(w['amount'], w['asset'])}  "
+              f"{w['tier']}  confidence {w['confidence']:.2f}")
+    print(f"  asks     {', '.join(letter['asks'])}")
+    for note in letter["review_notes"]:
+        print(f"  check    {note}")
+    if req["receipt"]:
+        print(f"  outbox   {req['receipt']['location']}")
+    print(f"  letter   {out}" + ("   (DRAFT: officer review required)"
+                                 if letter["watermark"] else ""))
+
+
 def cmd_serve(args) -> None:
     import uvicorn
     uvicorn.run("vaspfusion.api.main:app", host=args.host, port=args.port)
@@ -699,6 +774,23 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_demo)
+
+    s = sub.add_parser("desk", help="the request desk: exchanges the finished cases route to")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(fn=cmd_desk)
+
+    s = sub.add_parser("request", help="draft one consolidated request to an exchange "
+                                       "and write its letter PDF")
+    s.add_argument("vasp")
+    s.add_argument("--officer", required=True, help="who makes the request (name, post)")
+    s.add_argument("--cases", help="comma-separated case ids (default: every finished case "
+                                   "that routes a wallet to this exchange)")
+    s.add_argument("--asks", default="kyc,transactions,freeze,preservation")
+    s.add_argument("--approve", action="store_true", help="approve the draft (no watermark)")
+    s.add_argument("--send", action="store_true",
+                   help="approve and hand to the mock SAHYOG gateway (a local outbox)")
+    s.add_argument("--out", help="PDF path (default: data/exports/<request id>.pdf)")
+    s.set_defaults(fn=cmd_request)
 
     s = sub.add_parser("serve", help="run the API")
     s.add_argument("--host", default="127.0.0.1")

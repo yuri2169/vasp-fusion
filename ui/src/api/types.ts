@@ -157,7 +157,9 @@ export interface paths {
         head?: never;
         /**
          * Patch Request
-         * @description Mock: returns the request with the new status applied; nothing persists.
+         * @description Move a request along: drafted -> approved -> sent -> acknowledged -> answered |
+         *     freeze_confirmed | refused. 409 for a step that is not allowed from where it is.
+         *     Sending hands the payload and the letter to the gateway (a local outbox).
          */
         patch: operations["patch_request_api_requests__request_id__patch"];
         trace?: never;
@@ -169,7 +171,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Request Pdf */
+        /**
+         * Get Request Pdf
+         * @description The letter as an A4 PDF. A draft carries the watermark; the same request always
+         *     gives the same bytes. Also served at /api/requests/{id}.pdf.
+         */
         get: operations["get_request_pdf_api_requests__request_id__pdf_get"];
         put?: never;
         post?: never;
@@ -390,6 +396,34 @@ export interface components {
              * @description true: the same VASP is still named without that label. false: it falls under the bar or is not reached. null: not checked (the candidate was not named)
              */
             counterfactual_holds?: boolean | null;
+            /**
+             * Amount
+             * @description In the case's asset: the traced funds that reached this VASP (exact; share_of_funds is rounded)
+             */
+            amount?: number | null;
+            /**
+             * Account Address
+             * @description The wallet a request asks the VASP about: deposit_address itself, or the wallet one hop before it when that wallet passed on everything it received
+             */
+            account_address?: string | null;
+            /**
+             * Reached At
+             * @description When the traced funds first reached account_address on this route
+             */
+            reached_at?: string | null;
+            /**
+             * Entry Label
+             * @description The label text on deposit_address
+             */
+            entry_label?: string | null;
+            /** Entry Kind */
+            entry_kind?: ("hot" | "cold" | "deposit" | "reserve" | "unknown") | null;
+            /**
+             * Entry Addresses
+             * @description Every labelled wallet of this VASP the funds reached, largest first; deposit_address is the first
+             * @default []
+             */
+            entry_addresses: string[];
         };
         /** CaseCreate */
         CaseCreate: {
@@ -632,6 +666,33 @@ export interface components {
             next_action: string;
             /** Last Request Id */
             last_request_id?: string | null;
+            /**
+             * Unrequested Wallets
+             * @description Routed wallets of this VASP that no request asks about yet
+             * @default 0
+             */
+            unrequested_wallets: number;
+        };
+        /** DirectorySource */
+        DirectorySource: {
+            /**
+             * Field
+             * @description The directory field this source was read for
+             */
+            field: string;
+            /** Title */
+            title: string;
+            /** Publisher */
+            publisher?: string | null;
+            /** Url */
+            url: string;
+            /** Published */
+            published?: string | null;
+            /**
+             * Accessed
+             * Format: date
+             */
+            accessed: string;
         };
         /** EvidenceItem */
         EvidenceItem: {
@@ -749,6 +810,28 @@ export interface components {
             share: number;
             /** Amount */
             amount: number;
+        };
+        /** GatewayReceipt */
+        GatewayReceipt: {
+            /**
+             * Gateway
+             * @description `mock-outbox` until a real SAHYOG connection exists
+             */
+            gateway: string;
+            /** Receipt Id */
+            receipt_id: string;
+            /**
+             * Submitted At
+             * Format: date-time
+             */
+            submitted_at: string;
+            /**
+             * Location
+             * @description Where the submission went (the outbox file)
+             */
+            location: string;
+            /** Payload Sha256 */
+            payload_sha256: string;
         };
         /** GraphEdge */
         GraphEdge: {
@@ -959,9 +1042,39 @@ export interface components {
             /** Items */
             items: components["schemas"]["LabelOut"][];
         };
+        /** LegalCitation */
+        LegalCitation: {
+            /** Section */
+            section: string;
+            /** Act */
+            act: string;
+            /** Heading */
+            heading: string;
+            /** Url */
+            url: string;
+        };
+        /** LetterCase */
+        LetterCase: {
+            /** Case Id */
+            case_id: string;
+            /** Case Ref */
+            case_ref?: string | null;
+            /** Complaint No */
+            complaint_no?: string | null;
+            /**
+             * Wallet
+             * @description The wallet under investigation
+             */
+            wallet: string;
+            /** Chain */
+            chain: string;
+        };
         /** LetterWallet */
         LetterWallet: {
-            /** Address */
+            /**
+             * Address
+             * @description The wallet the VASP is asked about, in full
+             */
             address: string;
             /** Chain */
             chain: string;
@@ -969,16 +1082,43 @@ export interface components {
             amount_usd?: number | null;
             /**
              * Tier
+             * @description Evidence tier of the label that names the VASP
              * @enum {string}
              */
             tier: "published_por" | "curated" | "explorer_tag" | "derived";
-            /** First Seen */
+            /**
+             * First Seen
+             * @description When the traced funds first reached this wallet
+             */
             first_seen?: string | null;
             /**
              * Tx Hashes
              * @default []
              */
             tx_hashes: string[];
+            /** Case Id */
+            case_id?: string | null;
+            /** Case Ref */
+            case_ref?: string | null;
+            /** Asset */
+            asset?: string | null;
+            /**
+             * Amount
+             * @description Traced funds, in `asset`
+             */
+            amount?: number | null;
+            /** Confidence */
+            confidence?: number | null;
+            /**
+             * Paid Into
+             * @description Set when `address` is not itself labelled: the VASP's labelled wallet it passed everything on to
+             */
+            paid_into?: string | null;
+            /**
+             * Label
+             * @description The label text behind the attribution
+             */
+            label?: string | null;
         };
         /**
          * LookAlikes
@@ -1208,6 +1348,14 @@ export interface components {
             payload: {
                 [key: string]: unknown;
             };
+            /**
+             * Allowed Next
+             * @description The statuses a PATCH may move this request to now
+             * @default []
+             */
+            allowed_next: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused")[];
+            /** @description Set once sent */
+            receipt?: components["schemas"]["GatewayReceipt"] | null;
         };
         /** RequestLetter */
         RequestLetter: {
@@ -1238,6 +1386,27 @@ export interface components {
              * @default Draft - officer review required
              */
             watermark: string | null;
+            /**
+             * Cases
+             * @default []
+             */
+            cases: components["schemas"]["LetterCase"][];
+            /**
+             * Legal Citations
+             * @default []
+             */
+            legal_citations: components["schemas"]["LegalCitation"][];
+            /**
+             * Channel
+             * @description The VASP's own published law-enforcement channel, from the directory
+             */
+            channel?: string | null;
+            /**
+             * Review Notes
+             * @description For the reviewing officer, not part of the request: what to check before approving. Printed on the draft PDF only
+             * @default []
+             */
+            review_notes: string[];
         };
         /** RequestPatch */
         RequestPatch: {
@@ -1388,7 +1557,11 @@ export interface components {
             /** Requests */
             requests: components["schemas"]["RequestSummary"][];
         };
-        /** VaspDirectoryEntry */
+        /**
+         * VaspDirectoryEntry
+         * @description `data/vasp_directory.yaml`: only facts with a source. A blank field means no
+         *     source was found, not "no".
+         */
         VaspDirectoryEntry: {
             /** Name */
             name: string;
@@ -1396,13 +1569,32 @@ export interface components {
             legal_name?: string | null;
             /**
              * Fiu Ind Registered
-             * @description Only if cited
+             * @description true: a source states it is registered with FIU-IND. false: FIU-IND named it as operating unregistered. null: no usable source. Always show with fiu_ind_as_of
              */
             fiu_ind_registered?: boolean | null;
+            /**
+             * Fiu Ind As Of
+             * @description The date that source speaks for
+             */
+            fiu_ind_as_of?: string | null;
             /** Jurisdiction */
             jurisdiction?: string | null;
-            /** Le Request Channel */
+            /**
+             * Le Request Channel
+             * @description The exchange's own published channel for law-enforcement requests (URL or email)
+             */
             le_request_channel?: string | null;
+            /**
+             * Notes
+             * @description Cited remarks; show them verbatim
+             * @default []
+             */
+            notes: string[];
+            /**
+             * Sources
+             * @default []
+             */
+            sources: components["schemas"]["DirectorySource"][];
             /**
              * Source Urls
              * @default []
@@ -1432,6 +1624,12 @@ export interface components {
             tier: "published_por" | "curated" | "explorer_tag" | "derived";
             /** Confidence */
             confidence?: number | null;
+            /**
+             * Routable
+             * @description false: shown for context only (under the bar, or the VASP funded the wallet); no request can be drafted on it
+             * @default true
+             */
+            routable: boolean;
         };
         /** WalletCaseRef */
         WalletCaseRef: {
@@ -1819,13 +2017,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description The request letter, A4 */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/pdf": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1836,13 +2034,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
-            };
-            /** @description Until B8 */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

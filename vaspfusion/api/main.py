@@ -4,10 +4,12 @@ day one.
 
 Until the backend phases land, routes answer from mocks/*.json (validated
 against the same models) and say so in the `X-Data-Source` header. Live so far:
-the label store (B1: label search, wallet labels) and cases (B3: POST traces the
+the label store (B1: label search, wallet labels), cases (B3: POST traces the
 wallet in the background and stores the result in data/case.duckdb; the three
-mock demo cases stay listed after the live ones). Phases replace the remaining
-mock handlers route by route (B8 desk/requests, B6/B7 model).
+mock demo cases stay listed after the live ones), the model (B6/B7) and the request
+desk (B8: desk, VASP pages, requests and letter PDFs, from the case store and
+data/desk.duckdb; the mock desk answers until a finished case names an exchange).
+The dashboard is still mock, apart from its label coverage.
 
 No authentication: a single-officer workstation, as in BTC-FUSION. Login and the
 audit trail arrive in B9.
@@ -38,6 +40,9 @@ LABEL_DB = DEFAULT_DB
 MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
+DESK_DB: Path | None = None      # None = data/desk.duckdb (or VASPFUSION_DESK_DB)
+OUTBOX: Path | None = None       # None = data/sahyog_outbox (or VASPFUSION_SAHYOG_OUTBOX)
+DIRECTORY = ROOT / "data" / "vasp_directory.yaml"   # cited facts only (B8)
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
 # have no adapter yet (PROGRESS.md, B2); Bitcoin waits for B5 (a UTXO transaction is
@@ -319,16 +324,57 @@ def search_labels(response: Response, q: str = "", chain: str | None = None,
 
 
 # ------------------------------------------------------------------ desk + requests (B8)
+def make_gateway():
+    """Where an approved request goes. Only the mock exists: it writes to an outbox
+    folder and sends nothing (docs/sahyog_contract.md)."""
+    from ..desk.gateway import MockSahyogGateway
+    return MockSahyogGateway(OUTBOX)
+
+
+def _desk():
+    from ..desk.directory import Directory
+    from ..desk.service import DeskService
+    from ..store.requests import RequestStore
+    return DeskService(_cases(), RequestStore(DESK_DB), Directory.load(DIRECTORY),
+                       make_gateway())
+
+
+def _refused(e) -> HTTPException:
+    return HTTPException(e.status, str(e))
+
+
 @app.get("/api/desk", response_model=S.Desk)
 def get_desk(response: Response):
-    _source(response, "mock")
-    return load_mock("desk")
+    desk = _desk().desk()
+    if not desk["rows"]:                 # no finished case names an exchange yet
+        _source(response, "mock")
+        return load_mock("desk")
+    _source(response, "live")
+    return desk
 
 
 @app.get("/api/vasps/{name}", response_model=S.VaspDetail)
 def get_vasp(name: str, response: Response):
-    _source(response, "mock")
-    return load_mock(f"vasps/{name}")
+    if not _SAFE.match(name):
+        raise HTTPException(404, "not found")
+    svc = _desk()
+    vasp = svc.directory.canonical(name)
+    store = _labels()
+    counts: dict[str, int] = {}
+    if store:
+        with store:
+            counts = store.entity_counts(vasp)
+    page = svc.vasp(vasp, counts)
+    if not (page["wallets"] or page["requests"]):
+        try:                             # a demo exchange keeps its demo page
+            mock = load_mock(f"vasps/{name}")
+            _source(response, "mock")
+            return mock
+        except HTTPException:
+            if not (counts or vasp in svc.directory.names()):
+                raise
+    _source(response, "live")
+    return page
 
 
 def _demo_request_for(vasp: str) -> dict:
@@ -336,24 +382,76 @@ def _demo_request_for(vasp: str) -> dict:
         req = load_mock(f"requests/{path.stem}")
         if req["vasp"] == vasp:
             return req
-    raise HTTPException(404, f"No demo request for {vasp}. Drafting arrives with B8.")
+    raise HTTPException(404, f"No demo request for {vasp}.")
 
 
 @app.post("/api/requests", response_model=S.RequestDetail, status_code=201)
 def create_request(body: S.RequestCreate, response: Response):
-    _source(response, "mock")
-    return _demo_request_for(body.vasp)
+    from ..desk.service import DeskError
+    demo_ids = {c["id"] for c in _demo_cases()}
+    if all(c in demo_ids for c in body.case_ids):     # the mock demo cases have no trace
+        _source(response, "mock")
+        return _demo_request_for(body.vasp)
+    _source(response, "live")
+    try:
+        return _desk().create(body.vasp, body.case_ids, list(body.asks), body.officer,
+                              body.wallets)
+    except DeskError as e:
+        raise _refused(e) from None
+
+
+def _request_pdf(request_id: str) -> Response:
+    from ..desk.pdf import letter_pdf
+    from ..desk.service import DeskError
+    try:
+        svc = _desk()
+        req = svc.get(request_id)
+        if req is not None:
+            pdf = svc.pdf(request_id)
+            name = request_id + ("-draft" if req["letter"]["watermark"] else "")
+        else:
+            req = load_mock(f"requests/{request_id}")
+            req["letter"]["watermark"] = "Demo fixture - not evidence"
+            pdf, name = letter_pdf(req), f"{request_id}-demo"
+    except DeskError as e:
+        raise _refused(e) from None
+    return Response(pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{name}.pdf"'})
+
+
+_PDF = {200: {"content": {"application/pdf": {}}, "description": "The request letter, A4"}}
+
+
+# declared before /api/requests/{request_id}, which would otherwise take "x.pdf" as an id
+@app.get("/api/requests/{request_id}.pdf", include_in_schema=False)
+def get_request_pdf_file(request_id: str):
+    return _request_pdf(request_id)
 
 
 @app.get("/api/requests/{request_id}", response_model=S.RequestDetail)
 def get_request(request_id: str, response: Response):
+    live = _desk().get(request_id)
+    if live is not None:
+        _source(response, "live")
+        return live
     _source(response, "mock")
     return load_mock(f"requests/{request_id}")
 
 
 @app.patch("/api/requests/{request_id}", response_model=S.RequestDetail)
 def patch_request(request_id: str, body: S.RequestPatch, response: Response):
-    """Mock: returns the request with the new status applied; nothing persists."""
+    """Move a request along: drafted -> approved -> sent -> acknowledged -> answered |
+    freeze_confirmed | refused. 409 for a step that is not allowed from where it is.
+    Sending hands the payload and the letter to the gateway (a local outbox)."""
+    from ..desk.service import DeskError
+    svc = _desk()
+    if svc.get(request_id) is not None:
+        _source(response, "live")
+        try:
+            return svc.patch(request_id, body.status, body.note)
+        except DeskError as e:
+            raise _refused(e) from None
+    # a mock demo request: the new status is applied to the reply, nothing persists
     _source(response, "mock")
     req = load_mock(f"requests/{request_id}")
     req["status"] = body.status
@@ -364,9 +462,11 @@ def patch_request(request_id: str, body: S.RequestPatch, response: Response):
     return req
 
 
-@app.get("/api/requests/{request_id}/pdf", responses={501: {"description": "Until B8"}})
+@app.get("/api/requests/{request_id}/pdf", response_class=Response, responses=_PDF)
 def get_request_pdf(request_id: str):
-    raise HTTPException(501, "Letter PDFs are generated from B8. Use the print view.")
+    """The letter as an A4 PDF. A draft carries the watermark; the same request always
+    gives the same bytes. Also served at /api/requests/{id}.pdf."""
+    return _request_pdf(request_id)
 
 
 # ------------------------------------------------------------------ dashboard + model

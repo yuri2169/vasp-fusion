@@ -509,7 +509,7 @@
       },
       "patch": {
         "summary": "Patch Request",
-        "description": "Mock: returns the request with the new status applied; nothing persists.",
+        "description": "Move a request along: drafted -> approved -> sent -> acknowledged -> answered |\nfreeze_confirmed | refused. 409 for a step that is not allowed from where it is.\nSending hands the payload and the letter to the gateway (a local outbox).",
         "operationId": "patch_request_api_requests__request_id__patch",
         "parameters": [
           {
@@ -559,6 +559,7 @@
     "/api/requests/{request_id}/pdf": {
       "get": {
         "summary": "Get Request Pdf",
+        "description": "The letter as an A4 PDF. A draft carries the watermark; the same request always\ngives the same bytes. Also served at /api/requests/{id}.pdf.",
         "operationId": "get_request_pdf_api_requests__request_id__pdf_get",
         "parameters": [
           {
@@ -573,15 +574,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "The request letter, A4",
             "content": {
-              "application/json": {
-                "schema": {}
-              }
+              "application/pdf": {}
             }
-          },
-          "501": {
-            "description": "Until B8"
           },
           "422": {
             "description": "Validation Error",
@@ -1009,6 +1005,82 @@
             ],
             "title": "Counterfactual Holds",
             "description": "true: the same VASP is still named without that label. false: it falls under the bar or is not reached. null: not checked (the candidate was not named)"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "In the case's asset: the traced funds that reached this VASP (exact; share_of_funds is rounded)"
+          },
+          "account_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Address",
+            "description": "The wallet a request asks the VASP about: deposit_address itself, or the wallet one hop before it when that wallet passed on everything it received"
+          },
+          "reached_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reached At",
+            "description": "When the traced funds first reached account_address on this route"
+          },
+          "entry_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Label",
+            "description": "The label text on deposit_address"
+          },
+          "entry_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "hot",
+                  "cold",
+                  "deposit",
+                  "reserve",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entry Kind"
+          },
+          "entry_addresses": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Entry Addresses",
+            "description": "Every labelled wallet of this VASP the funds reached, largest first; deposit_address is the first",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -1786,6 +1858,12 @@
               }
             ],
             "title": "Last Request Id"
+          },
+          "unrequested_wallets": {
+            "type": "integer",
+            "title": "Unrequested Wallets",
+            "description": "Routed wallets of this VASP that no request asks about yet",
+            "default": 0
           }
         },
         "additionalProperties": false,
@@ -1800,6 +1878,60 @@
           "next_action"
         ],
         "title": "DeskRow"
+      },
+      "DirectorySource": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "The directory field this source was read for"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published"
+          },
+          "accessed": {
+            "type": "string",
+            "format": "date",
+            "title": "Accessed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "field",
+          "title",
+          "url",
+          "accessed"
+        ],
+        "title": "DirectorySource"
       },
       "EvidenceItem": {
         "properties": {
@@ -2125,6 +2257,43 @@
         ],
         "title": "FundsSlice",
         "description": "One part of the answer to \"where did the wallet's money end up?\"."
+      },
+      "GatewayReceipt": {
+        "properties": {
+          "gateway": {
+            "type": "string",
+            "title": "Gateway",
+            "description": "`mock-outbox` until a real SAHYOG connection exists"
+          },
+          "receipt_id": {
+            "type": "string",
+            "title": "Receipt Id"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "Where the submission went (the outbox file)"
+          },
+          "payload_sha256": {
+            "type": "string",
+            "title": "Payload Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "gateway",
+          "receipt_id",
+          "submitted_at",
+          "location",
+          "payload_sha256"
+        ],
+        "title": "GatewayReceipt"
       },
       "GraphEdge": {
         "properties": {
@@ -2649,11 +2818,88 @@
         ],
         "title": "LabelSearch"
       },
+      "LegalCitation": {
+        "properties": {
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "act": {
+            "type": "string",
+            "title": "Act"
+          },
+          "heading": {
+            "type": "string",
+            "title": "Heading"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "section",
+          "act",
+          "heading",
+          "url"
+        ],
+        "title": "LegalCitation"
+      },
+      "LetterCase": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "complaint_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Complaint No"
+          },
+          "wallet": {
+            "type": "string",
+            "title": "Wallet",
+            "description": "The wallet under investigation"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "wallet",
+          "chain"
+        ],
+        "title": "LetterCase"
+      },
       "LetterWallet": {
         "properties": {
           "address": {
             "type": "string",
-            "title": "Address"
+            "title": "Address",
+            "description": "The wallet the VASP is asked about, in full"
           },
           "chain": {
             "type": "string",
@@ -2678,7 +2924,8 @@
               "explorer_tag",
               "derived"
             ],
-            "title": "Tier"
+            "title": "Tier",
+            "description": "Evidence tier of the label that names the VASP"
           },
           "first_seen": {
             "anyOf": [
@@ -2690,7 +2937,8 @@
                 "type": "null"
               }
             ],
-            "title": "First Seen"
+            "title": "First Seen",
+            "description": "When the traced funds first reached this wallet"
           },
           "tx_hashes": {
             "items": {
@@ -2699,6 +2947,88 @@
             "type": "array",
             "title": "Tx Hashes",
             "default": []
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "Traced funds, in `asset`"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "paid_into": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid Into",
+            "description": "Set when `address` is not itself labelled: the VASP's labelled wallet it passed everything on to"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "The label text behind the attribution"
           }
         },
         "additionalProperties": false,
@@ -3279,6 +3609,35 @@
             "type": "object",
             "title": "Payload",
             "description": "SAHYOG JSON payload (docs/sahyog_contract.md, B8)"
+          },
+          "allowed_next": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "drafted",
+                "approved",
+                "sent",
+                "acknowledged",
+                "answered",
+                "freeze_confirmed",
+                "refused"
+              ]
+            },
+            "type": "array",
+            "title": "Allowed Next",
+            "description": "The statuses a PATCH may move this request to now",
+            "default": []
+          },
+          "receipt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GatewayReceipt"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set once sent"
           }
         },
         "additionalProperties": false,
@@ -3363,6 +3722,43 @@
             "title": "Watermark",
             "description": "null once approved",
             "default": "Draft - officer review required"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/LetterCase"
+            },
+            "type": "array",
+            "title": "Cases",
+            "default": []
+          },
+          "legal_citations": {
+            "items": {
+              "$ref": "#/components/schemas/LegalCitation"
+            },
+            "type": "array",
+            "title": "Legal Citations",
+            "default": []
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel",
+            "description": "The VASP's own published law-enforcement channel, from the directory"
+          },
+          "review_notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Review Notes",
+            "description": "For the reviewing officer, not part of the request: what to check before approving. Printed on the draft PDF only",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -3805,7 +4201,20 @@
               }
             ],
             "title": "Fiu Ind Registered",
-            "description": "Only if cited"
+            "description": "true: a source states it is registered with FIU-IND. false: FIU-IND named it as operating unregistered. null: no usable source. Always show with fiu_ind_as_of"
+          },
+          "fiu_ind_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fiu Ind As Of",
+            "description": "The date that source speaks for"
           },
           "jurisdiction": {
             "anyOf": [
@@ -3827,7 +4236,25 @@
                 "type": "null"
               }
             ],
-            "title": "Le Request Channel"
+            "title": "Le Request Channel",
+            "description": "The exchange's own published channel for law-enforcement requests (URL or email)"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "description": "Cited remarks; show them verbatim",
+            "default": []
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/DirectorySource"
+            },
+            "type": "array",
+            "title": "Sources",
+            "default": []
           },
           "source_urls": {
             "items": {
@@ -3843,7 +4270,8 @@
         "required": [
           "name"
         ],
-        "title": "VaspDirectoryEntry"
+        "title": "VaspDirectoryEntry",
+        "description": "`data/vasp_directory.yaml`: only facts with a source. A blank field means no\nsource was found, not \"no\"."
       },
       "VaspWallet": {
         "properties": {
@@ -3908,6 +4336,12 @@
               }
             ],
             "title": "Confidence"
+          },
+          "routable": {
+            "type": "boolean",
+            "title": "Routable",
+            "description": "false: shown for context only (under the bar, or the VASP funded the wallet); no request can be drafted on it",
+            "default": true
           }
         },
         "additionalProperties": false,

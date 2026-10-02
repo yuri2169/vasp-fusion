@@ -157,6 +157,12 @@ class LabelStore:
             [normalize_chain(chain), tier]).fetchall()
         return [Label(*r) for r in rows]
 
+    def entity_counts(self, entity: str) -> dict[str, int]:
+        """How many labelled addresses we hold for one entity, by chain (largest first)."""
+        return dict(self.con.execute(
+            "SELECT chain, count(*) FROM labels WHERE entity = ? GROUP BY 1 "
+            "ORDER BY 2 DESC, 1", [entity]).fetchall())
+
     def stats(self) -> dict:
         from .load import label_stats
         return label_stats(self.con)

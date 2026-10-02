@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo mocks openapi types offline-check clean
+.PHONY: help setup labels discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo desk letter mocks openapi types offline-check clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -52,6 +52,14 @@ trace:            ## trace ADDR=<address> [CHAIN=..] [HOPS=3] to its nearest exc
 demo:             ## run the demo wallets (demo/cases.json) into the case store; OFFLINE=1 replays
 	$(PY) -m vaspfusion.cli demo
 
+desk:             ## the request desk: which exchanges the finished cases route to (run `make demo` first)
+	$(PY) -m vaspfusion.cli desk
+
+OFFICER ?= Investigating Officer
+letter:           ## draft one request: VASP=CoinDCX [OFFICER="Insp. A. Rao"] [CASES=a,b] [SEND=1] -> data/exports/<id>.pdf
+	$(PY) -m vaspfusion.cli request "$(VASP)" --officer "$(OFFICER)" \
+		$(if $(CASES),--cases "$(CASES)") $(if $(SEND),--send)
+
 mocks:            ## regenerate mocks/*.json (seeded, validated against the schemas)
 	$(PY) scripts/make_mocks.py
 
@@ -71,4 +79,4 @@ offline-check:    ## fail if code outside vaspfusion/chains/ can reach the netwo
 	@echo "PASS: the only outbound code is vaspfusion/chains/ (chain APIs), and OFFLINE=1 serves it from the cache."
 
 clean:
-	rm -rf data/labels.duckdb data/case.duckdb ui/dist
+	rm -rf data/labels.duckdb data/case.duckdb data/desk.duckdb data/sahyog_outbox ui/dist

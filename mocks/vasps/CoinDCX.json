@@ -3,11 +3,41 @@
   "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
   "directory": {
     "name": "CoinDCX",
-    "legal_name": null,
-    "fiu_ind_registered": null,
-    "jurisdiction": null,
+    "legal_name": "Neblio Technologies Private Limited",
+    "fiu_ind_registered": true,
+    "fiu_ind_as_of": "2023-12-04",
+    "jurisdiction": "India",
     "le_request_channel": null,
-    "source_urls": []
+    "notes": [],
+    "sources": [
+      {
+        "field": "legal_name",
+        "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
+        "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+        "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+        "published": "2023-12-04",
+        "accessed": "2026-10-02"
+      },
+      {
+        "field": "fiu_ind_registered",
+        "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
+        "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+        "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+        "published": "2023-12-04",
+        "accessed": "2026-10-02"
+      },
+      {
+        "field": "jurisdiction",
+        "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
+        "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+        "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+        "published": "2023-12-04",
+        "accessed": "2026-10-02"
+      }
+    ],
+    "source_urls": [
+      "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals"
+    ]
   },
   "label_counts": {
     "tron": 571,

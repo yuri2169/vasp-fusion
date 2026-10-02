@@ -357,10 +357,11 @@ def vasp(store: LabelStore, name: str, wallets: list[dict], requests: list[dict]
     counts = dict(store.con.execute(
         "SELECT chain, count(*) FROM labels WHERE entity = ? GROUP BY 1 ORDER BY 2 DESC, 1",
         [name]).fetchall())
-    # Directory facts are left empty on purpose: B8 fills only what it can cite.
-    return {"directory": {"name": name, "legal_name": None, "fiu_ind_registered": None,
-                          "jurisdiction": None, "le_request_channel": None,
-                          "source_urls": []},
+    # Directory facts are real and cited (data/vasp_directory.yaml, B8); blank = no source.
+    from vaspfusion.api import schemas as S
+    from vaspfusion.desk.directory import Directory
+    entry = S.VaspDirectoryEntry.model_validate(Directory.load().get(name)).model_dump(mode="json")
+    return {"directory": entry,
             "label_counts": counts, "wallets": wallets, "requests": requests}
 
 

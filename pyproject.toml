@@ -7,7 +7,7 @@ dependencies = [
   "fastapi", "uvicorn[standard]", "pydantic>=2", "python-multipart",
   "numpy", "scipy", "scikit-learn", "polars", "pyarrow",
   "lightgbm", "shap", "duckdb", "python-igraph",
-  "pyyaml", "jinja2",
+  "pyyaml", "jinja2", "reportlab",
 ]
 
 [project.optional-dependencies]

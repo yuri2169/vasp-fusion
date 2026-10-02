@@ -11,17 +11,17 @@ from __future__ import annotations
 BNSS = "Bharatiya Nagarik Suraksha Sanhita, 2023"
 BSA = "Bharatiya Sakshya Adhiniyam, 2023"
 # India Code: the Government of India's repository of central acts
-BNSS_URL = "https://www.indiacode.nic.in/handle/123456789/20099"
-BSA_URL = "https://www.indiacode.nic.in/handle/123456789/20063"
+BNSS_SOURCE_URL = "https://www.indiacode.nic.in/handle/123456789/20099"
+BSA_SOURCE_URL = "https://www.indiacode.nic.in/handle/123456789/20063"
 
 CITATIONS = {
     "bnss-94": {"section": "94", "act": BNSS,
-                "heading": "Summons to produce document or other thing", "url": BNSS_URL},
+                "heading": "Summons to produce document or other thing", "url": BNSS_SOURCE_URL},
     "bsa-63": {"section": "63", "act": BSA,
-               "heading": "Admissibility of electronic records", "url": BSA_URL},
+               "heading": "Admissibility of electronic records", "url": BSA_SOURCE_URL},
     "bnss-106": {"section": "106", "act": BNSS,
                  "heading": "Power of police officer to seize certain property",
-                 "url": BNSS_URL},
+                 "url": BNSS_SOURCE_URL},
 }
 
 NOTICE = (f"Notice under Section 94 of the {BNSS}. Electronic records to be furnished with "

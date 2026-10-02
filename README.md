@@ -13,6 +13,8 @@ make serve     # API on http://127.0.0.1:8000  (docs at /docs)
 make fetch ADDR=TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw   # transfers, cached; OFFLINE=1 = cache only
 make trace ADDR=TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c   # wallet -> nearest exchange(s), as an officer reads it
 make demo      # the real demo wallets (demo/cases.json) into the case store; OFFLINE=1 replays them
+make desk      # the request desk: the exchanges those cases route to, one row each
+make letter VASP=CoinDCX OFFICER="Insp. A. Rao"   # one consolidated request -> data/exports/<id>.pdf (a draft; SEND=1 approves and writes it to the mock SAHYOG outbox)
 make model     # train, calibrate and measure the deposit-address model; then `make labels`
 make abstain-eval   # measure the abstain bar on real customers traced with labels hidden
 ```

@@ -18,7 +18,7 @@ from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from ..explain import fmt
 from .routing import day
@@ -149,7 +149,7 @@ def letter_pdf(request: dict, code_version: str = "") -> bytes:
                   else "Investigating officer (unsigned draft)", SMALL)]))
 
     if draft and letter.get("review_notes"):
-        story.append(Spacer(1, 10))
+        story.append(PageBreak())        # its own sheet: the letter pages stay the letter
         story.append(Paragraph("FOR THE REVIEWING OFFICER. NOT PART OF THE REQUEST.",
                                ParagraphStyle("rn", parent=SECTION, textColor=DRAFT)))
         for note in letter["review_notes"]:

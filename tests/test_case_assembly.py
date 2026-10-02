@@ -222,7 +222,7 @@ def test_provenance_records_the_run():
     c = case(SPLIT, label_db_sha256="ab" * 32)
     p = c["provenance"]
     assert (p["seed"], p["label_db_sha256"]) == (26182, "ab" * 32)
-    assert p["code_version"].startswith("b7") and p["notes"] == [
+    assert p["code_version"].startswith("b8") and p["notes"] == [
         "1 unlabelled wallet on the trail not scored by the deposit-address model: the model "
         "was not loaded for this run (`make model` writes its files)."]
 

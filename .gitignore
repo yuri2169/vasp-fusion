@@ -26,3 +26,6 @@ data/model_cache.duckdb
 artifacts/**/model.pkl
 # The abstain validation's own traces (B7). `make abstain-eval` refills it; artifacts/abstain_v1 is tracked.
 data/abstain_cache.duckdb
+# The request desk (B8): requests drafted on this machine, and the mock SAHYOG outbox.
+data/desk.duckdb
+data/sahyog_outbox/
