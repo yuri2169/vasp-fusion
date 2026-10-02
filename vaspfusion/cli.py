@@ -632,6 +632,33 @@ def cmd_demo_cache(args) -> None:
     print(f"wrote {out} ({pages} pages, no network)")
 
 
+def cmd_case_pdf(args) -> None:
+    """Write a stored case's file (A4 PDF) and its receipt (JSON) to data/exports/."""
+    from .explain.case_file import NotReady
+    from .explain.case_pdf import case_pdf
+    from .provenance import receipt
+    from .store.cases import CaseStore
+
+    case = CaseStore().get(args.case_id)
+    if case is None:
+        print(f"error: no case {args.case_id}", file=sys.stderr)
+        raise SystemExit(1)
+    try:
+        pdf = case_pdf(case)
+    except NotReady as e:
+        print(f"error: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+    out = Path(args.out) if args.out else ROOT / "data" / "exports" / f"case-{case['id']}.pdf"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(pdf)
+    print(f"  case file  {out}  ({len(pdf):,} bytes)")
+    doc = receipt(case)
+    if doc is not None:
+        side = out.with_suffix(".receipt.json")
+        side.write_text(json.dumps(doc, indent=2) + "\n")
+        print(f"  receipt    {side}\n  fingerprint {doc['findings_sha256']}")
+
+
 def cmd_verify(args) -> None:
     """Trace stored cases again from the cache only and compare the fingerprints."""
     from . import chains
@@ -898,6 +925,11 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--out", default=str(ROOT / "data" / "demo_cache.duckdb"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_demo_cache)
+
+    s = sub.add_parser("case-pdf", help="write a stored case's file (A4 PDF) and its receipt")
+    s.add_argument("case_id")
+    s.add_argument("--out", help="PDF path (default: data/exports/case-<id>.pdf)")
+    s.set_defaults(fn=cmd_case_pdf)
 
     s = sub.add_parser("verify", help="trace a stored case again from the cache only and "
                                       "compare its findings fingerprint")

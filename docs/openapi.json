@@ -186,6 +186,122 @@
         }
       }
     },
+    "/api/cases/{case_id}/pdf": {
+      "get": {
+        "summary": "Get Case Pdf",
+        "description": "The case file as an A4 PDF: result, summary, where the funds went, flow diagram,\nexchanges reached with their evidence and transaction hashes, flags, how the\nconfidence was worked out, limitations, and the provenance receipt. The same case\nalways gives the same bytes. 409 until the case has a result. Also served at\n/api/cases/{id}.pdf.",
+        "operationId": "get_case_pdf_api_cases__case_id__pdf_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The case file, A4",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/receipt": {
+      "get": {
+        "summary": "Get Case Receipt",
+        "description": "What the case was computed from, as SHA-256 digests: input, chain responses,\nlabel database, model, code, and the findings fingerprint.",
+        "operationId": "get_case_receipt_api_cases__case_id__receipt_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/verify": {
+      "post": {
+        "summary": "Verify Case",
+        "description": "Trace the wallet again from the cached chain responses only (never the network)\nand compare the findings fingerprint with the receipt's.",
+        "operationId": "verify_case_api_cases__case_id__verify_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/wallets/{chain}/{address}": {
       "get": {
         "summary": "Get Wallet",
@@ -1420,6 +1536,43 @@
           "edges"
         ],
         "title": "CaseGraph"
+      },
+      "CaseInput": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "max_hops": {
+            "type": "integer",
+            "title": "Max Hops"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "max_hops"
+        ],
+        "title": "CaseInput",
+        "description": "The question a case answers (everything else a trace depends on is code)."
       },
       "CaseList": {
         "properties": {
@@ -3344,6 +3497,27 @@
         "title": "ModelScore",
         "description": "What the deposit-address model said about one address (B6)."
       },
+      "PageDigest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "The chain API request, API keys removed"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256",
+            "description": "SHA-256 of the response body as it was received"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "sha256"
+        ],
+        "title": "PageDigest"
+      },
       "Provenance": {
         "properties": {
           "seed": {
@@ -3398,6 +3572,123 @@
             "title": "Notes",
             "description": "What this run did or could not do, e.g. how many unlabelled wallets the deposit-address model scored",
             "default": []
+          },
+          "input": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CaseInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "input_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Sha256"
+          },
+          "responses": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PageDigest"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responses",
+            "description": "Every chain API response this run read, each once, sorted by request"
+          },
+          "responses_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Responses Sha256",
+            "description": "One digest over `responses`"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          },
+          "findings_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Findings Sha256",
+            "description": "The findings fingerprint: every figure, address and transaction hash of the result, none of its wording. `verify` must reproduce it"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version",
+            "description": "Set when the deposit-address model scored a wallet in this run, e.g. model_v1/tron"
+          },
+          "model_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Sha256"
+          },
+          "git_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Commit"
+          },
+          "git_dirty": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Dirty",
+            "description": "true: the code had uncommitted changes"
           }
         },
         "additionalProperties": false,
@@ -3407,6 +3698,209 @@
           "code_version"
         ],
         "title": "Provenance"
+      },
+      "Receipt": {
+        "properties": {
+          "schema": {
+            "type": "string",
+            "title": "Schema",
+            "description": "vaspfusion-receipt/1"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "ATTRIBUTED",
+              "INSUFFICIENT_EVIDENCE",
+              "SANCTIONED_OR_MIXER_REACHED"
+            ],
+            "title": "Outcome"
+          },
+          "top_vasp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Vasp"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "demo": {
+            "type": "boolean",
+            "title": "Demo",
+            "default": false
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "code_version": {
+            "type": "string",
+            "title": "Code Version"
+          },
+          "git_commit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Commit"
+          },
+          "git_dirty": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Dirty"
+          },
+          "input": {
+            "$ref": "#/components/schemas/CaseInput"
+          },
+          "input_sha256": {
+            "type": "string",
+            "title": "Input Sha256"
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages"
+          },
+          "responses_sha256": {
+            "type": "string",
+            "title": "Responses Sha256"
+          },
+          "label_db_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label Db Sha256"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "model_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Sha256"
+          },
+          "findings_sha256": {
+            "type": "string",
+            "title": "Findings Sha256"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "offline_replay": {
+            "type": "boolean",
+            "title": "Offline Replay",
+            "default": false
+          },
+          "data_sources": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Data Sources",
+            "default": []
+          },
+          "responses": {
+            "items": {
+              "$ref": "#/components/schemas/PageDigest"
+            },
+            "type": "array",
+            "title": "Responses"
+          },
+          "receipt_sha256": {
+            "type": "string",
+            "title": "Receipt Sha256",
+            "description": "SHA-256 of every other field of this document"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema",
+          "case_id",
+          "outcome",
+          "created_at",
+          "seed",
+          "code_version",
+          "input",
+          "input_sha256",
+          "pages",
+          "responses_sha256",
+          "findings_sha256",
+          "responses",
+          "receipt_sha256"
+        ],
+        "title": "Receipt",
+        "description": "What a case was computed from, as digests anyone can recompute. The same document\nis the last page of the case file."
       },
       "ReliabilityBin": {
         "properties": {
@@ -4404,6 +4898,107 @@
           "tier"
         ],
         "title": "VaspWallet"
+      },
+      "VerifyCheck": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "stored_case",
+              "replay",
+              "responses",
+              "findings",
+              "labels",
+              "model",
+              "code"
+            ],
+            "title": "Name"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "same",
+              "different",
+              "not_checked"
+            ],
+            "title": "Result"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Plain English"
+          },
+          "stored": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stored"
+          },
+          "now": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Now"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "result",
+          "detail"
+        ],
+        "title": "VerifyCheck"
+      },
+      "VerifyResult": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "matches": {
+            "type": "boolean",
+            "title": "Matches",
+            "description": "true only when the stored case still has its receipt's fingerprint, the same responses were read, and the new findings have the same fingerprint"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/VerifyCheck"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "matches",
+          "summary",
+          "checked_at",
+          "checks"
+        ],
+        "title": "VerifyResult",
+        "description": "A stored case traced again from the cached chain responses only, and compared."
       },
       "WalletCaseRef": {
         "properties": {

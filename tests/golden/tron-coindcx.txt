@@ -1,0 +1,214 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/101
+  Complaint number  -
+  Wallet traced     TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c
+  Chain             Tron
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           tron-coindcx
+  Hop limit         3
+
+RESULT
+------
+EXCHANGE NAMED
+Nearest exchange: CoinDCX. Confidence 0.85 (range narrower than 0.01).
+58% of the funds (1,530 USDT) reached it in 1 hop, at TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
+(derived by VASP-FUSION).
+
+
+SUMMARY
+-------
+Wallet TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c sent 2,652.22 USDT on Tron in 2 transfers between 25
+May 2025 and 14 Jul 2025. 1,530 USDT (58%) reached CoinDCX in 1 hop, at
+TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 ("CoinDCX deposit address (derived: sweep + gas payer)",
+derived by VASP-FUSION). Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01).
+The range comes from the deposit-address model, which is calibrated against the addresses the
+discovery rules derived; the weight of the exchange wallet's label and the hop decay are
+rule-set. Checked without its strongest evidence: Still CoinDCX without the label on
+TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5: 58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated
+list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding:
+TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ behaves like an exchange deposit address: 42% of the funds
+(1,122.22 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than
+0.01); see the flags. Not followed in this run: 36.50 TRX in 1 transfer. Transaction hashes:
+54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  58% | 1,530 USDT | Reached an exchange or custodian: CoinDCX
+  42% | 1,122.22 USDT | Stopped at a high-activity wallet (not followed)
+  100% | 2,652.22 USDT | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  7 wallets, 8 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W4  column Funded the wallet, row 1: Unlabelled wallet
+    W5  column Funded the wallet, row 2: Unlabelled wallet
+    W6  column Funded the wallet, row 3: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: CoinDCX
+    W2  column Hop 1, row 2: Unlabelled wallet
+    W3  column Hop 2, row 1: High-activity wallet
+    arrow TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,122.22 USDT)
+    arrow TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 349 USDT)
+    arrow TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 3 transfers, 2,332 USDT)
+    arrow TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 14 USDT)
+    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 (outbound, 1 transfer, 1,530 USDT)
+    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ (outbound, 1 transfer, 1,122.22 USDT)
+  No. | Address | What it is | Hop | Traced funds
+  W0 | TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c | Traced wallet | - | 2,652.22 USDT
+  W1 | TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 | Exchange deposit address: CoinDCX | 1 | 1,530 USDT
+  W2 | TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ | Unlabelled wallet | 1 | 1,122.22 USDT
+  W3 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 1,122.22 USDT
+  W4 | TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 | Unlabelled wallet (not followed) | funded it | 2,332 USDT
+  W5 | TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y | Unlabelled wallet (not followed) | funded it | 349 USDT
+  W6 | TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS | Unlabelled wallet (not followed) | funded it | 14 USDT
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | CoinDCX | named | 0.85 (range narrower than 0.01) | 1 | 58% | 1,530 USDT | derived by VASP-FUSION
+
+  CoinDCX (rank 1)
+  Address reached  TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
+  Route            W0  ->  W1
+  Time to reach    0 seconds
+    [Label] TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 is labelled CoinDCX ("CoinDCX deposit address
+    (derived: sweep + gas payer)"): derived by VASP-FUSION, source vaspfusion-discover. Sweep
+    rule: forwarded 100% of the 847,730 USDT it received from 2 senders to CoinDCX wallet
+    TU7BbA…vZbsFs (curated list) in 22 sweeps, typically 33 seconds after arrival. Its gas
+    listing was not read to the end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee
+    money for 7 of 22 sweeps. Both rules agree. Model: over 0.99 that an address behaving like
+    this is an exchange deposit address (range narrower than 0.01), from a model that did not
+    train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated
+    list) × the model's probability. [weight 0.85]
+    [Model] Deposit-address model: over 0.99 that an address behaving like
+    TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 is an exchange deposit address (range narrower than 0.01)
+    [Model] Deposit-address model, for: it forwards 100% of what it receives to one wallet [SHAP
+    +2.29]
+    [Model] Deposit-address model, for: every outgoing transfer goes to one wallet [SHAP +1.92]
+    [Model] Deposit-address model, for: it moves funds on about 21 seconds after they arrive
+    [SHAP +1.60]
+    [Route] 58% of the wallet's USDT (1,530 USDT) reached it in 1 hop [weight 1.00]
+        tx 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
+    [Without its label] Still CoinDCX without the label on TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5:
+    58% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72
+    (was 0.85). [weight -0.13]
+        tx 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
+        tx 1878e14b6c3b9a8f72b63f69276cd838ee349b03861e6710a96f0793854b7df4
+
+PATH TO THE NAMED EXCHANGE
+--------------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 1,530 USDT | 25 May 2025, 03:22:15 UTC | - | 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
+
+LEADS TO CHECK
+--------------
+Unlabelled wallets that behave like an exchange deposit address. A lead is not a finding and
+does not change the result.
+
+    [Lead] TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ: TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ behaves like
+    an exchange deposit address: 42% of the funds (1,122.22 USDT) reached it, and the
+    deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it:
+    forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet;
+    the wallet it pays most keeps or spreads what it receives, as a collecting wallet does.
+    Neither it nor TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf, the wallet it sweeps into, is labelled,
+    so the exchange cannot be named. A lead to check, not a finding: the model was measured on
+    exchange customers and deposit addresses only.
+        tx f2c8d4336de880bdf3e1fc9b1f69837edf7a4a2d6cf3193fc55d5afc9822a128
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar was checked on 280 real Tron wallets, traced with the derived labels hidden: at 0.60 an
+exchange was named for 155 wallets and the name was wrong for 15 (9.7%; upper bound 17.3%). That
+is a check on a label hold-out, not a calibration.
+
+
+NEXT STEPS
+----------
+  - Draft a request to CoinDCX for KYC and a freeze on the account behind
+    TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
+  - Preserve the transaction records listed in the evidence
+  - Identify TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf: TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ, which
+    received 42% of the funds, behaves like a deposit address and sweeps into it (check other
+    label sources and block explorers)
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address and transaction
+hash above and none of the wording. To check it, trace the wallet again from the same responses:
+python -m vaspfusion.cli verify tron-coindcx
+
+  Findings fingerprint    a3addce9fa9bf98d8b124372221a831147315aa3c6e875135c1e9761154b82a9
+  Input                   tron TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c, hop limit 3
+  Input SHA-256           c119775e7de0dac678376ffc87af6819c033e76dedc3c20a8c58d63388101ee7
+  Chain responses         10 read from api.trongrid.io
+  Responses SHA-256       c38ab3939c89d5a03e27dcca24a0ea8daa7b5bac73004243d4cedf0d4a5fe5b4
+  Label database SHA-256  not recorded
+  Model                   model_v1/tron, SHA-256 d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2
+  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Receipt SHA-256         bcba664b22fefb96061e989a9599f67cec4c77ae07234e229931411ad5d8d307
+
+  Chain responses read
+    1480b684a7cda1e82e4fa0ed673aa5610f0898c21c829af76965a96169297de3  https://api.trongrid.io/v1/accounts/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1748143335000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    17d92aa49eef292e044ef1e040ba9eafe802f0a1e0a095428a2d352617177c2c  https://api.trongrid.io/v1/accounts/TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1752508851000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    1510f1a265bd549ac2161bb56cfd552013b9baccb6b967fb572c22777fd96672  https://api.trongrid.io/v1/accounts/TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1751904051000&only_confirmed=true&order_by=block_timestamp%2Casc
+    e2ffc3f6997491ffaf97e4e71f2f365120e1ea2f04c68d77df3c4e26793490a2  https://api.trongrid.io/v1/accounts/TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ/transactions?limit=50&min_timestamp=1751904051000&only_confirmed=true&order_by=block_timestamp%2Casc
+    747ed020b2e5e9a0bf5cb3abb0a2337c19fc9d666d0c101bb2e56720688778e0  https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1752509568000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    302e93e81cb05803a0751c2b7047487e98330bc41f51fdde9f358a1bb5d6a666  https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1751904051000&only_confirmed=true&order_by=block_timestamp%2Casc
+    dd730c2dc04ef3a4ecf6d0cb84ea5e68633c07832141c2b2316b1f49d0ca853d  https://api.trongrid.io/v1/accounts/TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    c852e7eb6ca0cb4b491f0270c32c6ec94db856d2e53133bda28ee3cf15244cea  https://api.trongrid.io/v1/accounts/TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc
+    090823b6af520a0c35485d4a68fdd57cb96d4405c2b6b6a848b8b23dfb0c2d37  https://api.trongrid.io/v1/accounts/TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    53164141baa91f96350bc3c8ff96751d303bd774ab234815c4a76cf16a9209f5  https://api.trongrid.io/v1/accounts/TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc

@@ -1,0 +1,164 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/102
+  Complaint number  -
+  Wallet traced     0x8971dd825ba5dd32b60307773f71f6e3efb0eda9
+  Chain             Ethereum
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           eth-bitget
+  Hop limit         3
+
+RESULT
+------
+EXCHANGE NAMED
+Nearest exchange: Bitget. Confidence 0.75 (rule confidence).
+100% of the funds (552,163.80 USDT) reached it in 1 hop, at
+0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 (explorer tag).
+
+
+SUMMARY
+-------
+Wallet 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 sent 552,163.80 USDT on Ethereum in 2
+transfers between 23 Jan 2024 and 6 Apr 2024. 552,163.80 USDT (100%) reached Bitget in 1 hop, at
+0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 ("Bitget Dep:
+0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24", explorer tag). Nearest exchange: Bitget, rule
+confidence 0.75 (rule-based, not calibrated). Checked without its strongest evidence: Still
+Bitget without the label on 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24: 100% of the funds reach
+Bitget at 0x1ab4…8f8f23 (explorer tag) in 2 hops, confidence 0.64 (was 0.75). Not followed in
+this run: 325.56 ETH in 6 transfers. Transaction hashes:
+0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  100% | 552,163.80 USDT | Reached an exchange or custodian: Bitget
+  100% | 552,163.80 USDT | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  5 wallets, 5 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W2  column Funded the wallet, row 1: Unlabelled wallet
+    W3  column Funded the wallet, row 2: Unlabelled wallet
+    W4  column Funded the wallet, row 3: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: Bitget
+    arrow 0x1111111254fb6c44bac0bed2854e76f90643097d -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 44,431.63 USDT)
+    arrow 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 277,437.31 USDT)
+    arrow 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 -> 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 (outbound, 2 transfers, 552,163.80 USDT)
+    arrow 0x98d11399eab29a6eee726fc3a7316d07e98e1875 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 230,294.87 USDT)
+  No. | Address | What it is | Hop | Traced funds
+  W0 | 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 | Traced wallet | - | 552,163.80 USDT
+  W1 | 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 | Exchange deposit address: Bitget | 1 | 552,163.80 USDT
+  W2 | 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 | Unlabelled wallet (not followed) | funded it | 277,437.31 USDT
+  W3 | 0x98d11399eab29a6eee726fc3a7316d07e98e1875 | Unlabelled wallet (not followed) | funded it | 230,294.87 USDT
+  W4 | 0x1111111254fb6c44bac0bed2854e76f90643097d | Unlabelled wallet (not followed): 1inch | funded it | 44,431.63 USDT
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | Bitget | named | 0.75 (rule confidence) | 1 | 100% | 552,163.80 USDT | explorer tag
+
+  Bitget (rank 1)
+  Address reached  0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24
+  Route            W0  ->  W1
+  Time to reach    0 seconds
+    [Label] 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 is labelled Bitget ("Bitget Dep:
+    0x0008ea70c0Ef744F4D8Ebe412B9bd875B40c8f24"): explorer tag, source eth-labels [weight 0.75]
+    [Route] 100% of the wallet's USDT (552,163.80 USDT) reached it in 1 hop [weight 1.00]
+        tx 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
+    [Without its label] Still Bitget without the label on
+    0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24: 100% of the funds reach Bitget at 0x1ab4…8f8f23
+    (explorer tag) in 2 hops, confidence 0.64 (was 0.75). [weight -0.11]
+        tx 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
+        tx 0x4572b609f425db1d24b33220861dda6ad6b36805caf0abe0032ade55acccecbb
+
+PATH TO THE NAMED EXCHANGE
+--------------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 300,000 USDT | 23 Jan 2024, 17:20:59 UTC | - | 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+NEXT STEPS
+----------
+  - Draft a request to Bitget for KYC and a freeze on the account behind
+    0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24
+  - Preserve the transaction records listed in the evidence
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address and transaction
+hash above and none of the wording. To check it, trace the wallet again from the same responses:
+python -m vaspfusion.cli verify eth-bitget
+
+  Findings fingerprint    3e68b597b5e1d16b4d5eba9c2c22235c63bb712e29b1407803c94a73fe6dc8b1
+  Input                   ethereum 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9, hop limit 3
+  Input SHA-256           f10c9f3f7e1e3b7d92b5e1b02563db8d48b3c8637c56bcf1b0e6eb2996d549ad
+  Chain responses         5 read from api.etherscan.io
+  Responses SHA-256       4215910970b1cc0fbb1c011eca93b4b3288bdc2699d247dea9ab3d41e7acfd3d
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Receipt SHA-256         ddc11772824de0b39f185ee8015bb99cb6437c4ba2c9b8ea12d8915c2480af9e
+
+  Chain responses read
+    ff9e592eee27ddb05c43b2ba9f3521e51e72c2b49aa6dc1add6174bbc36f752d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1706030459
+    9730f56f1f724e346ed0076337f3545a06cc921568710bdfbb6ffc54e3bd30af  https://api.etherscan.io/v2/api?action=tokentx&address=0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=19070819
+    a5b13e44d88ca49487b428333241136e7b3379ea0b6fd7c2c14ddd8338e65073  https://api.etherscan.io/v2/api?action=tokentx&address=0x8971dd825ba5dd32b60307773f71f6e3efb0eda9&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0
+    ee6353b95332780b1326c76eb6df09616188b99f4b417ddaabed1910f9d3669c  https://api.etherscan.io/v2/api?action=tokentx&address=0x8971dd825ba5dd32b60307773f71f6e3efb0eda9&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=0
+    e5fee69132b193336cbbad6824a964c1a6fcf630fc2598441540165c5445cdb8  https://api.etherscan.io/v2/api?action=txlist&address=0x8971dd825ba5dd32b60307773f71f6e3efb0eda9&chainid=1&module=account&offset=100&page=1&sort=asc&startblock=0

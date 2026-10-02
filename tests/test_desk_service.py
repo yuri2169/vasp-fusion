@@ -10,6 +10,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from deskkit import NOW, demo_cases  # noqa: E402
+from vaspfusion.cases import CODE_VERSION  # noqa: E402
 from vaspfusion.api import schemas as S  # noqa: E402
 from vaspfusion.desk.directory import Directory  # noqa: E402
 from vaspfusion.desk.gateway import GatewayError, MockSahyogGateway, canonical  # noqa: E402
@@ -131,7 +132,7 @@ def test_the_payload_follows_the_documented_contract(desk):
         "channel": None}
     assert [w["address"] for w in p["wallets"]] == [w["address"] for w in req["letter"]["wallets"]]
     assert p["wallets"][0]["evidence_tier"] == "derived"
-    assert p["generated_by"] == {"tool": "VASP-FUSION", "code_version": "b8-desk-1"}
+    assert p["generated_by"] == {"tool": "VASP-FUSION", "code_version": CODE_VERSION}
     json.dumps(p)                                           # plain JSON all the way down
 
 

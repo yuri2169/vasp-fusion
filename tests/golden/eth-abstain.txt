@@ -1,0 +1,169 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/106
+  Complaint number  -
+  Wallet traced     0x0bad8ba03dd113931d4db1058f32c4d4b72424bb
+  Chain             Ethereum
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           eth-abstain
+  Hop limit         3
+
+RESULT
+------
+INSUFFICIENT EVIDENCE: NO EXCHANGE IS NAMED
+No exchange is named.
+None of the 22,214.70 USDT this wallet sent reached a labelled exchange within 3 hops. 55% has
+not moved on from the wallets it reached; 45% is in wallets with more transfers than one fetch
+reads; under 1% split into parts too small to follow.
+
+
+SUMMARY
+-------
+Wallet 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb sent 22,214.70 USDT on Ethereum in 2 transfers
+between 4 Apr 2024 and 23 Sep 2024. No exchange is named. None of the 22,214.70 USDT this wallet
+sent reached a labelled exchange within 3 hops. 55% has not moved on from the wallets it
+reached; 45% is in wallets with more transfers than one fetch reads; under 1% split into parts
+too small to follow. Not followed in this run: 270.30 ETH in 4 transfers.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  55% | 12,214.70 USDT | Has not moved on
+  45% | 10,000 USDT | Not followed (too small, or the listing could not be read to the end)
+  100% | 22,214.70 USDT | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  8 wallets, 7 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W7  column Funded the wallet, row 1: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: Unlabelled wallet
+    W2  column Hop 1, row 2: Unlabelled wallet
+    W3  column Hop 2, row 1: Unlabelled wallet
+    W4  column Hop 2, row 2: Unlabelled wallet
+    W5  column Hop 2, row 3: Unlabelled wallet
+    W6  column Hop 2, row 4: Unlabelled wallet
+    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0x7bb71f2a25a978243b419248decf3d76835230a9 (outbound, 1 transfer, 10,000 USDT)
+    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0xa750329456abf7f57674be83e592221501ecf7a5 (outbound, 1 transfer, 12,214.70 USDT)
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x505fedb20789614d21ed9d454e5146a5f61845f2 (outbound, 1 transfer, 500 USDT)
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 (outbound, 1 transfer, 9,500 USDT)
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0xf6506a66f72543aa3dd4293022b66c645572bb22 (outbound, 1 transfer, 0.0001 USDT)
+    arrow 0xa750329456abf7f57674be83e592221501ecf7a5 -> 0x172243a85a00afb20810224860bf2e17d41bd259 (outbound, 1 transfer, 12,214.70 USDT)
+    arrow 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 -> 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb (inbound, 1 transfer, 22,214.69 USDT)
+  No. | Address | What it is | Hop | Traced funds
+  W0 | 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb | Traced wallet | - | 22,214.70 USDT
+  W1 | 0xa750329456abf7f57674be83e592221501ecf7a5 | Unlabelled wallet | 1 | 12,214.70 USDT
+  W2 | 0x7bb71f2a25a978243b419248decf3d76835230a9 | Unlabelled wallet | 1 | 10,000 USDT
+  W3 | 0x172243a85a00afb20810224860bf2e17d41bd259 | Unlabelled wallet | 2 | 12,214.70 USDT
+  W4 | 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 | Unlabelled wallet | 2 | 9,500 USDT
+  W5 | 0x505fedb20789614d21ed9d454e5146a5f61845f2 | Unlabelled wallet | 2 | 500 USDT
+  W6 | 0xf6506a66f72543aa3dd4293022b66c645572bb22 | Unlabelled wallet (not followed) | 2 | 0.0001 USDT
+  W7 | 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 | Unlabelled wallet (not followed) | funded it | 22,214.69 USDT
+
+EXCHANGES REACHED
+-----------------
+The traced funds reached no labelled exchange or custodian.
+
+
+MAIN PATH OF THE FUNDS
+----------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 12,214.70 USDT | 23 Sep 2024, 22:14:47 UTC | - | 0x21375a33aa3cb670baa052db6f35d327ad1b0bdee99edb7dbfcc5c76441467e8
+  2 | W1 -> W3 | 12,214.70 USDT | 23 Apr 2025, 14:06:59 UTC | 212 days | 0xb937ffc7e8c0985122208d4aa101f2baec9708b8f21d7616cf82f491af54dfe0
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+WHAT WOULD CHANGE THIS
+----------------------
+  - Watching 0x172243a85a00afb20810224860bf2e17d41bd259: 55% of the funds is still there
+  - A full history of 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 (43% of the funds)
+  - A full history of 0x505fedb20789614d21ed9d454e5146a5f61845f2 (2% of the funds)
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address and transaction
+hash above and none of the wording. To check it, trace the wallet again from the same responses:
+python -m vaspfusion.cli verify eth-abstain
+
+  Findings fingerprint    d80898234b50f626efcec897890d0e39f8a17d23c99759a633a45d8db6d09de9
+  Input                   ethereum 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb, hop limit 3
+  Input SHA-256           a7bab30d21be672c412ef4c25eace92fcc8af08c14f0e6bb01f8fe98f8933ea1
+  Chain responses         20 read from api.etherscan.io
+  Responses SHA-256       3d5f183b9ee65cb05508cf516b25cad78e7666e1c332fa68007f966f153e3c80
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Receipt SHA-256         550c8891dfbb50ef0f01d19e8b868ef334ed883d860eb579ee4c20e12e9022ce
+
+  Chain responses read
+    d1cf3197bedffbb9da89547235bed857d685ed9e4b806eaf4faa85e912d7de9d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1712267195
+    aee28286c098b0afefd0e87de3988bd6d8f1a7cbd771d27e2ae5b75e5a30bea7  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1712267471
+    87844243acfaca03ce745b345a140dc0d21396e956e97df3b3c4accf82cf2e19  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1727129687
+    b84e1642bf29aba6086c506ccefc19fd5581544474524e96fe627f3cb43bacbf  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1745417219
+    a5b13e44d88ca49487b428333241136e7b3379ea0b6fd7c2c14ddd8338e65073  https://api.etherscan.io/v2/api?action=tokentx&address=0x0bad8ba03dd113931d4db1058f32c4d4b72424bb&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0
+    729352641c6d30e0fcc07a718cdfbd5883b17fa319eac110fbf99d06b352b6d1  https://api.etherscan.io/v2/api?action=tokentx&address=0x0bad8ba03dd113931d4db1058f32c4d4b72424bb&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=0
+    8992ab36f97875748c54d95a0d3931ad73485f032d1182e6110e618f38c1a432  https://api.etherscan.io/v2/api?action=tokentx&address=0x172243a85a00afb20810224860bf2e17d41bd259&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=22332193
+    a55f5a546641f036c6db822c7243593f0e07567bae7af9e85243d72238f6fb73  https://api.etherscan.io/v2/api?action=tokentx&address=0x505fedb20789614d21ed9d454e5146a5f61845f2&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=19585188
+    7e71faf7c4543c669e807e8e4dcab1925a18f0db0cceaca7095ee310c7d175f3  https://api.etherscan.io/v2/api?action=tokentx&address=0x505fedb20789614d21ed9d454e5146a5f61845f2&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=19585188
+    ce229ad579b192eadf5ce3cdbeb3e18c49fdb2fdf98bb95c32e74fb94dd59014  https://api.etherscan.io/v2/api?action=tokentx&address=0x505fedb20789614d21ed9d454e5146a5f61845f2&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=3&sort=asc&startblock=19585188
+    2b4a7296fb720157b49c11a6d2d900ab0845a8b3ba8f56faa6b8231388617279  https://api.etherscan.io/v2/api?action=tokentx&address=0x505fedb20789614d21ed9d454e5146a5f61845f2&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=4&sort=asc&startblock=19585188
+    49b445e36a0dce34ea91d94433708f174cb7ba986f87f49e07a8548cb3cc01a3  https://api.etherscan.io/v2/api?action=tokentx&address=0x505fedb20789614d21ed9d454e5146a5f61845f2&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=5&sort=asc&startblock=19585188
+    53e4fffba537963a814668e2198c932ac9ad5b1c7c3a0c6feab2cc851380844a  https://api.etherscan.io/v2/api?action=tokentx&address=0x6f48ce755c458fac12120f250cf7cb9f7d68b679&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=19585188
+    f7886a80393ea92823ed1f26f11cd25e65ff8b46566695ab47417afa8433c2a0  https://api.etherscan.io/v2/api?action=tokentx&address=0x6f48ce755c458fac12120f250cf7cb9f7d68b679&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=19585188
+    d409afbc95a2442cb8ab970c106d3aefce3811de42c4a8170f55a937531ab21a  https://api.etherscan.io/v2/api?action=tokentx&address=0x6f48ce755c458fac12120f250cf7cb9f7d68b679&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=3&sort=asc&startblock=19585188
+    6be420ff22883c0324fdb93dfcb9d31363a5b60b541e8ba807d18b4c90f9f064  https://api.etherscan.io/v2/api?action=tokentx&address=0x6f48ce755c458fac12120f250cf7cb9f7d68b679&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=4&sort=asc&startblock=19585188
+    8245fb85783b012b37dda6d5e9ee08b315f30e293b7cad691413579a5c9d5cc5  https://api.etherscan.io/v2/api?action=tokentx&address=0x6f48ce755c458fac12120f250cf7cb9f7d68b679&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=5&sort=asc&startblock=19585188
+    1508fcb640f32fb7f07d043342f0187b73dfdf2562e19631394156a20a53a61a  https://api.etherscan.io/v2/api?action=tokentx&address=0x7bb71f2a25a978243b419248decf3d76835230a9&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=19585166
+    a18d00616c987ac20be9504167fde4115b2e07d38560a3e340465e4604872ad5  https://api.etherscan.io/v2/api?action=tokentx&address=0xa750329456abf7f57674be83e592221501ecf7a5&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=20816200
+    4dc6a4d17bebbea2e437cc59dbec74fcd6aa775dd37a7459cc672f1da3e0cf9e  https://api.etherscan.io/v2/api?action=txlist&address=0x0bad8ba03dd113931d4db1058f32c4d4b72424bb&chainid=1&module=account&offset=100&page=1&sort=asc&startblock=0

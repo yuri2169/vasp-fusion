@@ -1,0 +1,171 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/103
+  Complaint number  -
+  Wallet traced     TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV
+  Chain             Tron
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           tron-ofac
+  Hop limit         3
+
+RESULT
+------
+SANCTIONED OR MIXING ADDRESS REACHED
+The funds reached a sanctioned or mixing address. No exchange is named.
+99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux43bs21qRsygv5WQWfgtbQeT6nXey
+(OFAC SDN), 1 hop away
+
+
+SUMMARY
+-------
+Wallet TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25
+Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address,
+TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop away. No labelled exchange was reached. Not
+followed in this run: 200 TRX in 1 transfer. Transaction hashes:
+30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  99% | 100,008 USDT | Reached a sanctioned address: OFAC SDN
+  1% | 1,052 USDT | Moved on past the hop limit
+  under 1% | 18.34 USDT | Not followed (too small, or the listing could not be read to the end)
+  100% | 101,078.34 USDT | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  8 wallets, 15 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W7  column Funded the wallet, row 1: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: OFAC SDN
+    W2  column Hop 1, row 2: Unlabelled wallet
+    W3  column Hop 1, row 3: Unlabelled wallet
+    W4  column Hop 1, row 4: Unlabelled wallet
+    W5  column Hop 2, row 1: Unlabelled wallet
+    W6  column Hop 3, row 1: Unlabelled wallet
+    arrow TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC -> TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS (outbound, 1 transfer, 1,052 USDT)
+    arrow TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M -> TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV (inbound, 4 transfers, 101,078.13 USDT)
+    arrow TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,052 USDT)
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC (outbound, 4 transfers, 1,052 USDT)
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (outbound, 3 transfers, 100,008 USDT)
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT (outbound, 1 transfer, 8 USDT)
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d (outbound, 1 transfer, 10.34 USDT)
+  No. | Address | What it is | Hop | Traced funds
+  W0 | TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV | Traced wallet | - | 101,078.34 USDT
+  W1 | TFdHux43bs21qRsygv5WQWfgtbQeT6nXey | Sanctioned address: OFAC SDN | 1 | 100,008 USDT
+  W2 | TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC | Unlabelled wallet | 1 | 1,052 USDT
+  W3 | TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d | Unlabelled wallet (not followed) | 1 | 10.34 USDT
+  W4 | TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT | Unlabelled wallet (not followed) | 1 | 8 USDT
+  W5 | TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS | Unlabelled wallet | 2 | 1,052 USDT
+  W6 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | Unlabelled wallet (not followed) | 3 | 1,052 USDT
+  W7 | TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M | Unlabelled wallet (not followed) | funded it | 101,078.13 USDT
+
+EXCHANGES REACHED
+-----------------
+The traced funds reached no labelled exchange or custodian.
+
+
+MAIN PATH OF THE FUNDS
+----------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 52,000 USDT | 25 Nov 2024, 06:27:45 UTC | - | 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
+
+PATTERNS SEEN
+-------------
+Patterns in the traced funds. They describe how the money moved and never decide the result.
+
+    [Sanctioned contact (high)] TFdHux43bs21qRsygv5WQWfgtbQeT6nXey: 99% of the funds (100,008
+    USDT) reached a sanctioned address, TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop
+    away
+        tx 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
+        tx 7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07
+        tx cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9
+    [Rapid forwarding (warn)] TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS:
+    TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS passed on 100% of the 1,052 USDT that reached it within
+    36 seconds of its arrival
+        tx 8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7
+        tx ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar was checked on 280 real Tron wallets, traced with the derived labels hidden: at 0.60 an
+exchange was named for 155 wallets and the name was wrong for 15 (9.7%; upper bound 17.3%). That
+is a check on a label hold-out, not a calibration.
+
+
+NEXT STEPS
+----------
+  - Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address,
+    TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (OFAC SDN), 1 hop away
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address and transaction
+hash above and none of the wording. To check it, trace the wallet again from the same responses:
+python -m vaspfusion.cli verify tron-ofac
+
+  Findings fingerprint    5c54c44c0992a642ad095d73864f35060b1dc270642f842a2e9594e0086264c2
+  Input                   tron TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV, hop limit 3
+  Input SHA-256           927b99f596dfde318847ce8848ee70d6f58e8d959b8d80cc24c10b377c57b834
+  Chain responses         6 read from api.trongrid.io
+  Responses SHA-256       6686fbafe24f7bfde1dbd94d82e8b4dfc992dbcd82f2efcc86aa5f253b0fb26e
+  Label database SHA-256  not recorded
+  Model                   model_v1/tron, SHA-256 d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2
+  Code                    b9-receipt-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Receipt SHA-256         4d22c9396b4c7d415392c2c78c4b0b61688273919b14618a9df6de0bb8f59aa1
+
+  Chain responses read
+    504ae4b2812e8569a0b820842873403b0f2ffca06ffbc94313a9eddc1502eafa  https://api.trongrid.io/v1/accounts/TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733483190000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    25983005b97392e53f5e23aaf731427556ef217e80235730e0acb205d55100e6  https://api.trongrid.io/v1/accounts/TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733492739000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    a3879a9eb137cd37426b2530fc5b60db502a74ec421e00382dd52e546150e1e6  https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    a25ab3a27dce82f110bea59864490a603f7f3a24ac046144afec5b6f30272ef9  https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc
+    c8f52f6af5f15b765b606108e044314c249d66cdbd9302da65afc66b88594090  https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    624a3aafb00b3ba4243e962e42bda41c14beb0f4a2477f2250208ed60f0e086d  https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc

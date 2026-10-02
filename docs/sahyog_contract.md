@@ -88,7 +88,7 @@ Example (a real demo wallet, shortened to one wallet):
                                  "heading": "Summons to produce document or other thing",
                                  "url": "https://www.indiacode.nic.in/handle/123456789/20099"}]},
   "documents": [{"name": "req-2026-0002.pdf", "media_type": "application/pdf", "sha256": "..."}],
-  "generated_by": {"tool": "VASP-FUSION", "code_version": "b8-desk-1"}
+  "generated_by": {"tool": "VASP-FUSION", "code_version": "b9-receipt-1"}
 }
 ```
 

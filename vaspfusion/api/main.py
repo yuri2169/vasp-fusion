@@ -80,6 +80,7 @@ async def refuse_cross_origin_writes(request: Request, call_next):
 MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"cases", S.CaseList),
     (r"cases/[^/]+", S.CaseDetail),
+    (r"cases/[^/]+/receipt", S.Receipt),
     (r"wallets/[^/]+/[^/]+", S.WalletDetail),
     (r"labels/search", S.LabelSearch),
     (r"desk", S.Desk),
@@ -274,6 +275,48 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
     return {"total": len(live) + len(mock), "items": live + mock}
 
 
+# ------------------------------------------------------------------ case file, receipt, verify (B9)
+MOCK_WATERMARK = "Demo fixture - not evidence"
+
+
+def make_verify_fetcher() -> chains.Fetcher:
+    """Cache only, whatever OFFLINE says: a verification must read the responses the
+    case was computed from, not the chain as it is now."""
+    return chains.cache_only_fetcher()
+
+
+def _case_or_mock(case_id: str) -> tuple[dict, bool]:
+    """(case, is it a mock fixture)."""
+    live = _cases().get(case_id)
+    if live is not None:
+        return live, False
+    mock = S.CaseDetail.model_validate(load_mock(f"cases/{case_id}")).model_dump(mode="json")
+    return mock, True
+
+
+def _case_pdf(case_id: str) -> Response:
+    from ..explain.case_file import NotReady
+    from ..explain.case_pdf import case_pdf
+    case, mock = _case_or_mock(case_id)
+    try:
+        pdf = case_pdf(case, watermark=MOCK_WATERMARK if mock else None)
+    except NotReady as e:
+        raise HTTPException(409, str(e)) from None
+    name = f"case-{case_id}" + ("-demo" if mock else "")
+    return Response(pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{name}.pdf"',
+                             "X-Data-Source": "mock" if mock else "live"})
+
+
+_CASE_PDF = {200: {"content": {"application/pdf": {}}, "description": "The case file, A4"}}
+
+
+# declared before /api/cases/{case_id}, which would otherwise take "x.pdf" as an id
+@app.get("/api/cases/{case_id}.pdf", include_in_schema=False)
+def get_case_pdf_file(case_id: str):
+    return _case_pdf(case_id)
+
+
 @app.get("/api/cases/{case_id}", response_model=S.CaseDetail)
 def get_case(case_id: str, response: Response):
     live = _cases().get(case_id)
@@ -282,6 +325,50 @@ def get_case(case_id: str, response: Response):
         return live
     _source(response, "mock")
     return load_mock(f"cases/{case_id}")
+
+
+@app.get("/api/cases/{case_id}/pdf", response_class=Response, responses=_CASE_PDF)
+def get_case_pdf(case_id: str):
+    """The case file as an A4 PDF: result, summary, where the funds went, flow diagram,
+    exchanges reached with their evidence and transaction hashes, flags, how the
+    confidence was worked out, limitations, and the provenance receipt. The same case
+    always gives the same bytes. 409 until the case has a result. Also served at
+    /api/cases/{id}.pdf."""
+    return _case_pdf(case_id)
+
+
+@app.get("/api/cases/{case_id}/receipt", response_model=S.Receipt)
+def get_case_receipt(case_id: str, response: Response):
+    """What the case was computed from, as SHA-256 digests: input, chain responses,
+    label database, model, code, and the findings fingerprint."""
+    from ..provenance import receipt
+    live = _cases().get(case_id)
+    if live is None:
+        _source(response, "mock")
+        return load_mock(f"cases/{case_id}/receipt")
+    doc = receipt(live)
+    if doc is None:
+        raise HTTPException(409, "This case carries no receipt: it has not finished, or it "
+                                 "was stored before receipts existed. Trace it again.")
+    _source(response, "live")
+    return doc
+
+
+@app.post("/api/cases/{case_id}/verify", response_model=S.VerifyResult)
+def verify_case(case_id: str, response: Response):
+    """Trace the wallet again from the cached chain responses only (never the network)
+    and compare the findings fingerprint with the receipt's."""
+    from ..cases import verify_stored
+    live = _cases().get(case_id)
+    if live is None:
+        load_mock(f"cases/{case_id}")          # 404 for an unknown id
+        raise HTTPException(422, "A demo fixture has no trace to verify.")
+    if not Path(LABEL_DB).exists():
+        raise HTTPException(503, "The label database is missing. Run `make labels` first.")
+    _source(response, "live")
+    with LabelStore(LABEL_DB) as labels:
+        return verify_stored(live, make_verify_fetcher(), labels,
+                             label_db_sha256=label_db_sha256())
 
 
 # ------------------------------------------------------------------ wallets + labels

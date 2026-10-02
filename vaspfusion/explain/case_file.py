@@ -1,0 +1,481 @@
+"""The case file: everything a finished case found, laid out as a document that has to
+survive being forwarded to someone who has never seen this tool.
+
+`case_file(case)` returns the document as plain blocks (headings, paragraphs,
+tables, lists). `case_pdf.py` draws them on A4; `case_file_text` writes the same
+blocks as text (the golden files in tests/golden/ are that text). The blocks are
+built from the stored case alone, so the same case always gives the same file.
+
+Addresses and transaction hashes are written in full. Sentences produced by the
+trace (the narrative, the evidence) shorten addresses for the screen; here every
+short form the case can resolve is written out again.
+"""
+from __future__ import annotations
+
+import re
+from datetime import datetime
+from decimal import Decimal
+from pathlib import Path
+
+from .. import provenance as P
+from ..attribute.rules import TIER_WEIGHT, RuleConfig
+from ..trace import TraceConfig
+from . import fmt
+from .case_narrative import CHAIN_NAMES
+from .flow import ROLE_WORDS, layout, wallet_index
+
+ROOT = Path(__file__).resolve().parents[2]
+ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"
+
+OUTCOME_WORDS = {
+    "ATTRIBUTED": "Exchange named",
+    "INSUFFICIENT_EVIDENCE": "Insufficient evidence: no exchange is named",
+    "SANCTIONED_OR_MIXER_REACHED": "Sanctioned or mixing address reached",
+}
+FUNDS_WORDS = {
+    "vasp": "Reached an exchange or custodian", "sanctioned": "Reached a sanctioned address",
+    "mixer": "Reached a mixer", "bridge": "Went into a bridge (left this chain)",
+    "other_label": "Reached another labelled party",
+    "hub": "Stopped at a high-activity wallet (not followed)",
+    "beyond_hop_limit": "Moved on past the hop limit", "not_moved": "Has not moved on",
+    "not_followed": "Not followed (too small, or the listing could not be read to the end)",
+    "returned": "Came back to the traced wallet",
+}
+FLAG_WORDS = {
+    "peel_chain": "Peel chain", "fan_out": "Fan-out", "fan_in": "Fan-in",
+    "rapid_forwarding": "Rapid forwarding", "round_amounts": "Round amounts",
+    "bridge_hop": "Bridge", "mixer_contact": "Mixer contact",
+    "sanctioned_contact": "Sanctioned contact", "deposit_like": "Lead",
+}
+EVIDENCE_WORDS = {"label": "Label", "path": "Route", "sweep": "Sweep", "gas_payer": "Gas payer",
+                  "model": "Model", "counterfactual": "Without its label"}
+DEMO_NOTICE = ("Demonstration case. This is a real public wallet, chosen because its "
+               "on-chain history shows a pattern the tool should handle. Nothing here "
+               "alleges wrongdoing by whoever controls it, and the case reference is not a "
+               "real complaint.")
+
+_SHORT = re.compile(r"([A-Za-z0-9]{6})…([A-Za-z0-9]{6})")
+
+
+class NotReady(ValueError):
+    """The case has no result to put in a file (queued, running or failed)."""
+
+
+# ------------------------------------------------------------------ small helpers
+def _amount(value, asset) -> str:
+    return "-" if value is None else fmt.amount(Decimal(str(value)), asset)
+
+
+def when(value) -> str:
+    """23 Jul 2024, 08:44:12 UTC"""
+    if not value:
+        return "-"
+    t = value if isinstance(value, datetime) else \
+        datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    return f"{t.day} {t:%b %Y, %H:%M:%S} UTC"
+
+
+def known_addresses(case: dict) -> set[str]:
+    out = {case["address"]} | {n["id"] for n in case["graph"]["nodes"]}
+    for c in case["candidates"]:
+        out.update(c["path"])
+        out.add(c["deposit_address"])
+        for w in c.get("request_wallets") or []:
+            out.update(a for a in (w["address"], w.get("paid_into")) if a)
+    out.update(f["wallet"] for f in case["typology_flags"])
+    return out
+
+
+def expander(case: dict):
+    """A function that writes the short addresses in a sentence out in full, where the
+    case holds exactly one address with that beginning and end."""
+    known = known_addresses(case)
+
+    def full(text: str) -> str:
+        def one(m: re.Match) -> str:
+            hits = [a for a in known if a.startswith(m.group(1)) and a.endswith(m.group(2))]
+            return hits[0] if len(hits) == 1 else m.group(0)
+        return _SHORT.sub(one, text or "")
+    return full
+
+
+def bar_check_for(chain: str, directory: Path | str = ABSTAIN_DIR) -> dict | None:
+    """How the naming bar was measured on this chain (`make abstain-eval`), or None."""
+    from ..eval.abstain import abstain_info, read_validation
+    validation = read_validation(directory, chain)
+    return abstain_info(validation) if validation else None
+
+
+def _confidence_words(c: dict) -> str:
+    if c.get("confidence_interval"):
+        return f"{fmt.prob(c['confidence'])} ({fmt.prob_range(*c['confidence_interval'])})"
+    return f"{fmt.prob(c['confidence'])} (rule confidence)"
+
+
+# ------------------------------------------------------------------ the sections
+def _header(case: dict) -> list[dict]:
+    chain = CHAIN_NAMES.get(case["chain"], case["chain"].capitalize())
+    prov = case["provenance"]
+    hops = (prov.get("input") or {}).get("max_hops")
+    since = (prov.get("input") or {}).get("since")
+    rows = [("Case reference", case.get("case_ref") or "-"),
+            ("Complaint number", case.get("complaint_no") or "-"),
+            ("Wallet traced", case["address"]),
+            ("Chain", chain),
+            ("Asset followed", case.get("asset") or "none"),
+            ("Traced on", when(case["created_at"])),
+            ("Case id", case["id"])]
+    if hops is not None:
+        rows.append(("Hop limit", str(hops)))
+    if since:
+        rows.append(("Transfers from", when(since)))
+    if case.get("amount_lost_inr") is not None:
+        rows.append(("Amount reported lost", f"Rs {fmt.amount(Decimal(str(case['amount_lost_inr'])))}"))
+    out = [{"t": "title", "text": "Case file",
+            "sub": "Nearest-exchange attribution of a crypto wallet"}]
+    if case.get("demo"):
+        out.append({"t": "note", "text": DEMO_NOTICE})
+    out.append({"t": "kv", "rows": rows})
+    return out
+
+
+def _result(case: dict, bar: float, full) -> list[dict]:
+    named = [c for c in case["candidates"]
+             if c["direction"] == "outbound" and c["confidence"] >= bar]
+    lines = []
+    if case["outcome"] == "ATTRIBUTED" and case["top_vasp"]:
+        top = next(c for c in named if c["vasp"] == case["top_vasp"])
+        lines.append(f"Nearest exchange: {top['vasp']}. Confidence {_confidence_words(top)}.")
+        lines.append(
+            f"{fmt.pct(top['share_of_funds'])} of the funds "
+            f"({_amount(top.get('amount'), case.get('asset'))}) reached it in "
+            f"{fmt.hops(top['hops'])}, at {top['deposit_address']} "
+            f"({fmt.tier_words(top['label_tier'])}).")
+        others = [c for c in named if c is not top]
+        if others:
+            lines.append("Also named: " + "; ".join(
+                f"{c['vasp']}, confidence {_confidence_words(c)}, "
+                f"{fmt.pct(c['share_of_funds'])} of the funds in {fmt.hops(c['hops'])}"
+                for c in others) + ".")
+    elif case["outcome"] == "SANCTIONED_OR_MIXER_REACHED":
+        alerts = [f for f in case["typology_flags"] if f["severity"] == "high"]
+        lines.append("The funds reached a sanctioned or mixing address. No exchange is named.")
+        lines += [full(f["text"]) for f in alerts[:2]]
+    else:
+        lines.append("No exchange is named.")
+        if case.get("abstain_reason"):
+            lines.append(full(case["abstain_reason"]))
+    return [{"t": "h", "text": "Result"},
+            {"t": "result", "outcome": OUTCOME_WORDS[case["outcome"]], "lines": lines}]
+
+
+def _funds(case: dict) -> list[dict]:
+    asset = case.get("asset")
+    rows = [[fmt.pct(s["share"]), _amount(s["amount"], asset),
+             FUNDS_WORDS[s["kind"]] + (f": {s['name']}" if s.get("name") else "")]
+            for s in case["where_funds_went"]]
+    if not rows:
+        return []
+    rows.append(["100%", _amount(case.get("total_sent"), asset), "Sent by the traced wallet"])
+    return [{"t": "h", "text": "Where the funds went"},
+            {"t": "table", "head": ["Share", "Amount", "Where"], "rows": rows,
+             "widths": [14, 32, 54], "total": True}]
+
+
+def _flow(case: dict, index: list[dict]) -> list[dict]:
+    if not case["graph"]["nodes"]:
+        return []
+    lay = layout(case, index)
+    asset = case.get("asset")
+    caption = (f"{lay['wallets']} wallets, {lay['transfers']} transfers. Each box is one wallet "
+               f"(its number is in the table below) with the traced funds that reached it.")
+    if lay["omitted"]:
+        caption += (" 1 smaller wallet is not drawn; it is in the table." if lay["omitted"] == 1
+                    else f" {lay['omitted']} smaller wallets are not drawn; they are in the "
+                         f"table.")
+    rows = [[f"W{r['n']}", r["address"],
+             ROLE_WORDS[r["role"]] + (f": {r['entity']}" if r["entity"] else ""),
+             "funded it" if r["col"] < 0 else "-" if r["col"] == 0 else str(r["col"]),
+             _amount(r["amount"], asset)] for r in index]
+    return [{"t": "h", "text": "Flow of funds"},
+            {"t": "flow", "layout": lay, "caption": caption},
+            {"t": "table", "head": ["No.", "Address", "What it is", "Hop", "Traced funds"],
+             "rows": rows, "widths": [7, 45, 25, 8, 15], "mono": [1]}]
+
+
+def _candidates(case: dict, bar: float, full, number: dict[str, int]) -> list[dict]:
+    asset = case.get("asset")
+    cands = case["candidates"]
+    if not cands:
+        return [{"t": "h", "text": "Exchanges reached"},
+                {"t": "p", "text": "The traced funds reached no labelled exchange or custodian."}]
+    rows = []
+    for c in cands:
+        if c["direction"] == "inbound":
+            standing = "funded the wallet"
+        else:
+            standing = "named" if c["confidence"] >= bar else f"under {bar:.2f}: not named"
+        rows.append([str(c["proximity_rank"]), c["vasp"], standing, _confidence_words(c),
+                     str(c["hops"]), fmt.pct(c["share_of_funds"]),
+                     _amount(c.get("amount"), asset), fmt.tier_words(c["label_tier"])])
+    out = [{"t": "h", "text": "Exchanges reached"},
+           {"t": "p", "text": "Proximity rank and confidence are two separate numbers. Rank "
+            "orders the exchanges by hops, then share of the funds, then time. Confidence is "
+            "how far the evidence supports that the address the funds reached belongs to "
+            "that exchange."},
+           {"t": "table", "head": ["Rank", "Exchange", "Standing", "Confidence", "Hops",
+                                   "Share", "Amount", "Label tier"],
+            "rows": rows, "widths": [6, 14, 16, 20, 6, 8, 15, 15]}]
+    for c in cands:
+        direction = "funded the traced wallet" if c["direction"] == "inbound" else \
+            f"rank {c['proximity_rank']}"
+        out.append({"t": "h2", "text": f"{c['vasp']} ({direction})"})
+        out.append({"t": "kv", "rows": [
+            ("Address reached", c["deposit_address"]),
+            ("Route", "  ->  ".join(f"W{number[a]}" if a in number else a for a in c["path"])),
+            ("Time to reach", fmt.duration(c["time_to_reach_s"])
+             if c.get("time_to_reach_s") is not None else "-")]})
+        for ev in c["evidence"]:
+            weight = ""
+            if ev.get("weight") is not None:
+                weight = (f" [SHAP {ev['weight']:+.2f}]" if ev["kind"] == "model"
+                          else f" [weight {ev['weight']:.2f}]")
+            out.append({"t": "evidence", "kind": EVIDENCE_WORDS[ev["kind"]],
+                        "text": full(ev["text"]) + weight,
+                        "hashes": ev["tx_hashes"]})
+    return out
+
+
+def _rail(case: dict, number: dict[str, int]) -> list[dict]:
+    if not case["hop_rail"]:
+        return []
+    asset = case.get("asset")
+    rows = []
+    for h in case["hop_rail"]:
+        rows.append([str(h["index"]),
+                     f"W{number.get(h['from_address'], '?')} -> W{number.get(h['to_address'], '?')}",
+                     _amount(h.get("traced_amount") if h.get("traced_amount") is not None
+                             else h["amount"], h["asset"] or asset),
+                     when(h["block_time"]),
+                     "-" if h.get("elapsed_s") is None else fmt.duration(h["elapsed_s"]),
+                     h["tx_hash"]])
+    title = "Path to the named exchange" if case["top_vasp"] else "Main path of the funds"
+    return [{"t": "h", "text": title},
+            {"t": "table", "head": ["Hop", "From -> to", "Traced funds", "Time",
+                                    "After", "Transaction"],
+             "rows": rows, "widths": [5, 12, 15, 18, 9, 41], "mono": [5]}]
+
+
+def _flags(case: dict, full) -> list[dict]:
+    flags = [f for f in case["typology_flags"] if f["code"] != "deposit_like"]
+    leads = [f for f in case["typology_flags"] if f["code"] == "deposit_like"]
+    out: list[dict] = []
+    if flags:
+        out.append({"t": "h", "text": "Patterns seen"})
+        out.append({"t": "p", "text": "Patterns in the traced funds. They describe how the "
+                    "money moved and never decide the result."})
+        for f in flags:
+            out.append({"t": "evidence", "kind": f"{FLAG_WORDS[f['code']]} ({f['severity']})",
+                        "text": f"{f['wallet']}: {full(f['text'])}", "hashes": f["tx_hashes"]})
+    if leads:
+        out.append({"t": "h", "text": "Leads to check"})
+        out.append({"t": "p", "text": "Unlabelled wallets that behave like an exchange deposit "
+                    "address. A lead is not a finding and does not change the result."})
+        for f in leads:
+            out.append({"t": "evidence", "kind": "Lead",
+                        "text": f"{f['wallet']}: {full(f['text'])}", "hashes": f["tx_hashes"]})
+    return out
+
+
+def _confidence(case: dict, rules: RuleConfig, bar_check: dict | None) -> list[dict]:
+    w = TIER_WEIGHT
+    paras = [
+        "Confidence = share factor x the average, over the traced funds, of (label weight x "
+        f"{rules.hop_decay:.2f} for each hop after the first).",
+        f"Label weight: {w['published_por']:.2f} for an address the exchange published "
+        f"itself, {w['curated']:.2f} for a curated list, {w['explorer_tag']:.2f} for an "
+        "explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: "
+        "the weight of the exchange wallet it sweeps into x the deposit-address model's "
+        "probability, where the model confirmed it.",
+        f"Share factor: 1 when {fmt.pct(rules.share_full)} or more of the funds reached the "
+        "exchange, and smaller in proportion below that.",
+        f"An exchange is named only at {rules.attribute_min:.2f} or more. Below that the "
+        "result is 'insufficient evidence', with what would change it.",
+        "What is calibrated: only the deposit-address model's probability (the range shown "
+        "beside a confidence is its Venn-Abers range carried through the formula). The label "
+        "weights, the hop decay, the share factor and the bar are set by rule. A confidence "
+        "marked 'rule confidence' has no calibrated part. Confidence is not the probability "
+        "that the named exchange is right.",
+    ]
+    if bar_check:
+        used = next((b for b in bar_check["bars"]
+                     if abs(b["threshold"] - bar_check["current_threshold"]) < 1e-9), None)
+        if used:
+            chain = CHAIN_NAMES.get(bar_check["chain"], bar_check["chain"])
+            paras.append(
+                f"The bar was checked on {bar_check['wallets']} real {chain} wallets, traced "
+                f"with the derived labels hidden: at {used['threshold']:.2f} an exchange was "
+                f"named for {used['wallets_named']} wallets and the name was wrong for "
+                f"{used['wallets_wrong']} ({used['risk'] * 100:.1f}%; upper bound "
+                f"{used['risk_upper_bound'] * 100:.1f}%). That is a check on a label hold-out, "
+                "not a calibration.")
+    else:
+        paras.append("The bar has not been measured on this chain.")
+    return [{"t": "h", "text": "How the confidence was worked out"},
+            *({"t": "p", "text": p} for p in paras)]
+
+
+def _lists(case: dict, full) -> list[dict]:
+    out = []
+    for title, key in (("What would change this", "what_would_change"),
+                       ("Next steps", "next_steps")):
+        if case.get(key):
+            out += [{"t": "h", "text": title},
+                    {"t": "list", "items": [full(x) for x in case[key]]}]
+    return out
+
+
+def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
+    asset = case.get("asset") or "one asset"
+    hops = (case["provenance"].get("input") or {}).get("max_hops") or trace.max_hops
+    return [
+        "This file reads public blockchain records and address labels. It does not identify "
+        "a person. Only the exchange's own customer records (KYC) can say who holds the "
+        "account an address belongs to.",
+        "A label can be wrong or out of date. Each label's tier is stated. A label 'derived "
+        "by VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the "
+        "exchange.",
+        f"Only {asset} was followed. Anything the wallet moved in other assets is not in "
+        "this file.",
+        f"The trace stops at any labelled address, at a wallet with {trace.hub_degree} or more "
+        f"counterparties (too busy to follow one person's money through), after {hops} "
+        f"hops, at shares under {fmt.pct(trace.min_share)}, and after {trace.max_nodes} "
+        "wallets. Funds beyond those points are counted under 'Where the funds went' and "
+        "not followed.",
+        "Money that entered a wallet is matched to that wallet's next outgoing transfers in "
+        "time order. Where a wallet held other money too, that matching is a convention, "
+        "not a fact recorded on the chain.",
+        "Flags and leads describe patterns. They never decide the result.",
+        "All times are UTC. Amounts are in the asset followed; no exchange rate is applied.",
+        "The result is as of the chain responses listed in the receipt. Transfers made "
+        "after they were fetched are not in this file.",
+    ]
+
+
+def _receipt(case: dict) -> list[dict]:
+    r = P.receipt(case)
+    if r is None:
+        return [{"t": "h", "text": "Provenance receipt"},
+                {"t": "p", "text": "This case carries no receipt: it was stored before "
+                 "receipts existed. Trace it again to get one."}]
+    commit = r["git_commit"] or "not recorded"
+    if r["git_dirty"]:
+        commit += " (with uncommitted changes)"
+    rows = [("Findings fingerprint", r["findings_sha256"]),
+            ("Input", f"{r['input']['chain']} {r['input']['address']}, hop limit "
+                      f"{r['input']['max_hops']}"
+                      + (f", from {when(r['input']['since'])}" if r["input"].get("since") else "")),
+            ("Input SHA-256", r["input_sha256"]),
+            ("Chain responses", f"{r['pages']} read from " + ", ".join(
+                s for s in r["data_sources"] if s != "label store")),
+            ("Responses SHA-256", r["responses_sha256"]),
+            ("Label database SHA-256", r["label_db_sha256"] or "not recorded"),
+            ("Model", f"{r['model_version']}, SHA-256 {r['model_sha256']}"
+             if r["model_version"] else "not used in this case"),
+            ("Code", f"{r['code_version']}, commit {commit}"),
+            ("Seed", str(r["seed"])),
+            ("Fetched", when(r["fetched_at"]) if r["fetched_at"]
+             else "replayed from the cache (no network)"),
+            ("Receipt SHA-256", r["receipt_sha256"])]
+    return [{"t": "h", "text": "Provenance receipt"},
+            {"t": "p", "text": "What this case was computed from. The fingerprint covers "
+             "every figure, address and transaction hash above and none of the wording. To "
+             f"check it, trace the wallet again from the same responses: python -m "
+             f"vaspfusion.cli verify {case['id']}"},
+            {"t": "kv", "rows": rows},
+            {"t": "h2", "text": "Chain responses read"},
+            {"t": "pages", "rows": [(p["sha256"], p["query"]) for p in r["responses"]]}]
+
+
+# ------------------------------------------------------------------ the document
+def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
+              bar_check: dict | None = None) -> list[dict]:
+    if case.get("status") != "done" or case.get("outcome") is None:
+        raise NotReady(f"Case {case.get('id')} has no result yet (status "
+                       f"{case.get('status')}).")
+    full = expander(case)
+    index = wallet_index(case)
+    number = {r["address"]: r["n"] for r in index}
+    blocks = _header(case)
+    blocks += _result(case, rules.attribute_min, full)
+    blocks += [{"t": "h", "text": "Summary"}, {"t": "p", "text": full(case["narrative"])}]
+    blocks += _funds(case)
+    blocks += _flow(case, index)
+    blocks += _candidates(case, rules.attribute_min, full, number)
+    blocks += _rail(case, number)
+    blocks += _flags(case, full)
+    blocks += _confidence(case, rules, bar_check)
+    blocks += _lists(case, full)
+    blocks += [{"t": "h", "text": "Limitations"}, {"t": "list", "items": limitations(case)}]
+    blocks += _receipt(case)
+    return blocks
+
+
+def reference(case: dict) -> str:
+    return case.get("case_ref") or case["id"]
+
+
+# ------------------------------------------------------------------ as text
+def _wrap(text: str, width: int = 96, indent: str = "") -> list[str]:
+    import textwrap
+    return textwrap.wrap(text, width=width, initial_indent=indent,
+                         subsequent_indent=" " * len(indent),
+                         break_long_words=False, break_on_hyphens=False) or [indent.rstrip()]
+
+
+def blocks_text(blocks: list[dict]) -> str:
+    out: list[str] = []
+    for b in blocks:
+        t = b["t"]
+        if t == "title":
+            out += [b["text"].upper(), b["sub"], ""]
+        elif t == "h":
+            out += ["", b["text"].upper(), "-" * len(b["text"])]
+        elif t == "h2":
+            out += ["", f"  {b['text']}"]
+        elif t in ("p", "note"):
+            out += _wrap(b["text"]) + [""]
+        elif t == "result":
+            out += [b["outcome"].upper()] + [ln for line in b["lines"] for ln in _wrap(line)] + [""]
+        elif t == "kv":
+            pad = max(len(k) for k, _ in b["rows"]) + 2
+            out += [f"  {k:<{pad}}{v}" for k, v in b["rows"]]
+        elif t == "table":
+            out.append("  " + " | ".join(b["head"]))
+            out += ["  " + " | ".join(row) for row in b["rows"]]
+        elif t == "list":
+            for item in b["items"]:
+                out += _wrap(item, indent="  - ")
+        elif t == "evidence":
+            out += _wrap(f"[{b['kind']}] {b['text']}", indent="    ")
+            out += [f"        tx {h}" for h in b["hashes"]]
+        elif t == "flow":
+            lay = b["layout"]
+            out.append("  " + b["caption"])
+            for box in lay["boxes"]:
+                out.append(f"    W{box['n']}  column {lay['columns'][box['col']]}, "
+                           f"row {box['row'] + 1}: {box['title']}")
+            for a in lay["arrows"]:
+                out.append(f"    arrow {a['source']} -> {a['target']} ({a['direction']}, "
+                           f"{a['transfers']} transfer{'s' if a['transfers'] != 1 else ''}, "
+                           f"{_amount(a['amount'], lay['asset'])})")
+        elif t == "pages":
+            out += [f"    {sha}  {query}" for sha, query in b["rows"]]
+        else:
+            raise ValueError(f"unknown block {t}")
+    return "\n".join(line.rstrip() for line in out).strip() + "\n"
+
+
+def case_file_text(case: dict, **kw) -> str:
+    kw.setdefault("bar_check", bar_check_for(case["chain"]))
+    return blocks_text(case_file(case, **kw))
