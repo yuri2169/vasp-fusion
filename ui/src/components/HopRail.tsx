@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { Chain, Hop, Tier } from '../api/models'
 import { cx } from '../lib/cx'
 import { explorerName, txUrl } from '../lib/explorers'
@@ -20,6 +20,14 @@ export interface HopRailProps {
   state?: 'tracing' | 'done'
   /** Extend the rail hop by hop (when a result has just arrived). Off under reduced motion. */
   animate?: boolean
+  /** The wallet being shown elsewhere on the page (the graph, the side panel). */
+  selected?: string | null
+  /** The wallets on the path to it. */
+  marked?: ReadonlySet<string>
+  /** Makes every wallet on the rail a button that shows it. */
+  onSelect?: (address: string) => void
+  /** Sits under the path, inside the rail's card (where the funds went). */
+  footer?: ReactNode
   className?: string
 }
 
@@ -73,7 +81,24 @@ function Stub({ hop, chain }: { hop: Hop; chain: Chain }) {
  *
  *  When a trace has just finished, pass `animate`: the rail extends hop by hop and the stamp
  *  lands last. It is the one orchestrated animation in the app. */
-export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', animate = false, className }: HopRailProps) {
+export function HopRail({
+  suspect,
+  hops,
+  stamp,
+  labels = {},
+  state = 'done',
+  animate = false,
+  selected,
+  marked,
+  onSelect,
+  footer,
+  className,
+}: HopRailProps) {
+  const pick = (address: string) => ({
+    selected: selected === address,
+    marked: marked?.has(address),
+    onSelect: onSelect && (() => onSelect(address)),
+  })
   const moving = animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const step = (i: number, kind: 'rail-step' | 'rail-stamp' = 'rail-step') =>
     moving ? { className: kind, style: { '--step': i } as CSSProperties } : {}
@@ -93,10 +118,20 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
   }, [hops.length, state])
 
   return (
-    <div ref={scroller} className={cx('overflow-x-auto rounded-md border border-rule bg-surface', className)}>
+    <div className={cx('rounded-md border border-rule bg-surface', className)}>
+     <div ref={scroller} className="overflow-x-auto rounded-md">
       <ol aria-label="Path of the funds" className="flex w-full min-w-max items-stretch pl-4">
         <li {...step(0)} className={cx('flex items-center py-5', step(0).className)}>
-          <AddressChip address={suspect.address} chain={suspect.chain} role="suspect" head={4} tail={4} actions="copy" className="shrink-0" />
+          <AddressChip
+            address={suspect.address}
+            chain={suspect.chain}
+            role="suspect"
+            head={4}
+            tail={4}
+            actions="copy"
+            className="shrink-0"
+            {...pick(suspect.address)}
+          />
         </li>
 
         {state === 'done' &&
@@ -114,6 +149,7 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
                   tail={4}
                   actions="copy"
                   className="shrink-0"
+                  {...pick(hop.to_address)}
                 />
               </li>
             )
@@ -148,6 +184,8 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
           })()
         )}
       </ol>
+     </div>
+      {footer && <div className="border-t border-rule px-4 py-3">{footer}</div>}
     </div>
   )
 }

@@ -25,6 +25,7 @@ export const keys = {
   health: ['health'] as const,
   cases: (query?: CasesQuery) => ['cases', query ?? {}] as const,
   case: (id: string) => ['case', id] as const,
+  audit: (target: string) => ['audit', target] as const,
   labels: (query: LabelQuery) => ['labels', query] as const,
   desk: ['desk'] as const,
   dashboard: ['dashboard'] as const,
@@ -53,7 +54,25 @@ export function useOpenCase() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: ({ refresh, ...body }: CaseOpen & { refresh?: boolean }) => api.openCase(body, refresh),
-    onSuccess: () => client.invalidateQueries({ queryKey: ['cases'] }),
+    onSuccess: (opened) => {
+      void client.invalidateQueries({ queryKey: ['cases'] })
+      // A wallet that already had a case is traced again: drop what was read of it before.
+      void client.invalidateQueries({ queryKey: keys.case(opened.id) })
+    },
+  })
+}
+
+/** Who opened, exported or verified one case (the Audit tab). */
+export const useAudit = (target: string, enabled = true) =>
+  useQuery({ queryKey: keys.audit(target), queryFn: () => api.audit({ target, limit: 100 }), enabled })
+
+/** Trace the wallet again from the cached chain responses and compare with what is stored. */
+export function useVerifyCase(id: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.verifyCase(id),
+    // Verifying is itself a row in the audit log.
+    onSettled: () => client.invalidateQueries({ queryKey: keys.audit(id) }),
   })
 }
 

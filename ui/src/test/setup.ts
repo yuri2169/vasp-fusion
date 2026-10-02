@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
+import { mockSettings } from '../api/mock'
+
+/** A demo wallet's case opens at once in tests; a test of the trace screen sets its own time. */
+beforeEach(() => {
+  mockSettings.traceMs = 0
+})
 
 afterEach(() => {
   cleanup()

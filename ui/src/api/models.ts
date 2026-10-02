@@ -41,6 +41,11 @@ export type Dashboard = S['Dashboard']
 export type ModelInfo = S['ModelInfo']
 export type AuditPage = S['AuditPage']
 
+export type AuditEntry = AuditPage['items'][number]
+export type VerifyCheck = VerifyResult['checks'][number]
+export type FundsKind = FundsSlice['kind']
+export type ModelReason = NonNullable<LabelOut['model']>['reasons'][number]
+
 export type Chain = CaseSummary['chain']
 export type CaseStatus = CaseSummary['status']
 export type Outcome = NonNullable<CaseSummary['outcome']>

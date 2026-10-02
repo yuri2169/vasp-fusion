@@ -1,0 +1,117 @@
+import type { FundsSlice } from '../api/models'
+import { cx } from '../lib/cx'
+import { formatAmount, formatPercent } from '../lib/format'
+import { Tip, useTip } from './Tip'
+
+/** What a slice is, in the officer's words. The trace's own sentences use the same ones. */
+export function fundsName(slice: FundsSlice): string {
+  const name = slice.name
+  switch (slice.kind) {
+    case 'vasp':
+      return name ?? 'An exchange'
+    case 'sanctioned':
+      return `${name ?? 'A sanctioned address'} (sanctioned)`
+    case 'mixer':
+      return `${name ?? 'A mixer'} (mixer)`
+    case 'bridge':
+      return `${name ?? 'A bridge'} (bridge)`
+    case 'other_label':
+      return name ?? 'Another labelled party'
+    case 'hub':
+      return 'Busy unlabelled wallets'
+    case 'beyond_hop_limit':
+      return 'Past the hop limit'
+    case 'not_moved':
+      return 'Has not moved on'
+    case 'not_followed':
+      return 'Not followed'
+    case 'returned':
+      return 'Came back to the wallet'
+    case 'fee':
+      return 'Network fees'
+  }
+}
+
+/** Kind is not told by hue (the six brand colours are not a categorical palette). Three
+ *  fills, each a status with words beside it, and one hatch for everything unresolved:
+ *    named  saffron: the exchange the case names
+ *    party  ink: any other named party (an exchange not named, a bridge, a contract)
+ *    seal   red: sanctioned or mixer
+ *    open   hatched: where the trail stops without a name */
+export type FundsFill = 'named' | 'party' | 'seal' | 'open'
+
+export function fundsFill(slice: FundsSlice, named?: string | null): FundsFill {
+  if (slice.kind === 'sanctioned' || slice.kind === 'mixer') return 'seal'
+  if (slice.kind === 'vasp') return named && slice.name === named ? 'named' : 'party'
+  if (slice.kind === 'bridge' || slice.kind === 'other_label') return 'party'
+  return 'open'
+}
+
+const FILL: Record<FundsFill, string> = {
+  named: 'bg-saffron',
+  party: 'bg-fg',
+  seal: 'bg-seal',
+  open: 'hatch border border-rule-strong bg-sunk',
+}
+
+function Segment({ slice, fill, asset }: { slice: FundsSlice; fill: FundsFill; asset: string }) {
+  const tip = useTip()
+  return (
+    <span
+      data-testid="funds-segment"
+      data-fill={fill}
+      onMouseEnter={tip.bind.onMouseEnter}
+      onMouseLeave={tip.bind.onMouseLeave}
+      style={{ flexBasis: `${(slice.share * 100).toFixed(1)}%` }}
+      className={cx('h-full min-w-[4px] shrink grow-0 rounded-sm', FILL[fill])}
+    >
+      <Tip id={tip.id} anchor={tip.anchor}>
+        <span className="block font-medium">{fundsName(slice)}</span>
+        <span className="tabular mt-0.5 block font-mono text-muted">
+          {formatPercent(slice.share)} · {formatAmount(slice.amount, asset)}
+        </span>
+      </Tip>
+    </span>
+  )
+}
+
+/** Where the money the wallet sent ended up: one bar, the whole of it, largest part first.
+ *  Every part is named under the bar with its share and amount, so nothing rests on colour. */
+export function FundsBar({
+  slices,
+  asset,
+  total,
+  named,
+  className,
+}: {
+  slices?: FundsSlice[] | null
+  asset: string
+  total?: number | null
+  /** The exchange the case names; its slice is the saffron one. */
+  named?: string | null
+  className?: string
+}) {
+  if (!slices || slices.length === 0) return null
+  const summary = slices.map((s) => `${formatPercent(s.share)} ${fundsName(s)}`).join(', ')
+
+  return (
+    <div className={cx('flex flex-col gap-2', className)}>
+      <p className="eyebrow">{total != null ? `Where the ${formatAmount(total, asset)} went` : 'Where the funds went'}</p>
+      <div role="img" aria-label={summary} className="flex h-3 w-full gap-0.5">
+        {slices.map((slice, i) => (
+          <Segment key={slice.kind + (slice.name ?? '') + i} slice={slice} fill={fundsFill(slice, named)} asset={asset} />
+        ))}
+      </div>
+      <ul aria-label="Where the funds went" className="flex flex-wrap gap-x-5 gap-y-1">
+        {slices.map((slice, i) => (
+          <li key={slice.kind + (slice.name ?? '') + i} className="flex items-center gap-1.5 text-xs">
+            <span aria-hidden className={cx('h-2.5 w-2.5 shrink-0 rounded-sm', FILL[fundsFill(slice, named)])} />
+            <span className="font-medium text-fg">{fundsName(slice)}</span>
+            <span className="tabular font-mono text-fg">{formatPercent(slice.share)}</span>
+            <span className="tabular font-mono text-muted">{formatAmount(slice.amount, asset)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

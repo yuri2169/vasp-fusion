@@ -25,12 +25,33 @@ export interface AddressChipProps {
   to?: string
   /** 'copy' leaves out the explorer link, where room is tight (the Hop Rail). */
   actions?: 'all' | 'copy'
+  /** Makes the address a button that shows this wallet (on the case page: in the graph and the side panel). */
+  onSelect?: () => void
+  /** The wallet being shown. */
+  selected?: boolean
+  /** On the path to the wallet being shown. */
+  marked?: boolean
   className?: string
 }
 
 /** An address, the core content of this tool: mono, shortened in the middle, with the
  *  whole of it one hover, one Tab or one click (copy) away. Copy always copies it whole. */
-export function AddressChip({ address, chain, entity, tier, role, full, head = 6, tail = 6, to, actions = 'all', className }: AddressChipProps) {
+export function AddressChip({
+  address,
+  chain,
+  entity,
+  tier,
+  role,
+  full,
+  head = 6,
+  tail = 6,
+  to,
+  actions = 'all',
+  onSelect,
+  selected,
+  marked,
+  className,
+}: AddressChipProps) {
   const tip = useTip()
   const shown = full ? address : truncateMiddle(address, head, tail)
   const tierName = entity ? TIERS[tier ?? 'none'].name : null
@@ -41,8 +62,11 @@ export function AddressChip({ address, chain, entity, tier, role, full, head = 6
       role="group"
       aria-label={name}
       {...tip.bind}
+      data-selected={selected || undefined}
+      data-marked={marked || undefined}
       className={cx(
-        'inline-flex h-7 max-w-full items-center gap-1.5 rounded border border-rule bg-surface pl-2 pr-0.5 align-middle text-xs',
+        'inline-flex h-7 max-w-full items-center gap-1.5 rounded border bg-surface pl-2 pr-0.5 align-middle text-xs',
+        selected ? 'border-fg bg-sunk ring-1 ring-fg' : marked ? 'border-fg' : 'border-rule',
         className,
       )}
     >
@@ -57,7 +81,20 @@ export function AddressChip({ address, chain, entity, tier, role, full, head = 6
           <span className="truncate">{entity}</span>
         </span>
       )}
-      {to ? (
+      {onSelect ? (
+        <button
+          type="button"
+          aria-pressed={!!selected}
+          aria-label={`Show ${truncateMiddle(address)}${entity ? `, ${entity}` : ''} in the graph`}
+          onClick={onSelect}
+          className={cx(
+            'rounded-sm font-mono text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg',
+            full ? 'break-all text-left' : 'whitespace-nowrap',
+          )}
+        >
+          {shown}
+        </button>
+      ) : to ? (
         <Link to={to} className="whitespace-nowrap font-mono text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
           {shown}
         </Link>
