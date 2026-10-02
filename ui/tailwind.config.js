@@ -1,45 +1,76 @@
-/** Tokens map straight to the CSS custom properties in index.css, so the layer
- *  semantics live in exactly one place and never get re-hardcoded in a component. */
+/** Every colour maps to a role token in src/styles/tokens.css, so the theme lives in
+ *  one place and no component hard-codes a hex. See ui/DESIGN.md. */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
+    colors: {
+      transparent: 'transparent',
+      current: 'currentColor',
+      // surfaces
+      page: 'var(--bg)',
+      surface: 'var(--surface)',
+      sunk: 'var(--surface-sunk)',
+      rule: 'var(--rule)',
+      'rule-strong': 'var(--rule-strong)',
+      // text
+      fg: 'var(--fg)',
+      muted: 'var(--fg-muted)',
+      focus: 'var(--focus)',
+      // nav rail (ink in both themes)
+      rail: {
+        DEFAULT: 'var(--rail-bg)',
+        fg: 'var(--rail-fg)',
+        muted: 'var(--rail-fg-muted)',
+        rule: 'var(--rail-rule)',
+        active: 'var(--rail-active)',
+        focus: 'var(--rail-focus)',
+      },
+      // accents: DEFAULT is the brand fill, `on` the text on that fill,
+      // `text` the accent as text on a surface, `wash` its tinted background
+      saffron: {
+        DEFAULT: 'var(--saffron)',
+        on: 'var(--on-saffron)',
+        text: 'var(--saffron-text)',
+        wash: 'var(--saffron-wash)',
+      },
+      verified: {
+        DEFAULT: 'var(--verified)',
+        on: 'var(--on-verified)',
+        text: 'var(--verified-text)',
+        wash: 'var(--verified-wash)',
+      },
+      seal: {
+        DEFAULT: 'var(--seal)',
+        on: 'var(--on-seal)',
+        text: 'var(--seal-text)',
+        wash: 'var(--seal-wash)',
+      },
+      slate: {
+        DEFAULT: 'var(--slate)',
+        wash: 'var(--slate-wash)',
+      },
+      ink: 'var(--ink)',
+      paper: 'var(--paper)',
+    },
+    fontFamily: {
+      display: ['"Bricolage Grotesque Variable"', '"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+      sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+      mono: ['"IBM Plex Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+    },
+    // The brief's scale: 12 / 14 / 16 / 20 / 28 / 40. Nothing in between.
+    fontSize: {
+      xs: ['12px', '16px'],
+      sm: ['14px', '20px'],
+      base: ['16px', '24px'],
+      lg: ['20px', '26px'],
+      xl: ['28px', '32px'],
+      '2xl': ['40px', '42px'],
+    },
+    borderRadius: { none: '0', sm: '2px', DEFAULT: '4px', md: '6px', full: '9999px' },
     extend: {
-      colors: {
-        paper: 'var(--paper)', surface: 'var(--surface)',
-        'surface-2': 'var(--surface-2)', 'surface-3': 'var(--surface-3)',
-        ink: 'var(--ink)', 'ink-soft': 'var(--ink-soft)', 'ink-dim': 'var(--ink-dim)',
-        rule: 'var(--rule)', 'rule-soft': 'var(--rule-soft)',
-        chain: 'var(--chain)', network: 'var(--network)', fusion: 'var(--fusion)',
-        confirm: 'var(--confirm)', data: 'var(--data)', danger: 'var(--danger)',
-        'chain-wash': 'var(--chain-wash)', 'network-wash': 'var(--network-wash)',
-        'fusion-wash': 'var(--fusion-wash)', 'confirm-wash': 'var(--confirm-wash)',
-        'danger-wash': 'var(--danger-wash)',
-        chrome: 'var(--chrome)',
-        active: 'var(--active)', 'active-wash': 'var(--active-wash)',
-      },
-      fontFamily: {
-        sans: ['Public Sans', 'system-ui', 'sans-serif'],
-        cond: ['Archivo', 'system-ui', 'sans-serif'],
-        mono: ['Spline Sans Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
-      },
-      /* SIX SIZES, WITH REAL STEPS BETWEEN THEM.
-         Ten were declared and 78% of every use landed on the two smallest, so
-         hierarchy was carried almost entirely by weight and colour - the mirror
-         image of the mono monoculture this interface already fixed once. `xs`
-         (11.5) sat inside 2px of both its neighbours; `xl` had two uses and
-         `4xl` had one. Gone. `md` and `lg` were widened so prose and
-         sub-headings are separated by something a reader can actually see. */
-      fontSize: {
-        '2xs': ['11px', '15px'],     // metadata: colheads, tags, receipts
-        sm:    ['12px', '17px'],     // dense values and control labels
-        base:  ['13px', '19px'],     // the body default
-        md:    ['16px', '23px'],     // prose meant to be read
-        lg:    ['18px', '25px'],     // sub-headings
-        '2xl': ['24px', '28px'],
-        '3xl': ['34px', '36px'],
-      },
-      borderRadius: { DEFAULT: '2px', none: '0', sm: '1px', md: '2px' },
-      spacing: { '0.5': '2px', '1.5': '6px', '2.5': '10px', '3.5': '14px', '4.5': '18px' },
+      spacing: { 4.5: '18px', 13: '52px', 15: '60px', rail: '224px' },
+      maxWidth: { content: '1240px' },
+      screens: { wide: '1440px' },
     },
   },
   plugins: [],

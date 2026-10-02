@@ -1,0 +1,113 @@
+/* VASP-FUSION design tokens. See ui/DESIGN.md.
+ *
+ * Two layers:
+ *   brand  six colours from the brief. They never change, in either theme.
+ *   role   what a component asks for (--bg, --fg, --verified-text ...). These switch per theme.
+ * Components use role tokens (through Tailwind), so no component hard-codes a colour.
+ *
+ * src/styles/tokens.test.ts reads this file: it pins the brand hexes and checks every
+ * text/background pair below for WCAG AA in both themes. The comment markers are its anchors.
+ */
+
+/* brand */
+:root {
+  --ink: #2B1622;       /* deep plum: nav rail, headings */
+  --paper: #F5F4F8;     /* cool lavender-grey page */
+  --saffron: #E8772E;   /* the attributed exchange, and the primary action. Nothing else. */
+  --verified: #1F7A74;  /* evidence published by an exchange or tagged by an explorer */
+  --seal: #B3261E;      /* sanctioned, mixer, freeze */
+  --slate: #5B5566;     /* secondary text, derived-tier evidence */
+}
+
+/* light */
+:root {
+  color-scheme: light;
+
+  --bg: var(--paper);
+  --surface: #FFFFFF;
+  --surface-sunk: #ECE9F1;
+  --rule: #DAD6E1;
+  --rule-strong: #8A8296;
+
+  --fg: var(--ink);
+  --fg-muted: var(--slate);
+  --focus: var(--ink);
+
+  --rail-bg: var(--ink);
+  --rail-fg: #F5F4F8;
+  --rail-fg-muted: #C9BDC6;
+  --rail-rule: #4A2E3D;
+  --rail-active: #4A2E3D;
+  --rail-focus: #F5F4F8;
+
+  --on-saffron: #2B1622;
+  --on-verified: #FFFFFF;
+  --on-seal: #FFFFFF;
+
+  --saffron-text: #A5460E;
+  --verified-text: #196A65;
+  --seal-text: #B3261E;
+
+  --saffron-wash: #FCEBDD;
+  --verified-wash: #E1F0EE;
+  --seal-wash: #FBE9E7;
+  --slate-wash: #E9E7EE;
+}
+
+/* dark */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #1A0F16;
+  --surface: #24161F;
+  --surface-sunk: #140B11;
+  --rule: #3E2A37;
+  --rule-strong: #8A7584;
+
+  --fg: #EDE9F0;
+  --fg-muted: #B9AEBB;
+  --focus: #EDE9F0;
+
+  --rail-bg: #120A0F;
+  --rail-rule: #3E2A37;
+  --rail-active: #2E1C27;
+
+  --saffron-text: #E8772E;
+  --verified-text: #57BDB4;
+  --seal-text: #F08A82;
+
+  --saffron-wash: #3A2216;
+  --verified-wash: #14302E;
+  --seal-wash: #3A1614;
+  --slate-wash: #2E2230;
+}
+
+/* dark-system: the same declarations, for a dark device when the officer has made no choice */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #1A0F16;
+    --surface: #24161F;
+    --surface-sunk: #140B11;
+    --rule: #3E2A37;
+    --rule-strong: #8A7584;
+
+    --fg: #EDE9F0;
+    --fg-muted: #B9AEBB;
+    --focus: #EDE9F0;
+
+    --rail-bg: #120A0F;
+    --rail-rule: #3E2A37;
+    --rail-active: #2E1C27;
+
+    --saffron-text: #E8772E;
+    --verified-text: #57BDB4;
+    --seal-text: #F08A82;
+
+    --saffron-wash: #3A2216;
+    --verified-wash: #14302E;
+    --seal-wash: #3A1614;
+    --slate-wash: #2E2230;
+  }
+}
