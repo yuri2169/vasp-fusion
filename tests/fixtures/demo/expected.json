@@ -343,6 +343,18 @@
     "deposit_address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
     "label_tier": "derived",
     "counterfactual_holds": true
+   },
+   {
+    "vasp": "Binance",
+    "direction": "inbound",
+    "proximity_rank": 2,
+    "confidence": 0.0177,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 0.0052,
+    "deposit_address": "TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS",
+    "label_tier": "curated",
+    "counterfactual_holds": null
    }
   ],
   "where_funds_went": [

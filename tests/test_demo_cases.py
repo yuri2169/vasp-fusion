@@ -193,7 +193,13 @@ def test_the_other_half_of_the_hero_wallets_money_is_a_lead_not_an_answer(tmp_pa
     assert "behaves like an exchange deposit address" in lead["text"]
     assert "Neither it nor TDqSqu…dkhSCf, the wallet it sweeps into, is labelled" in lead["text"]
     assert "A lead to check, not a finding" in lead["text"] and "over 0.99" in lead["text"]
-    assert [c["vasp"] for c in case["candidates"]] == ["CoinDCX"]      # no exchange was added
+    # the lead added no exchange to where the money went ...
+    assert [c["vasp"] for c in case["candidates"] if c["direction"] == "outbound"] == ["CoinDCX"]
+    # ... (the wallet's own funding is another matter: 14 USDT came from a Binance wallet
+    # that the GraphSense TagPacks name, B5)
+    funders = [(c["vasp"], c["label_tier"], round(c["share_of_funds"], 3))
+               for c in case["candidates"] if c["direction"] == "inbound"]
+    assert funders == [("Binance", "curated", 0.005)]
     assert case["next_steps"][0].startswith("Draft a request to CoinDCX")
     assert case["next_steps"][-1].startswith("Identify TDqSqu…dkhSCf")
     assert "Lead, not a finding: TDYCQE…yPdsUJ behaves like" in case["narrative"]
