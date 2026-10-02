@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Chain, Hop, Tier } from '../api/models'
 import { cx } from '../lib/cx'
 import { explorerName, txUrl } from '../lib/explorers'
@@ -32,7 +32,7 @@ function Stub({ hop, chain }: { hop: Hop; chain: Chain }) {
   const traced = hop.traced_amount ?? hop.amount
   const partial = hop.traced_amount != null && Math.abs(hop.traced_amount - hop.amount) > 1e-9
   return (
-    <span className="relative flex min-w-[112px] flex-1 items-center justify-center px-2.5">
+    <span className="relative flex min-w-[108px] flex-1 items-center justify-center px-2">
       <span aria-hidden className="rail-line absolute inset-x-0 top-1/2 -translate-y-px border-t-2 border-fg" />
       <span
         aria-hidden
@@ -79,18 +79,31 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
     moving ? { className: kind, style: { '--step': i } as CSSProperties } : {}
   const abstained = stamp.outcome === 'INSUFFICIENT_EVIDENCE'
 
+  // A long path scrolls sideways under the stamp, which stays in view: the answer is never off-screen.
+  const scroller = useRef<HTMLDivElement>(null)
+  const [overflowing, setOverflowing] = useState(false)
+  useEffect(() => {
+    const el = scroller.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const measure = () => setOverflowing(el.scrollWidth > el.clientWidth + 1)
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    measure()
+    return () => observer.disconnect()
+  }, [hops.length, state])
+
   return (
-    <div className={cx('overflow-x-auto rounded-md border border-rule bg-surface', className)}>
-      <ol aria-label="Path of the funds" className="flex w-full min-w-max items-center px-4 py-5">
-        <li {...step(0)}>
-          <AddressChip address={suspect.address} chain={suspect.chain} role="suspect" head={4} tail={4} actions="copy" />
+    <div ref={scroller} className={cx('overflow-x-auto rounded-md border border-rule bg-surface', className)}>
+      <ol aria-label="Path of the funds" className="flex w-full min-w-max items-stretch pl-4">
+        <li {...step(0)} className={cx('flex items-center py-5', step(0).className)}>
+          <AddressChip address={suspect.address} chain={suspect.chain} role="suspect" head={4} tail={4} actions="copy" className="shrink-0" />
         </li>
 
         {state === 'done' &&
           hops.map((hop, i) => {
             const s = step(i + 1)
             return (
-              <li key={hop.tx_hash + hop.to_address} {...s} className={cx('flex flex-1 items-center', s.className)}>
+              <li key={hop.tx_hash + hop.to_address} {...s} className={cx('flex flex-1 items-center py-5', s.className)}>
                 <Stub hop={hop} chain={suspect.chain} />
                 <AddressChip
                   address={hop.to_address}
@@ -100,13 +113,14 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
                   head={4}
                   tail={4}
                   actions="copy"
+                  className="shrink-0"
                 />
               </li>
             )
           })}
 
         {state === 'tracing' ? (
-          <li className="flex flex-1 items-center gap-3 pl-3">
+          <li className="flex flex-1 items-center gap-3 py-5 pl-3 pr-4">
             <span aria-hidden className="rail-tracing h-0.5 min-w-[96px] flex-1" />
             <span role="status" className="whitespace-nowrap text-sm font-medium text-muted">
               Tracing…
@@ -116,7 +130,14 @@ export function HopRail({ suspect, hops, stamp, labels = {}, state = 'done', ani
           (() => {
             const s = step(hops.length + 1, 'rail-stamp')
             return (
-              <li {...s} className={cx('flex items-center py-1 pl-0', s.className)}>
+              <li
+                {...s}
+                className={cx(
+                  'sticky right-0 z-[2] flex items-center bg-surface py-4 pr-4',
+                  overflowing && 'border-l border-dashed border-rule-strong pl-3',
+                  s.className,
+                )}
+              >
                 <span
                   aria-hidden
                   className={cx('w-7 shrink-0 border-t-2', abstained ? 'border-dashed border-rule-strong' : 'border-fg')}

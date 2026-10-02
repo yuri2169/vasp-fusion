@@ -58,11 +58,11 @@ export function AddressChip({ address, chain, entity, tier, role, full, head = 6
         </span>
       )}
       {to ? (
-        <Link to={to} className="font-mono text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
+        <Link to={to} className="whitespace-nowrap font-mono text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
           {shown}
         </Link>
       ) : (
-        <span className={cx('font-mono text-fg', full && 'break-all')}>{shown}</span>
+        <span className={cx('font-mono text-fg', full ? 'break-all' : 'whitespace-nowrap')}>{shown}</span>
       )}
       <span className="flex shrink-0 items-center">
         <CopyButton value={address} label="address" />

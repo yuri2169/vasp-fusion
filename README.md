@@ -26,6 +26,8 @@ make docker-smoke                 # the whole demo inside a container with no ne
 ```
 Contract work: `make mocks` regenerates `mocks/` (seeded), and `make types` regenerates `docs/openapi.json` and `ui/src/api/types.ts`.
 
+The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, then `make ui-dev` (demo fixtures; `make ui-dev API=live` talks to `make serve`), `make ui-test`, `make ui-build` (then `make serve` serves it at `/`). Every component in every state is at `/kit`.
+
 ## Offline demo in Docker
 ```bash
 make labels          # once: the image bakes data/labels.duckdb in

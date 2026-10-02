@@ -37,10 +37,17 @@ function lookOf(outcome: Outcome | null, status?: CaseStatus): Look {
   return outcome === 'ATTRIBUTED' ? 'attributed' : outcome === 'INSUFFICIENT_EVIDENCE' ? 'insufficient' : 'sanctioned'
 }
 
-function confidenceLine(confidence: number, interval?: number[] | null): string {
-  return interval && interval.length === 2
-    ? `confidence ${formatConfidence(confidence)} · ${formatConfidenceRange(interval[0], interval[1])}`
-    : `rule confidence ${formatConfidence(confidence)}`
+/** "confidence 0.91" with its range under it, or "rule confidence 0.71" when the label was not scored by the model. */
+function ConfidenceLines({ confidence, interval }: { confidence: number; interval?: number[] | null }) {
+  const range = interval && interval.length === 2
+  return (
+    <span className="tabular flex flex-col font-mono text-xs leading-4">
+      <span>
+        {range ? 'confidence' : 'rule confidence'} {formatConfidence(confidence)}
+      </span>
+      {range && <span>{formatConfidenceRange(interval[0], interval[1])}</span>}
+    </span>
+  )
 }
 
 /** The docket stamp: what the case came to. */
@@ -77,7 +84,7 @@ export function OutcomeStamp({ outcome, status, vasp, confidence, interval, what
         {look === 'insufficient' && <span className="display text-lg">No exchange named</span>}
         {look === 'sanctioned' && vasp && <span className="text-sm font-medium">Nearest exchange: {vasp}</span>}
         {(look === 'attributed' || (look === 'sanctioned' && vasp)) && confidence != null && (
-          <span className="tabular font-mono text-xs">{confidenceLine(confidence, interval)}</span>
+          <ConfidenceLines confidence={confidence} interval={interval} />
         )}
       </div>
       {look === 'insufficient' && whatWouldChange && (

@@ -37,6 +37,11 @@
     outline-offset: 2px;
   }
 
+  /* On the ink rail the ring is paper, in both themes. */
+  .on-rail {
+    --focus: var(--rail-focus);
+  }
+
   /* Addresses, hashes and amounts. Zero is slashed so 0 and O never read alike. */
   .font-mono {
     font-feature-settings: 'zero' 1;

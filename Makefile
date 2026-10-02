@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -84,6 +84,21 @@ openapi:          ## write docs/openapi.json from the FastAPI app
 
 types: openapi    ## generate ui/src/api/types.ts from the OpenAPI schema
 	cd ui && npx --yes openapi-typescript@7.13.0 ../docs/openapi.json -o src/api/types.ts
+
+ui-setup:         ## install the interface's dependencies (needs network ONCE)
+	cd ui && npm ci
+
+ui-dev:           ## the interface on :5173 with demo fixtures; API=live talks to `make serve` instead
+	cd ui && VITE_API=$(or $(API),mock) npm run dev
+
+ui-test:          ## the interface's tests, type check and lint
+	cd ui && npm test && npm run typecheck && npm run lint
+
+ui-build:         ## compile ui/ into ui/dist, which `make serve` then serves at /
+	cd ui && npm run build
+
+ui-shots:         ## screenshots of /kit and the shell into docs/screenshots/ (needs `make ui-dev` running; BASE_URL=..)
+	cd ui && npm run screenshots
 
 offline-check:    ## fail if code outside vaspfusion/chains/ can reach the network
 	@! grep -rnE "https?://" --include=*.py --exclude-dir=chains vaspfusion/ \

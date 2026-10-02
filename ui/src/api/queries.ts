@@ -3,7 +3,7 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/re
 import { useSyncExternalStore } from 'react'
 import { api } from './api'
 import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type LabelQuery } from './client'
-import type { CaseDetail } from './models'
+import type { CaseDetail, Login } from './models'
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -31,7 +31,7 @@ export const keys = {
   model: (chain?: string) => ['model', chain ?? 'tron'] as const,
 }
 
-export const useMe = () => useQuery({ queryKey: keys.me, queryFn: api.me, staleTime: 60_000 })
+export const useMe = () => useQuery({ queryKey: keys.me, queryFn: () => api.me(), staleTime: 60_000 })
 
 export const useCases = (query?: CasesQuery) => useQuery({ queryKey: keys.cases(query), queryFn: () => api.cases(query) })
 
@@ -59,12 +59,12 @@ export function useOpenCase() {
 
 export function useSignIn() {
   const client = useQueryClient()
-  return useMutation({ mutationFn: api.login, onSuccess: () => client.invalidateQueries() })
+  return useMutation({ mutationFn: (body: Login) => api.login(body), onSuccess: () => client.invalidateQueries() })
 }
 
 export function useSignOut() {
   const client = useQueryClient()
-  return useMutation({ mutationFn: api.logout, onSuccess: () => client.invalidateQueries() })
+  return useMutation({ mutationFn: () => api.logout(), onSuccess: () => client.invalidateQueries() })
 }
 
 /** 'mock' | 'live' | 'mixed' of the latest answer, or null before the first one. */

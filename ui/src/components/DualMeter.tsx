@@ -62,7 +62,7 @@ export function DualMeter({
         aria-valuetext={`Rank ${proximityRank}: ${proximityFacts.join(', ')}`}
         className="flex min-w-0 flex-col gap-1.5"
       >
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex h-5 items-center justify-between gap-2">
           <span className="eyebrow">Proximity</span>
           <span className="tabular font-mono text-xs text-muted">rank {proximityRank}</span>
         </div>
@@ -99,7 +99,7 @@ export function DualMeter({
         aria-valuetext={confidenceText}
         className="flex min-w-0 flex-col gap-1.5"
       >
-        <div className="flex items-baseline justify-between gap-2">
+        <div className="flex h-5 items-center justify-between gap-2">
           <span className="eyebrow">{range ? 'Confidence' : 'Rule confidence'}</span>
           <span className="tabular font-mono text-sm font-semibold text-fg">{formatConfidence(confidence)}</span>
         </div>
