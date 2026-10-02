@@ -34,6 +34,7 @@ from .. import chains
 from ..auth import tokens
 from ..auth.officers import USERNAME, Locked, Officers
 from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
+from ..explain.progress import progress_sentence
 from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..store.audit import AuditLog
 from ..store.cases import SUMMARY_KEYS, CaseStore
@@ -356,6 +357,16 @@ def _resolve(body: S.CaseCreate) -> tuple[str, str]:
 # One server process is assumed, as everywhere else in this single-workstation tool.
 _ACTIVE: set[str] = set()
 _ACTIVE_LOCK = threading.Lock()
+# What each of those traces has read so far (`trace(on_progress=)`), for the officer who is
+# watching the case. Kept here and never stored: a stored case is a result, with digests.
+_PROGRESS: dict[str, dict] = {}
+_NOTHING_READ = {"phase": "reading", "asset": None, "hop": 0, "wallets_read": 0,
+                 "transfers_read": 0, "reached": []}
+
+
+def _note_progress(case_id: str, snapshot: dict) -> None:
+    with _ACTIVE_LOCK:
+        _PROGRESS[case_id] = snapshot
 
 
 def _run_case(case_id: str, max_hops: int, incident: datetime | None,
@@ -366,6 +377,7 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
         store = _cases()
         queued = store.get(case_id)
         store.set_status(case_id, "running")
+        _note_progress(case_id, dict(_NOTHING_READ))
         fetcher = make_fetcher()
         cfg = TraceConfig(max_hops=max_hops, since=incident)
         provider = trace_provider(queued["chain"], fetcher, cfg)
@@ -373,7 +385,9 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
             detail = run_case(
                 queued["address"], queued["chain"], provider, labels, case_id=case_id,
                 meta=queued, cfg=cfg, fetcher=fetcher, label_db_sha256=label_db_sha256(),
-                now=datetime.fromisoformat(queued["created_at"].replace("Z", "+00:00")))
+                now=datetime.fromisoformat(queued["created_at"].replace("Z", "+00:00")),
+                demo=bool(queued.get("demo")),      # a demo wallet traced again is still one
+                on_progress=lambda snapshot: _note_progress(case_id, snapshot))
         store.save(detail)
     except Exception as e:  # noqa: BLE001 - whatever went wrong, the case must say so
         why = f"{type(e).__name__}: {e}"[:500]
@@ -389,6 +403,7 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
     finally:
         with _ACTIVE_LOCK:
             _ACTIVE.discard(case_id)
+            _PROGRESS.pop(case_id, None)
 
 
 @app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
@@ -503,6 +518,12 @@ def get_case(case_id: str, response: Response):
     live = _cases().get(case_id)
     if live is not None:
         _source(response, "live")
+        if live["status"] in ("queued", "running"):
+            with _ACTIVE_LOCK:
+                snapshot = _PROGRESS.get(case_id)
+            if snapshot is not None:
+                live["progress"] = {**snapshot,
+                                    "message": progress_sentence(live["chain"], snapshot)}
         return live
     _source(response, "mock")
     return load_mock(f"cases/{case_id}")

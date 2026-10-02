@@ -203,6 +203,7 @@ export function CasePage() {
       hops={c.hop_rail}
       labels={labelsOf(c)}
       state={tracing && !hasResult ? 'tracing' : 'done'}
+      depth={c.progress?.hop ?? 0}
       animate={!tracing && (watchedTrace || sawTracing)}
       selected={selected}
       marked={marked}
@@ -247,6 +248,7 @@ export function CasePage() {
       {tracing && (
         <p role="status" className="mb-3 rounded border border-dashed border-rule-strong px-3 py-2 text-sm text-fg">
           Tracing again. This is the previous result; the new one replaces it when it is ready.
+          {c.progress && <span className="mt-1 block text-muted">{c.progress.message}</span>}
         </p>
       )}
 

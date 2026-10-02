@@ -1781,6 +1781,17 @@
             "title": "Error",
             "description": "Set when status is 'failed': what went wrong, in plain English"
           },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CaseProgress"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case"
+          },
           "asset": {
             "anyOf": [
               {
@@ -1987,6 +1998,71 @@
           "items"
         ],
         "title": "CaseList"
+      },
+      "CaseProgress": {
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "reading",
+              "outbound",
+              "inbound",
+              "checking"
+            ],
+            "title": "Phase",
+            "description": "reading: the wallet's own transfers are being read. outbound: the money is being followed. inbound: the wallet's funders are being read. checking: the trace is done; each exchange that would be named is traced again without its label, and unlabelled wallets are scored"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset",
+            "description": "The asset being followed, once chosen"
+          },
+          "hop": {
+            "type": "integer",
+            "title": "Hop",
+            "description": "How many hops out the trace has gone"
+          },
+          "wallets_read": {
+            "type": "integer",
+            "title": "Wallets Read"
+          },
+          "transfers_read": {
+            "type": "integer",
+            "title": "Transfers Read"
+          },
+          "reached": {
+            "items": {
+              "$ref": "#/components/schemas/ProgressReached"
+            },
+            "type": "array",
+            "title": "Reached",
+            "description": "Labelled wallets the money has reached so far, each owner once, in the order found. Not a result: what is named is decided when the trace is done",
+            "default": []
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "The same, as one sentence to show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "phase",
+          "hop",
+          "wallets_read",
+          "transfers_read",
+          "message"
+        ],
+        "title": "CaseProgress",
+        "description": "What a trace that is still running has read so far. Counts only: a trace does not\nknow how much is left, so there is no percentage."
       },
       "CaseSummary": {
         "properties": {
@@ -4099,6 +4175,41 @@
           "sha256"
         ],
         "title": "PageDigest"
+      },
+      "ProgressReached": {
+        "properties": {
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "exchange",
+              "custodial_wallet",
+              "swap_service",
+              "sanctioned",
+              "scam",
+              "mixer",
+              "bridge",
+              "defi",
+              "entity"
+            ],
+            "title": "Category"
+          },
+          "hop": {
+            "type": "integer",
+            "title": "Hop"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity",
+          "category",
+          "hop"
+        ],
+        "title": "ProgressReached"
       },
       "Provenance": {
         "properties": {

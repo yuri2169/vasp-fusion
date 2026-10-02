@@ -133,6 +133,58 @@ describe('a trace in progress', () => {
     expect(screen.getByText(/^Trace finished\. It read 3 responses and found 8 wallets and 7 transfers\.$/)).toBeInTheDocument()
   })
 
+  const PROGRESS = {
+    phase: 'outbound' as const,
+    asset: 'USDT',
+    hop: 2,
+    wallets_read: 5,
+    transfers_read: 214,
+    reached: [{ entity: 'CoinDCX', category: 'exchange' as const, hop: 1 }],
+    message: 'Following the money on Tron: 214 USDT transfers of 5 wallets read, 2 hops out. Reached so far: CoinDCX.',
+  }
+  const unfinished: CaseDetail = {
+    ...hero,
+    status: 'running',
+    outcome: null,
+    top_vasp: null,
+    confidence: null,
+    hop_rail: [],
+    graph: { nodes: [], edges: [] },
+    candidates: [],
+    typology_flags: [],
+    where_funds_went: [],
+    narrative: '',
+    next_steps: [],
+  }
+
+  it('shows what the server says the trace has read so far, in its words, and how far out it is', async () => {
+    serve({ ...unfinished, progress: PROGRESS })
+    open('/cases/tron-coindcx')
+    expect(await screen.findByText(PROGRESS.message)).toBeInTheDocument()
+    const facts = screen.getByRole('group', { name: 'Read so far' })
+    expect(facts).toHaveTextContent('Hops out2')
+    expect(facts).toHaveTextContent('Wallets read5')
+    expect(facts).toHaveTextContent('Transfers read214')
+    const rail = screen.getByRole('list', { name: 'Path of the funds' })
+    expect(within(rail).getAllByTestId('hop-pending')).toHaveLength(2)
+    // a labelled wallet reached is not yet a result
+    expect(screen.queryByTestId('outcome-stamp')).not.toBeInTheDocument()
+  })
+
+  it('says it is waiting when the case is queued and nothing has been read', async () => {
+    serve({ ...unfinished, status: 'queued', progress: null })
+    open('/cases/tron-coindcx')
+    expect(await screen.findByText('Waiting to start.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Read so far' })).not.toBeInTheDocument()
+  })
+
+  it('shows the progress of a second trace over the previous result', async () => {
+    serve({ ...hero, status: 'running', progress: { ...PROGRESS, phase: 'checking', message: 'Read 214 USDT transfers of 5 wallets on Tron. Now checking the result.' } })
+    open('/cases/tron-coindcx')
+    expect(await screen.findByText(/Tracing again\. This is the previous result/)).toBeInTheDocument()
+    expect(screen.getByText('Read 214 USDT transfers of 5 wallets on Tron. Now checking the result.')).toBeInTheDocument()
+  })
+
   it('does not animate a case that was already finished when it was opened', async () => {
     open('/cases/demo-tron-okx')
     const rail = await screen.findByRole('list', { name: 'Path of the funds' })

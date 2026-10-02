@@ -148,10 +148,11 @@ def findings_sha256(case: dict) -> str:
     return sha256_of(findings(case))
 
 
-# What a stored case holds that is not the result of the trace: its identity and state,
-# what the officer entered, and the receipt itself.
+# What a stored case holds that is not the result of the trace: its identity and state
+# (`progress` is what a run had read at some moment), what the officer entered, and the
+# receipt itself.
 NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "complaint_no",
-                         "amount_lost_inr", "demo", "provenance"})
+                         "amount_lost_inr", "demo", "provenance", "progress"})
 
 
 def content_sha256(case: dict) -> str:

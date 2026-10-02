@@ -123,6 +123,17 @@ describe('opening a case', () => {
     expect(await screen.findByText('This wallet already has a case')).toBeInTheDocument()
   })
 
+  it('does not say a trace finished when the stored case was only opened', async () => {
+    opened('demo-tron-okx', 'done')
+    const { user } = open()
+    await screen.findByRole('heading', { level: 1 })
+    await user.type(address(), REAL_TRON)
+    await user.click(trace())
+    expect(await screen.findByRole('heading', { level: 2, name: 'Why OKX?' })).toBeInTheDocument()
+    expect(screen.queryByText(/^Trace finished/)).not.toBeInTheDocument()
+    expect(document.querySelector('.rail-step')).toBeNull()
+  })
+
   it('shows the server’s sentence when the case cannot be opened', async () => {
     vi.spyOn(api, 'openCase').mockRejectedValue(new ApiError(503, 'The label database is missing. Run make labels, then try again.'))
     const { user } = open()

@@ -215,17 +215,32 @@ def build_case(tr: TraceResult, att: Attribution, *, case_id: str, meta: dict | 
 def run_case(address: str, chain: str, provider, labels, *, case_id: str | None = None,
              meta: dict | None = None, cfg: TraceConfig = TraceConfig(),
              rules: RuleConfig = RuleConfig(), fetcher=None, label_db_sha256: str | None = None,
-             now: datetime | None = None, demo: bool = False, scorer="auto") -> dict:
+             now: datetime | None = None, demo: bool = False, scorer="auto",
+             on_progress=None) -> dict:
     """Trace `address`, attribute it, check each named exchange against the loss of its
     label, score the unlabelled wallets on the trail, and return the CaseDetail as a
     JSON-ready dict. `fetcher` (the one behind `provider`) is read for provenance, and
     the deposit-address model reads its listings through it (`scorer`: "auto" builds the
-    chain's scorer on `fetcher`; None scores nothing)."""
+    chain's scorer on `fetcher`; None scores nothing). `on_progress` is told what the
+    trace has read so far (see `trace`), and then that the result is being checked; it
+    changes nothing about the result."""
     pages_before = len(fetcher.trail) if fetcher is not None else 0
     live_before = fetcher.stats["live"] if fetcher is not None else 0
     # Bitcoin: a wallet with no label of its own may still be an exchange's by its cluster
     labels = cluster_labels(chain, labels, provider)
-    tr = trace(address, chain, provider, labels, cfg)
+    last: dict = {"phase": "reading", "asset": None, "hop": 0, "wallets_read": 0,
+                  "transfers_read": 0, "reached": []}
+
+    def tell(snapshot: dict) -> None:
+        last.update(snapshot)
+        on_progress(snapshot)
+
+    tr = trace(address, chain, provider, labels, cfg, on_progress=tell if on_progress else None)
+    if on_progress:
+        try:    # the trace is done; what follows re-traces without labels and scores wallets
+            on_progress({**last, "phase": "checking"})
+        except Exception:  # noqa: BLE001 - a watcher that broke must not break the case
+            pass
     att = attribute(tr, rules)
     add_counterfactuals(tr, att, provider, labels, cfg, rules)
     if scorer == "auto":

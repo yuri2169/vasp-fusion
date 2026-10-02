@@ -26,7 +26,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import ROUND_DOWN, Decimal
-from typing import Iterable, Protocol
+from typing import Callable, Iterable, Protocol
 
 from .chains.base import ProviderError, Transfer
 from .labels.lookup import Label
@@ -186,12 +186,52 @@ def _is_dust(t: Transfer, cfg: TraceConfig) -> bool:
     return t.amount < DUST_NATIVE.get(t.asset, cfg.dust_native)
 
 
+class _Reporter:
+    """Tells whoever is watching a trace what it has read so far: the phase, how far out it
+    is, how many wallets and transfers were read, and which labelled wallets the money has
+    reached. It only counts: a trace with nobody watching is the same trace, and a listener
+    that fails is not the trace's problem."""
+
+    def __init__(self, on_progress: Callable[[dict], None] | None):
+        self.tell = on_progress
+        self.phase = "outbound"
+        self.asset: str | None = None
+        self.hop = 0
+        self.wallets: set[str] = set()
+        self.transfers = 0
+        self.reached: list[dict] = []
+
+    def emit(self) -> None:
+        if self.tell is None:
+            return
+        try:
+            self.tell({"phase": self.phase, "asset": self.asset, "hop": self.hop,
+                       "wallets_read": len(self.wallets), "transfers_read": self.transfers,
+                       "reached": [dict(r) for r in self.reached]})
+        except Exception:  # noqa: BLE001 - a watcher that broke must not break the trace
+            pass
+
+    def read(self, address: str, transfers: int) -> None:
+        """A wallet's listing came back with this many transfers."""
+        self.wallets.add(address)
+        self.transfers += transfers
+        self.emit()
+
+    def at_label(self, label: Label, hop: int) -> None:
+        """The money reached a labelled wallet (each owner is named once)."""
+        if any(r["entity"] == label.entity for r in self.reached):
+            return
+        self.reached.append({"entity": label.entity, "category": label.category, "hop": hop})
+        self.emit()
+
+
 class _Walk:
     """One direction of the trace. `sign` = +1 forward in time (outbound), -1 backward."""
 
     def __init__(self, result: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
-                 side: str):
+                 side: str, report: _Reporter | None = None):
         self.r, self.provider, self.labels, self.cfg, self.side = result, provider, labels, cfg, side
+        self.report = report or _Reporter(None)
         self.sign = 1 if side == "outbound" else -1
         self.direction = "out" if side == "outbound" else "in"
         self.max_hops = cfg.max_hops if side == "outbound" else cfg.inbound_hops
@@ -258,6 +298,8 @@ class _Walk:
     # ---------------------------------------------------------------- one hop
     def level(self, hop: int, arrivals: dict[str, list[TraceEdge]]) -> dict[str, list[TraceEdge]]:
         chain = self.r.chain
+        if self.side == "outbound":
+            self.report.hop = max(self.report.hop, hop)
         new = [a for a in arrivals if (self.side, a) not in self.r.nodes and a != self.r.address]
         found = self.labels.lookup_many([(a, chain) for a in sorted(new)])
         nxt: dict[str, list[TraceEdge]] = defaultdict(list)
@@ -287,6 +329,8 @@ class _Walk:
                     held, node.held, node.holds, node.state = node.held, ZERO, {}, "labelled"
                     self.hold(node, held, "labelled")
             reason = self.why_not_expand(node, hop)
+            if reason == "labelled" and self.side == "outbound":
+                self.report.at_label(node.label, hop)
             if reason is None:
                 try:
                     rows, complete = self.fetch(addr, edges)
@@ -330,6 +374,7 @@ class _Walk:
         if cached is None or (since is not None and cached[0] is not None and since < cached[0]):
             raw = self.provider.transfers(addr, self.direction, since=since,
                                           limit=self.cfg.fetch_limit, asset=self.asset)
+            self.report.read(addr, len(raw))
             cached = (since, self.usable(raw, addr), _complete(raw, self.cfg.fetch_limit))
             self.fetched[addr] = cached
         return cached[1], cached[2]
@@ -448,7 +493,12 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
 
 
 def trace(address: str, chain: str, provider, labels: LabelLookup,
-          cfg: TraceConfig = TraceConfig()) -> TraceResult:
+          cfg: TraceConfig = TraceConfig(),
+          on_progress: Callable[[dict], None] | None = None) -> TraceResult:
+    """`on_progress`, when given, is called with a snapshot each time the trace has read
+    another wallet or reached a labelled one: `phase` (outbound, then inbound), `asset`,
+    `hop` (how far out), `wallets_read`, `transfers_read`, `reached` (entity, category,
+    hop). It changes nothing about the result."""
     r = TraceResult(address=address, chain=chain, config=cfg)
     r.origin_label = labels.lookup_many([(address, chain)]).get((address, chain))
     infer = getattr(labels, "infer", None)
@@ -461,13 +511,14 @@ def trace(address: str, chain: str, provider, labels: LabelLookup,
         return r
     if hasattr(provider, "trace_from"):
         provider.trace_from(address)    # Bitcoin: whose multi-address spends may be split
-    _walks(r, provider, labels, cfg)
+    _walks(r, provider, labels, cfg, _Reporter(on_progress))
     # what the label layer could not settle (Bitcoin clusters: an unread listing, two owners)
     r.notes += [n for n in getattr(labels, "notes", ()) if n not in r.notes]
     return r
 
 
-def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> None:
+def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
+           report: _Reporter) -> None:
     address = r.address
     # an adapter that lists newest-first cuts off the old end of a long history
     which = "most recent" if getattr(provider, "newest_first", False) and cfg.since is None \
@@ -475,6 +526,8 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> N
     asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound")
     r.asset, r.untraced, r.truncated = asset, untraced, truncated
     r.total_out = sum((t.amount for t in rows), ZERO)
+    report.asset = asset
+    report.read(address, len(rows))
     if asset is None and truncated:
         since = f" back to {cfg.since.day} {cfg.since:%b %Y}" if cfg.since else ""
         r.notes.insert(0, f"The wallet's outgoing transfers could not be read{since}: it has "
@@ -484,15 +537,17 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig) -> N
         r.notes.append(f"Only the {which} {len(rows)} outgoing {asset} transfers were traced; "
                        "the wallet has more.")
     if asset is not None:
-        _Walk(r, provider, labels, cfg, "outbound").start(asset, rows, r.total_out)
+        _Walk(r, provider, labels, cfg, "outbound", report).start(asset, rows, r.total_out)
 
     if cfg.inbound_hops == 0:
         return
     in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
     r.in_asset = in_asset
     r.total_in = sum((t.amount for t in rows), ZERO)
+    report.phase = "inbound"
+    report.read(address, len(rows))
     if truncated and in_asset is not None:
         r.notes.append(f"Only the {which} {len(rows)} incoming {in_asset} transfers were "
                        "looked at; the wallet has more.")
     if in_asset is not None:
-        _Walk(r, provider, labels, cfg, "inbound").start(in_asset, rows, r.total_in)
+        _Walk(r, provider, labels, cfg, "inbound", report).start(in_asset, rows, r.total_in)

@@ -31,6 +31,35 @@ describe('a trace in mock mode', () => {
     expect([running.address, running.chain, running.case_ref]).toEqual([DEMO_TRON, 'tron', 'DEMO/2026/001'])
   })
 
+  it('says what the trace has read so far, as the live API does, from the fixture’s own graph', async () => {
+    const { api, advance } = mockApi(2000)
+    await api.openCase({ address: DEMO_TRON })
+    expect((await api.case('demo-tron-okx')).progress ?? null).toBeNull() // queued: nothing read yet
+
+    advance(400) // 20%: the first hop
+    const first = (await api.case('demo-tron-okx')).progress!
+    expect([first.phase, first.hop, first.asset]).toEqual(['outbound', 1, 'USDT'])
+    expect([first.wallets_read, first.transfers_read, first.reached]).toEqual([1, 1, []])
+    expect(first.message).toBe('Following the money on Tron: 1 USDT transfer of 1 wallet read, 1 hop out.')
+
+    advance(900) // 65%: the last hop out (the fixture goes 4 hops)
+    const far = (await api.case('demo-tron-okx')).progress!
+    expect([far.phase, far.hop]).toEqual(['outbound', 4])
+    expect(far.reached.map((r) => r.entity)).toEqual(['OKX', 'HTX'])
+    expect(far.wallets_read).toBeGreaterThan(first.wallets_read)
+    expect(far.message).toMatch(/^Following the money on Tron: 7 USDT transfers of \d wallets read, 4 hops out\. Reached so far: OKX, HTX\.$/)
+
+    advance(300) // 80%: the funders
+    expect((await api.case('demo-tron-okx')).progress!.phase).toBe('inbound')
+    advance(200) // 90%: checking the result
+    const checking = (await api.case('demo-tron-okx')).progress!
+    expect(checking.phase).toBe('checking')
+    expect(checking.message).toMatch(/^Read 7 USDT transfers of \d wallets on Tron\. Now checking the result/)
+
+    advance(200)
+    expect((await api.case('demo-tron-okx')).progress ?? null).toBeNull() // done: a result, no progress
+  })
+
   it('is the recorded result once the trace time has passed', async () => {
     const { api, advance } = mockApi()
     await api.openCase({ address: DEMO_TRON })

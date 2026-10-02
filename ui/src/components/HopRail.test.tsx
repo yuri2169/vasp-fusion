@@ -107,3 +107,18 @@ describe('HopRail', () => {
     expect(screen.getByTestId('outcome-stamp')).toHaveClass('stamp-tilt')
   })
 })
+
+describe('a trace that is still running', () => {
+  const running = { outcome: null, status: 'running' as const }
+
+  it('shows a place for each hop the trace has gone out so far, then the line still being drawn', () => {
+    render(<HopRail suspect={suspect} hops={[]} stamp={running} state="tracing" depth={2} />)
+    expect(screen.getAllByTestId('hop-pending').map((el) => el.textContent)).toEqual(['hop 1', 'hop 2'])
+    expect(screen.getByText('Tracing…')).toBeInTheDocument()
+  })
+
+  it('shows none before the first hop', () => {
+    render(<HopRail suspect={suspect} hops={[]} stamp={running} state="tracing" />)
+    expect(screen.queryByTestId('hop-pending')).not.toBeInTheDocument()
+  })
+})

@@ -18,6 +18,8 @@ export interface HopRailProps {
   labels?: Record<string, { entity: string; tier: Tier }>
   /** 'tracing' while the case is queued or running: the wallet, and a line still being drawn. */
   state?: 'tracing' | 'done'
+  /** While tracing: how many hops out the trace has gone so far (`CaseDetail.progress.hop`). */
+  depth?: number
   /** Extend the rail hop by hop (when a result has just arrived). Off under reduced motion. */
   animate?: boolean
   /** The wallet being shown elsewhere on the page (the graph, the side panel). */
@@ -87,6 +89,7 @@ export function HopRail({
   stamp,
   labels = {},
   state = 'done',
+  depth = 0,
   animate = false,
   selected,
   marked,
@@ -154,6 +157,19 @@ export function HopRail({
               </li>
             )
           })}
+
+        {state === 'tracing' &&
+          Array.from({ length: depth }, (_, i) => (
+            <li key={i} className="flex items-center py-5">
+              <span aria-hidden className="w-12 border-t-2 border-dashed border-rule-strong" />
+              <span
+                data-testid="hop-pending"
+                className="tabular inline-flex h-7 items-center whitespace-nowrap rounded border border-dashed border-rule-strong px-2 font-mono text-xs text-muted"
+              >
+                hop {i + 1}
+              </span>
+            </li>
+          ))}
 
         {state === 'tracing' ? (
           <li className="flex flex-1 items-center gap-3 py-5 pl-3 pr-4">

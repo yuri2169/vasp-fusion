@@ -38,12 +38,12 @@ export const useCases = (query?: CasesQuery) => useQuery({ queryKey: keys.cases(
 
 const tracing = (c?: CaseDetail) => c?.status === 'queued' || c?.status === 'running'
 
-/** One case. While it is queued or running it is asked for again every second. */
+/** One case. While it is queued or running it is asked for again twice a second, to show its progress. */
 export const useCase = (id: string) =>
   useQuery({
     queryKey: keys.case(id),
     queryFn: () => api.case(id),
-    refetchInterval: (q) => (tracing(q.state.data) ? 1000 : false),
+    refetchInterval: (q) => (tracing(q.state.data) ? 500 : false),
   })
 
 export const useLabelSearch = (query: LabelQuery, enabled = true) =>

@@ -33,7 +33,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | GET | `/api/audit?limit=&offset=&officer=&action=&target=&verify=` | – | `AuditPage` | `audit.json` | **live** | B9 |
 | POST | `/api/cases?refresh=` | `CaseCreate` | `CaseSummary` (202) | returns a mock demo case if the address is one of theirs | **live** | B3 |
 | GET | `/api/cases?outcome=&status=` | – | `CaseList` | `cases.json` (listed after the live cases) | **live** + mock | B3 |
-| GET | `/api/cases/{id}` | – | `CaseDetail` | `cases/{id}.json` (only for the mock ids) | **live** | B3 (B4, B7 fill evidence/flags) |
+| GET | `/api/cases/{id}` | – | `CaseDetail` (with `progress` while it is being traced) | `cases/{id}.json` (only for the mock ids) | **live** | B3 (B4, B7 fill evidence/flags; U2 progress) |
 | GET | `/api/cases/{id}/pdf` (also `/api/cases/{id}.pdf`) | – | `application/pdf` | the mock case, marked "Demo fixture - not evidence" | **live** | B9 |
 | GET | `/api/cases/{id}/receipt` | – | `Receipt` | `cases/{id}/receipt.json` | **live** | B9 |
 | POST | `/api/cases/{id}/verify` | – | `VerifyResult` | 422 for a mock id | **live** | B9 |
@@ -214,6 +214,20 @@ All additive. `make mocks types` has been run; the three mock cases now carry th
 - The same read by the same officer from the same address with the same result within 30 seconds is one row (a page polling a running trace); writes are never folded. A request body is never logged. A request that breaks the server is a row with status 500, and the reply is `{"detail": "The server could not answer this request. It has been logged."}`.
 - Rows are hash-chained: `hash` is an HMAC-SHA256, under the audit key, of the row and `prev_hash`. An edited, removed or reordered row breaks the chain from there, and `chain.broken_at` names it; without the key the log cannot be rewritten and rehashed. The key is `VASPFUSION_AUDIT_KEY`, or a file beside the log. Whoever holds both the log and the key can rewrite it, and rows cut off the end leave a valid chain: both are only caught against a `head` noted somewhere else.
 - Every `/api` reply carries `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`.
+
+### Progress of a running trace (U2)
+Additive; `make mocks types` has been run (the mocks did not change).
+- **`CaseDetail.progress`** (`CaseProgress | null`): what the trace has read so far. Set only while `status` is `queued` or `running` **and this server is tracing the case**; `null` on a finished or failed case, on a case that is still waiting to start, and on one left `running` by a restart. Poll `GET /api/cases/{id}` (the interface asks twice a second) to watch it.
+  - `phase`: `reading` (the wallet's own transfers) → `outbound` (the money is being followed) → `inbound` (who funded the wallet) → `checking` (the trace is done: each exchange that would be named is traced again without its label, and unlabelled wallets are scored; on a wallet with leads this is the longest part).
+  - `asset` (the asset being followed, once chosen), `hop` (how many hops out so far), `wallets_read`, `transfers_read` (transfers returned by the listings read; they only grow).
+  - `reached[]`: `entity`, `category`, `hop` of the labelled wallets the money has reached, each owner once, in the order found. **It is not a result**: which exchange is named, if any, is decided when the trace is done.
+  - `message`: the same as one sentence, to show as it is, e.g. "Following the money on Tron: 320 USDT transfers of 10 wallets read, 2 hops out. Reached so far: CoinDCX."
+- There is no percentage: a trace does not know how much is left.
+- **Progress is never stored and is in no digest** (`provenance.NOT_CONTENT`): a stored case is a result. It lives in the server process, like the list of cases being traced, so one server process is assumed, as everywhere else. A case traced before this field existed verifies as before.
+- During a refresh the case keeps showing the previous result with `status` `queued`/`running`, and `progress` beside it.
+- There is still no route to cancel a trace.
+- Also fixed with it: a refresh (`POST /api/cases?refresh=true`) of a demo wallet's case keeps `demo: true` (it was reset to false).
+- In code: `trace(..., on_progress=)` and `run_case(..., on_progress=)` take a callback and call it with each snapshot; it changes nothing about the result, and a callback that fails does not fail the trace. `vaspfusion/explain/progress.py` writes the sentence.
 
 ### Bitcoin (B5)
 `POST /api/cases` accepts a Bitcoin address (the chain is detected; bech32 is stored lowercase). The case has the same shape as any other. What is different, all additive:

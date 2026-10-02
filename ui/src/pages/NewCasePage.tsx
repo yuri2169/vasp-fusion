@@ -174,7 +174,8 @@ export function NewCasePage() {
         onSuccess: (opened) => {
           if (opened.status === 'done')
             show({ title: 'This wallet already has a case', detail: 'It is shown as it was last traced. Use Trace again to read the chain afresh.' })
-          navigate(`/cases/${encodeURIComponent(opened.id)}`, { state: { watched: true } })
+          // `watched`: this officer started the trace, so the page extends the rail when the result lands.
+          navigate(`/cases/${encodeURIComponent(opened.id)}`, { state: { watched: opened.status !== 'done' } })
         },
       },
     )

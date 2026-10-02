@@ -700,6 +700,8 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+            /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
+            progress?: components["schemas"]["CaseProgress"] | null;
             /**
              * Asset
              * @description The asset that was traced, e.g. USDT
@@ -775,6 +777,44 @@ export interface components {
             total: number;
             /** Items */
             items: components["schemas"]["CaseSummary"][];
+        };
+        /**
+         * CaseProgress
+         * @description What a trace that is still running has read so far. Counts only: a trace does not
+         *     know how much is left, so there is no percentage.
+         */
+        CaseProgress: {
+            /**
+             * Phase
+             * @description reading: the wallet's own transfers are being read. outbound: the money is being followed. inbound: the wallet's funders are being read. checking: the trace is done; each exchange that would be named is traced again without its label, and unlabelled wallets are scored
+             * @enum {string}
+             */
+            phase: "reading" | "outbound" | "inbound" | "checking";
+            /**
+             * Asset
+             * @description The asset being followed, once chosen
+             */
+            asset?: string | null;
+            /**
+             * Hop
+             * @description How many hops out the trace has gone
+             */
+            hop: number;
+            /** Wallets Read */
+            wallets_read: number;
+            /** Transfers Read */
+            transfers_read: number;
+            /**
+             * Reached
+             * @description Labelled wallets the money has reached so far, each owner once, in the order found. Not a result: what is named is decided when the trace is done
+             * @default []
+             */
+            reached: components["schemas"]["ProgressReached"][];
+            /**
+             * Message
+             * @description The same, as one sentence to show as it is
+             */
+            message: string;
         };
         /** CaseSummary */
         CaseSummary: {
@@ -1573,6 +1613,18 @@ export interface components {
              * @description SHA-256 of the response body as it was received
              */
             sha256: string;
+        };
+        /** ProgressReached */
+        ProgressReached: {
+            /** Entity */
+            entity: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "exchange" | "custodial_wallet" | "swap_service" | "sanctioned" | "scam" | "mixer" | "bridge" | "defi" | "entity";
+            /** Hop */
+            hop: number;
         };
         /** Provenance */
         Provenance: {

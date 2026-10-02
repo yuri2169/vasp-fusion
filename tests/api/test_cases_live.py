@@ -193,3 +193,91 @@ def test_the_wallet_page_lists_the_cases_a_wallet_appears_in(client):
     assert label["evidence"].startswith("Sweep rule: forwarded 100% of the 847,730 USDT")
     assert client.get(f"/api/wallets/tron/{COINDCX_2}").json()["cases"] == []
 
+
+
+# ------------------------------------------------------------------ progress (U2)
+SNAPSHOT = {"phase": "outbound", "asset": "USDT", "hop": 2, "wallets_read": 5,
+            "transfers_read": 214,
+            "reached": [{"entity": "CoinDCX", "category": "exchange", "hop": 1}]}
+
+
+def test_a_finished_case_carries_no_progress(client):
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    case = client.get(f"/api/cases/{cid}").json()
+    assert case["status"] == "done" and case["progress"] is None
+    assert cid not in main._PROGRESS            # nothing is left behind by the run
+
+
+def test_a_running_case_says_what_the_trace_has_read_so_far(client):
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    # the same case mid-trace: stored as running, active in this process, with a snapshot
+    main._cases().set_status(cid, "running")
+    with main._ACTIVE_LOCK:
+        main._ACTIVE.add(cid)
+    main._note_progress(cid, SNAPSHOT)
+    try:
+        case = client.get(f"/api/cases/{cid}").json()
+    finally:
+        with main._ACTIVE_LOCK:
+            main._ACTIVE.discard(cid)
+            main._PROGRESS.pop(cid, None)
+    S.CaseDetail.model_validate(case)
+    assert case["status"] == "running"
+    assert case["progress"] == {**SNAPSHOT, "message": (
+        "Following the money on Tron: 214 USDT transfers of 5 wallets read, 2 hops out. "
+        "Reached so far: CoinDCX.")}
+
+
+def test_a_case_left_running_by_a_restart_has_no_progress_to_show(client):
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    main._cases().set_status(cid, "running")     # no trace of it is active in this process
+    assert main._cases().get(cid)["status"] == "running"
+    assert main._cases().get(cid).get("progress") is None    # progress is never stored
+    assert client.get(f"/api/cases/{cid}").json()["progress"] is None
+
+
+def test_a_run_reports_from_the_first_read_to_the_check_of_the_result(client, monkeypatch):
+    seen: list[dict] = []
+    real = main._note_progress
+    monkeypatch.setattr(main, "_note_progress", lambda cid, p: (seen.append(p), real(cid, p)))
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    phases = [p["phase"] for p in seen]
+    assert phases[0] == "reading" and phases[-1] == "checking"
+    assert {"outbound", "inbound"} <= set(phases)
+    assert seen[-1]["wallets_read"] >= 2 and seen[-1]["reached"][0]["entity"] == "CoinDCX"
+    for p in seen:                               # every snapshot is a valid CaseProgress
+        S.CaseProgress.model_validate({**p, "message": "x"})
+    assert cid not in main._PROGRESS
+
+
+def test_a_refresh_shows_progress_over_the_previous_result(client):
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    done = client.get(f"/api/cases/{cid}").json()
+    main._cases().save({**{k: v for k, v in done.items() if k != "progress"}, "status": "running"})
+    with main._ACTIVE_LOCK:
+        main._ACTIVE.add(cid)
+    main._note_progress(cid, {**SNAPSHOT, "phase": "checking"})
+    try:
+        case = client.get(f"/api/cases/{cid}").json()
+    finally:
+        with main._ACTIVE_LOCK:
+            main._ACTIVE.discard(cid)
+            main._PROGRESS.pop(cid, None)
+    assert case["top_vasp"] == "CoinDCX"         # the previous result is still there
+    assert case["progress"]["phase"] == "checking"
+    assert case["progress"]["message"].startswith("Read 214 USDT transfers of 5 wallets on Tron.")
+
+
+def test_a_refresh_keeps_the_demo_mark_of_a_demo_wallet(client):
+    """Found from the case page (U2): "Trace again" on a recorded demo case dropped its
+    Demo tag, and the case left the list of demo cases."""
+    cid = client.post("/api/cases", json={"address": COINDCX}).json()["id"]
+    done = client.get(f"/api/cases/{cid}").json()
+    main._cases().save({**done, "demo": True, "case_ref": "DEMO/2026/101"})
+    client.post("/api/cases?refresh=true", json={"address": COINDCX})
+    again = client.get(f"/api/cases/{cid}").json()
+    assert (again["status"], again["demo"], again["case_ref"]) == ("done", True, "DEMO/2026/101")
+    # and a case that is not a demo stays one that is not
+    main._cases().save({**again, "demo": False})
+    client.post("/api/cases?refresh=true", json={"address": COINDCX})
+    assert client.get(f"/api/cases/{cid}").json()["demo"] is False

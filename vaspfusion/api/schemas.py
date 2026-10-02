@@ -305,7 +305,34 @@ class FundsSlice(_M):
     amount: float
 
 
+class ProgressReached(_M):
+    entity: str
+    category: Category
+    hop: int
+
+
+class CaseProgress(_M):
+    """What a trace that is still running has read so far. Counts only: a trace does not
+    know how much is left, so there is no percentage."""
+    phase: Literal["reading", "outbound", "inbound", "checking"] = Field(description=(
+        "reading: the wallet's own transfers are being read. outbound: the money is being "
+        "followed. inbound: the wallet's funders are being read. checking: the trace is "
+        "done; each exchange that would be named is traced again without its label, and "
+        "unlabelled wallets are scored"))
+    asset: str | None = Field(None, description="The asset being followed, once chosen")
+    hop: int = Field(description="How many hops out the trace has gone")
+    wallets_read: int
+    transfers_read: int
+    reached: list[ProgressReached] = Field([], description=(
+        "Labelled wallets the money has reached so far, each owner once, in the order "
+        "found. Not a result: what is named is decided when the trace is done"))
+    message: str = Field(description="The same, as one sentence to show as it is")
+
+
 class CaseDetail(CaseSummary):
+    progress: CaseProgress | None = Field(None, description=(
+        "Set only while status is queued or running and this server is tracing the case: "
+        "poll the case to watch it. Never stored; null on a finished case"))
     asset: str | None = Field(None, description="The asset that was traced, e.g. USDT")
     total_sent: float | None = Field(None, description="What the wallet sent, in `asset`")
     total_received: float | None = None

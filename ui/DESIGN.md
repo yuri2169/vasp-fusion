@@ -135,7 +135,7 @@ Complaint 3150… · Reported loss ₹40,50,000 · Opened 2 Oct 2026
 - **INSUFFICIENT EVIDENCE is the same frame with its own panel**: slate, dashed, headed "No exchange is named"; the reason verbatim at 16px, what was reached (meters hatched under the bar), what would change this, next steps, leads. Nothing on that screen is saffron.
 - **SANCTIONED OR MIXER REACHED** leads with the alert in a red-bordered panel; a nearest exchange follows only if the trace kept one, and a request is offered only at or above the bar.
 - **The evidence of an exchange that is not the answer is folded** ("Evidence (3)"); the answer's own is open.
-- **A running trace says only what is known**: queued or reading, the chain, how long the officer has waited. The server reports no steps and has no cancel, so the button is "Stop waiting" and says the trace goes on. When the result arrives while the officer watches, the rail extends and one line reports what the run read.
+- **A running trace shows what the server says it has read** (`CaseDetail.progress`): its sentence as it came, three counts (hops out, wallets read, transfers read), and on the rail a dashed place for each hop gone out so far. No percentage: a trace does not know how much is left. A labelled wallet reached is not shown as an answer; the stamp comes with the result. The server has no cancel, so the button is "Stop waiting" and says the trace goes on. When the result arrives while the officer watches, the rail extends and one line reports what the run read.
 - **Under 1024px** the graph and the panel stack; the graph stops being sticky.
 
 ## The fund-flow graph
@@ -246,4 +246,4 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
 - `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png` and `case-*.png` in both themes, using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
-- In mock mode a demo wallet's trace appears to take 2.4 seconds (`mockSettings.traceMs` in `src/api/mock.ts`), so the trace screen and the rail's animation can be seen with no server. Tests set it to 0.
+- In mock mode a demo wallet's trace appears to take 2.4 seconds (`mockSettings.traceMs` in `src/api/mock.ts`) and reports progress worked out from the fixture's own graph, so the trace screen and the rail's animation can be seen with no server. Tests set it to 0.
