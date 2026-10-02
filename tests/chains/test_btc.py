@@ -41,8 +41,44 @@ def test_amounts_match_raw_outputs(fixture_fetcher):
                    for o in t["vout"] if o.get("scriptpubkey_address") not in (ADDR, None))
     assert sum(r.amount for r in rows if r.to_addr == ADDR) == Decimal(sats_in).scaleb(-8)
     assert sum(r.amount for r in rows if r.from_addr == ADDR) == Decimal(sats_out).scaleb(-8)
-    assert len(rows) == 73
+    # 44 spends (each pays one other address) + 28 payments in: one row per transaction,
+    # also for the payment that has two outputs to this address
+    assert len(rows) == 72
     assert [r.block_time for r in rows] == sorted(r.block_time for r in rows)
+
+
+def test_every_satoshi_of_a_spend_is_a_transfer_change_or_fee(fixture_fetcher):
+    p = BtcProvider(fixture_fetcher("btc_pages"), max_pages=3)
+    rows = p.transfers(ADDR, "out", limit=500)
+    spends = [t for t in raw_txs() if ADDR in inputs(t)]
+    assert len(spends) == 44
+    for tx in spends:
+        put_in = sum(v["prevout"]["value"] for v in tx["vin"]
+                     if v["prevout"]["scriptpubkey_address"] == ADDR)
+        change = sum(o["value"] for o in tx["vout"] if o.get("scriptpubkey_address") == ADDR)
+        sent = sum(r.amount for r in rows if r.tx_hash == tx["txid"])
+        fee = p.fee_share(ADDR, tx["txid"])
+        assert fee == Decimal(tx["fee"]).scaleb(-8)          # the only input address pays it all
+        assert sent + fee + Decimal(change).scaleb(-8) == Decimal(put_in).scaleb(-8)
+
+
+def test_the_newest_page_alone_and_whether_it_is_the_whole_history(fixture_fetcher):
+    p = BtcProvider(fixture_fetcher("btc_pages"), max_pages=3)
+    txs, whole = p.txs(ADDR)
+    assert len(txs) == 50 and whole is False
+    txs, whole = p.txs(ADDR, pages=2)
+    assert len(txs) == 72 and whole is True
+    assert p.fee_share(ADDR, "not-a-transaction-it-read") == 0
+
+
+def test_the_backend_is_blockstream_unless_told_otherwise(fixture_fetcher, monkeypatch):
+    f = fixture_fetcher("btc_pages")
+    assert BtcProvider(f).base == "https://mempool.space/api"       # the chain tests' setting
+    monkeypatch.delenv("VASPFUSION_BTC_API")
+    assert BtcProvider(f).base == "https://blockstream.info/api"
+    assert BtcProvider(f, api="mempool.space").base == "https://mempool.space/api"
+    with pytest.raises(ValueError, match="unknown Bitcoin API"):
+        BtcProvider(f, api="example.org")
 
 
 def test_outbound_rows_skip_change(fixture_fetcher):

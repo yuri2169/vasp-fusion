@@ -13,6 +13,8 @@ def fixture_fetcher(tmp_path, monkeypatch):
     for k in ("TRONGRID_API_KEY", "ETHERSCAN_API_KEY"):
         monkeypatch.setenv(k, "")
     monkeypatch.setattr("vaspfusion.chains.http.DEFAULT_ENV", tmp_path / "no.env")
+    # btc_pages.json was recorded from mempool.space (B2); the backend is part of the URL
+    monkeypatch.setenv("VASPFUSION_BTC_API", "mempool.space")
 
     def make(*names, offline=False):
         return Fetcher(ChainCache(tmp_path / "cache.duckdb"), FixtureTransport(*names),

@@ -35,17 +35,21 @@ import polars as pl
 def coinjoin_txids(txs: pl.DataFrame, min_equal: int = 3) -> set[str]:
     if "output_amounts" not in txs.columns or txs.height == 0:
         return set()
-    eq = (txs.select(["txid", "output_amounts"]).explode("output_amounts").drop_nulls()
+    eq = (txs.select(["txid", "output_amounts"])
+          .explode("output_amounts", empty_as_null=True).drop_nulls()
           .group_by(["txid", "output_amounts"]).len()
           .sort(["txid", "len", "output_amounts"], descending=[False, True, True])
           .group_by("txid", maintain_order=True).first()
           .rename({"output_amounts": "denom", "len": "max_equal"}))
+    # Inputs are counted as distinct ADDRESSES: several owners is the whole point, and on
+    # real chain data one hot wallet paying a batch of equal withdrawals from many of its
+    # own coins has exactly this shape otherwise (B5).
     shape = txs.select(["txid",
-                        pl.col("input_addresses").list.len().alias("n_in"),
+                        pl.col("input_addresses").list.n_unique().alias("n_in"),
                         pl.col("output_amounts").list.len().alias("n_out")])
     hit = shape.join(eq, on="txid", how="inner")
     if "input_amounts" in txs.columns:
-        funded = (txs.select(["txid", "input_amounts"]).explode("input_amounts")
+        funded = (txs.select(["txid", "input_amounts"]).explode("input_amounts", empty_as_null=True)
                   .join(eq.select(["txid", "denom"]), on="txid", how="inner")
                   .group_by("txid")
                   .agg((pl.col("input_amounts") >= pl.col("denom")).sum().alias("n_funded")))
