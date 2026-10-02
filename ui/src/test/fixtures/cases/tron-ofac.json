@@ -1,0 +1,418 @@
+{
+ "id": "tron-ofac",
+ "address": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+ "chain": "tron",
+ "status": "done",
+ "outcome": "SANCTIONED_OR_MIXER_REACHED",
+ "top_vasp": null,
+ "confidence": null,
+ "case_ref": "DEMO/2026/103",
+ "complaint_no": null,
+ "amount_lost_inr": null,
+ "created_at": "2026-10-02T16:20:32.252828Z",
+ "demo": true,
+ "error": null,
+ "asset": "USDT",
+ "total_sent": 101078.339672,
+ "total_received": 101078.127671,
+ "where_funds_went": [
+  {
+   "kind": "sanctioned",
+   "name": "OFAC SDN",
+   "share": 0.9894,
+   "amount": 100008.0
+  },
+  {
+   "kind": "beyond_hop_limit",
+   "name": null,
+   "share": 0.0104,
+   "amount": 1052.0
+  },
+  {
+   "kind": "not_followed",
+   "name": null,
+   "share": 0.0002,
+   "amount": 18.339672
+  }
+ ],
+ "hop_rail": [
+  {
+   "index": 1,
+   "from_address": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+   "to_address": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+   "tx_hash": "30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b",
+   "asset": "USDT",
+   "amount": 52000.0,
+   "amount_usd": 52000.0,
+   "traced_amount": 52000.0,
+   "block_time": "2024-11-25T06:27:45Z",
+   "elapsed_s": null
+  }
+ ],
+ "graph": {
+  "nodes": [
+   {
+    "id": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "chain": "tron",
+    "role": "suspect",
+    "hop": 0,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+    "chain": "tron",
+    "role": "sanctioned",
+    "hop": 1,
+    "label": {
+     "address": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+     "chain": "tron",
+     "entity": "OFAC SDN",
+     "category": "sanctioned",
+     "kind": "unknown",
+     "tier": "curated",
+     "source": "ofac-sdn",
+     "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+     "label": "OFAC sanctioned (USDT)",
+     "confidence": null,
+     "evidence": null,
+     "confidence_low": null,
+     "confidence_high": null,
+     "model": null
+    },
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 3,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   }
+  ],
+  "edges": [
+   {
+    "id": "e1",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT",
+    "tx_hash": "68ad29f89ee1c62dd084bcc7d0d8e0c153670882693893562c9b6bced91c6a06",
+    "asset": "USDT",
+    "amount": 8.0,
+    "amount_usd": 8.0,
+    "traced_amount": 8.0,
+    "block_time": "2024-11-25T02:47:27Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e2",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+    "tx_hash": "cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9",
+    "asset": "USDT",
+    "amount": 8.0,
+    "amount_usd": 8.0,
+    "traced_amount": 8.0,
+    "block_time": "2024-11-25T05:39:33Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e3",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+    "tx_hash": "30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b",
+    "asset": "USDT",
+    "amount": 52000.0,
+    "amount_usd": 52000.0,
+    "traced_amount": 52000.0,
+    "block_time": "2024-11-25T06:27:45Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e4",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+    "tx_hash": "7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07",
+    "asset": "USDT",
+    "amount": 48000.0,
+    "amount_usd": 48000.0,
+    "traced_amount": 48000.0,
+    "block_time": "2024-11-25T12:52:06Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e5",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "tx_hash": "f51a0883d99d1603f09ba2cf5f778142a7d6ca22402e57c0ceb4461ba017da85",
+    "asset": "USDT",
+    "amount": 50.0,
+    "amount_usd": 50.0,
+    "traced_amount": 50.0,
+    "block_time": "2024-12-06T11:06:30Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e6",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "tx_hash": "2de604fe9015b02b0594df49787da1219d62e3b0db09856046130b43fa35f8cf",
+    "asset": "USDT",
+    "amount": 1.0,
+    "amount_usd": 1.0,
+    "traced_amount": 1.0,
+    "block_time": "2024-12-06T11:10:33Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e7",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "tx_hash": "ae09ddfca48894c909993d6f9a18c1ed8ce3cdd860b5470bfd45012692f5ff67",
+    "asset": "USDT",
+    "amount": 301.0,
+    "amount_usd": 301.0,
+    "traced_amount": 301.0,
+    "block_time": "2024-12-06T12:41:12Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e8",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "tx_hash": "9b69ee80f638cb6dfdf36ab0b90ebaa8c64bec3abc5f15f3486f14b673bc51a5",
+    "asset": "USDT",
+    "amount": 700.0,
+    "amount_usd": 700.0,
+    "traced_amount": 700.0,
+    "block_time": "2024-12-06T13:11:51Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e9",
+    "source": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "target": "TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d",
+    "tx_hash": "c5996198479d74d20ab4d23dddab2ea1cf3eabdb46bb1ddf41ad68b9782289ba",
+    "asset": "USDT",
+    "amount": 10.339672,
+    "amount_usd": 10.339672,
+    "traced_amount": 10.339672,
+    "block_time": "2024-12-07T03:09:15Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e10",
+    "source": "TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC",
+    "target": "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
+    "tx_hash": "ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240",
+    "asset": "USDT",
+    "amount": 1052.0,
+    "amount_usd": 1052.0,
+    "traced_amount": 1052.0,
+    "block_time": "2024-12-06T13:45:39Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e11",
+    "source": "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
+    "target": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "tx_hash": "8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7",
+    "asset": "USDT",
+    "amount": 1207.03,
+    "amount_usd": 1207.03,
+    "traced_amount": 1052.0,
+    "block_time": "2024-12-06T13:46:15Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e12",
+    "source": "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M",
+    "target": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "tx_hash": "172f7ee6f8e1eeafb9574603f71395e148739f32fe6d10872d890538d7fb7477",
+    "asset": "USDT",
+    "amount": 16279.779768,
+    "amount_usd": 16279.779768,
+    "traced_amount": 16279.779768,
+    "block_time": "2024-11-25T01:42:51Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e13",
+    "source": "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M",
+    "target": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "tx_hash": "4bb1abb141c6762c00015f1c375fabd5b2834585eee179ce46e5921c54dcabed",
+    "asset": "USDT",
+    "amount": 36211.851893,
+    "amount_usd": 36211.851893,
+    "traced_amount": 36211.851893,
+    "block_time": "2024-11-25T01:49:36Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e14",
+    "source": "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M",
+    "target": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "tx_hash": "46a8227160d05c056a35d408004a19f267164d0d5a5db901c6595b22a5d4ef4d",
+    "asset": "USDT",
+    "amount": 48113.037301,
+    "amount_usd": 48113.037301,
+    "traced_amount": 48113.037301,
+    "block_time": "2024-11-25T12:47:54Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e15",
+    "source": "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M",
+    "target": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+    "tx_hash": "9ed697ed115864bd7d49d455b2fabfb9fe0617dc4c910e6093e0dc0768fff70b",
+    "asset": "USDT",
+    "amount": 473.458709,
+    "amount_usd": 473.458709,
+    "traced_amount": 473.458709,
+    "block_time": "2024-12-06T13:11:00Z",
+    "direction": "inbound"
+   }
+  ]
+ },
+ "candidates": [],
+ "typology_flags": [
+  {
+   "code": "sanctioned_contact",
+   "severity": "high",
+   "wallet": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+   "text": "99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away",
+   "figures": {
+    "amount": 100008.0,
+    "hops": 1.0,
+    "share": 0.9894
+   },
+   "tx_hashes": [
+    "30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b",
+    "7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07",
+    "cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9"
+   ]
+  },
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
+   "text": "TQ7Ujg\u2026drwJrS passed on 100% of the 1,052 USDT that reached it within 36 seconds of its arrival",
+   "figures": {
+    "amount": 1052.0,
+    "seconds": 36.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7",
+    "ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240"
+   ]
+  }
+ ],
+ "narrative": "Wallet TU1D9S\u2026WpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25 Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away. No labelled exchange was reached. Not followed in this run: 200 TRX in 1 transfer. Transaction hashes: 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.",
+ "abstain_reason": null,
+ "what_would_change": [],
+ "next_steps": [
+  "Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away"
+ ],
+ "provenance": {
+  "seed": 26182,
+  "code_version": "b5-bitcoin-1",
+  "label_db_sha256": "14343ca8bc30f4465785214e9c59e2c59e91510a1239023915c743af02a957f6",
+  "fetched_at": null,
+  "offline_replay": true,
+  "data_sources": [
+   "api.trongrid.io",
+   "label store"
+  ],
+  "notes": [],
+  "input": {
+   "address": "TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV",
+   "chain": "tron",
+   "max_hops": 3,
+   "since": null
+  },
+  "input_sha256": "927b99f596dfde318847ce8848ee70d6f58e8d959b8d80cc24c10b377c57b834",
+  "responses": [
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733483190000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "81ec5a144c7d06ad490dc729f5aeca1bc728efc59f4568a9af8b37d8b883af93"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733492739000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "0a6adf6f391acb0d33c87bd7f9bd12072c742c65896464ede57f97f2c50aa98f"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "45aa7c98bbbe01ff718f38a32afa1b1e60383c8b33ff9626d24ac8c362b97b05"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "d462bb078ec59a6ff9258965e29bdabe647db6162aeac9d75fd3095cfb51fac6"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "5f2908891fc6014a7bba492e78bc1beeaec03f4c3e6e19ee08b1fa9d3ec36c63"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "2f8f2b8726eae4191bcbf399e5a44c679c304023fdfe416085aa08a19ba64571"
+   }
+  ],
+  "responses_sha256": "30648d7976801aa4619ad12a9d82ed3785828a01568d6923ace004995eba05b3",
+  "pages": 6,
+  "findings_sha256": "958a5a5f447c041d3394b6632f2c618ba42e916043dbc834ec5eea77be692fd9",
+  "content_sha256": "dc798ae342c0b29f02b6f0fc5ad25aede1c3e241a1e54f4b4841042bc052a330",
+  "model_version": "model_v1/tron",
+  "model_sha256": "d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2",
+  "git_commit": "9e7038dee70d1356301e62e6ebfa8920d792fe50",
+  "git_dirty": false
+ }
+}

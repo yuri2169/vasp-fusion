@@ -1,0 +1,911 @@
+{
+ "id": "tron-abstain",
+ "address": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+ "chain": "tron",
+ "status": "done",
+ "outcome": "INSUFFICIENT_EVIDENCE",
+ "top_vasp": null,
+ "confidence": null,
+ "case_ref": "DEMO/2026/105",
+ "complaint_no": null,
+ "amount_lost_inr": null,
+ "created_at": "2026-10-02T16:20:34.865762Z",
+ "demo": true,
+ "error": null,
+ "asset": "USDT",
+ "total_sent": 1560.0,
+ "total_received": 1560.0,
+ "where_funds_went": [
+  {
+   "kind": "hub",
+   "name": null,
+   "share": 0.7436,
+   "amount": 1160.0
+  },
+  {
+   "kind": "beyond_hop_limit",
+   "name": null,
+   "share": 0.1603,
+   "amount": 250.0
+  },
+  {
+   "kind": "vasp",
+   "name": "CoinDCX",
+   "share": 0.0962,
+   "amount": 150.0
+  }
+ ],
+ "hop_rail": [
+  {
+   "index": 1,
+   "from_address": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+   "to_address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+   "tx_hash": "a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf",
+   "asset": "USDT",
+   "amount": 150.0,
+   "amount_usd": 150.0,
+   "traced_amount": 150.0,
+   "block_time": "2025-04-17T12:16:45Z",
+   "elapsed_s": null
+  }
+ ],
+ "graph": {
+  "nodes": [
+   {
+    "id": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "chain": "tron",
+    "role": "suspect",
+    "hop": 0,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+    "chain": "tron",
+    "role": "exchange_deposit",
+    "hop": 1,
+    "label": {
+     "address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+     "chain": "tron",
+     "entity": "CoinDCX",
+     "category": "exchange",
+     "kind": "deposit",
+     "tier": "derived",
+     "source": "vaspfusion-discover",
+     "source_url": null,
+     "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+     "confidence": 0.8491,
+     "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "confidence_low": 0.8491,
+     "confidence_high": 0.85,
+     "model": {
+      "p": 0.999,
+      "low": 0.999,
+      "high": 1.0,
+      "basis": "model",
+      "scored_by": "cross-fit:block 1",
+      "reasons": [
+       {
+        "feature": "dwell_median_s",
+        "text": "moves funds on about 37 seconds after they arrive",
+        "weight": 2.6612
+       },
+       {
+        "feature": "forward_ratio",
+        "text": "forwards 100% of what it receives to one wallet",
+        "weight": 2.1536
+       },
+       {
+        "feature": "top_recipient_share",
+        "text": "every outgoing transfer goes to one wallet",
+        "weight": 0.9885
+       }
+      ]
+     }
+    },
+    "cluster": "CoinDCX",
+    "is_hub": false
+   },
+   {
+    "id": "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "chain": "tron",
+    "role": "hub",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": true
+   },
+   {
+    "id": "TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ",
+    "chain": "tron",
+    "role": "hub",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": true
+   },
+   {
+    "id": "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo",
+    "chain": "tron",
+    "role": "hub",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": true
+   },
+   {
+    "id": "TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1",
+    "chain": "tron",
+    "role": "hub",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": true
+   },
+   {
+    "id": "TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   }
+  ],
+  "edges": [
+   {
+    "id": "e1",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+    "tx_hash": "a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf",
+    "asset": "USDT",
+    "amount": 150.0,
+    "amount_usd": 150.0,
+    "traced_amount": 150.0,
+    "block_time": "2025-04-17T12:16:45Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e2",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "tx_hash": "b1796a288079191ea48b8fbb39aa4dde135c4afe9a9d082a54dbda72a7b21b2b",
+    "asset": "USDT",
+    "amount": 50.0,
+    "amount_usd": 50.0,
+    "traced_amount": 50.0,
+    "block_time": "2025-04-17T14:00:27Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e3",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
+    "tx_hash": "dc4a477ab22ff14a86fddd321e5ea72c82ea69107ee4620d8d248685c3e1c33f",
+    "asset": "USDT",
+    "amount": 20.0,
+    "amount_usd": 20.0,
+    "traced_amount": 20.0,
+    "block_time": "2026-01-02T22:33:24Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e4",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv",
+    "tx_hash": "a1910a9c78807baa4698d829227323e5a3f764965e80c4f3dbc5a91ac32b036b",
+    "asset": "USDT",
+    "amount": 180.0,
+    "amount_usd": 180.0,
+    "traced_amount": 180.0,
+    "block_time": "2026-01-05T19:56:06Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e5",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+    "tx_hash": "94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4",
+    "asset": "USDT",
+    "amount": 395.0,
+    "amount_usd": 395.0,
+    "traced_amount": 395.0,
+    "block_time": "2026-01-10T08:25:06Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e6",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
+    "tx_hash": "f1405d6658101c8f734bc8f12fd438cae6ba2d72231bfbe77a4901f06f21be9f",
+    "asset": "USDT",
+    "amount": 241.0,
+    "amount_usd": 241.0,
+    "traced_amount": 241.0,
+    "block_time": "2026-02-25T13:24:42Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e7",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
+    "tx_hash": "f52000d4262de7ef891bdc77f9127191f03223946a2e58eba0335d026eb51a5b",
+    "asset": "USDT",
+    "amount": 250.0,
+    "amount_usd": 250.0,
+    "traced_amount": 250.0,
+    "block_time": "2026-04-02T13:48:30Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e8",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
+    "tx_hash": "df52b4090ee98826571e05e404ddb09176d32f1f7ddb501ffb586f39f268414a",
+    "asset": "USDT",
+    "amount": 24.0,
+    "amount_usd": 24.0,
+    "traced_amount": 24.0,
+    "block_time": "2026-04-08T16:26:27Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e9",
+    "source": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "target": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "tx_hash": "ad4dbaf4e8cd4afedd0cb65e02a43401f1f06120bf5fdd32f59110adc408f073",
+    "asset": "USDT",
+    "amount": 250.0,
+    "amount_usd": 250.0,
+    "traced_amount": 250.0,
+    "block_time": "2026-04-21T12:33:51Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e10",
+    "source": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "target": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "tx_hash": "9b5cbbe6a6f68fc446d5515baf8de7f0ac77a1abf24aced5eb3418325d33eb38",
+    "asset": "USDT",
+    "amount": 420.0,
+    "amount_usd": 420.0,
+    "traced_amount": 50.0,
+    "block_time": "2025-09-02T08:08:36Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e11",
+    "source": "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
+    "target": "TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1",
+    "tx_hash": "a112fc81abc5f942d4508493828e0b97767a6499bb2c94a5d06cad2f6d20adf6",
+    "asset": "USDT",
+    "amount": 20.0,
+    "amount_usd": 20.0,
+    "traced_amount": 20.0,
+    "block_time": "2026-01-02T22:40:27Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e12",
+    "source": "TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv",
+    "target": "TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy",
+    "tx_hash": "60f1722449a572271c5b80fafe818f71912a8ffc57f6e512c71c9aca3529fa9e",
+    "asset": "USDT",
+    "amount": 180.0,
+    "amount_usd": 180.0,
+    "traced_amount": 180.0,
+    "block_time": "2026-01-05T20:39:12Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e13",
+    "source": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+    "target": "TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ",
+    "tx_hash": "41df004f1d76cadbe81f462f1671e9396918cab0a2574b13e2cdeeefd7b69da7",
+    "asset": "USDT",
+    "amount": 395.0,
+    "amount_usd": 395.0,
+    "traced_amount": 395.0,
+    "block_time": "2026-01-10T08:27:27Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e14",
+    "source": "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
+    "target": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "tx_hash": "6c03cfe08829d7d1976621c81733d7a7008d00aa175864b66d94edc861946cbe",
+    "asset": "USDT",
+    "amount": 406.0,
+    "amount_usd": 406.0,
+    "traced_amount": 241.0,
+    "block_time": "2026-02-25T13:36:12Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e15",
+    "source": "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
+    "target": "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
+    "tx_hash": "db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40",
+    "asset": "USDT",
+    "amount": 600.0,
+    "amount_usd": 600.0,
+    "traced_amount": 250.0,
+    "block_time": "2026-04-02T13:50:45Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e16",
+    "source": "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
+    "target": "TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo",
+    "tx_hash": "ab73419d07a9f4a210469bbc21cc46e12b6eb112c9880e17c4d5eb15526d97ff",
+    "asset": "USDT",
+    "amount": 24.0,
+    "amount_usd": 24.0,
+    "traced_amount": 24.0,
+    "block_time": "2026-04-08T16:31:06Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e17",
+    "source": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "target": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "tx_hash": "f566602740897e75930c0f787279e15515414de13c310cf2e4de93b1f1cd9dc4",
+    "asset": "USDT",
+    "amount": 250.0,
+    "amount_usd": 250.0,
+    "traced_amount": 250.0,
+    "block_time": "2026-04-21T12:56:15Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e18",
+    "source": "TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy",
+    "target": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+    "tx_hash": "25b27b4f46b4d6acf67ac83f7967c5430e818aab54dae9f92781dce50654d57b",
+    "asset": "USDT",
+    "amount": 515.0,
+    "amount_usd": 515.0,
+    "traced_amount": 180.0,
+    "block_time": "2026-01-06T04:16:06Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e19",
+    "source": "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
+    "target": "TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b",
+    "tx_hash": "998e00d6106ae1008fe848514a9484489854352e26ce4f7ca37fcedf8530c5a4",
+    "asset": "USDT",
+    "amount": 1001.969881,
+    "amount_usd": 1001.969881,
+    "traced_amount": 250.0,
+    "block_time": "2026-04-02T13:52:36Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e20",
+    "source": "TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn",
+    "target": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "tx_hash": "116a069845a853452781ef012dbb2cdb25a9d8764b0a63c02a5d1f61004df7d4",
+    "asset": "USDT",
+    "amount": 200.0,
+    "amount_usd": 200.0,
+    "traced_amount": 200.0,
+    "block_time": "2025-04-17T12:13:27Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e21",
+    "source": "TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn",
+    "target": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "tx_hash": "f1cc4788311d50022a7316032dff120e27a96864d0398b319e34fdc9c4292cc9",
+    "asset": "USDT",
+    "amount": 600.0,
+    "amount_usd": 600.0,
+    "traced_amount": 600.0,
+    "block_time": "2025-12-26T19:13:09Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e22",
+    "source": "TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn",
+    "target": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "tx_hash": "28a0ef960f00689724fb78a4b60287d6e6189090352991ce95aa1d2e2f83f1c3",
+    "asset": "USDT",
+    "amount": 500.0,
+    "amount_usd": 500.0,
+    "traced_amount": 500.0,
+    "block_time": "2026-02-25T12:05:24Z",
+    "direction": "inbound"
+   },
+   {
+    "id": "e23",
+    "source": "TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1",
+    "target": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "tx_hash": "cc97c138e92873574eb6aa4e2134ec51e835ad68732f0201eface15247501ff4",
+    "asset": "USDT",
+    "amount": 260.0,
+    "amount_usd": 260.0,
+    "traced_amount": 260.0,
+    "block_time": "2026-03-05T11:12:33Z",
+    "direction": "inbound"
+   }
+  ]
+ },
+ "candidates": [
+  {
+   "vasp": "CoinDCX",
+   "category": "exchange",
+   "proximity_rank": 1,
+   "confidence": 0.3266,
+   "confidence_interval": [
+    0.3266,
+    0.3269
+   ],
+   "direction": "outbound",
+   "hops": 1,
+   "share_of_funds": 0.0962,
+   "time_to_reach_s": 0,
+   "label_tier": "derived",
+   "deposit_address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+   "path": [
+    "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+    "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9"
+   ],
+   "evidence": [
+    {
+     "kind": "label",
+     "text": "THuWri\u20268CRkY9 is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "tier": "derived",
+     "tx_hashes": [],
+     "weight": 0.8491
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model: over 0.99 that an address behaving like THuWri\u20268CRkY9 is an exchange deposit address (range narrower than 0.01)",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": null
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: it moves funds on about 37 seconds after they arrive",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 2.6612
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: it forwards 100% of what it receives to one wallet",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 2.1536
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: every outgoing transfer goes to one wallet",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 0.9885
+    },
+    {
+     "kind": "path",
+     "text": "10% of the wallet's USDT (150 USDT) reached it in 1 hop",
+     "tier": null,
+     "tx_hashes": [
+      "a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf"
+     ],
+     "weight": 0.3846
+    }
+   ],
+   "counterfactual": null,
+   "counterfactual_holds": null,
+   "amount": 150.0,
+   "request_wallets": [
+    {
+     "address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+     "amount": 150.0,
+     "paid_into": null,
+     "tier": "derived",
+     "kind": "deposit",
+     "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+     "reached_at": "2025-04-17T12:16:45Z",
+     "tx_hashes": [
+      "a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf"
+     ]
+    }
+   ]
+  }
+ ],
+ "typology_flags": [
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+   "text": "TMPJaN\u2026YyzeAJ passed on 100% of the 395 USDT that reached it within 2 minutes of its arrival",
+   "figures": {
+    "amount": 395.0,
+    "seconds": 141.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "41df004f1d76cadbe81f462f1671e9396918cab0a2574b13e2cdeeefd7b69da7",
+    "94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4"
+   ]
+  },
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
+   "text": "TLCykn\u2026VSdqGv passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
+   "figures": {
+    "amount": 250.0,
+    "seconds": 111.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "998e00d6106ae1008fe848514a9484489854352e26ce4f7ca37fcedf8530c5a4",
+    "db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40"
+   ]
+  },
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
+   "text": "TVHpZB\u2026LUr5Mz passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
+   "figures": {
+    "amount": 250.0,
+    "seconds": 135.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40",
+    "f52000d4262de7ef891bdc77f9127191f03223946a2e58eba0335d026eb51a5b"
+   ]
+  },
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
+   "text": "TSe4Za\u2026zShRtE passed on 100% of the 24 USDT that reached it within 5 minutes of its arrival",
+   "figures": {
+    "amount": 24.0,
+    "seconds": 279.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "ab73419d07a9f4a210469bbc21cc46e12b6eb112c9880e17c4d5eb15526d97ff",
+    "df52b4090ee98826571e05e404ddb09176d32f1f7ddb501ffb586f39f268414a"
+   ]
+  },
+  {
+   "code": "rapid_forwarding",
+   "severity": "warn",
+   "wallet": "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
+   "text": "THbT14\u2026bdZfWi passed on 100% of the 20 USDT that reached it within 7 minutes of its arrival",
+   "figures": {
+    "amount": 20.0,
+    "seconds": 423.0,
+    "share": 1.0
+   },
+   "tx_hashes": [
+    "a112fc81abc5f942d4508493828e0b97767a6499bb2c94a5d06cad2f6d20adf6",
+    "dc4a477ab22ff14a86fddd321e5ea72c82ea69107ee4620d8d248685c3e1c33f"
+   ]
+  },
+  {
+   "code": "fan_in",
+   "severity": "info",
+   "wallet": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+   "text": "721 USDT of the wallet's money came together again at TDqSqu\u2026dkhSCf, from 3 wallets it had been split across",
+   "figures": {
+    "amount": 721.0,
+    "senders": 3.0
+   },
+   "tx_hashes": [
+    "25b27b4f46b4d6acf67ac83f7967c5430e818aab54dae9f92781dce50654d57b",
+    "6c03cfe08829d7d1976621c81733d7a7008d00aa175864b66d94edc861946cbe",
+    "9b5cbbe6a6f68fc446d5515baf8de7f0ac77a1abf24aced5eb3418325d33eb38",
+    "f566602740897e75930c0f787279e15515414de13c310cf2e4de93b1f1cd9dc4"
+   ]
+  },
+  {
+   "code": "deposit_like",
+   "severity": "info",
+   "wallet": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
+   "text": "TMPJaN\u2026YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TWBPGL\u2026yJW1JJ, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "figures": {
+    "amount": 395.0,
+    "high": 1.0,
+    "low": 0.9972,
+    "p": 0.9972,
+    "share": 0.2532,
+    "transfers_read": 2.0
+   },
+   "tx_hashes": [
+    "94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4"
+   ]
+  },
+  {
+   "code": "deposit_like",
+   "severity": "info",
+   "wallet": "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
+   "text": "TLfVvt\u2026tYbRGr behaves like an exchange deposit address: 15% of the funds (241 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu\u2026dkhSCf, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "figures": {
+    "amount": 241.0,
+    "high": 1.0,
+    "low": 0.9983,
+    "p": 0.9983,
+    "share": 0.1545,
+    "transfers_read": 2.0
+   },
+   "tx_hashes": [
+    "f1405d6658101c8f734bc8f12fd438cae6ba2d72231bfbe77a4901f06f21be9f"
+   ]
+  }
+ ],
+ "narrative": "Wallet TXXvb9\u2026BCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr 2025 and 21 Apr 2026. 150 USDT (10%) reached CoinDCX in 1 hop, at THuWri\u20268CRkY9 (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). No exchange is named. Only 10% of the funds reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced. Lead, not a finding: TMPJaN\u2026YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01), and 1 more; see the flags. Not followed in this run: 64.83 TRX in 4 transfers. Transaction hashes: a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf.",
+ "abstain_reason": "Only 10% of the funds reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced.",
+ "what_would_change": [
+  "A label for TWBPGL\u2026yJW1JJ, the wallet TMPJaN\u2026YyzeAJ sweeps into: if it is an exchange's wallet, TMPJaN\u2026YyzeAJ is that exchange's deposit address (25% of the funds)",
+  "A label for TDqSqu\u2026dkhSCf, the wallet TLfVvt\u2026tYbRGr sweeps into: if it is an exchange's wallet, TLfVvt\u2026tYbRGr is that exchange's deposit address (15% of the funds)",
+  "A larger part of the funds reaching CoinDCX (now 10%; 25% or more counts in full)",
+  "A label for TDqSqu\u2026dkhSCf (holds 46% of the funds; it pays out to many wallets and may be an exchange or payment service)",
+  "A label for TWBPGL\u2026yJW1JJ (holds 25% of the funds; it pays out to many wallets and may be an exchange or payment service)",
+  "Tracing deeper than 3 hops from TF4tag\u2026rg6M1b (16% of the funds)",
+  "A stronger label for THuWri\u20268CRkY9 (now: derived by VASP-FUSION)"
+ ],
+ "next_steps": [
+  "Identify TWBPGL\u2026yJW1JJ: TMPJaN\u2026YyzeAJ, which received 25% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
+  "Identify TDqSqu\u2026dkhSCf: TLfVvt\u2026tYbRGr, which received 15% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
+  "Identify TDqSqu\u2026dkhSCf: 46% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
+  "Identify TWBPGL\u2026yJW1JJ: 25% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
+  "CoinDCX did receive 10% of the funds (150 USDT) at THuWri\u20268CRkY9; a request limited to that deposit can still be drafted",
+  "Run the trace again with more than 3 hops"
+ ],
+ "provenance": {
+  "seed": 26182,
+  "code_version": "b5-bitcoin-1",
+  "label_db_sha256": "14343ca8bc30f4465785214e9c59e2c59e91510a1239023915c743af02a957f6",
+  "fetched_at": null,
+  "offline_replay": true,
+  "data_sources": [
+   "api.trongrid.io",
+   "label store"
+  ],
+  "notes": [
+   "Deposit-address model: 5 unlabelled wallets on the trail scored, 2 behave like a deposit address."
+  ],
+  "input": {
+   "address": "TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW",
+   "chain": "tron",
+   "max_hops": 3,
+   "since": null
+  },
+  "input_sha256": "ec333a7c0ee76ededc4cc8a1621fb6b129cac5a2f56bac361193e5525ecd0f29",
+  "responses": [
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775665866000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "0d4bfd911bc08dd79f8970cf5b603d60a7bfc876c2ab95a6ddf7959e320c44e2"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1767393627000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "69ac19be271b9b0f5b1fe11945eac883e25af7c299ad1b012e5e6fb738b48f68"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1756800516000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "41b4f43119d2eb25649bf027ae7da65afb102e039d878cd11e5d0bfa2d8eeb1a"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1771421082000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "4153bb10eb27e622d8e733bbbf8c48a4fceea01721913db893212da3069c08ed"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1744898427000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "c5e91c2135b5229d62190e8d29c35d38e55de03263ca4d4a1a8d9597ca8652df"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1744293627000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "ba972e8544ba8319ca1be12f7697f343e034405c3e8ffca8d0631cd82fbf4e69"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1774533045000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "f0ea2bc44cf1cca485853c04f3a9ab9a8b9eab2c4b7c7f71b063c41e3d588782"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b/transactions?limit=50&min_timestamp=1744293627000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "54b2807e51372ad87d95f37949cf77a195bc9209c56a7f86df8304aa14ff5e89"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1767645552000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "cd98f673663ff810cc6f116e420a9123f8520d41b37eed2d4cc287047d47a8f0"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1767393204000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "4ad4facc631a30f4d288a5a5f9031387bced043365839e6c87d5780220e983a6"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775137845000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "664bfda8fdba07681a8b49b22f4dfb4c3bd1dbb42ae3739012c2472df587a35f"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1774532910000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "03aadbefec4cf8a5d1f67bad49ba61f2ac9f3f4348692d848b5a9e45568fd0cd"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1774533045000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "d1610ed2f97a8a37e3aa560707bacd87b7ebce7d095e99316501ade79a073b4d"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv/transactions?limit=50&min_timestamp=1774533045000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "4ad6236e8420010daf78f62ac7ffc629bc2f83a07eeb42f3b88fc9116b65a01c"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1772025882000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "e80498926b10b45aa82bc78956ab3312c095cfb0e2ccb7a03098a0822b1669b3"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1771421082000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "c625652474a922a4eec8cffc10b1a789139ff12dbc7b521a2bb183914b90d8a7"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr/transactions?limit=50&min_timestamp=1771421082000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "1365a28445505b87db8d6c5dd48386b7214d36fcac1b2015d57034f65dd26bd3"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1768033506000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "ba002e8310b07d936f3ca391c11a796c71ae98075f3e2459370728edb5f277e5"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1767428706000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "3900535c354ae37708b2f81e5e1590fcdb685db5cabc78ff18ef4ccdc6e5a5d2"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ/transactions?limit=50&min_timestamp=1767428706000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "a1f2ec949b55bc0e91c01f80170cc72883d3290ca2a972bfaea2c389d7a3f7da"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775665587000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "175b5633c3a989889c93a55342f28e065db3367d77bc14dfe8873de12fe83728"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775137710000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "d059140efeb579d5db2e0a0154446eaaff959412bdae6969c27033b046a774c4"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1774532910000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "dc18214acb0d19a88fa921c32d5c98b004c4451731d61814da6075b6f97a2fb7"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz/transactions?limit=50&min_timestamp=1774532910000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "bdf8a68af903fc5d423c1045a93370e8f2cce5b3524b78e2647a3be64916f770"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1768033647000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "2b67120d83843d395a0d5183aa7e73eaaa6b5eaeff78d27b665386279770cdc6"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1767428706000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "e2e86cdc09be7540f86b1ba12d6b67a175c53de3b995e2ba38ec910384521803"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "06da6de6843d612339abfff3ddca6540140f3757cfd9bfe567f9fcbdd139283d"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "5a072d3292fe5acd07dc54e1db0a3c91a1ac70114d058db24058e6794d7319aa"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "72706d1bc185e1313346ca4fbaf49ac4a794385660059eb8e1bc92a54ced7b0d"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "290899af693e433d556fc93442aead310bb3c540f7cbe269853d6cdcbe269c55"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1767642966000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "92edcaa9b903db0bfd33e453b64b7816e7e7bcb064113c31d5968bc2a48d7684"
+   }
+  ],
+  "responses_sha256": "f258899edd5f04d2f84c25e74690b838f183a2e58a4f8dbd385ef3e766cdda97",
+  "pages": 31,
+  "findings_sha256": "d425646a16be4ff53d1c8fb1eadfec8c6d2edf5e975dd12e20f788b7da3d0a76",
+  "content_sha256": "688e7a698901a7548fb07971d103408aaecc1554a887fbf1bc3426f70e9c274f",
+  "model_version": "model_v1/tron",
+  "model_sha256": "d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2",
+  "git_commit": "9e7038dee70d1356301e62e6ebfa8920d792fe50",
+  "git_dirty": false
+ }
+}

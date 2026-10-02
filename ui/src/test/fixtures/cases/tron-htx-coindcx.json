@@ -1,0 +1,544 @@
+{
+ "id": "tron-htx-coindcx",
+ "address": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+ "chain": "tron",
+ "status": "done",
+ "outcome": "ATTRIBUTED",
+ "top_vasp": "CoinDCX",
+ "confidence": 0.8492,
+ "case_ref": "DEMO/2026/104",
+ "complaint_no": null,
+ "amount_lost_inr": null,
+ "created_at": "2026-10-02T16:20:33.520919Z",
+ "demo": true,
+ "error": null,
+ "asset": "USDT",
+ "total_sent": 13000.0,
+ "total_received": 13000.0,
+ "where_funds_went": [
+  {
+   "kind": "vasp",
+   "name": "HTX",
+   "share": 0.5385,
+   "amount": 7000.0
+  },
+  {
+   "kind": "vasp",
+   "name": "CoinDCX",
+   "share": 0.4615,
+   "amount": 6000.0
+  }
+ ],
+ "hop_rail": [
+  {
+   "index": 1,
+   "from_address": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+   "to_address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+   "tx_hash": "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae",
+   "asset": "USDT",
+   "amount": 6000.0,
+   "amount_usd": 6000.0,
+   "traced_amount": 6000.0,
+   "block_time": "2024-07-23T08:44:12Z",
+   "elapsed_s": null
+  }
+ ],
+ "graph": {
+  "nodes": [
+   {
+    "id": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron",
+    "role": "suspect",
+    "hop": 0,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+    "chain": "tron",
+    "role": "exchange_deposit",
+    "hop": 1,
+    "label": {
+     "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+     "chain": "tron",
+     "entity": "CoinDCX",
+     "category": "exchange",
+     "kind": "deposit",
+     "tier": "derived",
+     "source": "vaspfusion-discover",
+     "source_url": null,
+     "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+     "confidence": 0.8492,
+     "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "confidence_low": 0.8492,
+     "confidence_high": 0.85,
+     "model": {
+      "p": 0.9991,
+      "low": 0.9991,
+      "high": 1.0,
+      "basis": "model",
+      "scored_by": "cross-fit:block 5",
+      "reasons": [
+       {
+        "feature": "forward_ratio",
+        "text": "forwards 100% of what it receives to one wallet",
+        "weight": 2.8617
+       },
+       {
+        "feature": "top_recipient_share",
+        "text": "every outgoing transfer goes to one wallet",
+        "weight": 2.5259
+       },
+       {
+        "feature": "recipient_forwards_on",
+        "text": "the wallet it pays most keeps or spreads what it receives, as a collecting wallet does",
+        "weight": 1.6913
+       }
+      ]
+     }
+    },
+    "cluster": "CoinDCX",
+    "is_hub": false
+   },
+   {
+    "id": "TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "chain": "tron",
+    "role": "intermediary",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
+    "id": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "chain": "tron",
+    "role": "exchange",
+    "hop": 2,
+    "label": {
+     "address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+     "chain": "tron",
+     "entity": "HTX",
+     "category": "exchange",
+     "kind": "reserve",
+     "tier": "published_por",
+     "source": "defillama-cex",
+     "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+     "label": "HTX (Huobi) (proof-of-reserves)",
+     "confidence": null,
+     "evidence": null,
+     "confidence_low": null,
+     "confidence_high": null,
+     "model": null
+    },
+    "cluster": "HTX",
+    "is_hub": false
+   },
+   {
+    "id": "TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k",
+    "chain": "tron",
+    "role": "unknown",
+    "hop": 1,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   }
+  ],
+  "edges": [
+   {
+    "id": "e1",
+    "source": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "target": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+    "tx_hash": "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae",
+    "asset": "USDT",
+    "amount": 6000.0,
+    "amount_usd": 6000.0,
+    "traced_amount": 6000.0,
+    "block_time": "2024-07-23T08:44:12Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e2",
+    "source": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "target": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "tx_hash": "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+    "asset": "USDT",
+    "amount": 1200.0,
+    "amount_usd": 1200.0,
+    "traced_amount": 1200.0,
+    "block_time": "2024-08-01T15:01:15Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e3",
+    "source": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "target": "TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas",
+    "tx_hash": "0b858be87c88eb926f7c23d45156b77870c85a506f6e8342c19596d49e068a36",
+    "asset": "USDT",
+    "amount": 5800.0,
+    "amount_usd": 5800.0,
+    "traced_amount": 5800.0,
+    "block_time": "2024-08-26T06:17:30Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e4",
+    "source": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "target": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "tx_hash": "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645",
+    "asset": "USDT",
+    "amount": 1200.0,
+    "amount_usd": 1200.0,
+    "traced_amount": 1200.0,
+    "block_time": "2024-08-01T15:05:21Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e5",
+    "source": "TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas",
+    "target": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "tx_hash": "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+    "asset": "USDT",
+    "amount": 11000.0,
+    "amount_usd": 11000.0,
+    "traced_amount": 5800.0,
+    "block_time": "2024-08-26T13:19:03Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e6",
+    "source": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "target": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "tx_hash": "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354",
+    "asset": "USDT",
+    "amount": 11000.0,
+    "amount_usd": 11000.0,
+    "traced_amount": 5800.0,
+    "block_time": "2024-08-26T14:11:12Z",
+    "direction": "outbound"
+   },
+   {
+    "id": "e7",
+    "source": "TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k",
+    "target": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "tx_hash": "030a0caa7e5c8d89c51e79751a0215f103b2ca93454902ca114be6012b4ccf68",
+    "asset": "USDT",
+    "amount": 13000.0,
+    "amount_usd": 13000.0,
+    "traced_amount": 13000.0,
+    "block_time": "2024-07-19T10:05:39Z",
+    "direction": "inbound"
+   }
+  ]
+ },
+ "candidates": [
+  {
+   "vasp": "CoinDCX",
+   "category": "exchange",
+   "proximity_rank": 1,
+   "confidence": 0.8492,
+   "confidence_interval": [
+    0.8492,
+    0.85
+   ],
+   "direction": "outbound",
+   "hops": 1,
+   "share_of_funds": 0.4615,
+   "time_to_reach_s": 0,
+   "label_tier": "derived",
+   "deposit_address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+   "path": [
+    "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk"
+   ],
+   "evidence": [
+    {
+     "kind": "label",
+     "text": "TLUQsV\u20262NHPYk is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "tier": "derived",
+     "tx_hashes": [],
+     "weight": 0.8492
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model: over 0.99 that an address behaving like TLUQsV\u20262NHPYk is an exchange deposit address (range narrower than 0.01)",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": null
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: it forwards 100% of what it receives to one wallet",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 2.8617
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: every outgoing transfer goes to one wallet",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 2.5259
+    },
+    {
+     "kind": "model",
+     "text": "Deposit-address model, for: the wallet it pays most keeps or spreads what it receives, as a collecting wallet does",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": 1.6913
+    },
+    {
+     "kind": "path",
+     "text": "46% of the wallet's USDT (6,000 USDT) reached it in 1 hop",
+     "tier": null,
+     "tx_hashes": [
+      "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae"
+     ],
+     "weight": 1.0
+    },
+    {
+     "kind": "counterfactual",
+     "text": "Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
+     "tier": null,
+     "tx_hashes": [
+      "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae",
+      "f025b7edf2492726bc07a76c39550b323ba9469e3a2a2bbc88b319d03ba82f4a"
+     ],
+     "weight": -0.1267
+    }
+   ],
+   "counterfactual": "Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
+   "counterfactual_holds": true,
+   "amount": 6000.0,
+   "request_wallets": [
+    {
+     "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+     "amount": 6000.0,
+     "paid_into": null,
+     "tier": "derived",
+     "kind": "deposit",
+     "label": "CoinDCX deposit address (derived: sweep + gas payer)",
+     "reached_at": "2024-07-23T08:44:12Z",
+     "tx_hashes": [
+      "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae"
+     ]
+    }
+   ]
+  },
+  {
+   "vasp": "HTX",
+   "category": "exchange",
+   "proximity_rank": 2,
+   "confidence": 0.7071,
+   "confidence_interval": null,
+   "direction": "outbound",
+   "hops": 2,
+   "share_of_funds": 0.5385,
+   "time_to_reach_s": 246,
+   "label_tier": "published_por",
+   "deposit_address": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+   "path": [
+    "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu"
+   ],
+   "evidence": [
+    {
+     "kind": "label",
+     "text": "TFTWNg\u20268x5jLu is labelled HTX (\"HTX (Huobi) (proof-of-reserves)\"): published by the exchange itself, source defillama-cex",
+     "tier": "published_por",
+     "tx_hashes": [],
+     "weight": 0.95
+    },
+    {
+     "kind": "path",
+     "text": "54% of the wallet's USDT (7,000 USDT) reached it in 2 to 3 hops",
+     "tier": null,
+     "tx_hashes": [
+      "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+      "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645"
+     ],
+     "weight": 0.7444
+    },
+    {
+     "kind": "path",
+     "text": "THW7GJ\u2026uUJt6a passed on all 7,000 USDT it received from this trail to HTX",
+     "tier": null,
+     "tx_hashes": [
+      "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354",
+      "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645"
+     ],
+     "weight": null
+    },
+    {
+     "kind": "counterfactual",
+     "text": "Without the label on TFTWNg\u20268x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
+     "tier": null,
+     "tx_hashes": [],
+     "weight": -0.7071
+    }
+   ],
+   "counterfactual": "Without the label on TFTWNg\u20268x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
+   "counterfactual_holds": false,
+   "amount": 7000.0,
+   "request_wallets": [
+    {
+     "address": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+     "amount": 7000.0,
+     "paid_into": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+     "tier": "published_por",
+     "kind": "reserve",
+     "label": "HTX (Huobi) (proof-of-reserves)",
+     "reached_at": "2024-08-01T15:01:15Z",
+     "tx_hashes": [
+      "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+      "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645",
+      "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+      "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354"
+     ]
+    }
+   ]
+  }
+ ],
+ "typology_flags": [
+  {
+   "code": "round_amounts",
+   "severity": "info",
+   "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+   "text": "3 of the wallet's 3 USDT payments are whole multiples of 100 (13,000 USDT in all)",
+   "figures": {
+    "amount": 13000.0,
+    "round_transfers": 3.0,
+    "transfers": 3.0
+   },
+   "tx_hashes": [
+    "0b858be87c88eb926f7c23d45156b77870c85a506f6e8342c19596d49e068a36",
+    "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae",
+    "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d"
+   ]
+  },
+  {
+   "code": "deposit_like",
+   "severity": "info",
+   "wallet": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+   "text": "THW7GJ\u2026uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. The wallet it pays most, TFTWNg\u20268x5jLu, is labelled HTX (published by the exchange itself), so it may be a deposit address of HTX that the discovery rules have not derived. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "figures": {
+    "amount": 7000.0,
+    "high": 1.0,
+    "low": 0.9983,
+    "p": 0.9983,
+    "share": 0.5385,
+    "transfers_read": 2.0
+   },
+   "tx_hashes": [
+    "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+    "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d"
+   ]
+  }
+ ],
+ "narrative": "Wallet TGfoGr\u2026q49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul 2024 and 26 Aug 2024. 6,000 USDT (46%) reached CoinDCX in 1 hop, at TLUQsV\u20262NHPYk (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). 7,000 USDT (54%) reached HTX in 2 to 3 hops, at TFTWNg\u20268x5jLu (\"HTX (Huobi) (proof-of-reserves)\", published by the exchange itself). The wallet before it, THW7GJ\u2026uUJt6a, passed on everything it received from this trail. Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01). The range comes from the deposit-address model, which is calibrated against the addresses the discovery rules derived; the weight of the exchange wallet's label and the hop decay are rule-set. Checked without its strongest evidence: Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding: THW7GJ\u2026uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01); see the flags. Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes: a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae.",
+ "abstain_reason": null,
+ "what_would_change": [],
+ "next_steps": [
+  "Draft a request to CoinDCX for KYC and a freeze on the account behind TLUQsV\u20262NHPYk",
+  "Draft a request to HTX for KYC and a freeze on the account behind THW7GJ\u2026uUJt6a (54% of the funds)",
+  "Preserve the transaction records listed in the evidence",
+  "Ask HTX whether THW7GJ\u2026uUJt6a is one of its deposit addresses: it behaves like one and pays into TFTWNg\u20268x5jLu (54% of the funds reached it)"
+ ],
+ "provenance": {
+  "seed": 26182,
+  "code_version": "b5-bitcoin-1",
+  "label_db_sha256": "14343ca8bc30f4465785214e9c59e2c59e91510a1239023915c743af02a957f6",
+  "fetched_at": null,
+  "offline_replay": true,
+  "data_sources": [
+   "api.trongrid.io",
+   "label store"
+  ],
+  "notes": [
+   "Deposit-address model: 2 unlabelled wallets on the trail scored, 1 behaves like a deposit address."
+  ],
+  "input": {
+   "address": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+   "chain": "tron",
+   "max_hops": 3,
+   "since": null
+  },
+  "input_sha256": "4422631f86e23d4bf57e0b3f177d12868012272513f06df025c68cdc7f0fbae2",
+  "responses": [
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1722524721000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "b6d716cd34cf17f31ab61fe0c416572bf836ec888c4119d894cb58ee351e8504"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1721919675000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "32d6d9dd6f5170ceb1f9eea81afd569ee6e01303ce425e46ff44dfb78ed4153b"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "19b0158387d28baa9c51d265d976fdef2ed80afd3d98442d54679fc598c6aeae"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "f246f8838b18d8d26d69d7181f7e54a54f66a163019fdf37bf5d862835d6815c"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "e1a701c9baf446165e18b64f0d33bd5536caa348e992ce96ddc37154f07bf367"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc",
+    "sha256": "fde0cd4a86d929b3eae777ff937f8247e4687110e3a92ea3a78f64f6841eed37"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1722524475000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "c4481235d25969591a79ca3e2a8b2d3f05c48ae56464420b00a0cd68ceffc30a"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1721919675000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "594825cfa993f713e143cf62e6b8c85b049afd0bc0cbd9bd4e6d5eb79cd3d71d"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1724048250000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "95070c5affc24ac26ff261d1f6123e083e1c035247edcfc7e6c25c1c27de49d6"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a/transactions?limit=50&min_timestamp=1721919675000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "e77f345ed8579a82fa757dc5fa359a1151853a9a338a2132ed371b85b425e9e9"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1724653050000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "ad9363d54163da417f40545af082cecb102d9209a023f7eacd7872cd98971c68"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1724048250000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "38b858b16b1e75ec22b58dcfd9d57f06aacb4dc22a71b02d57466a89211e5f49"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas/transactions?limit=50&min_timestamp=1724048250000&only_confirmed=true&order_by=block_timestamp%2Casc",
+    "sha256": "d3eefb3d45c749a232703ef99ccfee17b4e8baea9e03827aa464fbfbf106672a"
+   },
+   {
+    "query": "https://api.trongrid.io/v1/accounts/TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1721724252000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc",
+    "sha256": "2ed3f1ff9956d9cdc0604bfc8e38daf0eacf1fcf46e3d6fcefb4213760a8f9b5"
+   }
+  ],
+  "responses_sha256": "082466557a294f3bbfca87e507d76fcb8eab22f890b338f1b5d249ef3699f168",
+  "pages": 14,
+  "findings_sha256": "b97dee5bbd8c3a2189ae07ff928c6f6ab5ad5f5cc82fc1843ebb2b70074c36ae",
+  "content_sha256": "10d83d14acb4364ded39a9611da7ef251d0fac2951645fa029e41899eeb26112",
+  "model_version": "model_v1/tron",
+  "model_sha256": "d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2",
+  "git_commit": "9e7038dee70d1356301e62e6ebfa8920d792fe50",
+  "git_dirty": false
+ }
+}
