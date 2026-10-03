@@ -1,0 +1,77 @@
+{
+ "directory": {
+  "name": "CoinDCX",
+  "legal_name": "Neblio Technologies Private Limited",
+  "fiu_ind_registered": true,
+  "fiu_ind_as_of": "2023-12-04",
+  "jurisdiction": null,
+  "le_request_channel": null,
+  "notes": [],
+  "sources": [
+   {
+    "field": "legal_name",
+    "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
+    "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+    "kind": "official",
+    "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+    "published": "2023-12-04",
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "fiu_ind_registered",
+    "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
+    "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+    "kind": "official",
+    "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+    "published": "2023-12-04",
+    "accessed": "2026-10-02"
+   }
+  ],
+  "source_urls": [
+   "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals"
+  ]
+ },
+ "label_counts": {
+  "tron": 571,
+  "evm": 53,
+  "avalanche": 52,
+  "worldchain": 52,
+  "ethereum": 30,
+  "bitcoin": 26,
+  "xrp": 5,
+  "bsc": 3
+ },
+ "wallets": [
+  {
+   "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+   "chain": "tron",
+   "case_id": "tron-htx-coindcx",
+   "direction": "outbound",
+   "amount_usd": 6000.0,
+   "tier": "derived",
+   "confidence": 0.8492,
+   "routable": true
+  },
+  {
+   "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
+   "chain": "tron",
+   "case_id": "tron-coindcx",
+   "direction": "outbound",
+   "amount_usd": 1530.0,
+   "tier": "derived",
+   "confidence": 0.8491,
+   "routable": true
+  },
+  {
+   "address": "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9",
+   "chain": "tron",
+   "case_id": "tron-abstain",
+   "direction": "outbound",
+   "amount_usd": 150.0,
+   "tier": "derived",
+   "confidence": 0.3266,
+   "routable": false
+  }
+ ],
+ "requests": []
+}

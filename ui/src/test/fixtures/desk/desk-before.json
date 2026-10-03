@@ -1,0 +1,46 @@
+{
+ "follow_ups": [],
+ "rows": [
+  {
+   "vasp": "Bitget",
+   "category": "exchange",
+   "wallet_count": 1,
+   "total_usd": 552163.8,
+   "case_ids": [
+    "eth-bitget"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 1
+  },
+  {
+   "vasp": "CoinDCX",
+   "category": "exchange",
+   "wallet_count": 2,
+   "total_usd": 7530.0,
+   "case_ids": [
+    "tron-coindcx",
+    "tron-htx-coindcx"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 2
+  },
+  {
+   "vasp": "HTX",
+   "category": "exchange",
+   "wallet_count": 2,
+   "total_usd": 7000.0,
+   "case_ids": [
+    "btc-htx",
+    "tron-htx-coindcx"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 2
+  }
+ ]
+}

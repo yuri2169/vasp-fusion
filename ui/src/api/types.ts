@@ -280,7 +280,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Requests
+         * @description The requests register: every request, newest first, withdrawn ones included.
+         *     The demo request is listed only while the desk itself is the mock.
+         */
+        get: operations["list_requests_api_requests_get"];
         put?: never;
         /** Create Request */
         post: operations["create_request_api_requests_post"];
@@ -1895,6 +1900,14 @@ export interface components {
              */
             review_notes: string[];
         };
+        /**
+         * RequestList
+         * @description The requests register: every request, newest first, withdrawn ones included.
+         */
+        RequestList: {
+            /** Items */
+            items: components["schemas"]["RequestDetail"][];
+        };
         /** RequestPatch */
         RequestPatch: {
             /**
@@ -2677,6 +2690,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VaspDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_requests_api_requests_get: {
+        parameters: {
+            query?: {
+                vasp?: string | null;
+                status?: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RequestList"];
                 };
             };
             /** @description Validation Error */

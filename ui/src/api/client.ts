@@ -24,7 +24,9 @@ import type {
   Receipt,
   RequestCreate,
   RequestDetail,
+  RequestList,
   RequestPatch,
+  RequestStatus,
   VaspDetail,
   VerifyResult,
   WalletDetail,
@@ -131,6 +133,7 @@ export function liveTransport(fetchImpl: typeof fetch = (...args) => fetch(...ar
 export type CaseOpen = Pick<CaseCreate, 'address'> & Partial<Omit<CaseCreate, 'address'>>
 export type CasesQuery = { outcome?: CaseSummary['outcome']; status?: CaseSummary['status'] }
 export type LabelQuery = { q?: string; chain?: string; category?: string; tier?: string; limit?: number; offset?: number }
+export type RequestsQuery = { vasp?: string; status?: RequestStatus }
 export type AuditQuery = { limit?: number; offset?: number; officer?: string; action?: string; target?: string; verify?: boolean }
 
 const seg = encodeURIComponent
@@ -164,6 +167,8 @@ export function createApi(transport: Transport) {
 
     desk: () => get<Desk>('/desk'),
     vasp: (name: string) => get<VaspDetail>(`/vasps/${seg(name)}`),
+    /** The register: every request, newest first, withdrawn ones included. */
+    requests: (query?: RequestsQuery) => get<RequestList>('/requests', query),
     request: (id: string) => get<RequestDetail>(`/requests/${seg(id)}`),
     createRequest: (body: RequestCreate) => call<RequestDetail>('POST', '/requests', { body }),
     patchRequest: (id: string, body: RequestPatch) => call<RequestDetail>('PATCH', `/requests/${seg(id)}`, { body }),

@@ -3,7 +3,7 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/re
 import { useSyncExternalStore } from 'react'
 import { api } from './api'
 import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type LabelQuery } from './client'
-import type { CaseDetail, Login } from './models'
+import type { CaseDetail, Login, RequestCreate, RequestPatch } from './models'
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -28,6 +28,9 @@ export const keys = {
   audit: (target: string) => ['audit', target] as const,
   labels: (query: LabelQuery) => ['labels', query] as const,
   desk: ['desk'] as const,
+  vasp: (name: string) => ['vasp', name] as const,
+  requests: ['requests'] as const,
+  request: (id: string) => ['request', id] as const,
   dashboard: ['dashboard'] as const,
   model: (chain?: string) => ['model', chain ?? 'tron'] as const,
 }
@@ -73,6 +76,57 @@ export function useVerifyCase(id: string) {
     mutationFn: () => api.verifyCase(id),
     // Verifying is itself a row in the audit log.
     onSettled: () => client.invalidateQueries({ queryKey: keys.audit(id) }),
+  })
+}
+
+// --- the request desk ---------------------------------------------------------
+
+export const useDesk = () => useQuery({ queryKey: keys.desk, queryFn: () => api.desk() })
+
+export const useVasp = (name: string, enabled = true) =>
+  useQuery({ queryKey: keys.vasp(name), queryFn: () => api.vasp(name), enabled: enabled && name !== '' })
+
+/** The register: every request, newest first. Filtering is done on the page, so one answer serves every filter. */
+export const useRequests = () => useQuery({ queryKey: keys.requests, queryFn: () => api.requests() })
+
+export const useRequest = (id: string) => useQuery({ queryKey: keys.request(id), queryFn: () => api.request(id) })
+
+/** A request changes what the desk, the exchange's page and the register say. */
+function useDeskChanged() {
+  const client = useQueryClient()
+  return () => {
+    void client.invalidateQueries({ queryKey: keys.desk })
+    void client.invalidateQueries({ queryKey: ['vasp'] })
+    void client.invalidateQueries({ queryKey: keys.requests })
+    void client.invalidateQueries({ queryKey: keys.dashboard })
+  }
+}
+
+/** Draft one consolidated request to an exchange. */
+export function useDraftRequest() {
+  const client = useQueryClient()
+  const changed = useDeskChanged()
+  return useMutation({
+    mutationFn: (body: RequestCreate) => api.createRequest(body),
+    onSuccess: (made) => {
+      client.setQueryData(keys.request(made.id), made)
+      changed()
+    },
+  })
+}
+
+/** Move a request along: approve, send, record the reply, withdraw. */
+export function useMoveRequest(id: string) {
+  const client = useQueryClient()
+  const changed = useDeskChanged()
+  return useMutation({
+    mutationFn: (body: RequestPatch) => api.patchRequest(id, body),
+    onSuccess: (moved) => {
+      client.setQueryData(keys.request(id), moved)
+      changed()
+    },
+    // A refusal (409) usually means it changed under the officer: show what is stored now.
+    onError: () => void client.invalidateQueries({ queryKey: keys.request(id) }),
   })
 }
 

@@ -1,4 +1,4 @@
-// Screenshots of the component kit, the shell and the case page, in both themes, into docs/screenshots/.
+// Screenshots of the component kit, the shell, the case page and the request desk, in both themes, into docs/screenshots/.
 //
 //   npm run dev                       (in another terminal; mock data, port 5173)
 //   npm run screenshots               (or: BASE_URL=http://localhost:5183 npm run screenshots)
@@ -38,6 +38,15 @@ const TYPE_HERO = `(() => {
 })()`
 const TICK_AGAIN = click('form[aria-label="Open a case"] input[type="checkbox"]')
 const TRACE = click('form[aria-label="Open a case"] button[type="submit"]')
+
+// The desk and the register: a status tag in a table row. An exchange's page: its facts. A request: the sheet.
+const DESK = `document.querySelectorAll('tbody tr [data-testid="status-tag"]').length > 0`
+const VASP = `document.querySelectorAll('dl dt').length > 0 && document.querySelectorAll('tbody tr').length > 0`
+const LETTER = `document.querySelectorAll('.sheet table tbody tr').length > 0`
+const DIALOG = `document.querySelectorAll('dialog[open] input[type="checkbox"]').length > 0`
+const press = (text) => `[...document.querySelectorAll('button')].find((b) => b.textContent.trim().startsWith(${JSON.stringify(text)})).click()`
+const APPROVE = press('Approve request')
+const REPLY = press('Record reply')
 
 const OKX = '/cases/demo-tron-okx'
 const SHOTS = [
@@ -85,6 +94,36 @@ const SHOTS = [
   // Last, because it changes the stored case: the hero wallet traced again from the cache while
   // watching (intake → trace → the rail extended, "Trace finished").
   ['case-live-traced', '/cases/new?theme=light', 1440, 900, false, { ready: INTAKE, live: true, steps: [TYPE_HERO, 200, TICK_AGAIN, TRACE, 4000] }],
+
+  // --- U3: the request desk, an exchange's page, the letter, the register ---------------------
+  ['desk-light', '/desk?theme=light', 1440, 900, true, { ready: DESK }],
+  ['desk-dark', '/desk?theme=dark', 1440, 900, true, { ready: DESK }],
+  ['desk-letter-demo', '/requests/demo-req-okx-001?theme=light', 1440, 900, true, { ready: LETTER }],
+  ['desk-register-demo', '/requests?theme=light', 1440, 900, false, { ready: DESK }],
+  // The real demo cases through the live API, after: a request to CoinDCX drafted, approved and
+  // sent (req-2026-0001), one to HTX drafted (req-2026-0002), one to Bitget approved (0003) and a draft
+  // withdrawn (0004). ui/src/test/fixtures/desk/record.py does that, then again with --more.
+  ['desk-live-light', '/desk?theme=light', 1440, 900, true, { ready: DESK, live: true }],
+  ['desk-live-dark', '/desk?theme=dark', 1440, 900, true, { ready: DESK, live: true }],
+  ['desk-live-1280', '/desk?theme=light', 1280, 800, false, { ready: DESK, live: true }],
+  ['desk-live-tablet', '/desk?theme=light', 820, 1100, true, { ready: DESK, live: true }],
+  ['desk-live-draft-dialog', '/desk?theme=light&vasp=Bitget&case=eth-bitget', 1440, 900, false, { ready: DIALOG, live: true }],
+  ['desk-live-draft-dialog-dark', '/desk?theme=dark&vasp=Bitget&case=eth-bitget', 1440, 900, false, { ready: DIALOG, live: true }],
+  ['desk-live-vasp-coindcx', '/vasps/CoinDCX?theme=light', 1440, 900, true, { ready: VASP, live: true }],
+  ['desk-live-vasp-coindcx-dark', '/vasps/CoinDCX?theme=dark', 1440, 900, true, { ready: VASP, live: true }],
+  ['desk-live-vasp-htx', '/vasps/HTX?theme=light', 1440, 900, true, { ready: VASP, live: true }],
+  ['desk-live-vasp-kucoin', '/vasps/KuCoin?theme=light', 1440, 900, true, { ready: VASP, live: true }],
+  ['desk-live-letter-draft', '/requests/req-2026-0002?theme=light', 1440, 900, true, { ready: LETTER, live: true, pdf: true }],
+  ['desk-live-letter-draft-dark', '/requests/req-2026-0002?theme=dark', 1440, 900, true, { ready: LETTER, live: true }],
+  ['desk-live-letter-approve', '/requests/req-2026-0002?theme=light', 1440, 900, false, { ready: LETTER, live: true, steps: [APPROVE, 300] }],
+  ['desk-live-letter-approved', '/requests/req-2026-0003?theme=light', 1440, 900, true, { ready: LETTER, live: true, pdf: true }],
+  ['desk-live-letter-sent', '/requests/req-2026-0001?theme=light', 1440, 900, true, { ready: LETTER, live: true }],
+  ['desk-live-letter-sent-1280', '/requests/req-2026-0001?theme=light', 1280, 800, false, { ready: LETTER, live: true }],
+  ['desk-live-letter-sent-tablet', '/requests/req-2026-0001?theme=light', 820, 1100, true, { ready: LETTER, live: true }],
+  ['desk-live-letter-reply', '/requests/req-2026-0001?theme=light', 1440, 900, false, { ready: LETTER, live: true, steps: [REPLY, 300] }],
+  ['desk-live-register', '/requests?theme=light', 1440, 900, false, { ready: DESK, live: true }],
+  ['desk-live-register-dark', '/requests?theme=dark', 1440, 900, false, { ready: DESK, live: true }],
+  ['desk-live-register-1280', '/requests?theme=light', 1280, 800, false, { ready: DESK, live: true }],
 ].filter(([name, , , , , opts]) => (!ONLY || name.startsWith(ONLY)) && (!opts?.live || LIVE))
 
 const CANDIDATES = [
@@ -215,6 +254,23 @@ try {
     console.log(`${name}.png`)
   }
   page.close()
+
+  // What "Print or save as PDF" gives: the page's own @page size, margins and margin boxes.
+  // Each in a tab of its own, printed last: a tab that has printed does not load another page.
+  for (const [name, path, , , , opts = {}] of SHOTS.filter((shot) => shot[5]?.pdf)) {
+    const url = (opts.live ? LIVE : BASE) + path
+    const made = await (await fetch(`http://127.0.0.1:${PORT}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' })).json()
+    const tab = session(made.webSocketDebuggerUrl)
+    await waitFor(
+      () => tab.evaluate(`document.fonts.ready.then(() => document.fonts.check('16px "IBM Plex Sans"') && (${opts.ready ?? STAMP}))`),
+      `${path} to render`,
+    )
+    await sleep(500)
+    const pdf = await tab.send('Page.printToPDF', { preferCSSPageSize: true, printBackground: true, displayHeaderFooter: false })
+    writeFileSync(join(OUT, `${name}.pdf`), Buffer.from(pdf.data, 'base64'))
+    console.log(`${name}.pdf`)
+    tab.close()
+  }
 } finally {
   browser.kill()
   await sleep(300)

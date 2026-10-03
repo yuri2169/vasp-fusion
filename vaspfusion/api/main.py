@@ -200,6 +200,7 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"labels/search", S.LabelSearch),
     (r"desk", S.Desk),
     (r"vasps/[^/]+", S.VaspDetail),
+    (r"requests", S.RequestList),
     (r"requests/[^/]+", S.RequestDetail),
     (r"dashboard", S.Dashboard),
     (r"model", S.ModelInfo),
@@ -698,6 +699,27 @@ def create_request(body: S.RequestCreate, request: Request, response: Response):
     return made
 
 
+@app.get("/api/requests", response_model=S.RequestList)
+def list_requests(response: Response, vasp: str | None = None,
+                  status: S.RequestStatus | None = None):
+    """The requests register: every request, newest first, withdrawn ones included.
+    The demo request is listed only while the desk itself is the mock."""
+    svc = _desk()
+    live = svc.list()
+    if not live and not svc.desk()["rows"]:
+        _source(response, "mock")
+        items = load_mock("requests")["items"]
+    else:
+        _source(response, "live")
+        items = live
+    if vasp:
+        name = svc.directory.canonical(vasp)
+        items = [q for q in items if q["vasp"] == name]
+    if status:
+        items = [q for q in items if q["status"] == status]
+    return {"items": items}
+
+
 def _request_pdf(request_id: str) -> Response:
     from ..desk.pdf import letter_pdf
     from ..desk.service import DeskError
@@ -760,6 +782,7 @@ def patch_request(request_id: str, body: S.RequestPatch, request: Request,
         raise HTTPException(409, f"A request that is {req['status']} cannot become "
                                  f"{body.status}.")
     req["status"] = body.status
+    req["allowed_next"] = list(TRANSITIONS[body.status])
     req["status_history"].append({"status": body.status, "note": body.note,
                                   "at": datetime.now(timezone.utc).isoformat()})
     if body.status != "drafted":

@@ -1,0 +1,74 @@
+{
+ "directory": {
+  "name": "Bitget",
+  "legal_name": null,
+  "fiu_ind_registered": null,
+  "fiu_ind_as_of": null,
+  "jurisdiction": null,
+  "le_request_channel": "https://app.kodexglobal.com/bitget/signup",
+  "notes": [
+   "A news report of 24 Jun 2025 (DeFi Planet, republished on bitget.com) says Bitget joined I4C's Sahyog portal. Not confirmed from an official source."
+  ],
+  "sources": [
+   {
+    "field": "le_request_channel",
+    "title": "Law Enforcement Request Guide",
+    "publisher": "Bitget",
+    "kind": "exchange",
+    "url": "https://www.bitget.com/support/articles/12560603800342",
+    "published": null,
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "notes",
+    "title": "Bitget Joins India's Sahyog Portal to Support Law Enforcement Investigations",
+    "publisher": "DeFi Planet, republished in Bitget's news section (a news report, not a statement by Bitget or I4C)",
+    "kind": "news",
+    "url": "https://www.bitget.com/news/detail/12560604830717",
+    "published": "2025-06-24",
+    "accessed": "2026-10-02"
+   }
+  ],
+  "source_urls": [
+   "https://www.bitget.com/news/detail/12560604830717",
+   "https://www.bitget.com/support/articles/12560603800342"
+  ]
+ },
+ "label_counts": {
+  "ethereum": 19103,
+  "tron": 784,
+  "avalanche": 39,
+  "worldchain": 36,
+  "bsc": 22,
+  "bitcoin": 19,
+  "solana": 13,
+  "arbitrum": 10,
+  "polygon": 8,
+  "optimism": 6,
+  "ton": 4,
+  "xrp": 3,
+  "base": 1,
+  "cronos": 1,
+  "dogecoin": 1,
+  "fantom": 1,
+  "hyperliquid": 1,
+  "kava": 1,
+  "klaytn": 1,
+  "metis": 1,
+  "sonic": 1,
+  "zksync": 1
+ },
+ "wallets": [
+  {
+   "address": "0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24",
+   "chain": "ethereum",
+   "case_id": "eth-bitget",
+   "direction": "outbound",
+   "amount_usd": 552163.80319,
+   "tier": "explorer_tag",
+   "confidence": 0.75,
+   "routable": true
+  }
+ ],
+ "requests": []
+}

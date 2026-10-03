@@ -9,7 +9,7 @@
  *  A live build (VITE_API=live) carries none of the fixtures: the glob is compiled out. */
 import { ApiError, type Transport } from './client'
 import { CHAINS } from '../lib/chains'
-import type { AuditPage, CaseDetail, CaseList, CaseProgress, CaseSummary } from './models'
+import type { AuditPage, CaseDetail, CaseList, CaseProgress, CaseSummary, Desk, RequestDetail, RequestList, RequestStatus } from './models'
 
 const GO_LIVE = 'start the API (make serve) and run the interface with VITE_API=live'
 
@@ -84,6 +84,19 @@ function unfinished(c: CaseDetail, status: 'queued' | 'running', done: number): 
   }
 }
 
+/** Which status a request may move to from where it is (vaspfusion/desk/service.py, TRANSITIONS). */
+const TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
+  drafted: ['approved', 'withdrawn'],
+  approved: ['sent', 'drafted', 'withdrawn'],
+  sent: ['acknowledged', 'answered', 'freeze_confirmed', 'refused'],
+  acknowledged: ['answered', 'freeze_confirmed', 'refused'],
+  answered: ['freeze_confirmed'],
+  freeze_confirmed: [],
+  refused: [],
+  withdrawn: [],
+}
+const AWAITING: RequestStatus[] = ['sent', 'acknowledged']
+
 export function createMockTransport(opts: { now?: () => number; traceMs?: number } = {}): Transport {
   const now = opts.now ?? (() => Date.now())
   const traceMs = () => opts.traceMs ?? mockSettings.traceMs
@@ -102,9 +115,57 @@ export function createMockTransport(opts: { now?: () => number; traceMs?: number
     return elapsed / trace.ms
   }
 
+  /** The demo request as the officer has moved it in this session (the live API stores it; nothing here does). */
+  const moved = new Map<string, RequestDetail>()
+  const requestNow = async (id: string) => moved.get(id) ?? (await fixture<RequestDetail>(`/requests/${id}`))
+
   return {
     async request(method, path, opts = {}) {
       const decoded = decodeURIComponent(path)
+      const requestId = /^\/requests\/([^/]+)$/.exec(decoded)?.[1]
+
+      if (method === 'GET' && requestId) return { data: await requestNow(requestId), source: 'mock' }
+      if (method === 'GET' && decoded === '/requests') {
+        const list = await fixture<RequestList>('/requests')
+        const { vasp, status } = opts.query ?? {}
+        const items = list.items
+          .map((r) => moved.get(r.id) ?? r)
+          .filter((r) => (!vasp || r.vasp.toLowerCase() === String(vasp).toLowerCase()) && (!status || r.status === status))
+        return { data: { items }, source: 'mock' }
+      }
+      if (method === 'GET' && decoded === '/desk' && moved.size > 0) {
+        const desk = await fixture<Desk>('/desk')
+        const now_ = (id: string | null | undefined) => (id ? moved.get(id) : undefined)
+        return {
+          data: {
+            follow_ups: desk.follow_ups.filter((f) => AWAITING.includes(now_(f.request_id)?.status ?? 'sent')),
+            rows: desk.rows.map((row) => ({ ...row, status: now_(row.last_request_id)?.status ?? row.status })),
+          },
+          source: 'mock',
+        }
+      }
+
+      if (method === 'POST' && decoded === '/requests') {
+        const vasp = String((opts.body as { vasp?: unknown } | undefined)?.vasp ?? '')
+        const found = (await fixture<RequestList>('/requests')).items.find((r) => r.vasp.toLowerCase() === vasp.toLowerCase())
+        if (!found) throw new ApiError(404, `Demo data holds no request to ${vasp}. To draft one from a traced case, ${GO_LIVE}.`)
+        return { data: moved.get(found.id) ?? found, source: 'mock' }
+      }
+
+      if (method === 'PATCH' && requestId) {
+        const req = await requestNow(requestId)
+        const { status, note } = (opts.body ?? {}) as { status: RequestStatus; note?: string | null }
+        if (!TRANSITIONS[req.status].includes(status))
+          throw new ApiError(409, `A request that is ${req.status} cannot become ${status}.`)
+        const next: RequestDetail = {
+          ...req,
+          status,
+          allowed_next: TRANSITIONS[status],
+          status_history: [...req.status_history, { status, at: new Date(now()).toISOString(), note: note ?? null, by: null }],
+        }
+        moved.set(requestId, next)
+        return { data: next, source: 'mock' }
+      }
 
       if (method === 'GET') {
         const data = await fixture<unknown>(decoded)

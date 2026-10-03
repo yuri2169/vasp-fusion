@@ -101,3 +101,36 @@ describe('the audit log in mock mode', () => {
     expect(one.total).toBe(one.items.length)
   })
 })
+
+describe('the demo request in mock mode', () => {
+  it('is in the register and can be moved along, for this session only', async () => {
+    const { api } = mockApi()
+    const before = (await api.requests()).items
+    expect(before.map((r) => [r.id, r.status])).toEqual([['demo-req-okx-001', 'sent']])
+    expect((await api.desk()).follow_ups).toHaveLength(1)
+
+    const answered = await api.patchRequest('demo-req-okx-001', { status: 'answered', note: 'KYC received by email' })
+    expect(answered.allowed_next).toEqual(['freeze_confirmed'])
+    expect(answered.status_history.at(-1)).toMatchObject({ status: 'answered', note: 'KYC received by email' })
+    expect((await api.request('demo-req-okx-001')).status).toBe('answered')
+    expect((await api.requests({ status: 'answered' })).items).toHaveLength(1)
+    // the desk follows: no reply is awaited any more
+    const desk = await api.desk()
+    expect(desk.follow_ups).toEqual([])
+    expect(desk.rows.find((r) => r.vasp === 'OKX')?.status).toBe('answered')
+    // another session starts from the fixture again
+    expect((await mockApi().api.request('demo-req-okx-001')).status).toBe('sent')
+  })
+
+  it('refuses a step the live API would refuse, and a draft to an exchange the fixtures hold no request for', async () => {
+    const { api } = mockApi()
+    const back = await api.patchRequest('demo-req-okx-001', { status: 'drafted' }).catch((e: unknown) => e)
+    expect([(back as ApiError).status, (back as ApiError).detail]).toEqual([409, 'A request that is sent cannot become drafted.'])
+    const draft = await api
+      .createRequest({ vasp: 'CoinDCX', case_ids: ['demo-tron-sanctioned'], asks: ['kyc'], officer: 'Insp. A. Rao' })
+      .catch((e: unknown) => e)
+    expect((draft as ApiError).status).toBe(404)
+    const okx = await api.createRequest({ vasp: 'OKX', case_ids: ['demo-tron-okx'], asks: ['kyc'], officer: 'Insp. A. Rao' })
+    expect(okx.id).toBe('demo-req-okx-001')
+  })
+})

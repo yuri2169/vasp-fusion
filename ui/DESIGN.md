@@ -92,7 +92,7 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 ```
 
 - Rail: 224px, icons only (64px) under 1024px. Content column: at most 1240px.
-- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case).
+- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case), `/desk`, `/vasps/:name`, `/requests`, `/requests/:id` (the request desk; the rail stays on "Request desk" for all four).
 - The top bar holds the search and the data-source tag, nothing else.
 - A page starts with `PageHeader` (optional eyebrow, title, one line of purpose, actions on the right).
 - Sections inside a page are headed by an `eyebrow` `<h2>`.
@@ -137,6 +137,26 @@ Complaint 3150… · Reported loss ₹40,50,000 · Opened 2 Oct 2026
 - **The evidence of an exchange that is not the answer is folded** ("Evidence (3)"); the answer's own is open.
 - **A running trace shows what the server says it has read** (`CaseDetail.progress`): its sentence as it came, three counts (hops out, wallets read, transfers read), and on the rail a dashed place for each hop gone out so far. No percentage: a trace does not know how much is left. A labelled wallet reached is not shown as an answer; the stamp comes with the result. The server has no cancel, so the button is "Stop waiting" and says the trace goes on. When the result arrives while the officer watches, the rail extends and one line reports what the run read.
 - **Under 1024px** the graph and the panel stack; the graph stops being sticky.
+
+## The request desk (`/desk`, `/vasps/:name`, `/requests`, `/requests/:id`)
+
+The unit of work is an exchange, not a complaint. The desk's own parts are in `src/desk/`.
+
+- **`/desk`** starts with the **Follow up** strip (what is past its day, in a red-outlined row each; when nothing is, one quiet line says so), then one row per exchange: wallets, traced US dollars, cases, status, and the server's `next_action` sentence as it came. A row offers "Draft request" only while a wallet of that exchange is in no request, and "Open request" once one exists. No button in a row is saffron.
+- **Drafting** is a dialog (`DraftDialog`): the cases to include, what to ask for, the officer's line. `/desk?vasp=&case=` (the case page's link) opens it with that case ticked; `/vasps/:name?draft=1` opens it from the exchange's page. The server writes the letter; the page then opens it as a draft.
+- **`/vasps/:name`** shows only cited facts (`DirectoryFacts`), each with its source and the kind of source under it. **A blank is "No source found", never "No"**; a registration always carries its date; one known only from the exchange's own statement says so. Wallets that no request can be drafted on are marked "Context only".
+- **`/requests/:id`** is the letter on an A4 sheet with, beside it: the next step (the one saffron button), what to check, the routing slip, the gateway's receipt, and print. Each step is a dialog that says what it does; the buttons are the ones `allowed_next` allows, nothing else. Under 1024px the side column comes first.
+- **`/requests`** is the register: every request, with filters kept in the address (`?status=&vasp=&q=`).
+
+**The routing slip** (`RoutingSlip`) is this part's one drawn element: the slip on a file. Five boxes in order (Drafted, Approved, Sent, Acknowledged, Reply), each stamped with its day once it happened. A box not reached is dashed and empty; the one awaited is shaded; a step passed over has a dash; a refusal or a withdrawal ends the slip in a red-washed box with a cross. `layout="row"` fits a table row (the whole sentence is on hover and in the box's name); `layout="column"` beside the letter adds who and the note of each step, as recorded. It is never tilted and never saffron.
+
+**Status** (`StatusTag`) is an icon and a word: Not requested and Draft are dashed, Approved solid, Sent and Acknowledged shaded, Answered and Freeze confirmed teal, Refused red, Withdrawn struck through.
+
+**The letter sheet** (`LetterSheet`, `letter.css`):
+- Paper is paper: white with ink text in both themes. The sheet sets the role tokens back to their light values, so the rule "role tokens only" still holds on it.
+- It draws `RequestDetail.letter` and rewords nothing: letterhead (the officer's line, reference, date), To, Through, Subject, numbered paragraphs, the four asks as ticked boxes, the wallets table, the transactions, the matters referred to, the legal basis with its citations, the seal circle and the signature line. Addresses and hashes are whole.
+- **Until the request is approved** the sheet carries the server's watermark text across it and a banner at its head.
+- **Print** (`@media print`): the shell, the page header and the side column are hidden (`print:hidden`); the sheet loses its border and padding. An `@page` rule written by the component (it carries the reference) sets A4, the margins, and margin boxes: the reference and "Page n of N" at the foot of every page, and on a draft the banner at the head. The watermark is a fixed element, so it repeats on every page. A draft ends in a sheet of the review notes, headed "Not part of the request". Chromium-family browsers print margin boxes; the browser's own headers and footers should be switched off in the print dialog.
 
 ## The fund-flow graph
 
@@ -221,6 +241,8 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 
 The case page's own parts are in `src/case/` (they are not general components): `FlowGraph` + `GraphLegend` + `flowStyle.ts`, `AnswerPanel`, `AbstainPanel`, `CandidateCard`, `WalletPanel`, `TraceProgress`, `TraceAgain` (with `HopLimit`), the six `tabs/`, `caseText.ts` (words for roles, checks, audit actions) and `rules.ts` (the naming bar, what can be routed to the desk).
 
+The request desk's parts are in `src/desk/`: `RoutingSlip`, `StatusTag`, `DeskNav`, `DraftDialog`, `DirectoryFacts`, `LetterSheet` + `letter.css` + `pageRule.ts`, `RequestActions`, and `status.ts` (the words for statuses, asks and replies; the slip's steps; overdue).
+
 `AddressChip` takes `onSelect` / `selected` / `marked`: the address then is a button that shows the wallet on the case page.
 
 Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-in page when a login is required), `NavRail`, `GlobalSearch`.
@@ -245,5 +267,5 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
-- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png` and `case-*.png` in both themes, using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
+- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png`, `case-*.png` and `desk-*.png` in both themes (and `desk-live-letter-*.pdf`, the letter printed), using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
 - In mock mode a demo wallet's trace appears to take 2.4 seconds (`mockSettings.traceMs` in `src/api/mock.ts`) and reports progress worked out from the fixture's own graph, so the trace screen and the rail's animation can be seen with no server. Tests set it to 0.

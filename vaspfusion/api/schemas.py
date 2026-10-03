@@ -561,6 +561,11 @@ class RequestDetail(RequestSummary):
     receipt: GatewayReceipt | None = Field(None, description="Set once sent")
 
 
+class RequestList(_M):
+    """The requests register: every request, newest first, withdrawn ones included."""
+    items: list[RequestDetail]
+
+
 # ------------------------------------------------------------------ dashboard / model
 class DashboardCounts(_M):
     cases_total: int

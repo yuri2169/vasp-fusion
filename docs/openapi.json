@@ -747,14 +747,14 @@
         "summary": "Create Request",
         "operationId": "create_request_api_requests_post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RequestCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -763,6 +763,77 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RequestDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Requests",
+        "description": "The requests register: every request, newest first, withdrawn ones included.\nThe demo request is listed only while the desk itself is the mock.",
+        "operationId": "list_requests_api_requests_get",
+        "parameters": [
+          {
+            "name": "vasp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Vasp"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "drafted",
+                    "approved",
+                    "sent",
+                    "acknowledged",
+                    "answered",
+                    "freeze_confirmed",
+                    "refused",
+                    "withdrawn"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestList"
                 }
               }
             }
@@ -4950,6 +5021,24 @@
           "officer"
         ],
         "title": "RequestLetter"
+      },
+      "RequestList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RequestDetail"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "RequestList",
+        "description": "The requests register: every request, newest first, withdrawn ones included."
       },
       "RequestPatch": {
         "properties": {

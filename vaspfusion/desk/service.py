@@ -103,6 +103,10 @@ class DeskService:
         req = self.requests.get(request_id)
         return self._view(req) if req else None
 
+    def list(self) -> list[dict]:
+        """Every request, newest first, as `get` gives each."""
+        return [self._view(req) for req in self.requests.list()]
+
     def pdf(self, request_id: str) -> bytes:
         """The letter. Once sent, the very bytes that were submitted (while the gateway
         still holds them and they match the recorded hash); otherwise rendered now."""

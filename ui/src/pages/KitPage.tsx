@@ -15,6 +15,9 @@ import { ErrorState } from '../components/ErrorState'
 import { EvidenceList } from '../components/EvidenceList'
 import { FundsBar } from '../components/FundsBar'
 import { HopRail } from '../components/HopRail'
+import { RoutingSlip } from '../desk/RoutingSlip'
+import { StatusTag } from '../desk/StatusTag'
+import { STATUS_ORDER } from '../desk/status'
 import { OutcomeStamp } from '../components/OutcomeStamp'
 import { PageHeader } from '../components/PageHeader'
 import { Skeleton } from '../components/Skeleton'
@@ -186,6 +189,7 @@ const labelColumns: Column<LabelOut>[] = [
 export function KitPage() {
   const cases = useQuery({ queryKey: ['kit', 'cases'], queryFn: () => Promise.all(DEMO_CASES.map((id) => api.case(id))) })
   const labels = useQuery({ queryKey: ['kit', 'labels'], queryFn: () => api.labelSearch({ q: 'coindcx', limit: 10 }) })
+  const request = useQuery({ queryKey: ['kit', 'request'], queryFn: () => api.request('demo-req-okx-001') })
   const toast = useToast()
   const [dialog, setDialog] = useState(false)
   const [replay, setReplay] = useState(0)
@@ -524,6 +528,31 @@ export function KitPage() {
             <p className="text-sm text-muted">The {KIT_TABS.find((t) => t.id === tab)!.label.toLowerCase()} of the case goes here.</p>
           </Tabs>
         </Spec>
+      </Section>
+
+      <Section title="Request status and routing slip" note="Where a request stands: an icon and a word. The routing slip is the slip on a file: a box per step in order, stamped with its day once it happened; a box not reached is dashed and empty.">
+        <Spec label="Status" block wide>
+          <div className="flex flex-wrap gap-2">
+            {(['not_requested', ...STATUS_ORDER] as const).map((status) => (
+              <StatusTag key={status} status={status} />
+            ))}
+          </div>
+        </Spec>
+        {request.data && (
+          <>
+            <Spec label="In a table row: a draft, then sent" block wide>
+              <div className="flex flex-wrap gap-4">
+                <RoutingSlip history={request.data.status_history.slice(0, 1)} status="drafted" />
+                <RoutingSlip history={request.data.status_history} status={request.data.status} />
+              </div>
+            </Spec>
+            <Spec label="Beside the letter, with who and the note of each step" block>
+              <div className="max-w-[320px]">
+                <RoutingSlip history={request.data.status_history} status={request.data.status} layout="column" />
+              </div>
+            </Spec>
+          </>
+        )}
       </Section>
 
       <Section title="Table" note="Sortable columns, a header that stays in view, rows that open with a click or Enter.">

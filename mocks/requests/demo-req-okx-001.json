@@ -60,6 +60,12 @@
     "watermark": null
   },
   "pdf_url": "/api/requests/demo-req-okx-001/pdf",
+  "allowed_next": [
+    "acknowledged",
+    "answered",
+    "freeze_confirmed",
+    "refused"
+  ],
   "payload": {
     "schema": "sahyog-request/0-demo",
     "vasp": "OKX",

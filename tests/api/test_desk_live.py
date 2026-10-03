@@ -144,3 +144,26 @@ def test_asking_twice_is_a_409_and_a_withdrawn_draft_can_be_redone(client):
     assert gone.status_code == 200 and gone.json()["allowed_next"] == []
     assert client.post("/api/requests", json={**BODY, "case_ids": [cid]}).status_code == 201
     assert client.get("/api/vasps/coindcx").json()["directory"]["name"] == "CoinDCX"
+
+
+def test_the_register_lists_every_request_newest_first(client):
+    mock = client.get("/api/requests")            # no live case yet: the demo request
+    assert mock.status_code == 200 and mock.headers["x-data-source"] == "mock"
+    S.RequestList.model_validate(mock.json())
+    assert [q["id"] for q in mock.json()["items"]] == ["demo-req-okx-001"]
+
+    a, b = _trace(client, "tron-coindcx", "tron-htx-coindcx")
+    empty = client.get("/api/requests")           # live cases, nothing drafted: no demo row
+    assert empty.headers["x-data-source"] == "live" and empty.json() == {"items": []}
+
+    first = client.post("/api/requests", json={**BODY, "case_ids": [a, b]}).json()
+    client.patch(f"/api/requests/{first['id']}", json={"status": "withdrawn"})
+    second = client.post("/api/requests", json={**BODY, "vasp": "HTX", "case_ids": [b]}).json()
+    listed = client.get("/api/requests")
+    S.RequestList.model_validate(listed.json())
+    items = listed.json()["items"]
+    assert [q["id"] for q in items] == [second["id"], first["id"]]
+    assert items[1]["status"] == "withdrawn" and items[1]["allowed_next"] == []
+    assert items[0] == client.get(f"/api/requests/{second['id']}").json()
+    assert [q["id"] for q in client.get("/api/requests?vasp=htx").json()["items"]] == [second["id"]]
+    assert [q["id"] for q in client.get("/api/requests?status=withdrawn").json()["items"]] == [first["id"]]

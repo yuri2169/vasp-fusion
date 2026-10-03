@@ -1,0 +1,387 @@
+/* The request letter: an A4 sheet on screen, and a clean PDF from the browser's print.
+ *
+ * Paper is paper: the sheet is white with ink text in both themes. It sets the role
+ * tokens back to their light values (src/styles/tokens.css, the light block), so
+ * everything drawn on it follows.
+ *
+ * The page footer (reference, page n of N) and the draft banner are @page margin boxes;
+ * LetterSheet writes that rule itself, because it carries the letter's own reference. */
+
+.sheet {
+  color-scheme: light;
+  --surface: #ffffff;
+  --surface-sunk: #ece9f1;
+  --rule: #dad6e1;
+  --rule-strong: #8a8296;
+  --fg: var(--ink);
+  --fg-muted: var(--slate);
+  --focus: var(--ink);
+  --seal-text: #b3261e;
+  --seal-wash: #fbe9e7;
+
+  position: relative;
+  width: 100%;
+  max-width: 210mm;
+  padding: clamp(24px, 7%, 18mm);
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 21px;
+  overflow: hidden;
+}
+
+.sheet p {
+  margin: 0;
+}
+
+/* --- draft marks ------------------------------------------------------- */
+
+.sheet-banner {
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--seal-text);
+}
+
+.sheet-watermark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sheet-watermark span,
+.sheet-watermark-print {
+  font-family: theme('fontFamily.display');
+  font-size: 28px;
+  line-height: 32px;
+  font-variation-settings: 'wght' 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--seal);
+  opacity: 0.13;
+  transform: rotate(-32deg);
+}
+
+.sheet-watermark-print {
+  display: none;
+}
+
+/* --- the letter -------------------------------------------------------- */
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding-bottom: 10px;
+  /* the double rule of a printed letterhead */
+  border-bottom: 3px double var(--fg);
+  margin-bottom: 18px;
+}
+
+.sheet-office {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.sheet-officer {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.sheet-ref {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.sheet-ref b {
+  font-family: theme('fontFamily.mono');
+  font-weight: 500;
+}
+
+.sheet-small {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--fg-muted);
+}
+
+.sheet-to {
+  font-weight: 600;
+}
+
+.sheet-subject {
+  margin: 14px 0 12px !important;
+  font-weight: 600;
+}
+
+.sheet-paragraphs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: para;
+}
+
+.sheet-paragraphs li {
+  counter-increment: para;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  margin-bottom: 9px;
+  overflow-wrap: anywhere;
+}
+
+.sheet-paragraphs li::before {
+  content: counter(para) '.';
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-section {
+  margin: 18px 0 6px !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  break-after: avoid;
+}
+
+.sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.sheet-table th {
+  padding: 4px 8px 4px 2px;
+  border-bottom: 1.5px solid var(--fg);
+  text-align: left;
+  vertical-align: bottom;
+  font-size: 10px;
+  line-height: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sheet-table td {
+  padding: 6px 8px 6px 2px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.sheet-table tr {
+  break-inside: avoid;
+}
+
+/* A whole address on one line wherever the sheet is wide enough for it. */
+.sheet-wallets th:nth-child(2) {
+  width: 50%;
+}
+
+.sheet-keep {
+  break-inside: avoid;
+}
+
+.sheet-mono {
+  font-family: theme('fontFamily.mono');
+  font-feature-settings: 'zero' 1;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.sheet-mono a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sheet-mono a:hover {
+  text-decoration: underline;
+}
+
+.sheet-hashes {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet-asks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet-asks li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sheet-asks li[data-asked='false'] {
+  color: var(--fg-muted);
+}
+
+.sheet-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border: 1.5px solid currentColor;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.sheet-citations {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet-sign {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: 30px;
+  break-inside: avoid;
+}
+
+.sheet-seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34mm;
+  height: 34mm;
+  padding: 0 9mm;
+  border: 1px dashed var(--rule-strong);
+  border-radius: 50%;
+  text-align: center;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.sheet-signature {
+  width: 64mm;
+  max-width: 55%;
+}
+
+.sheet-signature-line {
+  height: 20mm;
+  border-bottom: 1px solid var(--fg);
+  margin-bottom: 6px;
+}
+
+.sheet-foot {
+  margin-top: 26px !important;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--fg-muted);
+}
+
+.sheet-review {
+  display: none;
+}
+
+/* --- print ------------------------------------------------------------- */
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    min-height: 0;
+  }
+
+  .sheet {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    font-size: 10pt;
+    line-height: 14.5pt;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .sheet-officer {
+    font-size: 12pt;
+    line-height: 16pt;
+  }
+
+  .sheet-small,
+  .sheet-ref,
+  .sheet-table,
+  .sheet-mono {
+    font-size: 8.5pt;
+    line-height: 12pt;
+  }
+
+  .sheet-table th {
+    font-size: 7pt;
+    line-height: 9pt;
+  }
+
+  .sheet-section {
+    font-size: 8.5pt;
+  }
+
+  /* On paper the margin boxes carry the banner and the footer on every page. */
+  .sheet-banner,
+  .sheet-foot,
+  .sheet-watermark {
+    display: none;
+  }
+
+  /* A fixed element is printed on every page. */
+  .sheet-watermark-print {
+    display: block;
+    position: fixed;
+    top: 45%;
+    left: 0;
+    right: 0;
+    font-size: 22pt;
+    line-height: 26pt;
+  }
+
+  .sheet-mono a {
+    text-decoration: none;
+  }
+
+  /* The last sheet of a draft: what to check. Not part of the request. */
+  .sheet-review {
+    display: block;
+    break-before: page;
+    color: var(--seal-text);
+  }
+
+  .sheet-review li {
+    margin-bottom: 6pt;
+    overflow-wrap: anywhere;
+  }
+}

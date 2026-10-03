@@ -1,0 +1,171 @@
+{
+ "id": "req-2026-0002",
+ "reference": "VF/REQ/2026/0002",
+ "vasp": "HTX",
+ "status": "drafted",
+ "case_ids": [
+  "tron-htx-coindcx"
+ ],
+ "created_at": "2026-10-03T04:07:11Z",
+ "due": null,
+ "status_history": [
+  {
+   "status": "drafted",
+   "at": "2026-10-03T04:07:11Z",
+   "note": "Drafted by Insp. A. Rao, Cyber PS",
+   "by": null
+  }
+ ],
+ "letter": {
+  "reference": "VF/REQ/2026/0002",
+  "date": "2026-10-03",
+  "to": "The Nodal Officer, HTX",
+  "subject": "Request for KYC records and transaction records in respect of 1 wallet attributed to HTX (DEMO/2026/104)",
+  "paragraphs": [
+   "This office is investigating the matter referred to above (DEMO/2026/104).",
+   "Analysis of public blockchain records traced funds from the wallet under investigation (TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr on Tron, DEMO/2026/104) to the 1 wallet listed in the table below, which the analysis attributes to HTX. The table states, for each wallet, the amount traced, the transactions, and the evidence tier and confidence of the attribution.",
+   "You are requested to: (a) furnish the KYC and account-opening records of the account or accounts that the wallets listed below belong to, or that were credited through them; (b) furnish the transaction history of those accounts, including the deposits listed below, internal transfers, withdrawals and the destination of the funds.",
+   "Please reply quoting reference VF/REQ/2026/0002."
+  ],
+  "wallets": [
+   {
+    "address": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "chain": "tron",
+    "amount_usd": 7000.0,
+    "tier": "published_por",
+    "first_seen": "2024-08-01T15:01:15Z",
+    "tx_hashes": [
+     "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+     "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645",
+     "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+     "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354"
+    ],
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "asset": "USDT",
+    "amount": 7000.0,
+    "confidence": 0.7071,
+    "paid_into": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "label": "HTX (Huobi) (proof-of-reserves)"
+   }
+  ],
+  "asks": [
+   "kyc",
+   "transactions"
+  ],
+  "legal_basis": "Notice under Section 94 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Electronic records to be furnished with a certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023.",
+  "officer": "Insp. A. Rao, Cyber PS",
+  "watermark": "Draft - officer review required",
+  "cases": [
+   {
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "complaint_no": null,
+    "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron"
+   }
+  ],
+  "legal_citations": [
+   {
+    "section": "94",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+    "heading": "Summons to produce document or other thing",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+   },
+   {
+    "section": "63",
+    "act": "Bharatiya Sakshya Adhiniyam, 2023",
+    "heading": "Admissibility of electronic records",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20063"
+   }
+  ],
+  "channel": "regulatory@htx-inc.com",
+  "review_notes": [
+   "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a carries no label. It is named because it passed on everything it received from this trail to HTX's wallet TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu; it may be a customer's deposit address or an intermediary.",
+   "Naming HTX for THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a rests on one label (published by the exchange itself): without it the trace does not reach HTX.",
+   "Confidence figures are the tool's assessment (label weight, hops and share of funds; calibrated only where a range is shown in the case). They are a lead for investigation, not proof of ownership.",
+   "No source was found for HTX's FIU-IND registration. Check whether it is a reporting entity before relying on a reply.",
+   "No legal entity name is on file for HTX; the letter is addressed to the trade name.",
+   "On file for HTX: Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source.",
+   "On file for HTX: HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+  ]
+ },
+ "pdf_url": "/api/requests/req-2026-0002/pdf",
+ "payload": {
+  "schema": "vaspfusion-sahyog-request/1",
+  "request_id": "req-2026-0002",
+  "reference": "VF/REQ/2026/0002",
+  "created_at": "2026-10-03T04:07:11Z",
+  "draft": true,
+  "recipient": {
+   "vasp": "HTX",
+   "legal_name": null,
+   "jurisdiction": null,
+   "fiu_ind_registered": null,
+   "fiu_ind_as_of": null,
+   "channel": "regulatory@htx-inc.com"
+  },
+  "officer": "Insp. A. Rao, Cyber PS",
+  "subject": "Request for KYC records and transaction records in respect of 1 wallet attributed to HTX (DEMO/2026/104)",
+  "cases": [
+   {
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "complaint_no": null,
+    "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron"
+   }
+  ],
+  "wallets": [
+   {
+    "address": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "chain": "tron",
+    "case_id": "tron-htx-coindcx",
+    "asset": "USDT",
+    "amount": 7000.0,
+    "amount_usd": 7000.0,
+    "evidence_tier": "published_por",
+    "confidence": 0.7071,
+    "first_seen": "2024-08-01T15:01:15Z",
+    "tx_hashes": [
+     "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+     "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645",
+     "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+     "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354"
+    ],
+    "paid_into": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu"
+   }
+  ],
+  "asks": [
+   "kyc",
+   "transactions"
+  ],
+  "legal_basis": {
+   "text": "Notice under Section 94 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Electronic records to be furnished with a certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023.",
+   "citations": [
+    {
+     "section": "94",
+     "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+     "heading": "Summons to produce document or other thing",
+     "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+    },
+    {
+     "section": "63",
+     "act": "Bharatiya Sakshya Adhiniyam, 2023",
+     "heading": "Admissibility of electronic records",
+     "url": "https://www.indiacode.nic.in/handle/123456789/20063"
+    }
+   ]
+  },
+  "documents": [],
+  "generated_by": {
+   "tool": "VASP-FUSION",
+   "code_version": "b5-bitcoin-1"
+  }
+ },
+ "allowed_next": [
+  "approved",
+  "withdrawn"
+ ],
+ "receipt": null
+}

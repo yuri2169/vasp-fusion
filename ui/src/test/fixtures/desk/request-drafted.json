@@ -1,0 +1,226 @@
+{
+ "id": "req-2026-0001",
+ "reference": "VF/REQ/2026/0001",
+ "vasp": "CoinDCX",
+ "status": "drafted",
+ "case_ids": [
+  "tron-coindcx",
+  "tron-htx-coindcx"
+ ],
+ "created_at": "2026-10-03T04:07:11Z",
+ "due": null,
+ "status_history": [
+  {
+   "status": "drafted",
+   "at": "2026-10-03T04:07:11Z",
+   "note": "Drafted by Insp. A. Rao, Cyber PS",
+   "by": null
+  }
+ ],
+ "letter": {
+  "reference": "VF/REQ/2026/0001",
+  "date": "2026-10-03",
+  "to": "The Nodal Officer, Neblio Technologies Private Limited (CoinDCX)",
+  "subject": "Request for KYC records, transaction records, a freeze and preservation of records in respect of 2 wallets attributed to CoinDCX (DEMO/2026/101 and DEMO/2026/104)",
+  "paragraphs": [
+   "This office is investigating the 2 matters referred to above (DEMO/2026/101 and DEMO/2026/104).",
+   "Analysis of public blockchain records traced funds from the wallets under investigation (TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c on Tron, DEMO/2026/101 and TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr on Tron, DEMO/2026/104) to the 2 wallets listed in the table below, which the analysis attributes to CoinDCX. The table states, for each wallet, the amount traced, the transactions, and the evidence tier and confidence of the attribution.",
+   "You are requested to: (a) furnish the KYC and account-opening records of the account or accounts that the wallets listed below belong to, or that were credited through them; (b) furnish the transaction history of those accounts, including the deposits listed below, internal transfers, withdrawals and the destination of the funds; (c) freeze those accounts to the extent of the amounts listed below, and confirm the freeze and the balance held; (d) preserve all records, logs and communications relating to those accounts until further notice.",
+   "Please reply quoting reference VF/REQ/2026/0001."
+  ],
+  "wallets": [
+   {
+    "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
+    "chain": "tron",
+    "amount_usd": 1530.0,
+    "tier": "derived",
+    "first_seen": "2025-05-25T03:22:15Z",
+    "tx_hashes": [
+     "54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072"
+    ],
+    "case_id": "tron-coindcx",
+    "case_ref": "DEMO/2026/101",
+    "asset": "USDT",
+    "amount": 1530.0,
+    "confidence": 0.8491,
+    "paid_into": null,
+    "label": "CoinDCX deposit address (derived: sweep + gas payer)"
+   },
+   {
+    "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+    "chain": "tron",
+    "amount_usd": 6000.0,
+    "tier": "derived",
+    "first_seen": "2024-07-23T08:44:12Z",
+    "tx_hashes": [
+     "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae"
+    ],
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "asset": "USDT",
+    "amount": 6000.0,
+    "confidence": 0.8492,
+    "paid_into": null,
+    "label": "CoinDCX deposit address (derived: sweep + gas payer)"
+   }
+  ],
+  "asks": [
+   "kyc",
+   "transactions",
+   "freeze",
+   "preservation"
+  ],
+  "legal_basis": "Notice under Section 94 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Electronic records to be furnished with a certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023. The freeze is requested under Section 106 of the Bharatiya Nagarik Suraksha Sanhita, 2023.",
+  "officer": "Insp. A. Rao, Cyber PS",
+  "watermark": "Draft - officer review required",
+  "cases": [
+   {
+    "case_id": "tron-coindcx",
+    "case_ref": "DEMO/2026/101",
+    "complaint_no": null,
+    "wallet": "TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
+    "chain": "tron"
+   },
+   {
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "complaint_no": null,
+    "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron"
+   }
+  ],
+  "legal_citations": [
+   {
+    "section": "94",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+    "heading": "Summons to produce document or other thing",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+   },
+   {
+    "section": "63",
+    "act": "Bharatiya Sakshya Adhiniyam, 2023",
+    "heading": "Admissibility of electronic records",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20063"
+   },
+   {
+    "section": "106",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+    "heading": "Power of police officer to seize certain property",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+   }
+  ],
+  "channel": null,
+  "review_notes": [
+   "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 was labelled by VASP-FUSION's own rules (it sweeps into a labelled CoinDCX wallet), not by an outside source.",
+   "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk was labelled by VASP-FUSION's own rules (it sweeps into a labelled CoinDCX wallet), not by an outside source.",
+   "Confidence figures are the tool's assessment (label weight, hops and share of funds; calibrated only where a range is shown in the case). They are a lead for investigation, not proof of ownership.",
+   "CoinDCX's FIU-IND registration is as of 4 Dec 2023 (an official list). Confirm it is still current.",
+   "No published law-enforcement channel is on file for CoinDCX."
+  ]
+ },
+ "pdf_url": "/api/requests/req-2026-0001/pdf",
+ "payload": {
+  "schema": "vaspfusion-sahyog-request/1",
+  "request_id": "req-2026-0001",
+  "reference": "VF/REQ/2026/0001",
+  "created_at": "2026-10-03T04:07:11Z",
+  "draft": true,
+  "recipient": {
+   "vasp": "CoinDCX",
+   "legal_name": "Neblio Technologies Private Limited",
+   "jurisdiction": null,
+   "fiu_ind_registered": true,
+   "fiu_ind_as_of": "2023-12-04",
+   "channel": null
+  },
+  "officer": "Insp. A. Rao, Cyber PS",
+  "subject": "Request for KYC records, transaction records, a freeze and preservation of records in respect of 2 wallets attributed to CoinDCX (DEMO/2026/101 and DEMO/2026/104)",
+  "cases": [
+   {
+    "case_id": "tron-coindcx",
+    "case_ref": "DEMO/2026/101",
+    "complaint_no": null,
+    "wallet": "TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
+    "chain": "tron"
+   },
+   {
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "complaint_no": null,
+    "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron"
+   }
+  ],
+  "wallets": [
+   {
+    "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
+    "chain": "tron",
+    "case_id": "tron-coindcx",
+    "asset": "USDT",
+    "amount": 1530.0,
+    "amount_usd": 1530.0,
+    "evidence_tier": "derived",
+    "confidence": 0.8491,
+    "first_seen": "2025-05-25T03:22:15Z",
+    "tx_hashes": [
+     "54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072"
+    ],
+    "paid_into": null
+   },
+   {
+    "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
+    "chain": "tron",
+    "case_id": "tron-htx-coindcx",
+    "asset": "USDT",
+    "amount": 6000.0,
+    "amount_usd": 6000.0,
+    "evidence_tier": "derived",
+    "confidence": 0.8492,
+    "first_seen": "2024-07-23T08:44:12Z",
+    "tx_hashes": [
+     "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae"
+    ],
+    "paid_into": null
+   }
+  ],
+  "asks": [
+   "kyc",
+   "transactions",
+   "freeze",
+   "preservation"
+  ],
+  "legal_basis": {
+   "text": "Notice under Section 94 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Electronic records to be furnished with a certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023. The freeze is requested under Section 106 of the Bharatiya Nagarik Suraksha Sanhita, 2023.",
+   "citations": [
+    {
+     "section": "94",
+     "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+     "heading": "Summons to produce document or other thing",
+     "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+    },
+    {
+     "section": "63",
+     "act": "Bharatiya Sakshya Adhiniyam, 2023",
+     "heading": "Admissibility of electronic records",
+     "url": "https://www.indiacode.nic.in/handle/123456789/20063"
+    },
+    {
+     "section": "106",
+     "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+     "heading": "Power of police officer to seize certain property",
+     "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+    }
+   ]
+  },
+  "documents": [],
+  "generated_by": {
+   "tool": "VASP-FUSION",
+   "code_version": "b5-bitcoin-1"
+  }
+ },
+ "allowed_next": [
+  "approved",
+  "withdrawn"
+ ],
+ "receipt": null
+}

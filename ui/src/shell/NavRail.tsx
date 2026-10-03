@@ -1,14 +1,15 @@
 import { Component, FolderOpen, Gauge, LayoutDashboard, LogOut, Send, Tags, type LucideIcon } from 'lucide-react'
-import { NavLink } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { ApiError } from '../api/client'
 import { useMe, useSignOut } from '../api/queries'
 import { useToast } from '../components/Toast'
 import { cx } from '../lib/cx'
 import { ThemeToggle } from '../theme/ThemeToggle'
 
-const PLACES: { to: string; name: string; Icon: LucideIcon }[] = [
+/** `also`: other routes that belong to the same place (an exchange's page and a request are the desk's). */
+const PLACES: { to: string; name: string; Icon: LucideIcon; also?: string[] }[] = [
   { to: '/cases', name: 'Cases', Icon: FolderOpen },
-  { to: '/desk', name: 'Request desk', Icon: Send },
+  { to: '/desk', name: 'Request desk', Icon: Send, also: ['/vasps', '/requests'] },
   { to: '/dashboard', name: 'Dashboard', Icon: LayoutDashboard },
   { to: '/labels', name: 'Labels', Icon: Tags },
   { to: '/model', name: 'Model', Icon: Gauge },
@@ -82,29 +83,32 @@ function OfficerBlock() {
 
 /** The ink rail on the left: the five places an investigator goes, and who they are. */
 export function NavRail() {
+  const { pathname } = useLocation()
   return (
-    <aside className="on-rail sticky top-0 flex h-screen w-16 shrink-0 flex-col bg-rail text-rail-fg lg:w-rail">
+    <aside className="on-rail print:hidden sticky top-0 flex h-screen w-16 shrink-0 flex-col bg-rail text-rail-fg lg:w-rail">
       <Wordmark />
       <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 px-2.5 pt-3">
-        {PLACES.map(({ to, name, Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            title={name}
-            className={({ isActive }) =>
-              cx(
+        {PLACES.map(({ to, name, Icon, also }) => {
+          const active = [to, ...(also ?? [])].some((p) => pathname === p || pathname.startsWith(`${p}/`))
+          return (
+            <Link
+              key={to}
+              to={to}
+              title={name}
+              aria-current={active ? 'page' : undefined}
+              className={cx(
                 row,
                 'relative',
-                isActive
+                active
                   ? 'bg-rail-active font-semibold text-rail-fg before:absolute before:inset-y-1.5 before:-left-2.5 before:w-[3px] before:rounded-r-sm before:bg-rail-fg'
                   : 'text-rail-muted hover:bg-rail-active hover:text-rail-fg',
-              )
-            }
-          >
-            <Icon size={17} aria-hidden className="shrink-0" />
-            <span className={label}>{name}</span>
-          </NavLink>
-        ))}
+              )}
+            >
+              <Icon size={17} aria-hidden className="shrink-0" />
+              <span className={label}>{name}</span>
+            </Link>
+          )
+        })}
       </nav>
       <div className="flex flex-col gap-0.5 px-2.5 pb-2">
         <NavLink

@@ -51,7 +51,7 @@ export function AppShell() {
   if (me.data.auth_required && !me.data.officer) return <SignInPage />
 
   return (
-    <div className="flex min-h-screen bg-page text-fg">
+    <div className="flex min-h-screen bg-page text-fg print:block print:min-h-0 print:bg-transparent">
       <a
         href="#content"
         className="sr-only z-50 rounded bg-surface px-3 py-2 text-sm font-medium text-fg focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
@@ -60,11 +60,11 @@ export function AppShell() {
       </a>
       <NavRail />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-15 shrink-0 items-center gap-4 border-b border-rule bg-page px-5 lg:px-8">
+        <header className="sticky top-0 z-20 flex print:hidden h-15 shrink-0 items-center gap-4 border-b border-rule bg-page px-5 lg:px-8">
           <GlobalSearch />
           <DataSourceTag />
         </header>
-        <main id="content" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 px-5 py-7 outline-none lg:px-8">
+        <main id="content" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 px-5 py-7 outline-none lg:px-8 print:max-w-none print:p-0">
           <Outlet />
         </main>
       </div>

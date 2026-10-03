@@ -1,0 +1,102 @@
+{
+ "directory": {
+  "name": "HTX",
+  "legal_name": null,
+  "fiu_ind_registered": null,
+  "fiu_ind_as_of": null,
+  "jurisdiction": null,
+  "le_request_channel": "regulatory@htx-inc.com",
+  "notes": [
+   "Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source.",
+   "HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+  ],
+  "sources": [
+   {
+    "field": "le_request_channel",
+    "title": "HTX - Law Enforcement Requests",
+    "publisher": "HTX",
+    "kind": "exchange",
+    "url": "https://www.htx.com/terms/legal",
+    "published": null,
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "notes",
+    "title": "FIU IND issues compliance Show Cause Notices to nine offshore Virtual Digital Assets Service Providers",
+    "publisher": "Press Information Bureau, Ministry of Finance (Release ID 1991372)",
+    "kind": "official",
+    "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1991372",
+    "published": "2023-12-28",
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "notes",
+    "title": "HTX - Law Enforcement Requests",
+    "publisher": "HTX",
+    "kind": "exchange",
+    "url": "https://www.htx.com/terms/legal",
+    "published": null,
+    "accessed": "2026-10-02"
+   }
+  ],
+  "source_urls": [
+   "https://www.htx.com/terms/legal",
+   "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1991372"
+  ]
+ },
+ "label_counts": {
+  "avalanche": 236,
+  "worldchain": 236,
+  "ethereum": 103,
+  "tron": 18,
+  "bitcoin": 11,
+  "xrp": 5,
+  "arbitrum": 4,
+  "bsc": 4,
+  "litecoin": 4,
+  "optimism": 4,
+  "polygon": 4,
+  "solana": 4,
+  "core": 3,
+  "dogecoin": 3,
+  "ton": 3,
+  "cardano": 2,
+  "algorand": 1,
+  "sui": 1
+ },
+ "wallets": [
+  {
+   "address": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+   "chain": "tron",
+   "case_id": "tron-htx-coindcx",
+   "direction": "outbound",
+   "amount_usd": 7000.0,
+   "tier": "published_por",
+   "confidence": 0.7071,
+   "routable": true
+  },
+  {
+   "address": "19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV",
+   "chain": "bitcoin",
+   "case_id": "btc-htx",
+   "direction": "outbound",
+   "amount_usd": null,
+   "tier": "derived",
+   "confidence": 0.855,
+   "routable": true
+  }
+ ],
+ "requests": [
+  {
+   "id": "req-2026-0002",
+   "reference": "VF/REQ/2026/0002",
+   "vasp": "HTX",
+   "status": "drafted",
+   "case_ids": [
+    "tron-htx-coindcx"
+   ],
+   "created_at": "2026-10-03T04:07:11Z",
+   "due": null
+  }
+ ]
+}

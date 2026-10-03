@@ -383,6 +383,7 @@ def request_okx(c1: dict) -> dict:
             "legal_basis": LEGAL, "officer": "Investigating Officer (demo)",
             "watermark": None},
         "pdf_url": "/api/requests/demo-req-okx-001/pdf",
+        "allowed_next": ["acknowledged", "answered", "freeze_confirmed", "refused"],
         "payload": {"schema": "sahyog-request/0-demo", "vasp": "OKX",
                     "reference": "DEMO/I4C/REQ/2026/001",
                     "wallets": [w["address"] for w in wallets],
@@ -477,6 +478,7 @@ def main() -> None:
                 {"address": L["coindcx"]["address"], "chain": "tron", "case_id": c3["id"],
                  "direction": "outbound", "amount_usd": 990.0, "tier": "curated",
                  "confidence": 0.58}], []),
+            "requests": {"items": [req]},
             f"requests/{req['id']}": req,
             "dashboard": {
                 "counts": {"cases_total": 3, "open_cases": 2, "wallets_attributed": 2,

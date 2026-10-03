@@ -1,0 +1,87 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "items": [
+    {
+      "id": "demo-req-okx-001",
+      "reference": "DEMO/I4C/REQ/2026/001",
+      "vasp": "OKX",
+      "status": "sent",
+      "case_ids": [
+        "demo-tron-okx"
+      ],
+      "created_at": "2026-09-13T14:02:11Z",
+      "due": "2026-09-21",
+      "status_history": [
+        {
+          "status": "drafted",
+          "at": "2026-09-13T14:02:11Z",
+          "note": null
+        },
+        {
+          "status": "approved",
+          "at": "2026-09-13T15:02:11Z",
+          "note": "Approved by SHO"
+        },
+        {
+          "status": "sent",
+          "at": "2026-09-13T16:02:11Z",
+          "note": "Sent via SAHYOG (demo)"
+        }
+      ],
+      "letter": {
+        "reference": "DEMO/I4C/REQ/2026/001",
+        "date": "2026-09-13",
+        "to": "The Nodal Officer, OKX",
+        "subject": "Request for KYC, transaction records and freeze of a deposit account linked to cyber-fraud complaint DEMO/2026/001",
+        "paragraphs": [
+          "This office is investigating a cyber-fraud complaint registered on the National Cybercrime Reporting Portal.",
+          "Blockchain analysis shows that proceeds of the fraud were deposited to the wallet listed below, which our analysis attributes to your platform.",
+          "You are requested to furnish the information listed below and to freeze the account pending investigation."
+        ],
+        "wallets": [
+          {
+            "address": "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR",
+            "chain": "tron",
+            "amount_usd": 41150.0,
+            "tier": "derived",
+            "first_seen": "2026-09-14T10:18:11Z",
+            "tx_hashes": [
+              "5da20346cafdc0636acc497c37f3b1d8b51749a019d3bf9ca145ed00f24619ad"
+            ]
+          }
+        ],
+        "asks": [
+          "kyc",
+          "transactions",
+          "freeze",
+          "preservation"
+        ],
+        "legal_basis": "Notice under Section 94 of the Bharatiya Nagarik Suraksha Sanhita, 2023. Electronic records to be furnished with a certificate under Section 63 of the Bharatiya Sakshya Adhiniyam, 2023.",
+        "officer": "Investigating Officer (demo)",
+        "watermark": null
+      },
+      "pdf_url": "/api/requests/demo-req-okx-001/pdf",
+      "allowed_next": [
+        "acknowledged",
+        "answered",
+        "freeze_confirmed",
+        "refused"
+      ],
+      "payload": {
+        "schema": "sahyog-request/0-demo",
+        "vasp": "OKX",
+        "reference": "DEMO/I4C/REQ/2026/001",
+        "wallets": [
+          "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR"
+        ],
+        "asks": [
+          "kyc",
+          "transactions",
+          "freeze",
+          "preservation"
+        ]
+      }
+    }
+  ]
+}
