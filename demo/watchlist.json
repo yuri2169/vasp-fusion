@@ -1,0 +1,37 @@
+{
+ "_notice": "The watchlist the demonstration set-up starts with (`python -m vaspfusion.cli demo`). Every wallet is real and comes from a recorded demo case; each reason restates what that case found. A wallet with a `trace` block was reached by a case but never traced itself, so the set-up traces it (one hop, recorded in tests/fixtures/demo/<trace id>.json) to give it a first check.",
+ "watch": [
+  {
+   "chain": "tron",
+   "address": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
+   "seen_in": "tron-ofac",
+   "note": "On the OFAC sanctions list. 99% of the funds in DEMO/2026/103 reached it, one hop away.",
+   "trace": {"id": "watch-tron-ofac-listed", "max_hops": 1}
+  },
+  {
+   "chain": "tron",
+   "address": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+   "seen_in": "tron-abstain",
+   "note": "The largest share of the money in DEMO/2026/105 (46%) stopped here. No label yet.",
+   "trace": {"id": "watch-tron-unlabelled-hub", "max_hops": 1}
+  },
+  {
+   "chain": "tron",
+   "address": "TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c",
+   "seen_in": "tron-coindcx",
+   "note": "Suspect wallet in DEMO/2026/101. Its USDT went through a deposit address into CoinDCX."
+  },
+  {
+   "chain": "ethereum",
+   "address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "seen_in": "eth-bridge",
+   "note": "Suspect wallet in DEMO/2026/107. 60% went into a bridge (Across Protocol)."
+  },
+  {
+   "chain": "bitcoin",
+   "address": "bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6",
+   "seen_in": "btc-htx",
+   "note": "Suspect wallet in DEMO/2026/108. Traced to HTX."
+  }
+ ]
+}

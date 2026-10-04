@@ -584,11 +584,46 @@ def cmd_demo(args) -> None:
               f"{case['top_vasp'] or '-':<10}{conf:>5}  {s['live']} live, {s['hits']} cached"
               + ("" if good else f"   !! expected {want[0]} / {want[1]}"))
     print(f"{ok}/{len(specs)} as expected | cases stored in {store.path}")
+    if args.watchlist and Path(args.watchlist).exists():
+        _seed_watchlist(args.watchlist, args.labels_db, store)
     same = len(specs)
     if args.golden:
         same = _golden(args.golden, [store.get(spec["id"]) for spec in specs])
     if ok != len(specs) or same != len(specs):
         raise SystemExit(1)
+
+
+def watch_traces(path) -> list[dict]:
+    """The demonstration watchlist's wallets that need a trace of their own, as case specs."""
+    return [{"address": w["address"], "chain": w["chain"], **w["trace"]}
+            for w in json.loads(Path(path).read_text())["watch"] if w.get("trace")]
+
+
+def _seed_watchlist(path: str, labels_db: str, cases) -> None:
+    """Put the demonstration watchlist (demo/watchlist.json) into the watch store. A wallet
+    already watched is left as it is. A wallet no case has traced is traced first, as an
+    ordinary case, so that its first check is a real one."""
+    from datetime import datetime, timezone
+
+    from .store.watch import WatchStore, watch_id
+    from .watch import snapshot
+    watch, added = WatchStore(), 0
+    for w in json.loads(Path(path).read_text())["watch"]:
+        wid = watch_id(w["chain"], w["address"])
+        if watch.get(wid) is not None:
+            continue
+        case = cases.find(w["chain"], w["address"])
+        if case is None and w.get("trace"):
+            case, _ = _run_case(w["address"], w["chain"], w["trace"].get("max_hops", 1),
+                                labels_db, case_id=w["trace"]["id"])
+            cases.save(case)
+        done = case is not None and case.get("status") == "done" and "candidates" in case
+        watch.save({"id": wid, "chain": w["chain"], "address": w["address"], "note": w["note"],
+                    "added_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                    "added_by": "demonstration set-up",
+                    "baseline": snapshot(case) if done else None})
+        added += 1
+    print(f"{len(watch.list())} wallets on the watchlist ({added} added) | {watch.path}")
 
 
 def _golden(path: str, cases: list) -> int:
@@ -622,6 +657,8 @@ def cmd_demo_cache(args) -> None:
     from .trace import TraceConfig
 
     specs = json.loads(Path(args.file).read_text())["cases"]
+    if args.watchlist and Path(args.watchlist).exists():
+        specs = specs + watch_traces(args.watchlist)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     tmp = out.with_name(out.name + ".tmp")
@@ -638,9 +675,9 @@ def cmd_demo_cache(args) -> None:
                 case = run_case(spec["address"], spec["chain"],
                                 trace_provider(spec["chain"], fetcher, cfg, key="recorded"),
                                 labels, case_id=spec["id"], cfg=cfg, fetcher=fetcher,
-                                label_db_sha256=sha, demo=True,
+                                label_db_sha256=sha, demo="expect" in spec,
                                 scorer=make_scorer(spec["chain"], fetcher, key="recorded"))
-                print(f"  {spec['id']:<19}{case['outcome']:<29}{case['top_vasp'] or '-':<10}"
+                print(f"  {spec['id']:<27}{case['outcome']:<29}{case['top_vasp'] or '-':<10}"
                       f"{case['provenance']['pages']} pages")
     except chains.ProviderError as e:
         tmp.unlink(missing_ok=True)
@@ -1008,6 +1045,8 @@ def main(argv: list[str] | None = None) -> None:
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
+    s.add_argument("--watchlist", default=str(ROOT / "demo" / "watchlist.json"),
+                   help="the demonstration watchlist ('' = leave the watchlist alone)")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.add_argument("--golden", help="also require each case's findings fingerprint to equal "
                                     "the one in this file (tests/golden/fingerprints.json)")
@@ -1016,6 +1055,8 @@ def main(argv: list[str] | None = None) -> None:
     s = sub.add_parser("demo-cache", help="build the demo's chain cache from the recorded "
                                           "fixtures (no network)")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
+    s.add_argument("--watchlist", default=str(ROOT / "demo" / "watchlist.json"),
+                   help="the demonstration watchlist ('' = leave the watchlist alone)")
     s.add_argument("--fixtures", default=str(ROOT / "tests" / "fixtures" / "demo"))
     s.add_argument("--out", default=str(ROOT / "data" / "demo_cache.duckdb"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))

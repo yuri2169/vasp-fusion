@@ -42,8 +42,12 @@ def test_demo_cache_holds_every_page_the_demo_reads_and_nothing_else(built, caps
     con = duckdb.connect(str(cache), read_only=True)
     requests = con.execute("SELECT count(DISTINCT query) FROM chain_cache").fetchone()[0]
     con.close()
-    # every request in it is one a demo receipt lists (a receipt lists each request once)
-    assert 0 < requests <= sum(g["pages"] for g in golden.values())
+    # every request in it is one a demo receipt lists (a receipt lists each request once),
+    # or one recorded for a watchlist wallet's first check
+    fix = Path(__file__).parent / "fixtures" / "demo"
+    watched = sum(len(json.loads((fix / f"{t['id']}.json").read_text())["responses"])
+                  for t in cli.watch_traces(fix.parents[2] / "demo" / "watchlist.json"))
+    assert 0 < requests <= sum(g["pages"] for g in golden.values()) + watched
     assert ChainCache(cache).count() >= requests
 
 
@@ -133,3 +137,41 @@ def test_demo_cache_refuses_a_request_the_fixtures_do_not_hold(built, tmp_path, 
     assert "not in the recorded fixtures" in capsys.readouterr().err
     assert not (tmp_path / "c.duckdb").exists()
     assert not (tmp_path / "c.duckdb.tmp").exists()
+
+
+# ---- the demonstration watchlist (demo/watchlist.json)
+WATCH = json.loads((Path(__file__).resolve().parents[1] / "demo" / "watchlist.json").read_text())["watch"]
+
+
+def test_the_watchlist_wallets_are_ones_the_demo_cases_reached():
+    from vaspfusion.store.watch import watch_id
+    assert len(WATCH) == 5 and len({watch_id(w["chain"], w["address"]) for w in WATCH}) == 5
+    for w in WATCH:
+        responses = (Path(__file__).parent / "fixtures" / "demo" / f"{w['seen_in']}.json").read_text()
+        assert w["seen_in"] in SPECS and w["address"] in responses, w["address"]
+        assert w["note"].strip()
+
+
+def test_the_demo_seeds_the_watchlist_once_each_with_a_real_first_check(machine, tmp_path,
+                                                                        monkeypatch, capsys):
+    from vaspfusion.store.watch import WatchStore
+    monkeypatch.setenv("VASPFUSION_WATCH_DB", str(tmp_path / "watch.duckdb"))
+    assert WatchStore().list() == []                 # nothing is watched before demo set-up
+    cli.main(["demo", *machine])
+    assert "5 wallets on the watchlist (5 added)" in capsys.readouterr().out
+    entries = {e["address"]: e for e in WatchStore().list()}
+    assert set(entries) == {w["address"] for w in WATCH}
+    cases = CaseStore()
+    for w in WATCH:
+        e = entries[w["address"]]
+        case = cases.find(w["chain"], w["address"])
+        assert e["note"] == w["note"]
+        # the first check is the wallet's own finished trace, at the time it was traced
+        assert e["baseline"]["case_id"] == case["id"]
+        assert e["baseline"]["traced_at"] == (case["provenance"]["fetched_at"] or case["created_at"])
+        if "trace" in w:                             # traced for the watchlist: not a demo case
+            assert case["id"] == w["trace"]["id"] and not case["demo"]
+    cli.main(["demo", *machine])                     # set up again: nothing is added twice
+    assert "5 wallets on the watchlist (0 added)" in capsys.readouterr().out
+    again = {e["address"]: e for e in WatchStore().list()}
+    assert {a: e["added_at"] for a, e in again.items()} == {a: e["added_at"] for a, e in entries.items()}

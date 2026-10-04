@@ -2,6 +2,8 @@
 
     python scripts/record_demo_fixtures.py            # every wallet in demo/cases.json
     python scripts/record_demo_fixtures.py tron-ofac  # one
+    python scripts/record_demo_fixtures.py watch-tron-ofac-listed   # a watchlist wallet's
+                                                      # first check (demo/watchlist.json)
     python scripts/record_demo_fixtures.py --extend   # keep what is recorded, fetch only
                                                       # the requests a code change added
 
@@ -40,6 +42,14 @@ from vaspfusion.trace import TraceConfig  # noqa: E402
 
 OUT = ROOT / "tests" / "fixtures" / "demo"
 DEMO = ROOT / "demo" / "cases.json"
+WATCH = ROOT / "demo" / "watchlist.json"
+
+
+def watch_traces() -> list[dict]:
+    """The watchlist wallets that need a trace of their own, as case specs with nothing
+    expected of them: they are recorded so the first check replays offline."""
+    return [{"address": w["address"], "chain": w["chain"], **w["trace"]}
+            for w in json.loads(WATCH.read_text())["watch"] if w.get("trace")]
 
 
 class ExtendingTransport(RecordingTransport):
@@ -79,7 +89,7 @@ def main(wanted: list[str]) -> None:
     extend = "--extend" in wanted
     wanted = [w for w in wanted if w != "--extend"]
     OUT.mkdir(parents=True, exist_ok=True)
-    cases = json.loads(DEMO.read_text())["cases"]
+    cases = json.loads(DEMO.read_text())["cases"] + watch_traces()
     labels_path, expected_path = OUT / "labels.json", OUT / "expected.json"
     seen = json.loads(labels_path.read_text())["labels"] if labels_path.exists() else {}
     expected = json.loads(expected_path.read_text()) if expected_path.exists() else {}
@@ -97,7 +107,7 @@ def main(wanted: list[str]) -> None:
                 case = run_case(spec["address"], spec["chain"],
                                 trace_provider(spec["chain"], fetcher, cfg),
                                 RecordingLabels(store, seen), case_id=spec["id"], cfg=cfg,
-                                fetcher=fetcher, demo=True)
+                                fetcher=fetcher, demo="expect" in spec)
             doc = {"_source": f"{spec['chain']} trace of {spec['address']}, max_hops="
                               f"{cfg.max_hops}, live APIs", "_recorded": today,
                    "responses": rec.responses}
@@ -105,8 +115,12 @@ def main(wanted: list[str]) -> None:
             for secret in _secrets():
                 assert secret not in text, f"an API key leaked into fixture {spec['id']}"
             (OUT / f"{spec['id']}.json").write_text(text)
-            expected[spec["id"]] = case_headline(case)
             got = (case["outcome"], case["top_vasp"])
+            if "expect" not in spec:
+                print(f"{spec['id']}: {len(rec.responses)} responses, {len(text) // 1024} KB, "
+                      f"{got[0]} top={got[1]} (a watchlist wallet: nothing is expected of it)")
+                continue
+            expected[spec["id"]] = case_headline(case)
             want = (spec["expect"]["outcome"], spec["expect"]["top_vasp"])
             new = f" ({rec.fetched} new)" if extend and hasattr(rec, "fetched") else ""
             print(f"{spec['id']}: {len(rec.responses)} responses{new}, {len(text) // 1024} KB, "
