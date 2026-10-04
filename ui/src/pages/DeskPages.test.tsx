@@ -357,7 +357,7 @@ describe('the requests register', () => {
     const { user } = open('/requests')
     await screen.findByText('VF/REQ/2026/0001')
     const statuses = screen.getByRole('group', { name: 'Filter by status' })
-    expect(within(statuses).getAllByRole('button').map((b) => b.textContent)).toEqual(['All2', 'Open2', 'Draft1', 'Sent1'])
+    expect(within(statuses).getAllByRole('button').map((b) => b.textContent)).toEqual(['All2', 'Open2', 'Awaiting a reply1', 'Draft1', 'Sent1'])
 
     await user.click(within(statuses).getByRole('button', { name: /Sent/ }))
     expect(references()).toEqual(['VF/REQ/2026/0001'])

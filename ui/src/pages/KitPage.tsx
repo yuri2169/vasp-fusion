@@ -1,3 +1,7 @@
+import { BarList } from '../charts/BarList'
+import { CoveragePlot, ReliabilityPlot } from '../charts/ModelPlots'
+import { ShareBar } from '../charts/ShareBar'
+import { Ledger } from '../overview/parts'
 import { useQuery } from '@tanstack/react-query'
 import { FolderOpen, RotateCcw } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
@@ -190,6 +194,8 @@ export function KitPage() {
   const cases = useQuery({ queryKey: ['kit', 'cases'], queryFn: () => Promise.all(DEMO_CASES.map((id) => api.case(id))) })
   const labels = useQuery({ queryKey: ['kit', 'labels'], queryFn: () => api.labelSearch({ q: 'coindcx', limit: 10 }) })
   const request = useQuery({ queryKey: ['kit', 'request'], queryFn: () => api.request('demo-req-okx-001') })
+  const dashboard = useQuery({ queryKey: ['kit', 'dashboard'], queryFn: () => api.dashboard() })
+  const model = useQuery({ queryKey: ['kit', 'model'], queryFn: () => api.model('tron') })
   const toast = useToast()
   const [dialog, setDialog] = useState(false)
   const [replay, setReplay] = useState(0)
@@ -605,6 +611,61 @@ export function KitPage() {
         </Spec>
         <Spec label="Error, nothing to retry" block>
           <ErrorState title="This case could not be opened" detail="There is no case with this id. Check the link, or open the case from the list." />
+        </Spec>
+      </Section>
+
+
+      <Section
+        title="Charts"
+        note="One hue for a measure, the status fills only for statuses, every value written beside its mark, and a table under every plot. On the dashboard and model fixtures."
+      >
+        <Spec label="Ledger: a page's counts on one ruled line, each a link" block>
+          {dashboard.data && (
+            <Ledger
+              label="Counts"
+              entries={[
+                { key: 'cases', name: 'Cases', value: String(dashboard.data.counts.cases_total), note: 'one per wallet', to: '/cases' },
+                { key: 'open', name: 'Open cases', value: String(dashboard.data.counts.open_cases), note: 'being traced, or an exchange has not replied', to: '/cases?open=1' },
+                { key: 'await', name: 'Awaiting a reply', value: String(dashboard.data.counts.requests_awaiting_reply), note: 'requests sent, not answered', to: '/requests?status=awaiting' },
+              ]}
+            />
+          )}
+        </Spec>
+        <Spec label="ShareBar: the parts of a whole, as statuses" block>
+          {dashboard.data && (
+            <ShareBar
+              caption="Finished cases by outcome"
+              unit={(n) => `${n} case${n === 1 ? '' : 's'}`}
+              parts={[
+                { key: 'a', name: 'An exchange is named', value: dashboard.data.outcomes.ATTRIBUTED ?? 0, fill: 'named', to: '/cases?outcome=ATTRIBUTED' },
+                { key: 'i', name: 'Insufficient evidence: no exchange named', value: dashboard.data.outcomes.INSUFFICIENT_EVIDENCE ?? 0, fill: 'open' },
+                { key: 's', name: 'Sanctioned address or mixer reached', value: dashboard.data.outcomes.SANCTIONED_OR_MIXER_REACHED ?? 0, fill: 'seal' },
+              ]}
+            />
+          )}
+        </Spec>
+        <Spec label="BarList: ranked bars of one measure" block>
+          {model.data && (
+            <BarList
+              caption="Feature importance"
+              labelWidth="16rem"
+              rows={model.data.feature_importance.slice(0, 6).map((f) => ({ key: f.feature, label: f.feature, value: f.importance, valueText: `${(f.importance * 100).toFixed(1)}%` }))}
+            />
+          )}
+        </Spec>
+        <Spec label="ReliabilityPlot" block>
+          {model.data && <ReliabilityPlot bins={model.data.reliability} />}
+        </Spec>
+        <Spec label="CoveragePlot, with a level to read it against" block>
+          {model.data && (
+            <CoveragePlot
+              points={model.data.risk_coverage}
+              caption="Accuracy on the answered addresses against the share of addresses answered"
+              xTitle="Share of addresses answered (surest first)"
+              yTitle="Right when answering"
+              reference={model.data.baseline?.accuracy != null ? { value: model.data.baseline.accuracy, name: 'the one rule alone, answering all' } : undefined}
+            />
+          )}
         </Spec>
       </Section>
 

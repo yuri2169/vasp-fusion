@@ -78,8 +78,8 @@
       "url": "https://github.com/graphsense/graphsense-tagpacks",
       "labels": 336422,
       "tiers": {
-        "explorer_tag": 122,
-        "curated": 336300
+        "curated": 336300,
+        "explorer_tag": 122
       }
     },
     {
@@ -96,8 +96,8 @@
     {
       "source": "vaspfusion-discover",
       "name": "Deposit addresses derived by VASP-FUSION (sweep and gas-payer rules)",
-      "obtained_from": "computed by this tool",
-      "licence": "computed here, not a third-party set",
+      "obtained_from": "Computed by this tool",
+      "licence": "Not a third-party set: computed here",
       "url": null,
       "labels": 5497,
       "tiers": {

@@ -20,6 +20,7 @@ const SECTIONS = [
   'Tabs',
   'Table',
   'Empty, loading and error',
+  'Charts',
   'Toast and dialog',
 ]
 
@@ -42,6 +43,8 @@ it('shows every component, in every state, on one page', async () => {
 
   expect(screen.getAllByRole('meter', { name: 'Proximity' }).length).toBeGreaterThanOrEqual(4)
   expect(screen.getByRole('table', { name: 'Labelled addresses' })).toBeInTheDocument()
+  expect(await screen.findByRole('group', { name: /^Reliability plot/ })).toBeInTheDocument()
+  expect(screen.getByRole('list', { name: 'Finished cases by outcome' })).toBeInTheDocument()
 
   // toast and dialog work from the page
   await user.click(screen.getByRole('button', { name: 'Show a toast' }))

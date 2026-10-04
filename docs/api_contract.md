@@ -37,7 +37,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | GET | `/api/cases/{id}/pdf` (also `/api/cases/{id}.pdf`) | – | `application/pdf` | the mock case, marked "Demo fixture - not evidence" | **live** | B9 |
 | GET | `/api/cases/{id}/receipt` | – | `Receipt` | `cases/{id}/receipt.json` | **live** | B9 |
 | POST | `/api/cases/{id}/verify` | – | `VerifyResult` | 422 for a mock id | **live** | B9 |
-| GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` | **labels and `cases` live**, the rest mock | B3/B6 |
+| GET | `/api/wallets/{chain}/{address}` | – | `WalletDetail` | `wallets/{chain}/{address}.json` (a demo wallet, until a real case reads it) | **live** | B3/B6/U4 |
 | GET | `/api/labels/search?q=&chain=&category=&tier=&limit=&offset=` | – | `LabelSearch` | `labels/search.json` (fallback) | **live** | B1 |
 | GET | `/api/desk` | – | `Desk` | `desk.json` (until a finished case names an exchange) | **live** | B8 |
 | GET | `/api/vasps/{name}` | – | `VaspDetail` | `vasps/{name}.json` (only while no live case or request touches it) | **live** | B8 |
@@ -46,7 +46,13 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | GET | `/api/requests/{id}` | – | `RequestDetail` (letter JSON + `pdf_url`) | `requests/{id}.json` (only for the mock id) | **live** | B8 |
 | PATCH | `/api/requests/{id}` | `RequestPatch` | `RequestDetail` | applied to the mock, not persisted (mock id only) | **live** | B8 |
 | GET | `/api/requests/{id}/pdf` (also `/api/requests/{id}.pdf`) | – | `application/pdf` | the mock request, marked "Demo fixture - not evidence" | **live** | B8 |
-| GET | `/api/dashboard` | – | `Dashboard` | `dashboard.json` | **label_coverage live**, the rest mock | B7/B9 |
+| GET | `/api/dashboard` | – | `Dashboard` | `dashboard.json` (only while no case is stored) | **live** | U4 |
+| GET | `/api/labels/coverage` | – | `LabelCoverage` | `labels/coverage.json` (fallback) | **live** | U4 |
+| GET | `/api/watchlist` | – | `WatchList` | `watchlist.json` (empty) | **live** | U4 |
+| POST | `/api/watchlist` | `WatchCreate` | `WatchItem` (201) | – | **live** | U4 |
+| POST | `/api/watchlist/{id}/check` | – | `WatchItem` (202) | – | **live** | U4 |
+| POST | `/api/watchlist/{id}/seen` | – | `WatchItem` | – | **live** | U4 |
+| DELETE | `/api/watchlist/{id}` | – | `Ok` | – | **live** | U4 |
 | GET | `/api/model` | `?chain=tron` (default) or `ethereum` | `ModelInfo` | `model.json` (the measured Tron model) | **live** from `artifacts/model_v1/<chain>/metrics.json` | B6 |
 
 ### Cases are live (B3)
@@ -230,6 +236,27 @@ Additive; `make mocks types` has been run (the mocks did not change).
 - There is still no route to cancel a trace.
 - Also fixed with it: a refresh (`POST /api/cases?refresh=true`) of a demo wallet's case keeps `demo: true` (it was reset to false).
 - In code: `trace(..., on_progress=)` and `run_case(..., on_progress=)` take a callback and call it with each snapshot; it changes nothing about the result, and a callback that fails does not fail the trace. `vaspfusion/explain/progress.py` writes the sentence.
+
+### Dashboard, wallet page, label sources, watchlist (U4)
+Everything here is counted from stored records (cases, requests, labels, the watchlist). Nothing reads a chain except a watchlist check, which is a trace.
+
+- **`GET /api/dashboard`** is live once the case store holds a case (`X-Data-Source: live`); with none it answers the demo fixture with live label counts (`mixed`). Mock demo cases are never counted.
+  - `counts.cases_total`; `counts.tracing` (queued or running), `counts.failed`; `counts.wallets_attributed` = cases whose outcome is ATTRIBUTED; `counts.requests_awaiting_reply` = requests sent or acknowledged; `counts.awaiting_request` = exchanges on the desk with a routed wallet in no request; `counts.watched`.
+  - `counts.open_cases` = cases being traced, plus cases with a wallet routed to an exchange whose newest request is not answered, freeze-confirmed or refused (or that has not been asked). A case that names no exchange is not open: there is nobody to write to.
+  - `outcomes`: all three keys, over finished cases. `chain_mix`: every stored case. `top_vasps`: the desk's rows (`cases`, `total_usd` in US-dollar stablecoins; other assets add 0).
+  - `median_time_to_attribution_s`: the median, over the `attribution_times_n` cases that name an exchange, of `time_to_reach_s` of the named candidate: how long the funds took to reach the exchange's address, on the chain. 0 means the wallet paid that address directly. It is not how long a trace takes. null with no such case.
+  - `recent_alerts` (12 at most, newest first): one per high-severity flag of a finished case (`text` is "Case <ref>: " and the flag's own sentence), and one per change of a watched wallet (`text` starts "Watched wallet: ", `severity` high for a new alert, warn for a new exchange, info for new transfers).
+- **`GET /api/wallets/{chain}/{address}`**:
+  - `inbound` / `outbound` (`FlowSummary`: `tx_count`, `total` in `asset` or null when the transfers are in several assets, `total_usd`, `first_seen`, `last_seen`, `counterparties`, `top_counterparties` by amount): **the transfers of this address that the stored finished cases read**, each counted once. `flows_from_cases` says how many cases that is. It is not the wallet's history; say so beside it.
+  - `risk.level`: `high` (the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it), `elevated` (a pattern flag names it, or it is the traced wallet of a case whose outcome is SANCTIONED_OR_MIXER_REACHED), `none` (labelled or in a case, nothing held against it), null (unlabelled and in no case: not assessed). `risk.reasons[]` are the sentences it rests on. **`risk.score` is always null: no wallet risk score is computed.**
+  - `watched`: whether the address is on the watchlist.
+- **`LabelCoverage.by_source[]`** (on the dashboard and at `GET /api/labels/coverage`): `source` (a family: the first named source of a merged row; every `graphsense-tagpack:*` pack is one family), `name`, `obtained_from`, `licence`, `url`, `labels`, `tiers`. The rows add up to `total`. **`licence` is what this project has on record** (`vaspfusion/labels/sources.py`): GraphSense TagPacks are MIT; OFAC SDN is US-government public record; the wallet-attribution set releases its code under MIT and leaves each upstream source's data under that source's own licence, which is not recorded here, so those read null. Show null as "Not recorded".
+- **The watchlist.** A watched wallet has a **baseline**: a snapshot of its case (the wallet's own transfers, the exchanges among its candidates, its high-severity flags) taken when it was added, or when its changes were last marked as seen. A wallet added before it had a finished case takes its first finished trace as the baseline.
+  - `WatchItem.state`: `not_traced`, `checking` (its case is queued or running), `unchanged`, `changed`, `failed` (the last trace failed; `error` has the sentence). `changes[]` (`kind`: `new_alert` | `new_exchange` | `new_activity`; `severity`; `text`; `at`) is what the case shows now that the baseline did not.
+  - `POST /api/watchlist` `{address, chain?, note?}`: 201; **409** already watched; **422** as `POST /api/cases` (not an address, chain not traceable). `id` is `<chain>-<address>`.
+  - `POST /api/watchlist/{id}/check` traces the wallet again exactly as `POST /api/cases?refresh=true` does (same hop limit as its last trace) and answers 202 with the item `checking`. **Poll `GET /api/watchlist`** (the interface asks once a second while an item is checking). Nothing checks a wallet in the background.
+  - `POST /api/watchlist/{id}/seen` makes the current trace the baseline (409 with no finished trace). `DELETE /api/watchlist/{id}` stops watching.
+  - Stored in `data/watch.duckdb` (`VASPFUSION_WATCH_DB`). Audit actions: `watch.list`, `watch.add`, `watch.check`, `watch.seen`, `watch.remove`, `label.coverage`.
 
 ### Bitcoin (B5)
 `POST /api/cases` accepts a Bitcoin address (the chain is detected; bech32 is stored lowercase). The case has the same shape as any other. What is different, all additive:

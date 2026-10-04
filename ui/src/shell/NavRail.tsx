@@ -1,4 +1,4 @@
-import { Component, FolderOpen, Gauge, LayoutDashboard, LogOut, Send, Tags, type LucideIcon } from 'lucide-react'
+import { Component, Eye, FolderOpen, Gauge, LayoutDashboard, LogOut, Send, Tags, type LucideIcon } from 'lucide-react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { ApiError } from '../api/client'
 import { useMe, useSignOut } from '../api/queries'
@@ -11,7 +11,8 @@ const PLACES: { to: string; name: string; Icon: LucideIcon; also?: string[] }[] 
   { to: '/cases', name: 'Cases', Icon: FolderOpen },
   { to: '/desk', name: 'Request desk', Icon: Send, also: ['/vasps', '/requests'] },
   { to: '/dashboard', name: 'Dashboard', Icon: LayoutDashboard },
-  { to: '/labels', name: 'Labels', Icon: Tags },
+  { to: '/watchlist', name: 'Watchlist', Icon: Eye },
+  { to: '/labels', name: 'Labels', Icon: Tags, also: ['/wallets'] },
   { to: '/model', name: 'Model', Icon: Gauge },
 ]
 
@@ -81,7 +82,7 @@ function OfficerBlock() {
   )
 }
 
-/** The ink rail on the left: the five places an investigator goes, and who they are. */
+/** The ink rail on the left: the six places an investigator goes, and who they are. */
 export function NavRail() {
   const { pathname } = useLocation()
   return (

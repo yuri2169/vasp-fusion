@@ -16,9 +16,12 @@ import { ASK_WORDS, isOpen, isOverdue, STATUS_ORDER, STATUS_WORDS } from '../des
 import { cx } from '../lib/cx'
 import { formatDate } from '../lib/format'
 
-type StatusFilter = 'all' | 'open' | RequestStatus
+type StatusFilter = 'all' | 'open' | 'awaiting' | RequestStatus
 
-const matchesStatus = (r: RequestDetail, filter: StatusFilter) => filter === 'all' || (filter === 'open' ? isOpen(r.status) : r.status === filter)
+/** A reply is still owed: the dashboard's "awaiting a reply" count opens this filter. */
+const isAwaiting = (r: RequestDetail) => r.status === 'sent' || r.status === 'acknowledged'
+
+const matchesStatus = (r: RequestDetail, filter: StatusFilter) => filter === 'all' || (filter === 'open' ? isOpen(r.status) : filter === 'awaiting' ? isAwaiting(r) : r.status === filter)
 
 /** Everything a search can find a request by: its reference, the exchange, its cases, its wallets, the officer. */
 function haystack(r: RequestDetail): string {
@@ -57,7 +60,7 @@ export function RequestsPage() {
   const shown = inScope.filter((r) => matchesStatus(r, status))
 
   const vasps = [...new Set(all.map((r) => r.vasp))].sort()
-  const filters: StatusFilter[] = ['all', 'open', ...STATUS_ORDER.filter((s) => all.some((r) => r.status === s) || s === status)]
+  const filters: StatusFilter[] = ['all', 'open', ...(status === 'awaiting' || all.some(isAwaiting) ? (['awaiting'] as const) : []), ...STATUS_ORDER.filter((s) => all.some((r) => r.status === s) || s === status)]
   const refOf = (id: string) => cases.data?.items.find((c) => c.id === id)?.case_ref ?? id
 
   const columns: Column<RequestDetail>[] = [
@@ -154,7 +157,7 @@ export function RequestsPage() {
                       on ? 'border-fg bg-fg font-semibold text-page' : 'border-rule-strong bg-surface text-fg hover:bg-sunk',
                     )}
                   >
-                    {f === 'all' ? 'All' : f === 'open' ? 'Open' : STATUS_WORDS[f]}
+                    {f === 'all' ? 'All' : f === 'open' ? 'Open' : f === 'awaiting' ? 'Awaiting a reply' : STATUS_WORDS[f]}
                     <span className={cx('tabular font-mono', !on && 'text-muted')}>{n}</span>
                   </button>
                 )

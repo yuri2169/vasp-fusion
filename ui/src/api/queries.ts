@@ -3,7 +3,7 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/re
 import { useSyncExternalStore } from 'react'
 import { api } from './api'
 import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type LabelQuery } from './client'
-import type { CaseDetail, Login, RequestCreate, RequestPatch } from './models'
+import type { CaseDetail, Chain, Login, RequestCreate, RequestPatch, WatchCreate, WatchList } from './models'
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -33,6 +33,9 @@ export const keys = {
   request: (id: string) => ['request', id] as const,
   dashboard: ['dashboard'] as const,
   model: (chain?: string) => ['model', chain ?? 'tron'] as const,
+  wallet: (chain: string, address: string) => ['wallet', chain, address] as const,
+  coverage: ['labels', 'coverage'] as const,
+  watchlist: ['watchlist'] as const,
 }
 
 export const useMe = () => useQuery({ queryKey: keys.me, queryFn: () => api.me(), staleTime: 60_000 })
@@ -81,7 +84,7 @@ export function useVerifyCase(id: string) {
 
 // --- the request desk ---------------------------------------------------------
 
-export const useDesk = () => useQuery({ queryKey: keys.desk, queryFn: () => api.desk() })
+export const useDesk = (enabled = true) => useQuery({ queryKey: keys.desk, queryFn: () => api.desk(), enabled })
 
 export const useVasp = (name: string, enabled = true) =>
   useQuery({ queryKey: keys.vasp(name), queryFn: () => api.vasp(name), enabled: enabled && name !== '' })
@@ -128,6 +131,63 @@ export function useMoveRequest(id: string) {
     // A refusal (409) usually means it changed under the officer: show what is stored now.
     onError: () => void client.invalidateQueries({ queryKey: keys.request(id) }),
   })
+}
+
+// --- dashboard, model, wallets, labels, watchlist ------------------------------
+
+export const useDashboard = () => useQuery({ queryKey: keys.dashboard, queryFn: () => api.dashboard() })
+
+/** `chain`: 'tron' (the model the labels carry) or 'ethereum' (the explorer-tagged benchmark). */
+export const useModel = (chain: string) => useQuery({ queryKey: keys.model(chain), queryFn: () => api.model(chain), staleTime: 300_000 })
+
+export const useWallet = (chain: Chain, address: string) =>
+  useQuery({ queryKey: keys.wallet(chain, address), queryFn: () => api.wallet(chain, address), enabled: address !== '' })
+
+export const useLabelCoverage = () => useQuery({ queryKey: keys.coverage, queryFn: () => api.labelCoverage(), staleTime: 300_000 })
+
+const checking = (list?: WatchList) => list?.items.some((w) => w.state === 'checking') ?? false
+
+/** Watched wallets. While one is being traced again the list is asked for once a second. */
+export const useWatchlist = () =>
+  useQuery({ queryKey: keys.watchlist, queryFn: () => api.watchlist(), refetchInterval: (q) => (checking(q.state.data) ? 1000 : false) })
+
+/** A change to the watchlist also changes the dashboard's alerts and a wallet page's "watched". */
+function useWatchChanged() {
+  const client = useQueryClient()
+  return () => {
+    void client.invalidateQueries({ queryKey: keys.watchlist })
+    void client.invalidateQueries({ queryKey: keys.dashboard })
+    void client.invalidateQueries({ queryKey: ['wallet'] })
+  }
+}
+
+export function useWatch() {
+  const changed = useWatchChanged()
+  return useMutation({ mutationFn: (body: WatchCreate) => api.watch(body), onSuccess: changed })
+}
+
+/** Trace a watched wallet again; its case and the case list change with it. */
+export function useCheckWatch() {
+  const client = useQueryClient()
+  const changed = useWatchChanged()
+  return useMutation({
+    mutationFn: (id: string) => api.checkWatch(id),
+    onSuccess: () => {
+      changed()
+      void client.invalidateQueries({ queryKey: ['cases'] })
+      void client.invalidateQueries({ queryKey: ['case'] })
+    },
+  })
+}
+
+export function useMarkWatchSeen() {
+  const changed = useWatchChanged()
+  return useMutation({ mutationFn: (id: string) => api.markWatchSeen(id), onSuccess: changed })
+}
+
+export function useUnwatch() {
+  const changed = useWatchChanged()
+  return useMutation({ mutationFn: (id: string) => api.unwatch(id), onSuccess: changed })
 }
 
 export function useSignIn() {

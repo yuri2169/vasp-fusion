@@ -1,4 +1,5 @@
-// Screenshots of the component kit, the shell, the case page and the request desk, in both themes, into docs/screenshots/.
+// Screenshots of the component kit, the shell, the case page, the request desk and the overview pages
+// (dashboard, wallet, labels, model, watchlist), in both themes, into docs/screenshots/.
 //
 //   npm run dev                       (in another terminal; mock data, port 5173)
 //   npm run screenshots               (or: BASE_URL=http://localhost:5183 npm run screenshots)
@@ -47,6 +48,15 @@ const DIALOG = `document.querySelectorAll('dialog[open] input[type="checkbox"]')
 const press = (text) => `[...document.querySelectorAll('button')].find((b) => b.textContent.trim().startsWith(${JSON.stringify(text)})).click()`
 const APPROVE = press('Approve request')
 const REPLY = press('Record reply')
+
+// U4: the dashboard's counts; the label coverage; a table's rows; a plot; a wallet's record; the watchlist.
+const COUNTS = `document.querySelectorAll('dl[aria-label="Counts"] dd').length > 0`
+const COVERAGE = `document.querySelectorAll('ul[aria-label="Labels by tier"] li').length > 0`
+const ROWS = `document.querySelectorAll('tbody tr td a, tbody tr td button').length > 0`
+const PLOT = `document.querySelectorAll('svg[role="group"] circle').length > 0`
+const WALLET = `document.querySelectorAll('section[aria-label="On record against this address"] p').length > 0`
+const WATCH = `document.querySelectorAll('form[aria-label="Watch a wallet"] input').length > 0`
+const WATCHED = `document.querySelectorAll('ul[aria-label="Watched wallets"] li').length > 0`
 
 const OKX = '/cases/demo-tron-okx'
 const SHOTS = [
@@ -124,6 +134,37 @@ const SHOTS = [
   ['desk-live-register', '/requests?theme=light', 1440, 900, false, { ready: DESK, live: true }],
   ['desk-live-register-dark', '/requests?theme=dark', 1440, 900, false, { ready: DESK, live: true }],
   ['desk-live-register-1280', '/requests?theme=light', 1280, 800, false, { ready: DESK, live: true }],
+
+  // --- U4: dashboard, a wallet, the labels explorer, the model, the watchlist -----------------
+  ['overview-dashboard-light', '/dashboard?theme=light', 1440, 900, true, { ready: COUNTS }],
+  ['overview-dashboard-dark', '/dashboard?theme=dark', 1440, 900, true, { ready: COUNTS }],
+  ['overview-labels-light', '/labels?theme=light', 1440, 900, true, { ready: COVERAGE }],
+  ['overview-labels-search', '/labels?theme=light&q=coindcx', 1440, 900, false, { ready: ROWS }],
+  ['overview-model-light', '/model?theme=light', 1440, 900, true, { ready: PLOT }],
+  ['overview-model-dark', '/model?theme=dark', 1440, 900, true, { ready: PLOT }],
+  ['overview-wallet-demo', '/wallets/tron/THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR?theme=light', 1440, 900, true, { ready: WALLET }],
+  ['overview-watchlist-empty', '/watchlist?theme=light', 1440, 900, false, { ready: WATCH }],
+  ['overview-cases-filtered', '/cases?theme=light&outcome=ATTRIBUTED', 1440, 900, false, { ready: STAMP }],
+  // The real demo cases through the live API. The watchlist shots need watched wallets: the U4 notes in
+  // PROGRESS.md say how the ones pictured were added.
+  ['overview-live-dashboard-light', '/dashboard?theme=light', 1440, 900, true, { ready: COUNTS, live: true }],
+  ['overview-live-dashboard-dark', '/dashboard?theme=dark', 1440, 900, true, { ready: COUNTS, live: true }],
+  ['overview-live-dashboard-1280', '/dashboard?theme=light', 1280, 800, false, { ready: COUNTS, live: true }],
+  ['overview-live-dashboard-tablet', '/dashboard?theme=light', 820, 1100, true, { ready: COUNTS, live: true }],
+  ['overview-live-labels-light', '/labels?theme=light', 1440, 900, true, { ready: COVERAGE, live: true }],
+  ['overview-live-labels-dark', '/labels?theme=dark', 1440, 900, true, { ready: COVERAGE, live: true }],
+  ['overview-live-labels-derived-tron', '/labels?theme=light&chain=tron&tier=derived&q=coindcx', 1440, 900, false, { ready: ROWS, live: true }],
+  ['overview-live-model-tron', '/model?theme=light', 1440, 900, true, { ready: PLOT, live: true }],
+  ['overview-live-model-tron-dark', '/model?theme=dark', 1440, 900, true, { ready: PLOT, live: true }],
+  ['overview-live-model-ethereum', '/model?theme=light&chain=ethereum', 1440, 900, true, { ready: PLOT, live: true }],
+  ['overview-live-model-1280', '/model?theme=light', 1280, 800, false, { ready: PLOT, live: true }],
+  ['overview-live-wallet-traced', '/wallets/tron/TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c?theme=light', 1440, 900, true, { ready: WALLET, live: true }],
+  ['overview-live-wallet-deposit', '/wallets/tron/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5?theme=light', 1440, 900, true, { ready: WALLET, live: true }],
+  ['overview-live-wallet-deposit-dark', '/wallets/tron/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5?theme=dark', 1440, 900, true, { ready: WALLET, live: true }],
+  ['overview-live-wallet-sanctioned', '/wallets/tron/TFdHux43bs21qRsygv5WQWfgtbQeT6nXey?theme=light', 1440, 900, true, { ready: WALLET, live: true }],
+  ['overview-live-watchlist-light', '/watchlist?theme=light', 1440, 900, true, { ready: WATCHED, live: true }],
+  ['overview-live-watchlist-dark', '/watchlist?theme=dark', 1440, 900, true, { ready: WATCHED, live: true }],
+  ['overview-live-cases-open', '/cases?theme=light&open=1', 1440, 900, false, { ready: STAMP, live: true }],
 ].filter(([name, , , , , opts]) => (!ONLY || name.startsWith(ONLY)) && (!opts?.live || LIVE))
 
 const CANDIDATES = [

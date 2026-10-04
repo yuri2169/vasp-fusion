@@ -112,11 +112,11 @@ describe('GlobalSearch', () => {
 })
 
 describe('the app shell', () => {
-  it('has the five places an investigator goes, and marks the current one', async () => {
+  it('has the six places an investigator goes, and marks the current one', async () => {
     renderApp(<AppRoutes />, { route: '/desk' })
     const nav = await screen.findByRole('navigation', { name: 'Main' })
     const names = within(nav).getAllByRole('link').map((a) => a.textContent)
-    expect(names.slice(0, 5)).toEqual(['Cases', 'Request desk', 'Dashboard', 'Labels', 'Model'])
+    expect(names.slice(0, 6)).toEqual(['Cases', 'Request desk', 'Dashboard', 'Watchlist', 'Labels', 'Model'])
     expect(within(nav).getByRole('link', { name: 'Request desk' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Cases' })).not.toHaveAttribute('aria-current')
   })

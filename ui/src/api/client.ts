@@ -15,6 +15,7 @@ import type {
   DataSource,
   Desk,
   Health,
+  LabelCoverage,
   LabelSearch,
   Login,
   LoginResult,
@@ -30,6 +31,9 @@ import type {
   VaspDetail,
   VerifyResult,
   WalletDetail,
+  WatchCreate,
+  WatchItem,
+  WatchList,
 } from './models'
 
 /** An error the officer can read: `detail` is the server's sentence (what happened, what to do). */
@@ -46,8 +50,10 @@ export class ApiError extends Error {
 
 export type Query = Record<string, string | number | boolean | null | undefined>
 
+export type Method = 'GET' | 'POST' | 'PATCH' | 'DELETE'
+
 export interface Transport {
-  request(method: 'GET' | 'POST' | 'PATCH', path: string, opts?: { query?: Query; body?: unknown }): Promise<{
+  request(method: Method, path: string, opts?: { query?: Query; body?: unknown }): Promise<{
     data: unknown
     source: DataSource | null
   }>
@@ -139,7 +145,7 @@ export type AuditQuery = { limit?: number; offset?: number; officer?: string; ac
 const seg = encodeURIComponent
 
 export function createApi(transport: Transport) {
-  async function call<T>(method: 'GET' | 'POST' | 'PATCH', path: string, opts?: { query?: Query; body?: unknown }): Promise<T> {
+  async function call<T>(method: Method, path: string, opts?: { query?: Query; body?: unknown }): Promise<T> {
     const { data, source } = await transport.request(method, path, opts)
     recordSource(source)
     return data as T
@@ -164,6 +170,15 @@ export function createApi(transport: Transport) {
 
     wallet: (chain: Chain, address: string) => get<WalletDetail>(`/wallets/${seg(chain)}/${seg(address)}`),
     labelSearch: (query: LabelQuery) => get<LabelSearch>('/labels/search', query),
+    /** How many labels the store holds, by chain, category, tier and source. */
+    labelCoverage: () => get<LabelCoverage>('/labels/coverage'),
+
+    watchlist: () => get<WatchList>('/watchlist'),
+    watch: (body: WatchCreate) => call<WatchItem>('POST', '/watchlist', { body }),
+    /** Traces the wallet again; the item reads `checking` until that is done. */
+    checkWatch: (id: string) => call<WatchItem>('POST', `/watchlist/${seg(id)}/check`),
+    markWatchSeen: (id: string) => call<WatchItem>('POST', `/watchlist/${seg(id)}/seen`),
+    unwatch: (id: string) => call<Ok>('DELETE', `/watchlist/${seg(id)}`),
 
     desk: () => get<Desk>('/desk'),
     vasp: (name: string) => get<VaspDetail>(`/vasps/${seg(name)}`),

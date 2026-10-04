@@ -9,7 +9,8 @@
  *  A live build (VITE_API=live) carries none of the fixtures: the glob is compiled out. */
 import { ApiError, type Transport } from './client'
 import { CHAINS } from '../lib/chains'
-import type { AuditPage, CaseDetail, CaseList, CaseProgress, CaseSummary, Desk, RequestDetail, RequestList, RequestStatus } from './models'
+import { detectChain, validate } from '../lib/addresses'
+import type { AuditPage, CaseDetail, CaseList, CaseProgress, CaseSummary, Chain, Desk, RequestDetail, RequestList, RequestStatus, WalletDetail, WatchItem } from './models'
 
 const GO_LIVE = 'start the API (make serve) and run the interface with VITE_API=live'
 
@@ -119,10 +120,77 @@ export function createMockTransport(opts: { now?: () => number; traceMs?: number
   const moved = new Map<string, RequestDetail>()
   const requestNow = async (id: string) => moved.get(id) ?? (await fixture<RequestDetail>(`/requests/${id}`))
 
+  /** Wallets the officer watches in this session. Demo data cannot trace, so a wallet here is
+   *  compared with nothing: a demo wallet reads "no change", any other "not traced yet". */
+  const watched = new Map<string, WatchItem>()
+  async function watchItem(chain: Chain, address: string, note: string | null): Promise<WatchItem> {
+    const found = (await fixture<CaseList>('/cases')).items.find((c) => c.chain === chain && sameAddress(c.address, address))
+    const at = new Date(now()).toISOString()
+    return {
+      id: `${chain}-${address}`,
+      chain,
+      address,
+      note,
+      added_at: at,
+      added_by: null,
+      case_id: found?.id ?? null,
+      state: found ? 'unchanged' : 'not_traced',
+      last_checked_at: found?.created_at ?? null,
+      baseline_at: found?.created_at ?? null,
+      changes: [],
+      error: null,
+      label: null,
+    }
+  }
+
   return {
     async request(method, path, opts = {}) {
       const decoded = decodeURIComponent(path)
       const requestId = /^\/requests\/([^/]+)$/.exec(decoded)?.[1]
+      const watchId = /^\/watchlist\/([^/]+)(?:\/(check|seen))?$/.exec(decoded)
+
+      if (decoded === '/watchlist' && method === 'GET') return { data: { items: [...watched.values()].reverse() }, source: 'mock' }
+      if (decoded === '/watchlist' && method === 'POST') {
+        const body = (opts.body ?? {}) as { address?: string; chain?: Chain | null; note?: string | null }
+        const address = String(body.address ?? '').trim()
+        const chain = body.chain ?? detectChain(address)
+        if (!chain || !validate(address, chain))
+          throw new ApiError(422, 'Could not tell which chain this address is on. Pick the chain and try again.')
+        const item = await watchItem(chain, address, body.note?.trim() || null)
+        if (watched.has(item.id)) throw new ApiError(409, 'This wallet is already on the watchlist.')
+        watched.set(item.id, item)
+        return { data: item, source: 'mock' }
+      }
+      if (watchId) {
+        const item = watched.get(watchId[1])
+        if (!item) throw new ApiError(404, 'This wallet is not on the watchlist.')
+        if (method === 'DELETE') {
+          watched.delete(item.id)
+          return { data: { ok: true }, source: 'mock' }
+        }
+        if (watchId[2] === 'seen' && item.case_id) return { data: item, source: 'mock' }
+        throw new ApiError(501, `Demo data cannot trace a wallet again. To check a watched wallet, ${GO_LIVE}.`)
+      }
+      const walletOf = /^\/wallets\/([^/]+)\/([^/]+)$/.exec(decoded)
+      if (method === 'GET' && walletOf) {
+        const [, chain, address] = walletOf
+        const known = loaders.has(`wallets/${chain}/${address}.json`)
+        const cases = (await fixture<CaseList>('/cases')).items.filter((c) => c.chain === chain && sameAddress(c.address, address))
+        const wallet: WalletDetail = known
+          ? await fixture<WalletDetail>(decoded)
+          : {
+              address,
+              chain: chain as Chain,
+              labels: [],
+              risk: { score: null, level: null, reasons: [] },
+              cases: cases.map((c) => ({ case_id: c.id, role: 'suspect', hop: 0 })),
+              inbound: null,
+              outbound: null,
+              flows_from_cases: 0,
+              watched: false,
+            }
+        return { data: { ...wallet, watched: watched.has(`${chain}-${address}`) }, source: 'mock' }
+      }
 
       if (method === 'GET' && requestId) return { data: await requestNow(requestId), source: 'mock' }
       if (method === 'GET' && decoded === '/requests') {

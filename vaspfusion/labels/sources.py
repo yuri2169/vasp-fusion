@@ -4,32 +4,40 @@ Only what is on record in this project is stated. The wallet-attribution set rel
 its code under MIT and says of its data that each upstream source "retains its own
 upstream license"; those licences are not recorded here, so they read as not recorded
 (None), never as MIT. GraphSense TagPacks are MIT (`SOURCE.json` beside the packs).
+
+The links are citations shown beside a source's name. Nothing here is ever fetched.
 """
 from __future__ import annotations
 
 WALLET_ATTRIBUTION = "wallet-attribution set"
 
-# family -> (name, obtained from, licence or None, url)
+ETH_LABELS_SOURCE_URL = "https://github.com/dawsbot/eth-labels"
+DEFILLAMA_SOURCE_URL = "https://github.com/DefiLlama/DefiLlama-Adapters"
+OFAC_SOURCE_URL = "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses"
+MEW_SOURCE_URL = "https://github.com/MyEtherWallet/ethereum-lists"
+CEX_LIST_SOURCE_URL = "https://github.com/tradezon/cex-list"
+DUNE_SOURCE_URL = "https://github.com/duneanalytics/spellbook"
+TAGPACKS_SOURCE_URL = "https://github.com/graphsense/graphsense-tagpacks"
+
+# family -> (name, obtained from, licence or None, link)
 SOURCES: dict[str, tuple[str, str, str | None, str | None]] = {
     "eth-labels": ("eth-labels: public tags of block explorers", WALLET_ATTRIBUTION, None,
-                   "https://github.com/dawsbot/eth-labels"),
+                   ETH_LABELS_SOURCE_URL),
     "defillama-cex": ("DefiLlama adapters: reserve wallets the exchanges published",
-                      WALLET_ATTRIBUTION, None,
-                      "https://github.com/DefiLlama/DefiLlama-Adapters"),
+                      WALLET_ATTRIBUTION, None, DEFILLAMA_SOURCE_URL),
     "ofac-sdn": ("OFAC SDN list of sanctioned addresses", WALLET_ATTRIBUTION,
-                 "US-government public record",
-                 "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses"),
+                 "US-government public record", OFAC_SOURCE_URL),
     "mew-ethereum-lists": ("MyEtherWallet ethereum-lists: scam addresses", WALLET_ATTRIBUTION,
-                           None, "https://github.com/MyEtherWallet/ethereum-lists"),
+                           None, MEW_SOURCE_URL),
     "cex-list": ("cex-list: exchange hot wallets", WALLET_ATTRIBUTION, None,
-                 "https://github.com/tradezon/cex-list"),
+                 CEX_LIST_SOURCE_URL),
     "dune-spellbook": ("Dune spellbook: Indian exchanges' wallets", "Dune spellbook extract",
-                       None, "https://github.com/duneanalytics/spellbook"),
+                       None, DUNE_SOURCE_URL),
     "graphsense-tagpacks": ("GraphSense TagPacks: exchange packs", "GraphSense TagPacks", "MIT",
-                            "https://github.com/graphsense/graphsense-tagpacks"),
+                            TAGPACKS_SOURCE_URL),
     "vaspfusion-discover": ("Deposit addresses derived by VASP-FUSION (sweep and gas-payer "
-                            "rules)", "computed by this tool", "computed here, not a "
-                            "third-party set", None),
+                            "rules)", "Computed by this tool", "Not a third-party set: "
+                            "computed here", None),
 }
 
 

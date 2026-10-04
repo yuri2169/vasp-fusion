@@ -5,7 +5,7 @@ import { CasePage } from './pages/CasePage'
 import { CasesPage } from './pages/CasesPage'
 import { KitPage } from './pages/KitPage'
 import { NewCasePage } from './pages/NewCasePage'
-import { NotFoundPage, PlaceholderPage } from './pages/PlaceholderPage'
+import { NotFoundPage } from './pages/PlaceholderPage'
 import { AppShell } from './shell/AppShell'
 
 // The request desk is loaded when it is first opened, so the first paint of a case does not carry it.
@@ -13,6 +13,13 @@ const DeskPage = lazy(() => import('./pages/DeskPage').then((m) => ({ default: m
 const VaspPage = lazy(() => import('./pages/VaspPage').then((m) => ({ default: m.VaspPage })))
 const RequestsPage = lazy(() => import('./pages/RequestsPage').then((m) => ({ default: m.RequestsPage })))
 const RequestPage = lazy(() => import('./pages/RequestPage').then((m) => ({ default: m.RequestPage })))
+
+// So are the pages an officer goes to between cases: the dashboard, a wallet, the labels, the model, the watchlist.
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const WalletPage = lazy(() => import('./pages/WalletPage').then((m) => ({ default: m.WalletPage })))
+const LabelsPage = lazy(() => import('./pages/LabelsPage').then((m) => ({ default: m.LabelsPage })))
+const ModelPage = lazy(() => import('./pages/ModelPage').then((m) => ({ default: m.ModelPage })))
+const WatchlistPage = lazy(() => import('./pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage })))
 
 const later = (page: ReactNode) => (
   <Suspense
@@ -40,31 +47,11 @@ export function AppRoutes() {
         <Route path="vasps/:name" element={later(<VaspPage />)} />
         <Route path="requests" element={later(<RequestsPage />)} />
         <Route path="requests/:id" element={later(<RequestPage />)} />
-        <Route
-          path="dashboard"
-          element={
-            <PlaceholderPage title="Dashboard">
-              The dashboard counts open cases, requests awaiting a reply, and how much of each chain the label store covers.
-            </PlaceholderPage>
-          }
-        />
-        <Route
-          path="labels"
-          element={
-            <PlaceholderPage title="Labels">
-              The labels explorer searches every labelled address by owner, chain and tier, with the source of each label.
-            </PlaceholderPage>
-          }
-        />
-        <Route
-          path="model"
-          element={
-            <PlaceholderPage title="Model">
-              The model page shows how the deposit-address model was measured: its accuracy, its calibration, and what the
-              numbers do not say.
-            </PlaceholderPage>
-          }
-        />
+        <Route path="dashboard" element={later(<DashboardPage />)} />
+        <Route path="wallets/:chain/:address" element={later(<WalletPage />)} />
+        <Route path="labels" element={later(<LabelsPage />)} />
+        <Route path="model" element={later(<ModelPage />)} />
+        <Route path="watchlist" element={later(<WatchlistPage />)} />
         <Route path="kit" element={<KitPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

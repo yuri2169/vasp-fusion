@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseDetail, EvidenceItem, GraphEdge, GraphNode, LabelOut } from '../api/models'
 import { useOpenCase } from '../api/queries'
@@ -38,7 +38,7 @@ function distance(c: CaseDetail, node: GraphNode): string {
 }
 
 /** The label on a wallet: who, how it is known, and (for our own derived labels) what the rules and the model saw. */
-function LabelBlock({ label, chain }: { label: LabelOut; chain: CaseDetail['chain'] }) {
+export function LabelBlock({ label, chain }: { label: LabelOut; chain: CaseDetail['chain'] }) {
   const kind = KIND_NAMES[label.kind]
   const scored = label.confidence_low != null && label.confidence_high != null
   const reasons: EvidenceItem[] = (label.model?.reasons ?? []).map((r) => ({ kind: 'model', text: r.text, weight: r.weight, tx_hashes: [], tier: null }))
@@ -232,6 +232,12 @@ export function WalletPanel({
         </h2>
         <AddressChip address={node.id} chain={c.chain} full className="h-auto self-start py-1" />
         <p className="text-sm text-muted">{distance(c, node)}</p>
+        <Link
+          to={`/wallets/${c.chain}/${encodeURIComponent(node.id)}`}
+          className="self-start text-xs text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
+        >
+          Everything on record about this wallet
+        </Link>
       </div>
 
       {node.label ? (

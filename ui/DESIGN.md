@@ -92,7 +92,7 @@ Self-hosted through `@fontsource` (the demo runs with no network).
 ```
 
 - Rail: 224px, icons only (64px) under 1024px. Content column: at most 1240px.
-- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case), `/desk`, `/vasps/:name`, `/requests`, `/requests/:id` (the request desk; the rail stays on "Request desk" for all four).
+- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case), `/desk`, `/vasps/:name`, `/requests`, `/requests/:id` (the request desk; the rail stays on "Request desk" for all four), `/dashboard`, `/watchlist`, `/labels`, `/wallets/:chain/:address` (a wallet; the rail stays on "Labels"), `/model`.
 - The top bar holds the search and the data-source tag, nothing else.
 - A page starts with `PageHeader` (optional eyebrow, title, one line of purpose, actions on the right).
 - Sections inside a page are headed by an `eyebrow` `<h2>`.
@@ -157,6 +157,40 @@ The unit of work is an exchange, not a complaint. The desk's own parts are in `s
 - It draws `RequestDetail.letter` and rewords nothing: letterhead (the officer's line, reference, date), To, Through, Subject, numbered paragraphs, the four asks as ticked boxes, the wallets table, the transactions, the matters referred to, the legal basis with its citations, the seal circle and the signature line. Addresses and hashes are whole.
 - **Until the request is approved** the sheet carries the server's watermark text across it and a banner at its head.
 - **Print** (`@media print`): the shell, the page header and the side column are hidden (`print:hidden`); the sheet loses its border and padding. An `@page` rule written by the component (it carries the reference) sets A4, the margins, and margin boxes: the reference and "Page n of N" at the foot of every page, and on a draft the banner at the head. The watermark is a fixed element, so it repeats on every page. A draft ends in a sheet of the review notes, headed "Not part of the request". Chromium-family browsers print margin boxes; the browser's own headers and footers should be switched off in the print dialog.
+
+## The overview pages (`/dashboard`, `/wallets/:chain/:address`, `/labels`, `/model`, `/watchlist`)
+
+The pages an officer goes to between cases. Their shared parts are in `src/overview/` (`Panel`, `Ledger`, `words.ts`) and `src/charts/`.
+
+- **Every figure is a count of stored records and opens the list behind it.** The dashboard's counts link to `/cases?outcome=&status=&chain=&open=1`, `/desk`, `/requests?status=awaiting`, `/watchlist`, `/vasps/:name` and `/labels?tier=&chain=&category=`; those lists read the filter from the address and show it as a chip that can be removed.
+- **The ledger** (`Ledger`) is the page's counts on one ruled line, as the totals row of a register: a figure in mono at 28px, what it counts under it. It is one sheet with hairlines, not a row of cards, and no figure on it is saffron. `perRow={3}` where six cells would crowd the figures (the model's "over 0.999").
+- **A figure that was not measured says so** ("Not yet measured", "Not recorded", "Not assessed") and shows no number. The model page with `status: not_measured` shows no plot and no metric.
+- **`/dashboard`**: the ledger; how the cases ended; the exchanges the funds reached (US-dollar stablecoins only, and the note says so); cases by chain; the time the funds took to reach the exchange (chain time, with how many cases it is the median of); alerts, each in the case's or the watchlist's own sentence, with a word and an icon for its severity; label coverage. There is no primary action on this page, so nothing on it is saffron except the "exchange named" part of the outcome bar.
+- **`/wallets/:chain/:address`**: the address whole in mono (never shortened in its own title), its label with source and evidence (the case page's `LabelBlock`), **what is on record against it** as a level in words (High, Elevated, Nothing on record, Not assessed) with the sentences it rests on, and the sentence that **no risk score is computed**; the cases it is in; the transfers those cases read of it, under a note that this is not the wallet's whole history. The one saffron button is "Trace this wallet", only when the wallet has no case of its own.
+- **`/labels`**: search (address prefix or owner) and three filters, all in the address; a result's address leads to its wallet page, an exchange's name to its page. Under it, what the store covers by tier, category, chain and **source, with the licence on record**: a licence this project holds no record of reads "Not recorded", never a guess. A label this tool derived says "rule" before its confidence unless the model confirmed it; a sourced label reads "as its source".
+- **`/model`**: Tron or Ethereum (`?chain=`); the ledger of measured figures; calibration; accuracy when answering against coverage; what the model reads; the one rule the figures are read against; each exchange held out; the check of the naming bar; and **every `notes[]` sentence as written**, under "What these numbers are, and are not". A recall under 0.5 on a held-out exchange is set in red with its figure: the page shows where the model fails.
+- **`/watchlist`**: the form (the address is checked as in the search bar), then one sheet per wallet, a changed one first. State is an icon and words (Changed since last seen, No change, Checking, Not traced yet, Last check failed). What is new is the server's sentences. The actions keep their names: "Check now", "Mark as seen" → "Marked as seen", "Stop watching" → "Stopped watching". The page says that nothing is checked in the background.
+
+## Charts (`src/charts/`)
+
+Hand-built (HTML bars, SVG plots): no chart library, so the demo needs no network and every mark takes the tokens of both themes.
+
+| Component | Use it for |
+|---|---|
+| `BarList` | Ranked bars of one measure. The value is written at the end of every row, so the chart is its own table; a row with `to` is a link |
+| `ShareBar` | The parts of one whole, as statuses, every part named under the bar with its count |
+| `ReliabilityPlot` | Calibration: probability given against share observed, the diagonal to read it against, and how many addresses each point stands for |
+| `CoveragePlot` | Accuracy when answering against the share answered, with an optional level to read it against |
+| `PlotFrame`, `PlotPoint`, `PlotLine`, `PlotReference`, `ChartTable` | The parts of an x/y plot (`Plot.tsx`); `scale.ts` holds the arithmetic |
+
+Rules (the `dataviz` skill's, fitted to this system):
+- **One hue for a measure: ink (`--fg`).** The six brand colours are not a categorical palette (see the funds bar), so no chart tells series apart by hue; each has one series, and a line to read it against is dashed, grey and named on the plot.
+- **The status fills are for statuses only**: saffron = an exchange was named, seal = sanctioned or mixer, hatch = unresolved. Never for "series 2".
+- **One x axis and one y axis.** Two measures get two charts (the counts under the reliability plot are their own strip on the same x axis).
+- **A zoomed axis says so** in a sentence under the plot ("The vertical axis starts at 90%, not at zero").
+- Thin marks: 8px bars with a rounded end, 2px lines, points of 9px with a 2px ring in the surface colour and a hit area of 28px. Grid lines are hairlines in `--rule`; axis text is 12px in `--fg-muted`. Values and labels are text tokens, never a mark's colour.
+- **Every plot has "Show as table"** under it with the same figures, every point has a card on hover and on keyboard focus, and its name says the figures.
+- **A share or a score is never written as perfect unless it is**: `share()` writes "over 99.9%", `score()` "over 0.999" (`src/overview/words.ts`), as `formatConfidence` writes "over 0.99".
 
 ## The fund-flow graph
 
@@ -245,6 +279,8 @@ The request desk's parts are in `src/desk/`: `RoutingSlip`, `StatusTag`, `DeskNa
 
 `AddressChip` takes `onSelect` / `selected` / `marked`: the address then is a button that shows the wallet on the case page.
 
+The overview pages' parts are in `src/overview/` (`Panel`, `Ledger`, `words.ts`: chain and category names, `count`, `plural`, `share`, `score`) and `src/charts/` (above).
+
 Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-in page when a login is required), `NavRail`, `GlobalSearch`.
 
 ## Accessibility floor
@@ -267,5 +303,5 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.
 - `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`.
-- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png`, `case-*.png` and `desk-*.png` in both themes (and `desk-live-letter-*.pdf`, the letter printed), using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
+- `npm run screenshots` (with the dev server running; `BASE_URL=` if it is not on 5173) writes `docs/screenshots/kit-*.png`, `case-*.png`, `desk-*.png` and `overview-*.png` in both themes (and `desk-live-letter-*.pdf`, the letter printed), using a Chromium-family browser already installed (`BROWSER=` to choose). `npm run screenshots -- case` takes only the names that start so. `LIVE_URL=` (the interface run with `VITE_API=live` against `make serve`, after `make demo`) adds `case-live-*`, the real demo wallets; the last of them traces the hero wallet again (with the server on `OFFLINE=1`, from the cache).
 - In mock mode a demo wallet's trace appears to take 2.4 seconds (`mockSettings.traceMs` in `src/api/mock.ts`) and reports progress worked out from the fixture's own graph, so the trace screen and the rail's animation can be seen with no server. Tests set it to 0.
