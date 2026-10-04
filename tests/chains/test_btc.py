@@ -180,14 +180,6 @@ def test_invalid_address(fixture_fetcher):
         BtcProvider(fixture_fetcher("btc_pages")).transfers("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw")
 
 
-def test_solana_stub(fixture_fetcher):
-    p = get_provider("solana", fixture_fetcher("btc_pages"))
-    with pytest.raises(UnsupportedChain, match="Solana"):
-        p.transfers("So11111111111111111111111111111111111111112")
-    with pytest.raises(InvalidAddress):
-        p.transfers("not-an-address")
-
-
 @pytest.mark.parametrize("chain,cls", [
     ("tron", "TronProvider"), ("ethereum", "EvmProvider"), ("polygon", "EvmProvider"),
     ("arbitrum", "EvmProvider"), ("base", "EvmProvider"), ("optimism", "EvmProvider"),

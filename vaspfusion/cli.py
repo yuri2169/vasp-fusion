@@ -118,7 +118,8 @@ def cmd_fetch(args) -> None:
     print(f"{chain} ({how})  {who(me)}  direction={args.direction} "
           f"since={args.since or '-'} limit={args.limit}")
     print("keys: " + ", ".join(f"{k} {'set' if api_key(k) else 'not set'}"
-                               for k in ("TRONGRID_API_KEY", "ETHERSCAN_API_KEY")))
+                               for k in ("TRONGRID_API_KEY", "ETHERSCAN_API_KEY", "HELIUS_API_KEY",
+                                         "ANKR_API_KEY")))
     print(f"  {'time (UTC)':<21}{'dir':<5}{'asset':<12}{'amount':>24}  "
           f"{'counterparty':<34}tx")
     for t in rows:

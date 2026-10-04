@@ -43,7 +43,7 @@ def get_provider(chain: str, fetcher: Fetcher | None = None, **opts) -> ChainPro
         return BtcProvider(fetcher, **only("max_pages"))
     if chain == "solana":
         from .solana import SolanaProvider
-        return SolanaProvider(fetcher)
+        return SolanaProvider(fetcher, **only("page_size", "max_pages"))
     if chain in EVM_FAMILY:
         from .evm import EvmProvider
         return EvmProvider(chain, fetcher, **only("page_size", "max_pages", "key"))

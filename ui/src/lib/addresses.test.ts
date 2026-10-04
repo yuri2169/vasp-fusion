@@ -78,8 +78,8 @@ describe('inspectAddress (as the officer types)', () => {
     expect(inspectAddress(ETH_EIP55)).toMatchObject({ state: 'valid', chain: 'ethereum', normalized: ETH_EIP55.toLowerCase() })
   })
 
-  it('a Solana address is valid but cannot be traced yet', () => {
-    expect(inspectAddress(SOLANA)).toMatchObject({ state: 'valid', chain: 'solana', traceable: false })
+  it('a Solana address is valid and can be traced', () => {
+    expect(inspectAddress(SOLANA)).toMatchObject({ state: 'valid', chain: 'solana', traceable: true })
   })
 
   it('a full-length Tron address with a typo says the checksum does not match', () => {

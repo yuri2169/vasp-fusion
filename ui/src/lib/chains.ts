@@ -20,13 +20,7 @@ export const CHAINS: Record<Chain, ChainInfo> = {
   arbitrum: { code: 'ARB', name: 'Arbitrum', family: 'evm', traceable: true },
   base: { code: 'BASE', name: 'Base', family: 'evm', traceable: true },
   optimism: { code: 'OP', name: 'Optimism', family: 'evm', traceable: true },
-  bsc: {
-    code: 'BSC',
-    name: 'BNB Smart Chain',
-    family: 'evm',
-    traceable: false,
-    whyNot: 'BNB Smart Chain wallets cannot be traced yet: no free data source serves that chain.',
-  },
+  bsc: { code: 'BNB', name: 'BNB Chain', family: 'evm', traceable: true },
   avalanche: {
     code: 'AVAX',
     name: 'Avalanche',
@@ -35,14 +29,8 @@ export const CHAINS: Record<Chain, ChainInfo> = {
     whyNot: 'Avalanche wallets cannot be traced yet.',
   },
   bitcoin: { code: 'BTC', name: 'Bitcoin', family: 'bitcoin', traceable: true },
-  solana: {
-    code: 'SOL',
-    name: 'Solana',
-    family: 'solana',
-    traceable: false,
-    whyNot: 'Solana wallets cannot be traced yet. Tron, Bitcoin and EVM wallets can.',
-  },
+  solana: { code: 'SOL', name: 'Solana', family: 'solana', traceable: true },
 }
 
 /** The chains an 0x… address can be traced on; the search bar offers these. Ethereum first: it is the default. */
-export const EVM_TRACEABLE: Chain[] = ['ethereum', 'polygon', 'arbitrum', 'base', 'optimism']
+export const EVM_TRACEABLE: Chain[] = ['ethereum', 'bsc', 'polygon', 'arbitrum', 'base', 'optimism']

@@ -63,7 +63,7 @@ describe('GlobalSearch', () => {
     const { user } = renderApp(<GlobalSearch />)
     await user.type(input(), REAL_ETH)
     const picker = screen.getByRole('combobox', { name: 'Chain' })
-    expect(within(picker).getAllByRole('option').map((o) => o.textContent)).toEqual(['Ethereum', 'Polygon', 'Arbitrum', 'Base', 'Optimism'])
+    expect(within(picker).getAllByRole('option').map((o) => o.textContent)).toEqual(['Ethereum', 'BNB Chain', 'Polygon', 'Arbitrum', 'Base', 'Optimism'])
     expect(picker).toHaveValue('ethereum')
 
     await user.selectOptions(picker, 'polygon')
@@ -83,12 +83,12 @@ describe('GlobalSearch', () => {
     expect(location()).toBe('/')
   })
 
-  it('says a Solana wallet cannot be traced yet', async () => {
+  it('recognises a Solana wallet and lets it be traced', async () => {
     const { user } = renderApp(<GlobalSearch />)
     await user.type(input(), SOLANA)
     expect(screen.getByTitle('Solana')).toHaveTextContent('SOL')
-    expect(screen.getByText(/Solana wallets cannot be traced yet/)).toBeInTheDocument()
-    expect(traceButton()).toBeDisabled()
+    expect(screen.queryByText(/cannot be traced yet/)).not.toBeInTheDocument()
+    expect(traceButton()).toBeEnabled()
   })
 
   it("shows the server's sentence when the case cannot be opened", async () => {

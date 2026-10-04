@@ -1,0 +1,11 @@
+{
+ "_recorded": "2026-10-04",
+ "_result": "raised UnsupportedChain: solana needs HELIUS_API_KEY (Helius' free plan serves it; without a key Helius answered: HTTP 401 from api.helius.xyz: b'Unauthorized')",
+ "_source": "Helius parsed history with no key, 5bJcc9eb2XE7mqcET2xDuAdMGuXWybb4YPmAHLjKLhQG",
+ "responses": {
+  "https://api.helius.xyz/v0/addresses/5bJcc9eb2XE7mqcET2xDuAdMGuXWybb4YPmAHLjKLhQG/transactions?limit=5&sort-order=asc": {
+   "body": "Unauthorized",
+   "status": 401
+  }
+ }
+}

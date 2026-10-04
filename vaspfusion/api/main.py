@@ -60,7 +60,8 @@ VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
 # have no adapter yet (PROGRESS.md, B2). Bitcoin is traced since B5 (chains/btc.py: an
 # address's pro-rata share of each transaction; cluster.py: labels by co-spending).
-TRACEABLE = ("tron", "ethereum", "polygon", "arbitrum", "base", "optimism", "bitcoin")
+TRACEABLE = ("tron", "ethereum", "bsc", "polygon", "arbitrum", "base", "optimism", "bitcoin",
+             "solana")
 
 app = FastAPI(title="VASP-FUSION",
               description="Nearest-VASP attribution for unknown crypto wallets, with "

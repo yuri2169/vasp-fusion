@@ -54,7 +54,7 @@ describe('ChainBadge', () => {
   it.each<[Chain, string, string]>([
     ['tron', 'TRON', 'Tron'],
     ['ethereum', 'ETH', 'Ethereum'],
-    ['bsc', 'BSC', 'BNB Smart Chain'],
+    ['bsc', 'BNB', 'BNB Chain'],
     ['polygon', 'POLYGON', 'Polygon'],
     ['arbitrum', 'ARB', 'Arbitrum'],
     ['base', 'BASE', 'Base'],

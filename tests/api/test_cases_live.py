@@ -153,8 +153,8 @@ def test_a_case_left_unfinished_by_a_restart_is_run_again(client, tmp_path, stuc
 @pytest.mark.parametrize("body,needle", [
     ({"address": "not-a-wallet"}, "chain"),
     ({"address": COINDCX, "chain": "ethereum"}, "not a valid ethereum address"),
-    ({"address": "0x8894e0a0c962cb723c1976a4421c95949be2d4e3", "chain": "bsc"}, "bsc"),
-    ({"address": "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T"}, "solana"),
+    ({"address": "0x8894e0a0c962cb723c1976a4421c95949be2d4e3", "chain": "avalanche"},
+     "avalanche"),
 ])
 def test_addresses_we_cannot_trace_are_a_readable_422(client, body, needle):
     r = client.post("/api/cases", json=body)

@@ -38,7 +38,7 @@ it('shows every component, in every state, on one page', async () => {
   for (const tier of ['published_por', 'curated', 'explorer_tag', 'derived', 'none'])
     expect(document.querySelector(`[data-tier="${tier}"]`), tier).toBeInTheDocument()
 
-  for (const code of ['TRON', 'ETH', 'BSC', 'POLYGON', 'ARB', 'BASE', 'OP', 'AVAX', 'BTC', 'SOL'])
+  for (const code of ['TRON', 'ETH', 'BNB', 'POLYGON', 'ARB', 'BASE', 'OP', 'AVAX', 'BTC', 'SOL'])
     expect(screen.getAllByText(code).length, code).toBeGreaterThan(0)
 
   expect(screen.getAllByRole('meter', { name: 'Proximity' }).length).toBeGreaterThanOrEqual(4)

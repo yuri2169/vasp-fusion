@@ -152,6 +152,30 @@ def bsc_ankr_since_out(f):
     return p.transfers(BSC_ADDR, "out", since=BSC_SINCE, limit=4)
 
 
+SOL_ADDR = "5bJcc9eb2XE7mqcET2xDuAdMGuXWybb4YPmAHLjKLhQG"   # HTX reserve (DefiLlama)
+SOL_SINCE = datetime(2026, 10, 3, tzinfo=timezone.utc)
+
+
+def solana_helius(f):
+    from vaspfusion.chains.solana import SolanaProvider
+    return SolanaProvider(f, page_size=5, max_pages=2).transfers(SOL_ADDR, "both", limit=8)
+
+
+def solana_usdt(f):
+    from vaspfusion.chains.solana import SolanaProvider
+    p = SolanaProvider(f, page_size=20, max_pages=3)
+    return p.transfers(SOL_ADDR, "both", since=SOL_SINCE, limit=50)
+
+
+def solana_no_key(f):
+    """What Helius answers with no key: the refusal the adapter turns into
+    UnsupportedChain."""
+    from vaspfusion.chains.solana import SolanaProvider
+    p = SolanaProvider(f, page_size=5)
+    p.key = None
+    return p.transfers(SOL_ADDR, "both", limit=3)
+
+
 BTC_ADDR = "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"  # Poloniex (label CSV), 72 txs
 
 
@@ -174,6 +198,11 @@ SCENARIOS = {
                       bsc_ankr_usdt),
     "bsc_ankr_since_out": (f"Ankr Advanced API, bsc, {BSC_ADDR}, out since 2026-10-01",
                            bsc_ankr_since_out),
+    "solana_helius": (f"Helius parsed history (free key), {SOL_ADDR} (HTX reserve, "
+                      "DefiLlama), oldest first, page_size=5", solana_helius),
+    "solana_usdt": (f"Helius parsed history, {SOL_ADDR}, since 2026-10-03, page_size=20",
+                    solana_usdt),
+    "solana_no_key": (f"Helius parsed history with no key, {SOL_ADDR}", solana_no_key),
     "tron_usdt": (f"TronGrid, {TRON_ADDR} (CoinDCX 1, Dune spellbook), page_size=3", tron_usdt),
     "tron_since_in": (f"TronGrid, {TRON_ADDR}, direction=in since 2022-07-01", tron_since_in),
 }
