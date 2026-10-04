@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { api } from '../api/api'
 import { ApiError } from '../api/client'
-import type { CaseDetail, CaseSummary } from '../api/models'
+import type { CaseDetail, CaseSummary, RequestDetail } from '../api/models'
 import { readCase, readMock } from '../test/files'
 import { renderApp } from '../test/render'
 import { AbstainPanel } from './AbstainPanel'
@@ -95,10 +95,12 @@ describe('AnswerPanel, an exchange is named', () => {
     expect(onSelect).toHaveBeenCalledWith(hero.candidates[0].deposit_address)
   })
 
-  it('reads a mock case, which has fewer fields', () => {
+  it('reads a mock case, which has fewer fields', async () => {
     renderApp(<AnswerPanel c={mockOkx} onSelect={noop} />)
     expect(screen.getByRole('heading', { name: 'Why OKX?' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Draft request to OKX' })).toBeInTheDocument()
+    // the fixture desk already holds a request to OKX for this case: the page leads to it
+    expect(await screen.findByRole('link', { name: 'Open request to OKX' })).toHaveAttribute('href', '/requests/demo-req-okx-001')
+    expect(screen.queryByRole('link', { name: 'Draft request to OKX' })).not.toBeInTheDocument()
     const htx = screen.getByRole('article', { name: 'HTX' })
     expect(within(htx).getByText('Under the 0.60 bar')).toBeInTheDocument()
     expect(within(htx).queryByRole('link', { name: /Draft request/ })).not.toBeInTheDocument()
@@ -257,5 +259,31 @@ describe('WalletPanel', () => {
   it('says so when the wallet is not in this case', () => {
     renderApp(<WalletPanel c={hero} id="TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" onSelect={noop} onClose={noop} />)
     expect(screen.getByText('This wallet is not part of this case.')).toBeInTheDocument()
+  })
+})
+
+describe('a request from the case page', () => {
+  it('is not offered while the case is being traced again: what is on screen is the previous answer', () => {
+    renderApp(<AnswerPanel c={{ ...hero, status: 'running' }} onSelect={noop} />)
+    expect(screen.queryByRole('link', { name: /Draft request/ })).not.toBeInTheDocument()
+    expect(screen.getByText('A request to CoinDCX can be drafted once the new trace is in.')).toBeInTheDocument()
+  })
+
+  it('leads to the request the case is already in, with its status, instead of a second draft', async () => {
+    vi.spyOn(api, 'requests').mockResolvedValue({
+      items: [{ id: 'req-2026-0001', reference: 'VF/REQ/2026/0001', vasp: 'CoinDCX', case_ids: ['tron-coindcx'], status: 'sent' } as RequestDetail],
+    })
+    renderApp(<AnswerPanel c={hero} onSelect={noop} />)
+    expect(await screen.findByRole('link', { name: 'Open request to CoinDCX' })).toHaveAttribute('href', '/requests/req-2026-0001')
+    expect(screen.getByText('VF/REQ/2026/0001')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Draft request/ })).not.toBeInTheDocument()
+  })
+
+  it('offers a new draft again once that request is withdrawn', async () => {
+    vi.spyOn(api, 'requests').mockResolvedValue({
+      items: [{ id: 'req-2026-0001', reference: 'VF/REQ/2026/0001', vasp: 'CoinDCX', case_ids: ['tron-coindcx'], status: 'withdrawn' } as RequestDetail],
+    })
+    renderApp(<AnswerPanel c={hero} onSelect={noop} />)
+    expect(await screen.findByRole('link', { name: 'Draft request to CoinDCX' })).toBeInTheDocument()
   })
 })

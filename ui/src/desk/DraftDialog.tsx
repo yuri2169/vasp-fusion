@@ -50,8 +50,14 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
   const officerId = useId()
 
   const available = useMemo(() => groups(page.data?.wallets ?? []), [page.data])
-  const refOf = (id: string) => cases.data?.items.find((c) => c.id === id)?.case_ref ?? id
   const name = page.data?.directory.name ?? vasp
+  const refOf = (id: string) => cases.data?.items.find((c) => c.id === id)?.case_ref ?? id
+  // A case the link named that cannot go in a request now. Said, not silently left out.
+  const missing = (preselect ?? []).filter((id) => !available.some((g) => g.caseId === id))
+  const whyMissing =
+    missing.length > 0
+      ? `${missing.map(refOf).join(', ')} cannot be added: it is being traced again, is already in a request to ${name}, or does not name ${name} at 0.60 or more.`
+      : null
 
   const [picked, setPicked] = useState<Set<string> | null>(null)
   const [asks, setAsks] = useState<Set<Ask>>(new Set(ASK_ORDER))
@@ -115,8 +121,9 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
         </p>
       ) : available.length === 0 ? (
         <p>
-          No wallet of {name} can be put in a request. A request needs a wallet the funds reached, at or above the 0.60 naming bar, in a
-          finished case.
+          {whyMissing ??
+            `No wallet of ${name} can be put in a request. A request needs a wallet the funds reached, at or above the 0.60 naming bar, in a finished case.`}{' '}
+          The exchange's page lists its wallets and its requests.
         </p>
       ) : (
         <form
@@ -129,6 +136,12 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
           <p className="text-muted">
             One letter covers every case chosen here. It opens as a draft: nothing is sent until it is approved and marked as sent.
           </p>
+
+          {whyMissing && (
+            <p role="status" className="rounded border border-dashed border-rule-strong px-3 py-2 text-fg">
+              {whyMissing}
+            </p>
+          )}
 
           <fieldset className="flex flex-col gap-2">
             <legend className="eyebrow mb-2">Cases to include</legend>

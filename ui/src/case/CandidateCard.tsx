@@ -1,12 +1,14 @@
 import { CircleHelp, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import type { Candidate, CaseDetail } from '../api/models'
+import { useRequests } from '../api/queries'
 import { AddressChip } from '../components/AddressChip'
 import { Amount } from '../components/Amount'
 import { buttonClass } from '../components/Button'
 import { DualMeter } from '../components/DualMeter'
 import { EvidenceList } from '../components/EvidenceList'
 import { TierTag } from '../components/TierTag'
+import { StatusTag } from '../desk/StatusTag'
 import { cx } from '../lib/cx'
 import { deskLink, isInbound, NAMING_BAR, routable } from './rules'
 
@@ -52,6 +54,13 @@ export function CandidateCard({
   const scored = candidate.confidence_interval != null
   const canRequest = action !== 'none' && routable(candidate)
   const listed = candidate.evidence.filter((e) => e.kind !== 'counterfactual').length
+  // A case being traced again shows its previous answer: no request is drafted from that.
+  const tracing = c.status === 'queued' || c.status === 'running'
+  // The request this case is already in, if any: the page then leads to it, not to a second draft.
+  const requests = useRequests()
+  const existing = canRequest
+    ? requests.data?.items.find((r) => r.vasp === candidate.vasp && r.case_ids.includes(c.id) && r.status !== 'withdrawn')
+    : undefined
 
   return (
     <article aria-label={candidate.vasp} className={cx('flex flex-col gap-3', className)}>
@@ -83,7 +92,17 @@ export function CandidateCard({
         {!named && ` An exchange is named at ${NAMING_BAR.toFixed(2)} or more.`}
       </p>
 
-      {canRequest && (
+      {canRequest && tracing && <p className="text-sm text-muted">A request to {candidate.vasp} can be drafted once the new trace is in.</p>}
+      {canRequest && !tracing && existing && (
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link to={`/requests/${encodeURIComponent(existing.id)}`} className={buttonClass('secondary', 'md')}>
+            Open request to {candidate.vasp}
+          </Link>
+          <StatusTag status={existing.status} />
+          <span className="font-mono text-xs text-muted">{existing.reference}</span>
+        </div>
+      )}
+      {canRequest && !tracing && !existing && (
         <Link to={deskLink(c, candidate.vasp)} className={buttonClass(action === 'primary' ? 'primary' : 'secondary', 'md', 'self-start')}>
           Draft request to {candidate.vasp}
         </Link>

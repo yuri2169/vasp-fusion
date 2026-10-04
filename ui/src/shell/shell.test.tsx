@@ -217,7 +217,7 @@ describe('cases', () => {
     await user.click(await screen.findByText('DEMO/2026/001'))
     await waitFor(() => expect(location()).toBe('/cases/demo-tron-okx'))
     expect(await screen.findByRole('list', { name: 'Path of the funds' })).toBeInTheDocument()
-    expect(await screen.findByRole('link', { name: 'Draft request to OKX' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Open request to OKX' })).toBeInTheDocument()
   })
 
   it('an empty list invites the first case', async () => {
