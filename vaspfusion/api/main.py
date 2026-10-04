@@ -1041,7 +1041,9 @@ def interface(path: str):
     if (dist / "index.html").is_file():
         file = (dist / path).resolve()
         if path and file.is_file() and dist in file.parents:
-            return FileResponse(file)
+            # Vite names every file under assets/ after its content: it never changes.
+            keep = {"Cache-Control": "public, max-age=31536000, immutable"}
+            return FileResponse(file, headers=keep if path.startswith("assets/") else None)
         return FileResponse(dist / "index.html", headers={"Cache-Control": "no-cache"})
     if path in ("", "index.html"):
         return FileResponse(CONSOLE, media_type="text/html",

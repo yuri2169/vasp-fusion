@@ -35,6 +35,10 @@ def test_a_build_is_served_as_a_single_page_app(client, tmp_path, monkeypatch):
     monkeypatch.setattr(main, "UI_DIST", dist)
     assert "built" in client.get("/").text
     assert client.get("/assets/app.js").text == "console.log(1)"
+    # A file under assets/ is named after its content, so the browser may keep it for good;
+    # the page that names those files is asked for again every time.
+    assert "immutable" in client.get("/assets/app.js").headers["cache-control"]
+    assert client.get("/").headers["cache-control"] == "no-cache"
     assert "built" in client.get("/cases/c-123").text              # a client-side route
     for sneaky in ("/../secret.txt", "/assets/../../secret.txt", "/%2e%2e/secret.txt"):
         assert "not for serving" not in client.get(sneaky).text

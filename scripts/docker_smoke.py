@@ -107,8 +107,23 @@ class Smoke:
         s, _, page = api.call("GET", "/")
         ok("the interface (or the console) is served at /",
            s == 200 and b"<title" in page.lower(), s)
+        if b'id="root"' in page:          # the image was built with the interface (UI=build)
+            import re
+            scripts = re.findall(rb'src="(/assets/[^"]+\.js)"', page)
+            s, h, js = api.call("GET", scripts[0].decode()) if scripts else (0, {}, b"")
+            ok("the interface's script is served, to be kept by the browser",
+               s == 200 and len(js) > 10_000 and "immutable" in h.get("cache-control", ""),
+               (s, len(js), h.get("cache-control")))
+            ok("it carries no demo fixture", b"demo-tron-okx" not in js)
+            s, _, deep = api.call("GET", "/cases/tron-coindcx")
+            ok("an address inside the interface opens the interface (a reload works)",
+               s == 200 and b'id="root"' in deep, s)
 
-        s, _, cases = api.call("GET", "/api/cases")
+        s, h, cases = api.call("GET", "/api/cases")
+        ok(f"only real recorded cases are listed ({len(cases['items'])}), no fixture",
+           h.get("x-data-source") == "live" and len(cases["items"]) == len(specs)
+           and not any(c["id"].startswith("demo-") for c in cases["items"]),
+           (h.get("x-data-source"), [c["id"] for c in cases["items"]]))
         by_id = {c["id"]: c for c in cases["items"]}
         for spec in specs:
             c = by_id.get(spec["id"], {})

@@ -17,11 +17,12 @@
 # ---- the interface: UI=build compiles ui/; UI=none (the default) leaves an empty dist,
 # and the API serves its own console page instead. One stage with a condition, so it
 # behaves the same under BuildKit and under the classic builder.
-FROM node:20-slim AS ui
+# Node 22: react-router 8 and Vitest ask for 22.12 or newer.
+FROM node:22-slim AS ui
 ARG UI=none
 WORKDIR /ui
 COPY ui/ ./
-RUN if [ "$UI" = "build" ]; then npm ci && npm run build; else mkdir -p dist; fi
+RUN if [ "$UI" = "build" ]; then npm ci && npm run build && node scripts/check-bundle.mjs; else mkdir -p dist; fi
 
 # ---- code and dependencies
 FROM python:3.12-slim AS base
