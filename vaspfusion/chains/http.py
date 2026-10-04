@@ -1,12 +1,14 @@
 """HTTP transport and API-key loading. The only module that opens sockets.
 
-Keys (TRONGRID_API_KEY, ETHERSCAN_API_KEY) come from the process environment
-first, then from vasp-fusion/.env (git-ignored). They are sent as a header
-(TronGrid) or a query param (Etherscan) and never stored, logged or printed;
-cache.request_key() strips them before anything is written.
+Keys (TRONGRID_API_KEY, ETHERSCAN_API_KEY, HELIUS_API_KEY, ANKR_API_KEY) come from
+the process environment first, then from vasp-fusion/.env (git-ignored). They are
+sent as a header (TronGrid), a query param (Etherscan, Helius) or the last segment of
+the URL (Ankr) and never stored, logged or printed; cache.request_key() strips them
+before anything is written, and an Ankr key is never part of the url the cache sees.
 """
 from __future__ import annotations
 
+import json
 import os
 import urllib.error
 import urllib.parse
@@ -23,6 +25,11 @@ class Transport(Protocol):
     def get(self, url: str, params: dict, headers: dict) -> tuple[int, bytes]:
         """Return (HTTP status, raw body). HTTP errors are returned, not raised."""
 
+    def rpc(self, url: str, params: dict, headers: dict,
+            secret: str | None = None) -> tuple[int, bytes]:
+        """A JSON-RPC call: POST `params["method"]` with `params["params"]` (JSON text)
+        to `url`, or to `url/secret` when the provider keeps its key in the path."""
+
 
 class UrllibTransport:
     def __init__(self, timeout: float = 30.0):
@@ -32,6 +39,19 @@ class UrllibTransport:
         full = f"{url}?{urllib.parse.urlencode(params)}" if params else url
         req = urllib.request.Request(full, headers={"User-Agent": USER_AGENT,
                                                     "Accept": "application/json", **headers})
+        return self._send(req)
+
+    def rpc(self, url: str, params: dict, headers: dict,
+            secret: str | None = None) -> tuple[int, bytes]:
+        body = {"jsonrpc": "2.0", "id": 1, "method": params["method"],
+                "params": json.loads(params["params"])}
+        req = urllib.request.Request(
+            f"{url}/{secret}" if secret else url, data=json.dumps(body).encode(), method="POST",
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json",
+                     "Content-Type": "application/json", **headers})
+        return self._send(req)
+
+    def _send(self, req: urllib.request.Request) -> tuple[int, bytes]:
         try:
             with urllib.request.urlopen(req, timeout=self.timeout) as r:
                 return r.status, r.read()

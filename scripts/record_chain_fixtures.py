@@ -32,7 +32,12 @@ class RecordingTransport(UrllibTransport):
         self.responses: dict[str, dict] = {}
 
     def get(self, url, params, headers):
-        status, body = super().get(url, params, headers)
+        return self._keep(url, params, *super().get(url, params, headers))
+
+    def rpc(self, url, params, headers, secret=None):
+        return self._keep(url, params, *super().rpc(url, params, headers, secret))
+
+    def _keep(self, url, params, status, body):
         try:
             parsed = json.loads(body)
         except ValueError:
@@ -62,7 +67,8 @@ def _run(name: str, source: str, fn) -> None:
 
 def _secrets() -> list[str]:
     from vaspfusion.chains.http import api_key
-    return [k for k in (api_key("TRONGRID_API_KEY"), api_key("ETHERSCAN_API_KEY")) if k]
+    return [k for k in map(api_key, ("TRONGRID_API_KEY", "ETHERSCAN_API_KEY", "HELIUS_API_KEY",
+                                     "ANKR_API_KEY")) if k]
 
 
 # ------------------------------------------------------------------ scenarios
@@ -118,8 +124,32 @@ def base_blockscout(f):
 
 
 def bsc_unsupported(f):
+    """What Ankr answers with no key at all: the refusal the adapter turns into
+    UnsupportedChain."""
     from vaspfusion.chains.evm import EvmProvider
-    return EvmProvider("bsc", f, page_size=3).transfers(BSC_ADDR, "both", limit=3)
+    p = EvmProvider("bsc", f, page_size=3)
+    p.ankr_key = None
+    return p.transfers(BSC_ADDR, "both", limit=3)
+
+
+def bsc_ankr(f):
+    from vaspfusion.chains.evm import EvmProvider
+    return EvmProvider("bsc", f, page_size=3, max_pages=2).transfers(BSC_ADDR, "both", limit=5)
+
+
+BSC_SINCE = datetime(2026, 10, 1, tzinfo=timezone.utc)
+
+
+def bsc_ankr_usdt(f):
+    from vaspfusion.chains.evm import EvmProvider
+    p = EvmProvider("bsc", f, page_size=5, max_pages=3)
+    return p.transfers(BSC_ADDR, "both", since=BSC_SINCE, limit=4, asset="USDT")
+
+
+def bsc_ankr_since_out(f):
+    from vaspfusion.chains.evm import EvmProvider
+    p = EvmProvider("bsc", f, page_size=5, max_pages=2)
+    return p.transfers(BSC_ADDR, "out", since=BSC_SINCE, limit=4)
 
 
 BTC_ADDR = "1NBX1UZE3EFPTnYNkDfVhRADvVc8v6pRYu"  # Poloniex (label CSV), 72 txs
@@ -137,7 +167,13 @@ SCENARIOS = {
     "eth_asset_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, asset=USDT only", eth_asset_usdt),
     "eth_since_out": (f"Etherscan v2 chainid=1, {ETH_ADDR}, out since 2024-01-01", eth_since_out),
     "base_blockscout": (f"base.blockscout.com, {BASE_ADDR}, page_size=3", base_blockscout),
-    "bsc_unsupported": (f"Etherscan v2 chainid=56 on a free key, {BSC_ADDR}", bsc_unsupported),
+    "bsc_unsupported": (f"Ankr Advanced API with no key, bsc, {BSC_ADDR}", bsc_unsupported),
+    "bsc_ankr": (f"Ankr Advanced API (free key), bsc, {BSC_ADDR} (Binance hot wallet, "
+                 "eth-labels), page_size=3", bsc_ankr),
+    "bsc_ankr_usdt": (f"Ankr Advanced API, bsc, {BSC_ADDR}, asset=USDT since 2026-10-01",
+                      bsc_ankr_usdt),
+    "bsc_ankr_since_out": (f"Ankr Advanced API, bsc, {BSC_ADDR}, out since 2026-10-01",
+                           bsc_ankr_since_out),
     "tron_usdt": (f"TronGrid, {TRON_ADDR} (CoinDCX 1, Dune spellbook), page_size=3", tron_usdt),
     "tron_since_in": (f"TronGrid, {TRON_ADDR}, direction=in since 2022-07-01", tron_since_in),
 }

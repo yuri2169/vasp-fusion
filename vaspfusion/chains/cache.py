@@ -31,7 +31,7 @@ from .base import CacheMiss, ProviderError, Retryable
 from .http import ROOT, Transport
 
 DEFAULT_CACHE = ROOT / "data" / "chain_cache.duckdb"
-SECRET_PARAMS = frozenset({"apikey", "api_key", "key", "token"})
+SECRET_PARAMS = frozenset({"apikey", "api_key", "api-key", "key", "token"})
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS chain_cache (
@@ -174,7 +174,10 @@ class Fetcher:
 
     def get_json(self, chain: str, address: str, direction: str, url: str, params: dict,
                  headers: dict | None = None, check: Callable[[Any], None] | None = None,
-                 refresh: bool = False) -> Any:
+                 refresh: bool = False, rpc: bool = False, secret: str | None = None) -> Any:
+        """`rpc=True` sends the request as a JSON-RPC POST (see Transport.rpc); `secret`
+        is a key the provider wants in the URL path. It is handed to the transport only:
+        `url` and `params`, which make the cache key, never hold it."""
         query = request_key(url, params)
         if not (refresh or self.refresh):
             hit = self.cache.get(chain, address, direction, query)
@@ -194,7 +197,8 @@ class Fetcher:
         host = urllib.parse.urlsplit(url).netloc
         for attempt in range(self.max_retries + 1):
             self._throttle(host)
-            status, body = self.transport.get(url, params, headers or {})
+            status, body = self.transport.rpc(url, params, headers or {}, secret) if rpc \
+                else self.transport.get(url, params, headers or {})
             try:
                 if status == 429 or status >= 500 or (status == 403 and b"limit" in body.lower()):
                     raise Retryable(f"HTTP {status}")

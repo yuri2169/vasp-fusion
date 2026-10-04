@@ -62,10 +62,19 @@ class ExtendingTransport(RecordingTransport):
         self.recorded, self.fetched = recorded, 0
 
     def get(self, url, params, headers):
+        return self._old(url, params) or self._new(super().get, url, params, headers)
+
+    def rpc(self, url, params, headers, secret=None):
+        return self._old(url, params) or self._new(super().rpc, url, params, headers, secret)
+
+    def _new(self, send, *args):
+        self.fetched += 1
+        return send(*args)
+
+    def _old(self, url, params):
         key = request_key(url, params)
         if key not in self.recorded:
-            self.fetched += 1
-            return super().get(url, params, headers)
+            return None
         self.responses[key] = self.recorded[key]
         body = self.recorded[key]["body"]
         return self.recorded[key]["status"], \

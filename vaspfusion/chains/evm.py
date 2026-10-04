@@ -1,6 +1,7 @@
-"""EVM chains through the Etherscan-compatible account API (`txlist` + `tokentx`).
+"""EVM chains through the Etherscan-compatible account API (`txlist` + `tokentx`),
+and BNB Chain through Ankr's Advanced API.
 
-Two backends speak the same API:
+Two backends speak the Etherscan API:
 * Etherscan v2 (`/v2/api?chainid=`), used when ETHERSCAN_API_KEY is set. Its
   free plan answers for ethereum, polygon and arbitrum only; BSC, Base, OP and
   Avalanche return "Free API access is not supported for this chain"
@@ -12,29 +13,42 @@ Two backends speak the same API:
 turned into a start block with `getblocknobytime`. Direction is filtered here, as
 the API returns both. Etherscan serves at most 10,000 rows per query window, so
 `limit` is capped there.
+
+BNB Chain has no keyless explorer API and Etherscan's free plan refuses it, so it is
+read from Ankr (ANKR_API_KEY, free plan; measured 5 Oct 2026): JSON-RPC
+`ankr_getTransactionsByAddress` (whole transactions: the native-coin transfers) and
+`ankr_getTokenTransfers` (BEP-20), oldest first, `fromTimestamp` for `since`, paged by
+`nextPageToken`. Neither call filters by direction or token, so both are filtered
+here and a page is cached once whatever was asked of it. Etherscan is used for BNB
+Chain only when ETHERSCAN_PAID=1 says the key is on a paid plan: which plan a key is
+on cannot be learnt offline, and the backend is part of every cache key.
 """
 from __future__ import annotations
 
+import json
+import os
 from datetime import datetime
 from decimal import Decimal
 
 from .addresses import validate
-from .base import (ChainProvider, Direction, InvalidAddress, ProviderError, Retryable,
+from .base import (CacheMiss, ChainProvider, Direction, InvalidAddress, ProviderError, Retryable,
                    Transfer, TransferList, UnsupportedChain, sort_transfers, utc_from_s)
 from .cache import Fetcher
 from .http import api_key
 
 ETHERSCAN = "https://api.etherscan.io/v2/api"
+ANKR = "https://rpc.ankr.com/multichain"
 MAX_WINDOW = 10_000
 
 # chain -> backends in order of preference: ("etherscan", chainid) | ("blockscout", api url)
+# | ("etherscan-paid", chainid): Etherscan, only with ETHERSCAN_PAID=1 | ("ankr", its chain name)
 BACKENDS: dict[str, tuple[tuple[str, object], ...]] = {
     "ethereum": (("etherscan", 1), ("blockscout", "https://eth.blockscout.com/api")),
     "polygon": (("etherscan", 137), ("blockscout", "https://polygon.blockscout.com/api")),
     "arbitrum": (("etherscan", 42161), ("blockscout", "https://arbitrum.blockscout.com/api")),
     "base": (("blockscout", "https://base.blockscout.com/api"),),
     "optimism": (("blockscout", "https://explorer.optimism.io/api"),),
-    "bsc": (("etherscan", 56),),
+    "bsc": (("etherscan-paid", 56), ("ankr", "bsc")),
 }
 NATIVE = {"ethereum": "ETH", "polygon": "POL", "arbitrum": "ETH", "base": "ETH",
           "optimism": "ETH", "bsc": "BNB"}
@@ -73,6 +87,22 @@ def _check(body) -> None:
     raise ProviderError(f"explorer API error: {body.get('message')}: {str(result)[:200]}")
 
 
+def _check_ankr(body) -> None:
+    if not isinstance(body, dict):
+        raise ProviderError(f"unexpected body: {str(body)[:200]}")
+    err = body.get("error")
+    if err is None and isinstance(body.get("result"), dict):
+        return
+    text = str(err.get("message") if isinstance(err, dict) else err)
+    if "too many requests" in text.lower() or "rate limit" in text.lower():
+        raise Retryable(text)
+    raise ProviderError(f"Ankr API error: {text[:200]}")
+
+
+def _paid_etherscan() -> bool:
+    return os.environ.get("ETHERSCAN_PAID", "").strip().lower() in ("1", "true", "yes")
+
+
 class EvmProvider(ChainProvider):
     # A gas top-up for one token sweep is a few thousandths of a coin (0.0024 ETH in the
     # recorded Bitget sweep). More than 0.1 is a deposit of the coin, not gas.
@@ -88,16 +118,23 @@ class EvmProvider(ChainProvider):
         self.kind, self.target = self._pick_backend()
         if self.kind == "etherscan":
             fetcher.min_interval.setdefault("api.etherscan.io", 0.35)
+        elif self.kind == "ankr":
+            self.ankr_key = api_key("ANKR_API_KEY")
+            # 13 calls in 7 s were answered and the 14th refused for 10 s (free plan)
+            fetcher.min_interval.setdefault("rpc.ankr.com", 0.6)
         else:
             fetcher.min_interval.setdefault(str(self.target).split("/")[2], 0.2)
 
     def _pick_backend(self) -> tuple[str, object]:
         options = BACKENDS[self.chain]
         for kind, target in options:
-            if kind == "blockscout" or self.key:
+            if kind == "etherscan-paid":
+                if self.key and _paid_etherscan():
+                    return "etherscan", target
+            elif kind in ("blockscout", "ankr") or self.key:
                 return kind, target
-        raise UnsupportedChain(f"{self.chain} needs ETHERSCAN_API_KEY on a paid Etherscan plan "
-                               "(the free plan and Blockscout do not cover it)")
+        raise UnsupportedChain(f"{self.chain} has no backend that answers without a paid "
+                               "Etherscan plan")
 
     def _request(self, params: dict) -> tuple[str, dict]:
         if self.kind == "etherscan":
@@ -128,6 +165,8 @@ class EvmProvider(ChainProvider):
         self._check_asset(asset)
         address = address.lower()
         limit = min(limit, MAX_WINDOW)
+        if self.kind == "ankr":
+            return self._ankr_transfers(address, direction, since, limit, asset)
         start = self.start_block(address, since) if since is not None else 0
         rows: list[Transfer] = []
         ended: list[bool] = []          # per listing: did paging reach its end?
@@ -188,6 +227,92 @@ class EvmProvider(ChainProvider):
         return Transfer(
             chain=self.chain, tx_hash=item["hash"], block_time=utc_from_s(item["timeStamp"]),
             from_addr=item["from"].lower(), to_addr=item["to"].lower(),
+            asset=symbol or f"{item.get('tokenSymbol') or '?'}@{contract}",
+            amount=amount, amount_usd=amount if symbol else None, fee_payer=None,
+            asset_contract=contract)
+
+    # ------------------------------------------------------------------ Ankr (BNB Chain)
+    def _ankr_transfers(self, address: str, direction: str, since: datetime | None,
+                        limit: int, asset: str | None) -> TransferList:
+        native = NATIVE[self.chain]
+        rows: list[Transfer] = []
+        ended: list[bool] = []
+        if asset in (None, native):
+            rows += self._ankr_pages(address, direction, since, limit, ended,
+                                     "ankr_getTransactionsByAddress", "transactions",
+                                     self._parse_ankr_native, None)
+        if asset != native:
+            rows += self._ankr_pages(address, direction, since, limit, ended,
+                                     "ankr_getTokenTransfers", "transfers",
+                                     self._parse_ankr_token, asset)
+        return TransferList(sort_transfers(rows)[:limit],
+                            complete=all(ended) and len(rows) <= limit)
+
+    def _ankr_pages(self, address, direction, since, limit, ended: list[bool], method: str,
+                    field: str, parse, asset: str | None) -> list[Transfer]:
+        out: list[Transfer] = []
+        token = ""
+        for _ in range(self.max_pages):
+            args = {"blockchain": self.target, "address": [address],
+                    "pageSize": self.page_size, "descOrder": False}
+            if since is not None:
+                args["fromTimestamp"] = int(since.timestamp())
+            if token:
+                args["pageToken"] = token
+            result = self._ankr(address, method, args)["result"]
+            for item in result.get(field) or []:
+                t = parse(item)
+                if t is None or (asset is not None and t.asset != asset) or \
+                        (direction == "in" and t.to_addr != address) or \
+                        (direction == "out" and t.from_addr != address):
+                    continue
+                out.append(t)
+            token = result.get("nextPageToken") or ""
+            if not token:
+                ended.append(True)
+                return out
+            if len(out) >= limit:
+                break
+        ended.append(False)             # stopped at `limit` or the page cap
+        return out
+
+    def _ankr(self, address: str, method: str, args: dict) -> dict:
+        params = {"method": method,
+                  "params": json.dumps(args, sort_keys=True, separators=(",", ":"))}
+        try:
+            # the request is the same for every direction, so the page is stored once
+            return self.fetcher.get_json(self.chain, address, "both", ANKR, params,
+                                         check=_check_ankr, rpc=True, secret=self.ankr_key)
+        except CacheMiss:
+            raise
+        except ProviderError as e:
+            if self.ankr_key:
+                raise
+            raise UnsupportedChain(
+                f"{self.chain} needs ANKR_API_KEY (Ankr's free plan serves it; without a "
+                f"key Ankr answered: {e})") from e
+
+    def _parse_ankr_native(self, item: dict) -> Transfer | None:
+        value = int(item.get("value") or "0x0", 16)
+        if item.get("status") != "0x1" or value == 0 or not item.get("to"):
+            return None
+        return Transfer(
+            chain=self.chain, tx_hash=item["hash"],
+            block_time=utc_from_s(int(item["timestamp"], 16)),
+            from_addr=item["from"].lower(), to_addr=item["to"].lower(), asset=NATIVE[self.chain],
+            amount=Decimal(value).scaleb(-18), amount_usd=None, fee_payer=item["from"].lower())
+
+    def _parse_ankr_token(self, item: dict) -> Transfer | None:
+        contract = (item.get("contractAddress") or "").lower()
+        if not contract or not item.get("fromAddress") or not item.get("toAddress"):
+            return None
+        amount = Decimal(int(item.get("valueRawInteger") or 0)).scaleb(
+            -int(item.get("tokenDecimals") or 0))
+        symbol = STABLECOINS[self.chain].get(contract)
+        return Transfer(
+            chain=self.chain, tx_hash=item["transactionHash"],
+            block_time=utc_from_s(item["timestamp"]),
+            from_addr=item["fromAddress"].lower(), to_addr=item["toAddress"].lower(),
             asset=symbol or f"{item.get('tokenSymbol') or '?'}@{contract}",
             amount=amount, amount_usd=amount if symbol else None, fee_payer=None,
             asset_contract=contract)

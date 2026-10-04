@@ -33,3 +33,7 @@ class RecordedTransport:
         body = self.responses[key]["body"]
         return self.responses[key]["status"], \
             (json.dumps(body) if not isinstance(body, str) else body).encode()
+
+    def rpc(self, url: str, params: dict, headers: dict,
+            secret: str | None = None) -> tuple[int, bytes]:
+        return self.get(url, params, headers)

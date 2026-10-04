@@ -191,14 +191,14 @@ def test_solana_stub(fixture_fetcher):
 @pytest.mark.parametrize("chain,cls", [
     ("tron", "TronProvider"), ("ethereum", "EvmProvider"), ("polygon", "EvmProvider"),
     ("arbitrum", "EvmProvider"), ("base", "EvmProvider"), ("optimism", "EvmProvider"),
-    ("bitcoin", "BtcProvider"), ("solana", "SolanaProvider"),
+    ("bitcoin", "BtcProvider"), ("solana", "SolanaProvider"), ("bsc", "EvmProvider"),
 ])
 def test_registry(fixture_fetcher, chain, cls):
     assert type(get_provider(chain, fixture_fetcher("btc_pages"))).__name__ == cls
 
 
-@pytest.mark.parametrize("chain", ["bsc", "avalanche", "dogecoin"])
-def test_registry_unsupported_without_paid_key(fixture_fetcher, chain):
+@pytest.mark.parametrize("chain", ["avalanche", "dogecoin"])
+def test_registry_unsupported(fixture_fetcher, chain):
     with pytest.raises(UnsupportedChain):
         get_provider(chain, fixture_fetcher("btc_pages"))
 

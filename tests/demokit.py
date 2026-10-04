@@ -35,6 +35,9 @@ class DemoTransport:
         return self.responses[key]["status"], \
             (json.dumps(body) if not isinstance(body, str) else body).encode()
 
+    def rpc(self, url, params, headers, secret=None):
+        return self.get(url, params, headers)
+
 
 class DemoLabels:
     """The label rows the full label DB returned while the fixtures were recorded."""

@@ -92,15 +92,11 @@ def test_ethereum_without_key_falls_back_to_blockscout(fixture_fetcher):
     assert (p.kind, p.target) == ("blockscout", "https://eth.blockscout.com/api")
 
 
-def test_bsc_free_key_is_unsupported(fixture_fetcher):
-    p = EvmProvider("bsc", fixture_fetcher("bsc_unsupported"), page_size=3, key="test-key")
+def test_etherscan_free_plan_refusal_is_unsupported_chain():
+    # the body Etherscan v2 gave for chainid=56 on a free key (measured 1 Oct 2026)
     with pytest.raises(UnsupportedChain, match="Free API access"):
-        p.transfers("0x8894e0a0c962cb723c1976a4421c95949be2d4e3", "both", limit=3)
-
-
-def test_bsc_without_key_is_unsupported(fixture_fetcher):
-    with pytest.raises(UnsupportedChain, match="paid"):
-        EvmProvider("bsc", fixture_fetcher("bsc_unsupported"), key="")
+        _check({"status": "0", "message": "NOTOK", "result": "Free API access is not supported "
+                "for this chain. Please upgrade your api plan for full chain coverage."})
 
 
 def test_offline_replay_identical(fixture_fetcher):

@@ -26,3 +26,6 @@ class FixtureTransport:
         r = self.responses[key]
         body = r["body"]
         return r["status"], (json.dumps(body) if not isinstance(body, str) else body).encode()
+
+    def rpc(self, url, params, headers, secret=None):
+        return self.get(url, params, headers)

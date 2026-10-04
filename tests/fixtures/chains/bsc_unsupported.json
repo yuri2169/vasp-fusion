@@ -1,15 +1,13 @@
 {
- "_recorded": "2026-09-30",
- "_result": "raised UnsupportedChain: Etherscan: Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis",
- "_source": "Etherscan v2 chainid=56 on a free key, 0x8894e0a0c962cb723c1976a4421c95949be2d4e3",
+ "_recorded": "2026-10-04",
+ "_result": "raised UnsupportedChain: bsc needs ANKR_API_KEY (Ankr's free plan serves it; without a key Ankr answered: HTTP 403 from rpc.ankr.com: b'{\"error\":\"message: API key is not allowed to access blockchain, json-rpc code: -32052, rest code: 403\"}')",
+ "_source": "Ankr Advanced API with no key, bsc, 0x8894e0a0c962cb723c1976a4421c95949be2d4e3",
  "responses": {
-  "https://api.etherscan.io/v2/api?action=txlist&address=0x8894e0a0c962cb723c1976a4421c95949be2d4e3&chainid=56&module=account&offset=3&page=1&sort=asc&startblock=0": {
+  "https://rpc.ankr.com/multichain?method=ankr_getTransactionsByAddress&params=%7B%22address%22%3A%5B%220x8894e0a0c962cb723c1976a4421c95949be2d4e3%22%5D%2C%22blockchain%22%3A%22bsc%22%2C%22descOrder%22%3Afalse%2C%22pageSize%22%3A3%7D": {
    "body": {
-    "message": "NOTOK",
-    "result": "Free API access is not supported for this chain. Please upgrade your api plan for full chain coverage. https://etherscan.io/apis",
-    "status": "0"
+    "error": "message: API key is not allowed to access blockchain, json-rpc code: -32052, rest code: 403"
    },
-   "status": 200
+   "status": 403
   }
  }
 }

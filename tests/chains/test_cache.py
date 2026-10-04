@@ -205,3 +205,67 @@ def test_a_layered_cache_reads_an_older_cache_and_writes_only_to_its_own(tmp_pat
     again = Fetcher(layered, None, offline=True)
     assert again.get_json("tron", "A", "both", URL, {"page": 2}) == {"n": 2}
     layered.close()
+
+
+# ---------------------------------------------------------------- JSON-RPC (POST) requests
+RPC_URL = "https://rpc.example.com/multichain"
+
+
+class ScriptedRpc(Scripted):
+    def rpc(self, url, params, headers, secret=None):
+        self.calls.append((url, dict(params), secret))
+        status, body = self.answers.pop(0)
+        return status, body if isinstance(body, bytes) else json.dumps(body).encode()
+
+
+def rpc(f, **kw):
+    return f.get_json("bsc", "0xabc", "both", RPC_URL,
+                      {"method": "m", "params": '{"a":1}'}, rpc=True, secret="SECRET", **kw)
+
+
+def test_helius_key_param_is_stripped_from_the_request_key():
+    assert request_key(URL, {"api-key": "SECRET", "limit": 3}) == URL + "?limit=3"
+
+
+def test_an_rpc_call_goes_through_rpc_and_is_cached_without_its_secret(tmp_path):
+    t = ScriptedRpc((200, {"result": {"rows": [1]}}))
+    f, _ = mk(tmp_path, t)
+    assert rpc(f) == {"result": {"rows": [1]}}
+    assert t.calls == [(RPC_URL, {"method": "m", "params": '{"a":1}'}, "SECRET")]
+    assert rpc(f) == {"result": {"rows": [1]}}          # the second read is a cache hit
+    assert len(t.calls) == 1 and f.stats == {"hits": 1, "live": 1, "retries": 0}
+    with duckdb.connect(str(tmp_path / "c.duckdb")) as con:
+        query, raw = con.execute("SELECT query, raw_json FROM chain_cache").fetchone()
+    assert "SECRET" not in query + raw
+    assert query == RPC_URL + "?method=m&params=%7B%22a%22%3A1%7D"
+
+
+def test_an_rpc_call_offline_is_a_cache_miss(tmp_path):
+    t = ScriptedRpc()
+    f, _ = mk(tmp_path, t, offline=True)
+    with pytest.raises(CacheMiss):
+        rpc(f)
+    assert t.calls == []
+
+
+def test_the_urllib_transport_builds_the_rpc_request(monkeypatch):
+    from vaspfusion.chains import http
+    seen = {}
+
+    class Resp:
+        status = 200
+        def read(self): return b'{"result":1}'
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_urlopen(req, timeout):
+        seen.update(url=req.full_url, body=json.loads(req.data), method=req.get_method())
+        return Resp()
+
+    monkeypatch.setattr(http.urllib.request, "urlopen", fake_urlopen)
+    t = http.UrllibTransport()
+    assert t.rpc(RPC_URL, {"method": "m", "params": '{"a":1}'}, {}, "SECRET") == (200, b'{"result":1}')
+    assert seen == {"url": RPC_URL + "/SECRET", "method": "POST",
+                    "body": {"jsonrpc": "2.0", "id": 1, "method": "m", "params": {"a": 1}}}
+    t.rpc(RPC_URL, {"method": "m", "params": "[]"}, {}, None)
+    assert seen["url"] == RPC_URL                       # no key: the bare endpoint
