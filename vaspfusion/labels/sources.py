@@ -62,4 +62,6 @@ def by_source(rows: list[tuple[str, str, int]]) -> list[dict]:
                                    "licence": licence, "url": url, "labels": 0, "tiers": {}})
         row["labels"] += n
         row["tiers"][tier] = row["tiers"].get(tier, 0) + n
+    for row in out.values():   # the table's groups come in no fixed order: largest tier first
+        row["tiers"] = dict(sorted(row["tiers"].items(), key=lambda kv: (-kv[1], kv[0])))
     return sorted(out.values(), key=lambda r: (-r["labels"], r["source"]))
