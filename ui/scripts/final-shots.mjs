@@ -61,7 +61,7 @@ try {
     (await api('POST', '/api/requests', { vasp: 'Bitget', case_ids: ['eth-bitget'], asks: ['kyc', 'transactions'], officer: `${officer.name}, ${officer.post}` }))
 
   const SHOTS = [
-    ['start', '/'],
+    ['start', '/', undefined, false], // one viewport: the hero is a screen tall, so a full-page capture stretches it
     ['cases', '/cases'],
     ['case-intake', '/cases/new'],
     ['case-attributed', '/cases/tron-coindcx', GRAPH],
