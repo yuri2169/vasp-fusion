@@ -32,10 +32,10 @@ function DataSourceTag() {
           ? 'These are demonstration fixtures, not real cases. Nothing here is evidence.'
           : 'Some of what is listed here is demonstration fixtures, not real cases.'
       }
-      className="hidden h-6 shrink-0 items-center gap-1.5 whitespace-nowrap border border-dashed border-rule-strong px-2 text-2xs font-medium text-ink-soft md:inline-flex"
+      className="inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap border border-dashed border-rule-strong px-2 text-2xs font-medium text-ink-soft"
     >
       <FlaskConical size={12} aria-hidden />
-      {source === 'mock' ? 'Demo data' : 'Includes demo data'}
+      <span className="max-md:sr-only">{source === 'mock' ? 'Demo data' : 'Includes demo data'}</span>
     </span>
   )
 }
@@ -48,11 +48,11 @@ function OfficerBlock() {
   const officer = me.data?.officer
 
   if (!me.data) return null
-  if (!officer) return <p className="hidden whitespace-nowrap text-2xs text-ink-dim lg:block">{me.data.auth_required ? 'Not signed in' : 'Sign-in is switched off'}</p>
+  if (!officer) return <p className="sr-only whitespace-nowrap text-2xs text-ink-dim lg:not-sr-only">{me.data.auth_required ? 'Not signed in' : 'Sign-in is switched off'}</p>
 
   return (
     <div className="flex shrink-0 items-center gap-2" title="Recorded with every case opened and every request sent">
-      <div className="hidden min-w-0 text-right leading-tight wide:block">
+      <div className="sr-only min-w-0 text-right leading-tight wide:not-sr-only">
         <p className="max-w-[160px] truncate text-sm font-medium text-ink">{officer.name}</p>
         {officer.post && <p className="max-w-[160px] truncate text-2xs text-ink-dim">{officer.post}</p>}
       </div>
@@ -105,7 +105,7 @@ export function Header() {
         <span className="hidden text-2xs text-ink-dim min-[1680px]:inline">wallet → exchange attribution</span>
       </Link>
 
-      <nav aria-label="Main" className="flex min-w-0 shrink-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] max-md:shrink sm:ml-2 [&::-webkit-scrollbar]:hidden">
+      <nav aria-label="Main" className="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] sm:ml-2 lg:shrink-0 [&::-webkit-scrollbar]:hidden">
         {PLACES.map(({ to, name, also }) => {
           const active = [to, ...(also ?? [])].some((p) => pathname === p || pathname.startsWith(`${p}/`))
           return (
@@ -124,7 +124,7 @@ export function Header() {
         })}
       </nav>
 
-      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
+      <div className="ml-auto flex min-w-[200px] flex-1 items-center justify-end gap-2 sm:gap-3 max-sm:min-w-0">
         {/* On the landing the paste box is the page's own; a second one here would be a way round it. */}
         {!home && <GlobalSearch />}
         <DataSourceTag />

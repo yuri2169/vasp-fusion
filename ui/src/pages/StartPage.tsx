@@ -5,6 +5,7 @@ import { ChainBadge } from '../components/ChainBadge'
 import { OutcomeStamp } from '../components/OutcomeStamp'
 import { Bar, Counter, drawOnMount, layerColor, layerWash } from '../components/Panel'
 import { TIERS } from '../components/TierTag'
+import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { formatPercent, truncateMiddle } from '../lib/format'
 import { GlobalSearch } from '../shell/GlobalSearch'
@@ -12,6 +13,8 @@ import { StageTrack } from '../shell/StageTrack'
 import { DETAIL, PLAIN, STAGE_LAYER, STAGES } from '../stages'
 
 const NOT_MEASURED = 'not yet measured'
+const NOT_READ = 'could not be read'
+const TRACEABLE = (Object.values(CHAINS) as { name: string; traceable?: boolean }[]).filter((c) => c.traceable).map((c) => c.name)
 const TIER_ORDER = ['published_por', 'curated', 'explorer_tag', 'derived'] as const
 
 /** What the instrument does, drawn in its own line language: a wallet, hops in the chain
@@ -90,7 +93,7 @@ function RecordedCases() {
               className="flex h-full flex-col gap-1.5 border border-rule bg-surface px-3 py-2 transition-colors duration-150 hover:border-ink"
             >
               <span className="flex items-center gap-2">
-                <span className="truncate font-cond text-sm font-bold uppercase tracking-tight text-ink">{c.case_ref ?? c.id}</span>
+                <span className="truncate font-cond text-sm font-bold tracking-tight text-ink">{c.case_ref ?? c.id}</span>
                 <ChainBadge chain={c.chain} size="sm" />
                 <span className="ml-auto truncate font-mono text-2xs text-ink-dim">{truncateMiddle(c.address, 4, 4)}</span>
               </span>
@@ -108,7 +111,7 @@ function Measured({ label, value, children, layer = 'fusion' }: { label: string;
   return (
     <div className="flex min-w-0 flex-col gap-1 border-l-2 pl-3" style={{ borderColor: layerColor(layer) }}>
       <p className="colhead">{label}</p>
-      <p className={cx(value === NOT_MEASURED ? 'title text-lg text-ink-soft' : 'figure text-ink')}>{value}</p>
+      <p className={cx(value === NOT_MEASURED || value === NOT_READ ? 'title text-lg text-ink-soft' : 'figure text-ink')}>{value}</p>
       <div className="text-sm text-ink-soft">{children}</div>
     </div>
   )
@@ -128,6 +131,7 @@ function HowItWorks() {
   const a = model.data?.abstain
   const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
   const layer = STAGE_LAYER[at]
+  const unread = 'The measurements could not be read just now. Reload the page to try again.'
 
   return (
     <section id="how" aria-labelledby="how-title" className="relative scroll-mt-12 border-t border-rule">
@@ -173,13 +177,15 @@ function HowItWorks() {
                 )
               })}
             </ol>
-            <div key={at} aria-live="polite" className="anim-rise min-w-0">
+            <div aria-live="polite" className="min-w-0">
+             <div key={at} className="anim-rise">
               <p className="colhead" style={{ color: layerColor(layer) }}>
                 Stage {at + 1} of {STAGES.length} · {STAGES[at][0]}
               </p>
               <p className="mt-2 max-w-[70ch] text-md text-ink">{PLAIN[at]}</p>
               <h3 className="title mt-4 text-lg text-ink">{DETAIL[at][0]}</h3>
               <p className="mt-1 max-w-[82ch] text-base text-ink-soft">{DETAIL[at][1]}</p>
+             </div>
             </div>
           </div>
         </div>
@@ -194,7 +200,7 @@ function HowItWorks() {
         </div>
 
         <div className="panel grid gap-x-8 gap-y-6 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Measured label="Labelled addresses on file" layer="network" value={cover ? <Counter value={cover.total} /> : dashboard.isPending ? '…' : NOT_MEASURED}>
+          <Measured label="Labelled addresses on file" layer="network" value={cover ? <Counter value={cover.total} /> : dashboard.isPending ? '…' : dashboard.isError ? NOT_READ : NOT_MEASURED}>
             {cover ? (
               <ul className="mt-1 flex flex-col gap-1">
                 {tiers.map(([tier, n], i) => (
@@ -208,11 +214,11 @@ function HowItWorks() {
                 ))}
               </ul>
             ) : (
-              'The label store has not answered.'
+              dashboard.isError ? 'The label counts could not be read just now. Reload the page to try again.' : 'Counting…'
             )}
           </Measured>
 
-          <Measured label="Named wrongly at the bar in use" value={bar && bar.wallets_named > 0 ? formatPercent(bar.wallets_wrong / bar.wallets_named) : model.isPending ? '…' : NOT_MEASURED}>
+          <Measured label="Named wrongly at the bar in use" value={bar && bar.wallets_named > 0 ? formatPercent(bar.wallets_wrong / bar.wallets_named) : model.isPending ? '…' : model.isError ? NOT_READ : NOT_MEASURED}>
             {a && bar ? (
               <>
                 Of <span className="font-mono text-ink">{a.wallets.toLocaleString('en-US')}</span> real exchange customers’ wallets traced with the derived
@@ -228,11 +234,11 @@ function HowItWorks() {
                 . A named exchange is a lead to confirm, not proof.
               </>
             ) : (
-              'The naming bar has not been measured on this installation.'
+              model.isError ? unread : 'The naming bar has not been measured on this installation.'
             )}
           </Measured>
 
-          <Measured label="Calibration error of the deposit-address model" value={m?.metrics.ece != null ? m.metrics.ece.toFixed(4) : model.isPending ? '…' : NOT_MEASURED}>
+          <Measured label="Calibration error of the deposit-address model" value={m?.metrics.ece != null ? m.metrics.ece.toFixed(4) : model.isPending ? '…' : model.isError ? NOT_READ : NOT_MEASURED}>
             {m ? (
               <>
                 Expected calibration error on Tron
@@ -244,11 +250,11 @@ function HowItWorks() {
                 . Split {m.split}. Zero would mean a stated probability is exactly the observed rate.
               </>
             ) : (
-              'The deposit-address model has not been measured on this installation.'
+              model.isError ? unread : 'The deposit-address model has not been measured on this installation.'
             )}
           </Measured>
 
-          <Measured label="Wallets the model gives an answer for" value={m?.metrics.coverage != null ? formatPercent(m.metrics.coverage) : model.isPending ? '…' : NOT_MEASURED}>
+          <Measured label="Wallets the model gives an answer for" value={m?.metrics.coverage != null ? formatPercent(m.metrics.coverage) : model.isPending ? '…' : model.isError ? NOT_READ : NOT_MEASURED}>
             {m ? (
               <>
                 It declines the rest.
@@ -282,6 +288,7 @@ function HowItWorks() {
  *  also what gives the header its ground. Not a centred hero over a gradient: a forensics
  *  tool should read as apparatus. */
 export function StartPage() {
+  const hasRecorded = (useCases().data?.items ?? []).some((c) => c.demo)
   // The grid is the ground for the whole landing; it is fixed, so it stays put under the scroll.
   return (
     <div className="relative flex flex-1 flex-col">
@@ -320,7 +327,7 @@ export function StartPage() {
             <div className="anim-rise" style={{ animationDelay: '160ms' }}>
               <GlobalSearch variant="hero" />
               <p className="mt-2 text-sm text-ink-soft">
-                Tron, Bitcoin, Ethereum, Polygon, Arbitrum, Base and Optimism. The chain is read from the address.{' '}
+                {TRACEABLE.slice(0, -1).join(', ')} and {TRACEABLE.at(-1)}. The chain is read from the address.{' '}
                 <Link to="/cases/new" className="font-medium text-ink underline decoration-rule-strong underline-offset-2 hover:decoration-ink">
                   Open a case with its complaint details
                 </Link>
@@ -332,10 +339,12 @@ export function StartPage() {
             </div>
 
             <p className="anim-rise flex flex-wrap items-center gap-x-6 gap-y-2 text-2xs text-ink-dim" style={{ animationDelay: '320ms' }}>
-              <span className="flex items-center gap-2">
-                <span aria-hidden className="inline-block h-1.5 w-1.5 bg-confirm" />
-                recorded wallets replay with the network closed
-              </span>
+              {hasRecorded && (
+                <span className="flex items-center gap-2">
+                  <span aria-hidden className="inline-block h-1.5 w-1.5 bg-confirm" />
+                  recorded wallets replay with the network closed
+                </span>
+              )}
               <Link to="/cases" className="text-chain hover:underline">
                 all cases
               </Link>

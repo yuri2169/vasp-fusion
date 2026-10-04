@@ -18,7 +18,7 @@ export function Footer() {
   const { pathname } = useLocation()
   const spelled = pathname === '/'
   return (
-    <footer className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t border-rule bg-surface px-4 py-2 print:hidden">
+    <footer className="relative flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t border-rule bg-surface px-4 py-2 print:hidden">
       <span className="text-2xs text-ink-dim">SIH 2026 · PS 26182 · MHA / I4C · Blockchain &amp; Cybersecurity</span>
       <ul aria-label="Colour key" className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {COLOUR_KEY.map(([layer, words]) => (
