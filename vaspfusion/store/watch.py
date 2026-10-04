@@ -13,6 +13,8 @@ from pathlib import Path
 
 import duckdb
 
+from .connect import connect
+
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "data" / "watch.duckdb"
 
@@ -41,14 +43,7 @@ class WatchStore:
             con.execute(_DDL)
 
     def _con(self, wait_s: float = 30.0):
-        deadline = time.monotonic() + wait_s
-        while True:
-            try:
-                return duckdb.connect(str(self.path))
-            except duckdb.IOException as e:
-                if "lock" not in str(e).lower() or time.monotonic() > deadline:
-                    raise
-                time.sleep(0.05)
+        return connect(self.path, wait_s=wait_s)
 
     def save(self, entry: dict) -> None:
         row = [entry["id"], entry["chain"], entry["address"], entry["added_at"],

@@ -18,6 +18,8 @@ from pathlib import Path
 
 import duckdb
 
+from .connect import connect
+
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "data" / "case.duckdb"
 SUMMARY_KEYS = ("id", "address", "chain", "status", "outcome", "top_vasp", "confidence",
@@ -55,14 +57,7 @@ class CaseStore:
             con.execute(_DDL)
 
     def _con(self, wait_s: float = 30.0):
-        deadline = time.monotonic() + wait_s
-        while True:
-            try:
-                return duckdb.connect(str(self.path))
-            except duckdb.IOException as e:
-                if "lock" not in str(e).lower() or time.monotonic() > deadline:
-                    raise
-                time.sleep(0.05)
+        return connect(self.path, wait_s=wait_s)
 
     # ------------------------------------------------------------------ writes
     def save(self, detail: dict) -> None:

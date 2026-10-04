@@ -25,6 +25,8 @@ from typing import Any, Callable
 
 import duckdb
 
+from ..store.connect import connect
+
 from .base import CacheMiss, ProviderError, Retryable
 from .http import ROOT, Transport
 
@@ -89,14 +91,7 @@ class ChainCache:
     def _con(self, read_only: bool = False, wait_s: float = 30.0):
         """DuckDB allows one writing process per file. If the API server and a CLI
         run at once, the loser waits for the lock instead of failing the fetch."""
-        deadline = time.monotonic() + wait_s
-        while True:
-            try:
-                return duckdb.connect(str(self.path), read_only=read_only)
-            except duckdb.IOException as e:
-                if "lock" not in str(e).lower() or time.monotonic() > deadline:
-                    raise
-                time.sleep(0.05)
+        return connect(self.path, read_only=read_only, wait_s=wait_s)
 
     def get(self, chain: str, address: str, direction: str, query: str) -> tuple[str, str] | None:
         row = self._exec(
