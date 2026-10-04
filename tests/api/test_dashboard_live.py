@@ -181,3 +181,58 @@ def test_watching_before_the_first_trace_and_bad_input(client):
     assert client.post("/api/watchlist/tron-nope/check").status_code == 404
     assert client.delete("/api/watchlist/..%2f..").status_code in (404, 405)
     assert client.delete("/api/watchlist/tron-..").status_code == 404
+
+
+# ------------------------------------------------------------------ threat tags (G3)
+def test_a_case_is_screened_when_it_is_opened_and_names_the_threat_when_done(client):
+    """Real wallet (demo/cases.json, tron-terror-link): 28% of its USDT went to two
+    addresses the OFAC SDN list files under ISIL Khorasan, programmes FTO and SDGT."""
+    spec = SPECS["tron-terror-link"]
+    opened = client.post("/api/cases", json={"address": spec["address"], "chain": "tron"})
+    assert opened.status_code == 202
+    # the answer to the POST already carries the screening: the wallet itself is not listed
+    assert opened.json()["screening"]["hit"] is False
+    assert opened.json()["screening"]["text"].startswith("No direct hit")
+    case = client.get(f"/api/cases/{opened.json()['id']}").json()
+    assert case["status"] == "done" and case["threats"] == ["terrorism_financing"]
+    flags = [f for f in case["typology_flags"] if f.get("threat")]
+    assert [f["code"] for f in flags] == ["sanctioned_contact", "sanctioned_contact"]
+    for f in flags:
+        assert f["threat"]["threat"] == "terrorism_financing"
+        assert f["threat"]["entity"] == "ISIL KHORASAN" and f["threat"]["source"] == "ofac-sdn-xml"
+        assert "programme FTO, SDGT" in f["threat"]["evidence"]
+        assert f["text"].endswith("tagged terrorism financing (ISIL KHORASAN, OFAC SDN list)")
+        assert f["tx_hashes"]
+    assert round(sum(f["figures"]["share"] for f in flags), 2) == 0.28
+
+    # the cases list filters by threat, and the dashboard's alert carries the reason
+    _trace(client, "tron-coindcx")
+    listed = client.get("/api/cases", params={"threat": "terrorism_financing"}).json()["items"]
+    assert [c["id"] for c in listed] == [case["id"]]
+    assert client.get("/api/cases", params={"threat": "ransomware"}).json()["items"] == []
+    alerts = client.get("/api/dashboard").json()["recent_alerts"]
+    assert {a["threat"]["threat"] for a in alerts if a["case_id"] == case["id"]} == \
+        {"terrorism_financing"}
+
+
+def test_opening_a_case_on_a_listed_address_is_a_direct_hit_at_once(client):
+    listed = "TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ"        # ISIL KHORASAN, OFAC SDN list
+    with client:        # background tasks run inside the context; the POST answers first
+        opened = client.post("/api/cases", json={"address": listed, "chain": "tron"}).json()
+    assert opened["status"] == "queued"
+    assert opened["screening"]["hit"] is True and opened["threats"] == ["terrorism_financing"]
+    assert opened["screening"]["text"] == ("Direct hit: this address is tagged terrorism "
+                                           "financing (ISIL KHORASAN, OFAC SDN list).")
+    # the wallet page says the same, with the list entry's own words
+    w = client.get(f"/api/wallets/tron/{listed}").json()
+    assert w["risk"]["level"] == "high" and "uid 18647" in w["risk"]["reasons"][0]
+    assert w["labels"][0]["threat"] == "terrorism_financing"
+
+
+def test_label_search_and_coverage_know_the_threats(client):
+    found = client.get("/api/labels/search", params={"threat": "terrorism_financing"}).json()
+    assert found["total"] == 2 and {i["threat_entity"] for i in found["items"]} == \
+        {"ISIL KHORASAN"}
+    assert client.get("/api/labels/search", params={"threat": "nonsense"}).status_code == 422
+    cover = client.get("/api/labels/coverage").json()
+    assert cover["by_threat"]["terrorism_financing"] == 2

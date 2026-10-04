@@ -18,6 +18,8 @@ MEW_SOURCE_URL = "https://github.com/MyEtherWallet/ethereum-lists"
 CEX_LIST_SOURCE_URL = "https://github.com/tradezon/cex-list"
 DUNE_SOURCE_URL = "https://github.com/duneanalytics/spellbook"
 TAGPACKS_SOURCE_URL = "https://github.com/graphsense/graphsense-tagpacks"
+OFAC_XML_SOURCE_URL = "https://www.treasury.gov/ofac/downloads/sdn.xml"
+RANSOMWHERE_SOURCE_URL = "https://ransomwhe.re"
 
 # family -> (name, obtained from, licence or None, link)
 SOURCES: dict[str, tuple[str, str, str | None, str | None]] = {
@@ -33,8 +35,12 @@ SOURCES: dict[str, tuple[str, str, str | None, str | None]] = {
                  CEX_LIST_SOURCE_URL),
     "dune-spellbook": ("Dune spellbook: Indian exchanges' wallets", "Dune spellbook extract",
                        None, DUNE_SOURCE_URL),
-    "graphsense-tagpacks": ("GraphSense TagPacks: exchange packs", "GraphSense TagPacks", "MIT",
-                            TAGPACKS_SOURCE_URL),
+    "graphsense-tagpacks": ("GraphSense TagPacks: exchange, darknet-market, ransomware and "
+                            "fraud packs", "GraphSense TagPacks", "MIT", TAGPACKS_SOURCE_URL),
+    "ofac-sdn-xml": ("OFAC SDN list, the official XML with sanctions programme codes",
+                     "US Treasury, OFAC", "US-government public record", OFAC_XML_SOURCE_URL),
+    "ransomwhere": ("Ransomwhere: crowdsourced ransomware payment addresses", "Ransomwhere",
+                    "CC BY 4.0", RANSOMWHERE_SOURCE_URL),
     "vaspfusion-discover": ("Deposit addresses derived by VASP-FUSION (sweep and gas-payer "
                             "rules)", "Computed by this tool", "Not a third-party set: "
                             "computed here", None),

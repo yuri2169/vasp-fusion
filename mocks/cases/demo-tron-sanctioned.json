@@ -76,7 +76,12 @@
           "evidence": null,
           "confidence_low": null,
           "confidence_high": null,
-          "model": null
+          "model": null,
+          "threat": "sanctioned_other",
+          "threat_entity": "CHEIL CREDIT BANK",
+          "threat_source": "ofac-sdn-xml",
+          "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
+          "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT."
         },
         "cluster": null,
         "is_hub": false
@@ -210,7 +215,14 @@
       },
       "tx_hashes": [
         "e069f91613145d1a4c0121360ad2adaa01aac1db6891a4d4efe5718603f95b15"
-      ]
+      ],
+      "threat": {
+        "threat": "sanctioned_other",
+        "entity": "CHEIL CREDIT BANK",
+        "source": "ofac-sdn-xml",
+        "url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
+        "evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT."
+      }
     }
   ],
   "narrative": "Wallet TLoXu5… sent 12,000 USDT; 11,000 USDT reached an OFAC sanctioned address 2 hops away. A smaller share (8%) reached CoinDCX.",
@@ -258,6 +270,14 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "63a6f64b9046e60de6115c4e0b751f44355b0ddb1a799d95969802a673f62c70",
-    "content_sha256": "86177ba3ef1afad06411904fe9b0b0183f52ec91eb638aa62ab5a5e9af76eb45"
-  }
+    "content_sha256": "f352c40a314ab876487b89badaea0ea5d29d798001b53453f5adb2108b4ce7e1"
+  },
+  "screening": {
+    "hit": false,
+    "tag": null,
+    "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store."
+  },
+  "threats": [
+    "sanctioned_other"
+  ]
 }

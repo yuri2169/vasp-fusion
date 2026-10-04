@@ -29,6 +29,8 @@ sys.path.insert(0, str(ROOT))
 from vaspfusion.api import schemas as S  # noqa: E402
 from vaspfusion.api.main import MOCKS, mock_model_for  # noqa: E402
 from vaspfusion.labels.lookup import DEFAULT_DB, LabelStore  # noqa: E402
+from vaspfusion.labels.threats import tag_of  # noqa: E402
+from vaspfusion.screening import case_threats, screen  # noqa: E402
 
 SEED = 26182
 NOTICE = ("DEMO FIXTURE. Labelled addresses are real (research/data label sets); "
@@ -281,7 +283,8 @@ def case_sanctioned(L) -> dict:
         "typology_flags": [{"code": "sanctioned_contact", "severity": "high",
                             "wallet": ofac["address"],
                             "text": "92% of funds reached an address on the US OFAC SDN list",
-                            "figures": {"share": 0.92}, "tx_hashes": [tx["b"]]}],
+                            "figures": {"share": 0.92}, "tx_hashes": [tx["b"]],
+                            "threat": tag_of(ofac)}],
         "narrative": (f"Wallet {s[:6]}… sent 12,000 USDT; 11,000 USDT reached an OFAC "
                       "sanctioned address 2 hops away. A smaller share (8%) reached CoinDCX."),
         "abstain_reason": None, "what_would_change": [],
@@ -455,6 +458,9 @@ def main() -> None:
         L = real_labels(store)
         c1, derived = case_attributed(L)
         c2, c3 = case_abstain(L), case_sanctioned(L)
+        for c in (c1, c2, c3):  # the suspect wallets are synthetic: no tag of their own
+            c["screening"] = screen(None)
+            c["threats"] = case_threats(None, c["typology_flags"])
         cases = [with_receipt(c) for c in (c1, c2, c3)]
         req = request_okx(c1)
         req_summary = {k: req[k] for k in ("id", "reference", "vasp", "status", "case_ids",
@@ -503,6 +509,7 @@ def main() -> None:
                 "median_time_to_attribution_s": None,
                 "recent_alerts": [{"wallet": c3["typology_flags"][0]["wallet"], "chain": "tron",
                                    "severity": "high", "at": at(-26), "case_id": c3["id"],
+                                   "threat": c3["typology_flags"][0]["threat"],
                                    "text": "Case DEMO/2026/003 reached an OFAC-sanctioned "
                                            "address"}],
                 "label_coverage": coverage},

@@ -1,5 +1,5 @@
 {
-  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1 and 2 Oct 2026 from senders into labelled exchange, bridge and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
+  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1, 2 and 5 Oct 2026 from senders into labelled exchange, bridge and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
   "cases": [
     {
       "id": "tron-coindcx",
@@ -131,6 +131,18 @@
       "expect": {
         "outcome": "ATTRIBUTED",
         "top_vasp": "Bitget"
+      }
+    },
+    {
+      "id": "tron-terror-link",
+      "title": "USDT on Tron, 28% into two addresses OFAC lists under ISIL Khorasan (terrorism financing)",
+      "address": "THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp",
+      "chain": "tron",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/112",
+      "expect": {
+        "outcome": "SANCTIONED_OR_MIXER_REACHED",
+        "top_vasp": null
       }
     }
   ]

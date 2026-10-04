@@ -171,6 +171,28 @@
    "source_url": "https://github.com/DefiLlama/DefiLlama-Adapters",
    "tier": "published_por"
   },
+  "tron:TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL": {
+   "address": "TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL",
+   "category": "sanctioned",
+   "chain": "tron",
+   "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
+   "entity": "OFAC SDN",
+   "evidence": null,
+   "kind": "unknown",
+   "label": "OFAC sanctioned (TRX)",
+   "model": null,
+   "query_chain": "tron",
+   "source": "ofac-sdn",
+   "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "terrorism_financing",
+   "threat_entity": "ISIL KHORASAN",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 18647: ISIL KHORASAN; programme FTO, SDGT. Listed as: TRX.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=18647",
+   "tier": "curated"
+  },
   "tron:TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5": {
    "address": "TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5",
    "category": "exchange",
@@ -243,6 +265,11 @@
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "sanctioned_other",
+   "threat_entity": "CHEIL CREDIT BANK",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
    "tier": "curated"
   },
   "tron:TGKgLatirRpTugS6wgCUKerjLbzWKXAVqx": {
@@ -260,6 +287,11 @@
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "sanctioned_other",
+   "threat_entity": "CHEIL CREDIT BANK",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
    "tier": "curated"
   },
   "tron:TGpNzk9noyvCCdnFPuSg5cqptPs16LjXZq": {
@@ -277,6 +309,11 @@
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "sanctioned_other",
+   "threat_entity": "CHEIL CREDIT BANK",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
    "tier": "curated"
   },
   "tron:THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9": {
@@ -318,6 +355,28 @@
    "source": "vaspfusion-discover",
    "source_url": null,
    "tier": "derived"
+  },
+  "tron:TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ": {
+   "address": "TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ",
+   "category": "sanctioned",
+   "chain": "tron",
+   "confidence": null,
+   "confidence_high": null,
+   "confidence_low": null,
+   "entity": "OFAC SDN",
+   "evidence": null,
+   "kind": "unknown",
+   "label": "OFAC sanctioned (TRX)",
+   "model": null,
+   "query_chain": "tron",
+   "source": "ofac-sdn",
+   "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "terrorism_financing",
+   "threat_entity": "ISIL KHORASAN",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 18647: ISIL KHORASAN; programme FTO, SDGT. Listed as: TRX.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=18647",
+   "tier": "curated"
   },
   "tron:TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk": {
    "address": "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk",
@@ -374,6 +433,11 @@
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "sanctioned_other",
+   "threat_entity": "CHEIL CREDIT BANK",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
    "tier": "curated"
   },
   "tron:TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs": {
@@ -425,6 +489,11 @@
    "query_chain": "tron",
    "source": "ofac-sdn",
    "source_url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+   "threat": "sanctioned_other",
+   "threat_entity": "CHEIL CREDIT BANK",
+   "threat_evidence": "OFAC SDN list (published 2026-10-02), uid 22985: CHEIL CREDIT BANK; programme DPRK4. Listed as: USDT.",
+   "threat_source": "ofac-sdn-xml",
+   "threat_url": "https://sanctionssearch.ofac.treas.gov/Details.aspx?id=22985",
    "tier": "curated"
   },
   "tron:TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS": {

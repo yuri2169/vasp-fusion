@@ -419,6 +419,12 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "8b915c7cd9512e51e09ebc5cf07483a08d24c1212ee9604a0190a4f117fe00a0",
-    "content_sha256": "b1f97013efba6d8d4509ae08678b9229baa6054652b99df6d956f3a4d28f766e"
-  }
+    "content_sha256": "9ae4436472031971f7f25c3b2f244f1cd897bd209d3cf0f733d6030e1b81343f"
+  },
+  "screening": {
+    "hit": false,
+    "tag": null,
+    "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store."
+  },
+  "threats": []
 }

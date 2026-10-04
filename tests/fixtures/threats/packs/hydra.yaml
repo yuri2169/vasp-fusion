@@ -1,0 +1,15 @@
+title: Hydra Market
+creator: GraphSense Core Team
+confidence: authority_data
+description: Addresses related to Hydra Market
+category: market
+currency: BTC
+label: Hydra Market
+is_cluster_definer: true
+lastmod: 2023-05-10
+source: https://home.treasury.gov/policy-issues/financial-sanctions/recent-actions/20220405
+actor: hydramarket
+tags:
+- address: 1BCWMwpR4M1nYUuuYe2bmzrNuwGoF9ZAbA
+- address: 1MQBDeRWsiJBf7K1VGjJ7PWEL6GJXMfmLg
+- address: bc1qj6j6p0jdefl6pvdzx3kx8245yy5mz6q4luhzes

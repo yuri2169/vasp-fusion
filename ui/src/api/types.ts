@@ -609,6 +609,8 @@ export interface components {
             at: string;
             /** Case Id */
             case_id?: string | null;
+            /** @description Why the wallet is high-risk, when the alert rests on a threat tag */
+            threat?: components["schemas"]["ThreatTag"] | null;
         };
         /**
          * AuditEntry
@@ -833,6 +835,14 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+            /** @description Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed */
+            screening?: components["schemas"]["Screening"] | null;
+            /**
+             * Threats
+             * @description The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only
+             * @default []
+             */
+            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
             progress?: components["schemas"]["CaseProgress"] | null;
             /**
@@ -992,6 +1002,14 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+            /** @description Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed */
+            screening?: components["schemas"]["Screening"] | null;
+            /**
+             * Threats
+             * @description The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only
+             * @default []
+             */
+            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
         };
         /** ChainCheck */
         ChainCheck: {
@@ -1487,6 +1505,14 @@ export interface components {
              * @default []
              */
             by_source: components["schemas"]["LabelSource"][];
+            /**
+             * By Threat
+             * @description Tagged labels per threat
+             * @default {}
+             */
+            by_threat: {
+                [key: string]: number;
+            };
         };
         /** LabelOut */
         LabelOut: {
@@ -1542,6 +1568,19 @@ export interface components {
             confidence_high?: number | null;
             /** @description Labels the deposit-address model scored: its own probability, range and reasons, whether or not the label's confidence is based on it */
             model?: components["schemas"]["ModelScore"] | null;
+            /**
+             * Threat
+             * @description Set when a public source ties the address to a threat ecosystem. Sits beside `category`; the four fields below say who, per which source, in its own words
+             */
+            threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | null;
+            /** Threat Entity */
+            threat_entity?: string | null;
+            /** Threat Source */
+            threat_source?: string | null;
+            /** Threat Url */
+            threat_url?: string | null;
+            /** Threat Evidence */
+            threat_evidence?: string | null;
         };
         /** LabelSearch */
         LabelSearch: {
@@ -2261,6 +2300,21 @@ export interface components {
             /** Accuracy */
             accuracy?: number | null;
         };
+        /**
+         * Screening
+         * @description The check of the case's own address against the threat tags, made when the case
+         *     is opened and before the trace starts.
+         */
+        Screening: {
+            /** Hit */
+            hit: boolean;
+            /**
+             * Text
+             * @description One sentence to show as it is
+             */
+            text: string;
+            tag?: components["schemas"]["ThreatTag"] | null;
+        };
         /** StatusEvent */
         StatusEvent: {
             /**
@@ -2281,6 +2335,36 @@ export interface components {
              */
             by?: string | null;
         };
+        /**
+         * ThreatTag
+         * @description What a public source says an address belongs to (config/threats.yaml has the rule
+         *     that produced it). Never an inference of this tool.
+         */
+        ThreatTag: {
+            /**
+             * Threat
+             * @description sanctioned_other: on the OFAC SDN list under a programme that names none of the other four
+             * @enum {string}
+             */
+            threat: "terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other";
+            /**
+             * Entity
+             * @description Who the source names: a ransomware family, a market, a listed person or organisation
+             */
+            entity?: string | null;
+            /**
+             * Source
+             * @description ofac-sdn-xml, ransomwhere, graphsense-tagpack:<pack>, or a scam list
+             */
+            source?: string | null;
+            /** Url */
+            url?: string | null;
+            /**
+             * Evidence
+             * @description The source's own words: list entry, programme codes, pack fields
+             */
+            evidence?: string | null;
+        };
         /** TypologyFlag */
         TypologyFlag: {
             /**
@@ -2288,7 +2372,7 @@ export interface components {
              * @description deposit_like is a lead from the deposit-address model on an unlabelled wallet (figures: p, low, high, share, amount); it never changes the outcome
              * @enum {string}
              */
-            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact" | "deposit_like" | "coinjoin_shape";
+            code: "peel_chain" | "fan_out" | "fan_in" | "rapid_forwarding" | "round_amounts" | "bridge_hop" | "mixer_contact" | "sanctioned_contact" | "threat_contact" | "deposit_like" | "coinjoin_shape";
             /**
              * Severity
              * @enum {string}
@@ -2310,6 +2394,8 @@ export interface components {
              * @default []
              */
             tx_hashes: string[];
+            /** @description The tag of the flagged address: always on threat_contact, and on a sanctioned_contact or mixer_contact whose address also carries one */
+            threat?: components["schemas"]["ThreatTag"] | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -2510,9 +2596,10 @@ export interface components {
         WatchChange: {
             /**
              * Kind
+             * @description new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have
              * @enum {string}
              */
-            kind: "new_activity" | "new_exchange" | "new_alert";
+            kind: "new_activity" | "new_exchange" | "new_alert" | "new_threat_link";
             /**
              * Severity
              * @enum {string}
@@ -2525,6 +2612,7 @@ export interface components {
              * Format: date-time
              */
             at: string;
+            threat?: components["schemas"]["ThreatTag"] | null;
         };
         /** WatchCreate */
         WatchCreate: {
@@ -2750,6 +2838,8 @@ export interface operations {
             query?: {
                 outcome?: ("ATTRIBUTED" | "INSUFFICIENT_EVIDENCE" | "SANCTIONED_OR_MIXER_REACHED") | null;
                 status?: ("queued" | "running" | "done" | "failed") | null;
+                /** @description Only cases that touch this threat; `any` = every case that touches one */
+                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | "any" | null;
             };
             header?: never;
             path?: never;
@@ -2996,6 +3086,8 @@ export interface operations {
                 chain?: string | null;
                 category?: ("exchange" | "custodial_wallet" | "swap_service" | "sanctioned" | "scam" | "mixer" | "bridge" | "defi" | "entity") | null;
                 tier?: ("published_por" | "curated" | "explorer_tag" | "derived") | null;
+                /** @description Only labels with this threat tag; `any` = every tagged label */
+                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | "any" | null;
                 limit?: number;
                 offset?: number;
             };

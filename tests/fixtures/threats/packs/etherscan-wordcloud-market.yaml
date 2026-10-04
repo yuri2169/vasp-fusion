@@ -1,0 +1,13 @@
+title: Etherscan market
+creator: GraphSense Core Team
+description: Cryptocurrency addresses associated with market
+lastmod: 2022-09-06
+category: market
+source: https://etherscan.io/accounts/label/market
+confidence: web_crawl
+currency: ETH
+tags:
+    - address: '0x2e8891aa76743ee96547acb764a69b87872423f8'
+      label: '1PLANET Carbon Credit (1PLCO2)'
+    - address: '0x7e88916c4dd22d6c1d04ec87ca54bf777ca0b2b6'
+      label: '1stDibs.1 (DIBS)'

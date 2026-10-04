@@ -1,0 +1,123 @@
+{
+ "_notice": "Where data/threat_tags.csv comes from. Written by `python -m vaspfusion.cli threats`; the rules are in config/threats.yaml.",
+ "fetched": "2026-10-05",
+ "files": {
+  "sdn.xml": {
+   "from": "https://www.treasury.gov/ofac/downloads/sdn.xml",
+   "licence": "US-government public record",
+   "note": "Publish_Date 10/02/2026, 19,488 records"
+  },
+  "ransomwhere.json": {
+   "from": "https://api.ransomwhe.re/export",
+   "licence": "CC BY 4.0 (https://doi.org/10.5281/zenodo.13999026)",
+   "note": "11,186 Bitcoin addresses"
+  },
+  "graphsense-tagpacks/": {
+   "from": "https://github.com/graphsense/graphsense-tagpacks",
+   "licence": "MIT (LICENSE beside the packs)",
+   "commit": "b5569783685d452c175b84c8fda0c37eaf2f3fea",
+   "commit_date": "2026-10-02T10:08:27Z",
+   "note": "every pack, copied unchanged"
+  }
+ },
+ "sources": {
+  "ofac-sdn-xml": {
+   "name": "OFAC SDN list (official XML, US Treasury)",
+   "licence": "US-government public record",
+   "url": "https://www.treasury.gov/ofac/downloads/sdn.xml"
+  },
+  "ransomwhere": {
+   "name": "Ransomwhere: crowdsourced ransomware payment addresses",
+   "licence": "CC BY 4.0",
+   "url": "https://ransomwhe.re"
+  },
+  "graphsense-tagpacks": {
+   "name": "GraphSense TagPacks",
+   "licence": "MIT",
+   "url": "https://github.com/graphsense/graphsense-tagpacks"
+  }
+ },
+ "skipped": {
+  "sextortion_excello": "sextortion spam: extortion, none of the four ecosystems",
+  "sextortion_talos": "sextortion spam: extortion, none of the four ecosystems",
+  "Alt-Right": "abuse: extremism, not terrorism financing",
+  "suidlanders": "abuse: extremism, not terrorism financing",
+  "lockbit_tattoos": "people LockBit paid for tattoos: recipients, not the operators",
+  "etherscan-wordcloud-market": "category market here is NFT and token marketplaces",
+  "ofac": "superseded by the official SDN XML, which carries programme codes",
+  "ransomwhere": "superseded by the Ransomwhere export itself",
+  "lazarus": "abuse: sanction; covered by the SDN XML",
+  "lazarus2": "abuse: sanction; covered by the SDN XML"
+ },
+ "counts": {
+  "total": 18446,
+  "by_threat": {
+   "sanctioned_other": 613,
+   "ransomware": 11271,
+   "fraud": 6013,
+   "darknet_market": 182,
+   "terrorism_financing": 367
+  },
+  "by_chain": {
+   "sanctioned_other": {
+    "arbitrum": 1,
+    "bitcoin": 309,
+    "bitcoin-cash": 7,
+    "bitcoin-gold": 1,
+    "bitcoin-sv": 1,
+    "bsc": 1,
+    "dash": 5,
+    "ethereum": 107,
+    "ethereum-classic": 1,
+    "litecoin": 13,
+    "monero": 3,
+    "solana": 3,
+    "tron": 155,
+    "verge": 1,
+    "xrp": 1,
+    "zcash": 4
+   },
+   "ransomware": {
+    "bitcoin": 11269,
+    "ethereum": 2
+   },
+   "fraud": {
+    "bitcoin": 322,
+    "ethereum": 5691
+   },
+   "darknet_market": {
+    "bitcoin": 177,
+    "monero": 5
+   },
+   "terrorism_financing": {
+    "bitcoin": 162,
+    "ethereum": 15,
+    "monero": 3,
+    "solana": 1,
+    "tron": 186
+   }
+  },
+  "by_source": {
+   "sanctioned_other": {
+    "ofac-sdn-xml": 613
+   },
+   "ransomware": {
+    "ransomwhere": 11186,
+    "graphsense-tagpacks": 55,
+    "ofac-sdn-xml": 30
+   },
+   "fraud": {
+    "graphsense-tagpacks": 5984,
+    "ofac-sdn-xml": 29
+   },
+   "darknet_market": {
+    "ofac-sdn-xml": 166,
+    "graphsense-tagpacks": 16
+   },
+   "terrorism_financing": {
+    "graphsense-tagpacks": 155,
+    "ofac-sdn-xml": 212
+   }
+  }
+ }
+}

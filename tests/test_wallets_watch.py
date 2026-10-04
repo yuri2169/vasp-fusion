@@ -140,3 +140,64 @@ def test_the_store_keeps_and_removes_entries(tmp_path, hero):
     assert store.get(e["id"])["baseline"]["case_id"] == hero["id"]
     assert store.remove(e["id"]) is True and store.remove(e["id"]) is False
     assert store.list() == []
+
+
+# ------------------------------------------------------------------ threat tags (G3)
+TAG = {"threat": "ransomware", "entity": "Conti", "source": "ransomwhere", "url": None,
+       "evidence": "Ransomwhere: ransomware payment address, family Conti."}
+
+
+def test_a_tagged_address_is_high_risk_with_the_source_s_words():
+    from vaspfusion.wallets import wallet_view
+    label = {"category": "entity", "entity": "Conti", "source": "ransomwhere", "label": "Conti",
+             "threat": "ransomware", "threat_entity": "Conti", "threat_source": "ransomwhere",
+             "threat_url": None, "threat_evidence": TAG["evidence"]}
+    risk = wallet_view("RW", "tron", [], label)["risk"]
+    assert risk["level"] == "high"
+    assert risk["reasons"] == ["This address is tagged ransomware (Conti, Ransomwhere). "
+                               "Ransomwhere: ransomware payment address, family Conti."]
+
+
+def _case_with(flags):
+    return {"id": "c-1", "address": "S", "created_at": "2026-10-05T00:00:00Z",
+            "graph": {"edges": []}, "candidates": [], "typology_flags": flags,
+            "outcome": "INSUFFICIENT_EVIDENCE", "status": "done"}
+
+
+def test_a_recheck_that_finds_a_new_link_to_a_tagged_address_is_a_high_change():
+    from vaspfusion.watch import alerts_of, changes, snapshot
+    flag = {"code": "threat_contact", "severity": "high", "wallet": "RW", "threat": TAG,
+            "text": "Linked to ransomware (Conti, Ransomwhere): 2 hops away, 14% of the funds "
+                    "(140 USDT) reached RW"}
+    before = snapshot(_case_with([]))
+    assert before["threat_links"] == []
+    found = changes(before, _case_with([flag]))
+    assert [c["kind"] for c in found] == ["new_threat_link"]       # not also a "new alert"
+    assert found[0]["severity"] == "high" and found[0]["threat"] == TAG
+    assert found[0]["text"].startswith("New link to a tagged address: Linked to ransomware")
+    assert changes(snapshot(_case_with([flag])), _case_with([flag])) == []
+    alert, = alerts_of({"address": "S", "chain": "tron", "case_id": "c-1", "changes": found})
+    assert alert["threat"] == TAG and alert["severity"] == "high"
+
+
+def test_a_baseline_taken_before_threat_tags_raises_no_link_as_new():
+    from vaspfusion.watch import changes, snapshot
+    flag = {"code": "sanctioned_contact", "severity": "high", "wallet": "X", "threat": TAG,
+            "text": "t"}
+    old = snapshot(_case_with([flag]))
+    del old["threat_links"]
+    assert changes(old, _case_with([flag])) == []
+
+
+def test_screening_says_hit_or_no_hit_in_one_sentence():
+    from vaspfusion.screening import case_threats, screen
+    hit = screen({"category": "entity", "entity": "Conti", "source": "ransomwhere",
+                  "threat": "ransomware", "threat_entity": "Conti",
+                  "threat_source": "ransomwhere"})
+    assert hit["hit"] and hit["tag"]["threat"] == "ransomware"
+    assert hit["text"] == "Direct hit: this address is tagged ransomware (Conti, Ransomwhere)."
+    mixer = screen({"category": "mixer", "entity": "Tornado Cash", "source": "eth-labels"})
+    assert mixer["hit"] and mixer["tag"] is None and "labelled a mixer" in mixer["text"]
+    assert screen(None)["hit"] is False and screen({"category": "exchange"})["hit"] is False
+    assert case_threats(None, [{"threat": {"threat": "fraud"}}, {},
+                               {"threat": {"threat": "ransomware"}}]) == ["ransomware", "fraud"]

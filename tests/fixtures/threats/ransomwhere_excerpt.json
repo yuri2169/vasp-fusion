@@ -1,0 +1,78 @@
+{
+ "result": [
+  {
+   "address": "17TMc2UkVRSga2yYvuxSD9Q1XyB2EPRjTF",
+   "balance": 126686348,
+   "blockchain": "bitcoin",
+   "createdAt": "2021-07-08T06:43:08.978Z",
+   "transactions": [
+    {
+     "hash": "cfb39d98f66da8bfe42ad86894f116a3c1d8c6d1189456fcffae615a80623c49",
+     "time": 1587839053,
+     "amount": 43577930,
+     "amountUSD": 3298.821426377075
+    },
+    {
+     "hash": "81748bb90b4ca5bb4ecc643f17744adcf9d560752d632bdeef7daac49b0c8233",
+     "time": 1587165185,
+     "amount": 83108418,
+     "amountUSD": 5897.526734487103
+    }
+   ],
+   "updatedAt": "2021-09-22T20:53:57.424Z",
+   "family": "Netwalker (Mailto)",
+   "balanceUSD": 9196.348160864178
+  },
+  {
+   "address": "bc1qnj6yephp3jt204f8yn02wvydn47yd42w63587c",
+   "balance": 4328144495,
+   "blockchain": "bitcoin",
+   "createdAt": "2021-07-11T21:03:02.260Z",
+   "family": "Conti",
+   "transactions": [
+    {
+     "hash": "80062626837fdf10f82bfcba1ead788bb7b2d5ea4ebe90626d6bf44fa47ebd34",
+     "time": 1612831319,
+     "amount": 4328144495,
+     "amountUSD": 2011769.4075716676
+    }
+   ],
+   "updatedAt": "2021-09-22T20:55:20.781Z",
+   "balanceUSD": 2011769.4075716676
+  },
+  {
+   "address": "bc1qtf5yrquyhuf85pcz2746xw4y44zykk0ufwpn66",
+   "balance": 517087145,
+   "blockchain": "bitcoin",
+   "createdAt": "2024-10-27T19:02:20.384Z",
+   "family": "Unlabeled",
+   "transactions": [
+    {
+     "hash": "e7bdfee34cb587d083be59890a9979f7fe6546f88feebb9c1274368e50127ab7",
+     "time": 1607362573,
+     "amount": 517087145,
+     "amountUSD": 99237.45608774207
+    }
+   ],
+   "updatedAt": "2024-10-27T19:02:20.384Z",
+   "balanceUSD": 99237.45608774207
+  },
+  {
+   "address": "1143t96LASL6q6UMAJKQKd5BLkeV6Q19ys",
+   "balance": 300000000,
+   "blockchain": "bitcoin",
+   "createdAt": "2021-07-15T02:58:37.259Z",
+   "family": "Locky",
+   "transactions": [
+    {
+     "hash": "4578db653f52d947b1a630491eff9b564fe89208deb7b497bbee92f283de77ce",
+     "time": 1458938662,
+     "amount": 300000000,
+     "amountUSD": 1251.5310060000002
+    }
+   ],
+   "updatedAt": "2021-09-22T20:55:21.040Z",
+   "balanceUSD": 1251.5310060000002
+  }
+ ]
+}

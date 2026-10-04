@@ -30,8 +30,15 @@ def snapshot(case: dict) -> dict:
         "exchanges": sorted({c["vasp"] for c in case.get("candidates", [])}),
         "alerts": sorted({f["code"] for f in case.get("typology_flags", [])
                           if f["severity"] == HIGH}),
+        "threat_links": sorted({_link(f) for f in case.get("typology_flags", [])
+                                if f.get("threat")}),
         "outcome": case.get("outcome"),
     }
+
+
+def _link(flag: dict) -> str:
+    """A link to a tagged address, as a snapshot remembers it."""
+    return f"{flag['threat']['threat']}:{flag['wallet']}"
 
 
 def _plural(n: int, word: str) -> str:
@@ -45,8 +52,17 @@ def changes(baseline: dict | None, case: dict) -> list[dict]:
     now = snapshot(case)
     at = now["traced_at"]
     out = []
+    # a baseline taken before threat tags existed has no list of links: nothing is "new"
+    known = baseline.get("threat_links")
+    linked = set()
+    for flag in case.get("typology_flags", []) if known is not None else []:
+        if flag.get("threat") and _link(flag) not in known:
+            linked.add(flag["code"])
+            out.append({"kind": "new_threat_link", "severity": "high", "at": at,
+                        "threat": flag["threat"],
+                        "text": f"New link to a tagged address: {flag['text']}"})
     for code in now["alerts"]:
-        if code not in baseline["alerts"]:
+        if code not in baseline["alerts"] and code not in linked:
             flag = next(f for f in case["typology_flags"]
                         if f["code"] == code and f["severity"] == HIGH)
             out.append({"kind": "new_alert", "severity": "high", "at": at,
@@ -102,5 +118,5 @@ def watch_item(entry: dict, case: dict | None, tracing: bool = False,
 def alerts_of(item: dict) -> list[dict]:
     """A watched wallet's changes as dashboard alerts."""
     return [{"wallet": item["address"], "chain": item["chain"], "severity": c["severity"],
-             "at": c["at"], "case_id": item["case_id"],
+             "at": c["at"], "case_id": item["case_id"], "threat": c.get("threat"),
              "text": f"Watched wallet: {c['text']}"} for c in item["changes"]]

@@ -1,0 +1,20 @@
+title: Ethereum Scam Database TagPack
+creator: EtherScanDB Team
+description: An open-source database to keep track of all the current ethereum scams
+lastmod: 2019-07-18
+tags:
+- address: '0xD0cC2B24980CBCCA47EF755Da88B220a82291407'
+  currency: ETH
+  label: myelherwallel.com
+  source: https://cryptoscamdb.org/
+  abuse: phishing
+- address: '0x4cdc1cba0aeb5539f2e0ba158281e67e0e54a9b1'
+  currency: ETH
+  label: etherswap.org
+  source: https://cryptoscamdb.org/
+  abuse: phishing
+- address: '0x00e01A648Ff41346CDeB873182383333D2184dd1'
+  currency: ETH
+  label: myethwallet.net
+  source: https://cryptoscamdb.org/
+  abuse: phishing

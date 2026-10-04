@@ -11,6 +11,10 @@ history: "fan-out" means this wallet's money was spread, not that the wallet is 
 
 * sanctioned_contact / mixer_contact / bridge_hop: traced money reached (or the
   wallet was funded by) an address with that label.
+* threat_contact: traced money reached (or the wallet was funded by, or the wallet is) an
+  address a public source ties to ransomware, a darknet market, terrorism financing or
+  fraud. The flag names the threat, who the source names and the source. A sanctioned or
+  mixer address that also carries a tag keeps its own flag, with the tag added.
 * coinjoin_shape (Bitcoin): traced money entered, or the wallet was paid out of, a
   transaction with the shape of a CoinJoin. A warning: the shape is a rule, not a label.
 * peel_chain: consecutive wallets that each send most of the money on to one next
@@ -28,11 +32,12 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from ..explain import fmt
+from ..labels.threats import named, tag_of
 from ..trace import ZERO, TraceEdge, TraceResult
 
 ALERT_CATEGORIES = {"sanctioned": "sanctioned_contact", "mixer": "mixer_contact"}
 _SEVERITY = {"high": 0, "warn": 1, "info": 2}
-_CODES = ["sanctioned_contact", "mixer_contact", "bridge_hop", "coinjoin_shape", "peel_chain",
+_CODES = ["sanctioned_contact", "mixer_contact", "threat_contact", "bridge_hop", "coinjoin_shape", "peel_chain",
           "rapid_forwarding", "fan_out", "fan_in", "round_amounts"]
 
 
@@ -52,10 +57,16 @@ class TypologyConfig:
 
 
 def _flag(code: str, severity: str, wallet: str, text: str, figures: dict,
-          edges: list[TraceEdge]) -> dict:
-    return {"code": code, "severity": severity, "wallet": wallet, "text": text,
+          edges: list[TraceEdge], threat: dict | None = None) -> dict:
+    flag = {"code": code, "severity": severity, "wallet": wallet, "text": text,
             "figures": {k: float(v) for k, v in figures.items()},
             "tx_hashes": sorted({e.transfer.tx_hash for e in edges})}
+    return {**flag, "threat": threat} if threat else flag
+
+
+def _specific(tag: dict | None) -> bool:
+    """A tag that says more than "sanctioned": the flag's sentence then names it."""
+    return tag is not None and tag["threat"] != "sanctioned_other"
 
 
 def _when(e: TraceEdge) -> float:
@@ -91,19 +102,40 @@ class _View:
 def _label_flags(tr: TraceResult) -> list[dict]:
     flags: list[dict] = []
     lab = tr.origin_label
+    tag = tag_of(lab)
     if lab is not None and lab.category in ALERT_CATEGORIES:
+        text = f"The wallet itself is labelled {lab.entity} ({lab.category})"
+        if _specific(tag):
+            text += f"; tagged {named(tag)}"
         flags.append({"code": ALERT_CATEGORIES[lab.category], "severity": "high",
-                      "wallet": tr.address, "figures": {}, "tx_hashes": [],
-                      "text": f"The wallet itself is labelled {lab.entity} ({lab.category})"})
+                      "wallet": tr.address, "figures": {}, "tx_hashes": [], "text": text,
+                      **({"threat": tag} if tag else {})})
+    elif tag is not None:
+        flags.append({"code": "threat_contact", "severity": "high", "wallet": tr.address,
+                      "figures": {}, "tx_hashes": [], "threat": tag,
+                      "text": f"The wallet itself is tagged {named(tag)}"})
     for (side, addr), node in tr.nodes.items():
         if side == "origin" or node.label is None or node.received <= 0:
             continue
         cat = node.label.category
-        if cat not in ALERT_CATEGORIES and cat != "bridge":
+        tag = tag_of(node.label)
+        if cat not in ALERT_CATEGORIES and cat != "bridge" and tag is None:
             continue
         total = tr.total_out if side == "outbound" else tr.total_in
         asset = tr.asset if side == "outbound" else tr.in_asset
         share = float(node.received / total)
+        if tag is not None and cat not in ALERT_CATEGORIES:
+            if side == "outbound":
+                text = (f"Linked to {named(tag)}: {fmt.hops(node.hop)} away, {fmt.pct(share)} "
+                        f"of the funds ({fmt.amount(node.received, asset)}) reached "
+                        f"{fmt.short(addr)}")
+            else:
+                text = (f"Linked to {named(tag)}: {fmt.short(addr)} funded {fmt.pct(share)} of "
+                        f"what the wallet received ({fmt.amount(node.received, asset)})")
+            flags.append(_flag("threat_contact", "high", addr, text,
+                               {"share": round(share, 4), "amount": node.received,
+                                "hops": node.hop}, tr.edges_into(side, addr), tag))
+            continue
         what = {"sanctioned": "a sanctioned address", "mixer": "a mixer",
                 "bridge": "a bridge"}[cat]
         if side == "outbound":
@@ -113,10 +145,12 @@ def _label_flags(tr: TraceResult) -> list[dict]:
             text = (f"{fmt.pct(share)} of what the wallet received "
                     f"({fmt.amount(node.received, asset)}) was funded by {what}, "
                     f"{fmt.short(addr)} ({node.label.entity})")
+        if _specific(tag):
+            text += f"; tagged {named(tag)}"
         flags.append(_flag(ALERT_CATEGORIES.get(cat, "bridge_hop"),
                            "high" if cat in ALERT_CATEGORIES else "warn", addr, text,
                            {"share": round(share, 4), "amount": node.received, "hops": node.hop},
-                           tr.edges_into(side, addr)))
+                           tr.edges_into(side, addr), tag))
     return flags
 
 

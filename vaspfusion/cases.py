@@ -21,6 +21,8 @@ from .cluster import cluster_labels
 from .explain.case_narrative import narrative, path_hashes
 from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
+from .labels.threats import tag_of
+from .screening import case_threats, screen
 from .provenance import case_headline, file_sha256  # noqa: F401 - re-exported
 from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
 
@@ -199,6 +201,8 @@ def build_case(tr: TraceResult, att: Attribution, *, case_id: str, meta: dict | 
         "case_ref": meta.get("case_ref"), "complaint_no": meta.get("complaint_no"),
         "amount_lost_inr": meta.get("amount_lost_inr"),
         "created_at": now or datetime.now(timezone.utc), "demo": demo, "error": None,
+        "screening": screen(tr.origin_label),
+        "threats": case_threats(tag_of(tr.origin_label), att.flags),
         "asset": tr.asset, "total_sent": float(tr.total_out) if tr.asset else None,
         "total_received": float(tr.total_in) if tr.in_asset else None,
         "where_funds_went": _where(tr),

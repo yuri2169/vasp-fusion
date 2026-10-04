@@ -1,0 +1,17 @@
+title: Known Cryptoservice hacks
+creator: GraphSense Core Team
+description: Addresses related to hacked exchanges and hackers
+currency: BTC
+lastmod: 2021-11-12
+confidence: web_crawl
+tags:
+- address: 1JoktQJhCzuCQkt3GnQ8Xddcq4mUgNyXEa
+  category: exchange
+  label: Bitstamp
+  source: https://www.reddit.com/r/Bitcoin/comments/2rdvi7/bistamps_cold_storage_address/
+  actor: bitstamp
+- address: 3A1KUd5H4hBEHk4bZB4C3hGgvuXuVX7p7t
+  category: exchange
+  label: Bitstamp
+  source: https://www.reddit.com/r/Bitcoin/comments/2rdvi7/bistamps_cold_storage_address/
+  actor: bitstamp

@@ -626,5 +626,117 @@
     }
    ]
   ]
+ },
+ "tron-terror-link": {
+  "outcome": "SANCTIONED_OR_MIXER_REACHED",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 115903.0,
+  "candidates": [],
+  "where_funds_went": [
+   {
+    "kind": "hub",
+    "name": null,
+    "share": 0.6497,
+    "amount": 75300.0
+   },
+   {
+    "kind": "sanctioned",
+    "name": "OFAC SDN",
+    "share": 0.2767,
+    "amount": 32070.0
+   },
+   {
+    "kind": "not_followed",
+    "name": null,
+    "share": 0.0374,
+    "amount": 4333.0
+   },
+   {
+    "kind": "beyond_hop_limit",
+    "name": null,
+    "share": 0.0345,
+    "amount": 4000.0
+   },
+   {
+    "kind": "returned",
+    "name": null,
+    "share": 0.0017,
+    "amount": 200.0
+   }
+  ],
+  "nodes": 30,
+  "edges": 153,
+  "flags": [
+   [
+    "sanctioned_contact",
+    "TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ",
+    {
+     "share": 0.1472,
+     "amount": 17060.0,
+     "hops": 1.0
+    }
+   ],
+   [
+    "sanctioned_contact",
+    "TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL",
+    {
+     "share": 0.1295,
+     "amount": 15010.0,
+     "hops": 1.0
+    }
+   ],
+   [
+    "rapid_forwarding",
+    "TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp",
+    {
+     "share": 1.0,
+     "amount": 20800.0,
+     "seconds": 564.0
+    }
+   ],
+   [
+    "fan_in",
+    "THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp",
+    {
+     "senders": 10.0,
+     "amount": 115903.0
+    }
+   ],
+   [
+    "round_amounts",
+    "THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp",
+    {
+     "round_transfers": 52.0,
+     "transfers": 63.0,
+     "amount": 110800.0
+    }
+   ],
+   [
+    "deposit_like",
+    "TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY",
+    {
+     "p": 0.9992,
+     "low": 0.9992,
+     "high": 1.0,
+     "transfers_read": 20.0,
+     "share": 0.4702,
+     "amount": 54500.0
+    }
+   ],
+   [
+    "deposit_like",
+    "TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp",
+    {
+     "p": 0.9848,
+     "low": 0.9846,
+     "high": 1.0,
+     "transfers_read": 26.0,
+     "share": 0.1795,
+     "amount": 20800.0
+    }
+   ]
+  ]
  }
 }

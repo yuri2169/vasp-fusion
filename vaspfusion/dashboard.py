@@ -31,7 +31,7 @@ def case_alerts(case: dict) -> list[dict]:
         return []
     ref = case.get("case_ref") or case["id"]
     return [{"wallet": f["wallet"], "chain": case["chain"], "severity": "high",
-             "at": case["created_at"], "case_id": case["id"],
+             "at": case["created_at"], "case_id": case["id"], "threat": f.get("threat"),
              "text": f"Case {ref}: {f['text']}"}
             for f in case.get("typology_flags", []) if f["severity"] == "high"]
 

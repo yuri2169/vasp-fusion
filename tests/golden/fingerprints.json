@@ -53,5 +53,10 @@
   "findings_sha256": "958a5a5f447c041d3394b6632f2c618ba42e916043dbc834ec5eea77be692fd9",
   "responses_sha256": "6686fbafe24f7bfde1dbd94d82e8b4dfc992dbcd82f2efcc86aa5f253b0fb26e",
   "pages": 6
+ },
+ "tron-terror-link": {
+  "findings_sha256": "deb5d67526996be1d5936c7b89cc328ca7d123c52e48cce83164f377ba7e57c6",
+  "responses_sha256": "5a0632460086fbb0956511639041de07e730b0a0843d09c002d597064542e535",
+  "pages": 24
  }
 }

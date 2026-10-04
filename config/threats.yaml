@@ -1,0 +1,135 @@
+# Threat tags: which public source says an address belongs to a ransomware, darknet-market,
+# terrorism-financing or fraud ecosystem, and the rule that turns the source's own words
+# into one of five tags. Nothing here is a judgement of this tool: every rule names the
+# source field it reads, and every entity override cites the publication it rests on.
+#
+# `python -m vaspfusion.cli threats` reads the raw files with these rules and writes
+# data/threat_tags.csv, which `make labels` joins onto the label table.
+
+threats:            # most specific first: when two sources tag one address, the earlier wins
+  - terrorism_financing
+  - ransomware
+  - darknet_market
+  - fraud
+  - sanctioned_other
+
+sources:            # in order of precedence when two sources give the same threat
+  ofac-sdn-xml:
+    name: "OFAC SDN list (official XML, US Treasury)"
+    licence: "US-government public record"
+    url: "https://www.treasury.gov/ofac/downloads/sdn.xml"
+    entry_url: "https://sanctionssearch.ofac.treas.gov/Details.aspx?id={uid}"
+  ransomwhere:
+    name: "Ransomwhere: crowdsourced ransomware payment addresses"
+    licence: "CC BY 4.0"
+    url: "https://ransomwhe.re"
+    cite: "https://doi.org/10.5281/zenodo.13999026"
+  graphsense-tagpacks:
+    name: "GraphSense TagPacks"
+    licence: "MIT"
+    url: "https://github.com/graphsense/graphsense-tagpacks"
+
+ofac:
+  # Sanctions programme -> threat. A listed entry with any of these programme codes is
+  # tagged; the codes are kept in the evidence.
+  programmes:
+    SDGT: terrorism_financing      # Specially Designated Global Terrorist (E.O. 13224)
+    FTO: terrorism_financing       # Foreign Terrorist Organization
+  # Entries whose programme (CYBER2, ILLICIT-DRUGS-EO14059, TCO) does not say what they
+  # are. Each is tagged from the Treasury press release of its designation, by SDN uid.
+  entities:
+    36216:
+      threat: darknet_market
+      basis: "US Treasury, 5 Apr 2022 (jy0701): Hydra, the world's largest darknet market"
+      url: "https://home.treasury.gov/news/press-releases/jy0701"
+    53033:
+      threat: darknet_market
+      basis: "US Treasury, 4 Mar 2025 (sb0040): head of the Nemesis online darknet marketplace"
+      url: "https://home.treasury.gov/news/press-releases/sb0040"
+    33859:
+      threat: ransomware
+      basis: "US Treasury, 8 Nov 2021 (jy0471): Sodinokibi/REvil ransomware operator"
+      url: "https://home.treasury.gov/news/press-releases/jy0471"
+    33858:
+      threat: ransomware
+      basis: "US Treasury, 8 Nov 2021 (jy0471): Sodinokibi/REvil ransomware operator"
+      url: "https://home.treasury.gov/news/press-releases/jy0471"
+    26137:
+      threat: ransomware
+      basis: "US Treasury, 28 Nov 2018 (sm556): exchanged SamSam ransomware payments"
+      url: "https://home.treasury.gov/news/press-releases/sm556"
+    26138:
+      threat: ransomware
+      basis: "US Treasury, 28 Nov 2018 (sm556): exchanged SamSam ransomware payments"
+      url: "https://home.treasury.gov/news/press-releases/sm556"
+    48603:
+      threat: ransomware
+      basis: "US Treasury, 7 May 2024 (jy2326): senior leader of the LockBit ransomware group"
+      url: "https://home.treasury.gov/news/press-releases/jy2326"
+    47680:
+      threat: ransomware
+      basis: "US Treasury, 20 Feb 2024 (jy2114): affiliate of the LockBit ransomware group"
+      url: "https://home.treasury.gov/news/press-releases/jy2114"
+    47682:
+      threat: ransomware
+      basis: "US Treasury, 20 Feb 2024 (jy2114): affiliate of the LockBit ransomware group"
+      url: "https://home.treasury.gov/news/press-releases/jy2114"
+    38420:
+      threat: ransomware
+      basis: "US Treasury, 14 Sep 2022 (jy0948): IRGC-affiliated actor, role in ransomware activity"
+      url: "https://home.treasury.gov/news/press-releases/jy0948"
+    38419:
+      threat: ransomware
+      basis: "US Treasury, 14 Sep 2022 (jy0948): IRGC-affiliated actor, role in ransomware activity"
+      url: "https://home.treasury.gov/news/press-releases/jy0948"
+    55505:
+      threat: fraud
+      basis: "US Treasury, 14 Oct 2025 (sb0278): Prince Group, online investment scam operations"
+      url: "https://home.treasury.gov/news/press-releases/sb0278"
+  # OFAC's currency code -> chain slug. USDT, USDC and BNB are tokens: the chain is read
+  # from the address's own form.
+  currencies:
+    XBT: bitcoin
+    ETH: ethereum
+    TRX: tron
+    SOL: solana
+    BSC: bsc
+    ARB: arbitrum
+    LTC: litecoin
+    XMR: monero
+    BCH: bitcoin-cash
+    DASH: dash
+    ZEC: zcash
+    XVG: verge
+    XRP: xrp
+    ETC: ethereum-classic
+    BTG: bitcoin-gold
+    BSV: bitcoin-sv
+  by_address: [USDT, USDC, BNB]
+
+graphsense:
+  currencies: {BTC: bitcoin, ETH: ethereum, TRX: tron}
+  # the pack's (or tag's) own `abuse` field -> threat
+  abuse:
+    ransomware: ransomware
+    terrorism: terrorism_financing
+    scam: fraud
+    phishing: fraud
+    ponzi_scheme: fraud
+    investment_fraud: fraud
+    pyramid_scheme: fraud
+  # `category: market` means a darknet market only in these packs (in
+  # etherscan-wordcloud-market it means NFT and token marketplaces)
+  market_packs: [hydra, walletexplorer]
+  # read by nothing: recorded so the next reader knows they were looked at
+  skipped:
+    sextortion_excello: "sextortion spam: extortion, none of the four ecosystems"
+    sextortion_talos: "sextortion spam: extortion, none of the four ecosystems"
+    Alt-Right: "abuse: extremism, not terrorism financing"
+    suidlanders: "abuse: extremism, not terrorism financing"
+    lockbit_tattoos: "people LockBit paid for tattoos: recipients, not the operators"
+    etherscan-wordcloud-market: "category market here is NFT and token marketplaces"
+    ofac: "superseded by the official SDN XML, which carries programme codes"
+    ransomwhere: "superseded by the Ransomwhere export itself"
+    lazarus: "abuse: sanction; covered by the SDN XML"
+    lazarus2: "abuse: sanction; covered by the SDN XML"

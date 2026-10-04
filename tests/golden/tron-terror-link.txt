@@ -1,0 +1,438 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/109
+  Complaint number  -
+  Wallet traced     THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp
+  Chain             Tron
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           tron-terror-link
+  Hop limit         3
+
+RESULT
+------
+SANCTIONED OR MIXING ADDRESS REACHED
+The funds reached a sanctioned or mixing address.
+15% of the funds (17,060 USDT) reached a sanctioned address, TLDtPq…drVgoJ (OFAC SDN), 1 hop
+away; tagged terrorism financing (ISIL KHORASAN, OFAC SDN list)
+13% of the funds (15,010 USDT) reached a sanctioned address, TCEe3M…s5dFTL (OFAC SDN), 1 hop
+away; tagged terrorism financing (ISIL KHORASAN, OFAC SDN list)
+No exchange is named.
+
+
+SUMMARY
+-------
+Wallet THr3E2…gLLLTp sent 115,903 USDT on Tron in 63 transfers between 4 Feb 2024 and 13 Jul
+2024. 15% of the funds (17,060 USDT) reached a sanctioned address, TLDtPq…drVgoJ (OFAC SDN), 1
+hop away; tagged terrorism financing (ISIL KHORASAN, OFAC SDN list). 13% of the funds (15,010
+USDT) reached a sanctioned address, TCEe3M…s5dFTL (OFAC SDN), 1 hop away; tagged terrorism
+financing (ISIL KHORASAN, OFAC SDN list). No labelled exchange was reached. Lead, not a finding:
+TGwBuq…zPpRvY behaves like an exchange deposit address: 47% of the funds (54,500 USDT) reached
+it, and the deposit-address model gives over 0.99 (range narrower than 0.01), and 1 more; see
+the flags. Not followed in this run: 186 TRX in 3 transfers. Transaction hashes:
+a4566cf202f208c74d23fd0d906e8aa9f4d73b83c94461cc085e00b6cacd7b30.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  65% | 75,300 USDT (Rs 72,12,987) | Stopped at a high-activity wallet (not followed)
+  28% | 32,070 USDT (Rs 30,71,985) | Reached a sanctioned address: OFAC SDN
+  4% | 4,333 USDT (Rs 4,15,058) | Not followed (too small, or the listing could not be read to the end)
+  3% | 4,000 USDT (Rs 3,83,160) | Moved on past the hop limit
+  under 1% | 200 USDT (Rs 19,158) | Came back to the traced wallet
+  100% | 115,903 USDT (Rs 1,11,02,348) | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  30 wallets, 153 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it. 12 smaller wallets are not drawn; they are in the table.
+    W22  column Funded the wallet, row 1: Unlabelled wallet
+    W23  column Funded the wallet, row 2: Unlabelled wallet
+    W24  column Funded the wallet, row 3: Unlabelled wallet
+    W25  column Funded the wallet, row 4: Unlabelled wallet
+    W26  column Funded the wallet, row 5: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: Unlabelled wallet
+    W2  column Hop 1, row 2: Unlabelled wallet
+    W3  column Hop 1, row 3: OFAC SDN
+    W4  column Hop 1, row 4: OFAC SDN
+    W5  column Hop 1, row 5: Unlabelled wallet
+    W6  column Hop 1, row 6: Unlabelled wallet
+    W7  column Hop 1, row 7: Unlabelled wallet
+    W17  column Hop 2, row 1: High-activity wallet
+    W18  column Hop 2, row 2: High-activity wallet
+    W19  column Hop 2, row 3: Unlabelled wallet
+    W20  column Hop 2, row 4: Unlabelled wallet
+    W21  column Hop 2, row 5: Unlabelled wallet
+    arrow TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ -> TEPSrSYPDSQ7yXpMFPq91Fb1QEWpMkRGfn (outbound, 3 transfers, 5,000 USDT (Rs 4,78,950))
+    arrow TEC83viZKCBCzWii43D7xLxRS7kDe4jFuQ -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 1 transfer, 4,500 USDT (Rs 4,31,055))
+    arrow TEzCLwDAdidESmE2gr7btiqw7rQsThUkDs -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 3 transfers, 10,000 USDT (Rs 9,57,900))
+    arrow TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp -> TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ (outbound, 3 transfers, 5,000 USDT (Rs 4,78,950))
+    arrow TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp -> TEPSrSYPDSQ7yXpMFPq91Fb1QEWpMkRGfn (outbound, 11 transfers, 15,800 USDT (Rs 15,13,482))
+    arrow TGHSBEMXECFe4jmH22A8WxKuM1Ncx8CKq2 -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 1 transfer, 4,000 USDT (Rs 3,83,160))
+    arrow TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 33 transfers, 54,500 USDT (Rs 52,20,555))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL (outbound, 2 transfers, 15,010 USDT (Rs 14,37,808))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp (outbound, 13 transfers, 18,800 USDT (Rs 18,00,852))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY (outbound, 28 transfers, 39,500 USDT (Rs 37,83,705))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ (outbound, 3 transfers, 17,060 USDT (Rs 16,34,177))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TLznsw3NRumQAWPDkW7kSmFVKVunp9Eecq (outbound, 1 transfer, 5,000 USDT (Rs 4,78,950))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv (outbound, 2 transfers, 4,700 USDT (Rs 4,50,213))
+    arrow THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp -> TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3 (outbound, 1 transfer, 10,000 USDT (Rs 9,57,900))
+    arrow TLznsw3NRumQAWPDkW7kSmFVKVunp9Eecq -> TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY (outbound, 2 transfers, 5,000 USDT (Rs 4,78,950))
+    arrow TTQd8Bo1nhKEVgkKJVP3SRYZ1nDNStckvj -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 1 transfer, 17,000 USDT (Rs 16,28,430))
+    arrow TU5NsCdQAmzvChuNaeoyxDsnrKCsU9ncjL -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 2 transfers, 15,101 USDT (Rs 14,46,525))
+    arrow TVCEYdpK6o8hBt71h82aUVbgfyyxJNMYfe -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 1 transfer, 30,000 USDT (Rs 28,73,700))
+    arrow TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv -> TEC83viZKCBCzWii43D7xLxRS7kDe4jFuQ (outbound, 1 transfer, 500 USDT (Rs 47,895))
+    arrow TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (inbound, 13 transfers, 34,800 USDT (Rs 33,33,492))
+    arrow TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv -> THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp (outbound, 1 transfer, 200 USDT (Rs 19,158))
+    arrow TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv -> TMjB2dAXsdgXj1PmEuxe42JvLa5D3VqPvg (outbound, 2 transfers, 4,000 USDT (Rs 3,83,160))
+    arrow TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3 -> TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY (outbound, 6 transfers, 10,000 USDT (Rs 9,57,900))
+  No. | Address | What it is | Hop | Traced funds
+  W0 | THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp | Traced wallet | - | 115,903 USDT (Rs 1,11,02,348)
+  W1 | TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY | Unlabelled wallet | 1 | 54,500 USDT (Rs 52,20,555)
+  W2 | TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp | Unlabelled wallet | 1 | 20,800 USDT (Rs 19,92,432)
+  W3 | TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ | Sanctioned address: OFAC SDN | 1 | 17,060 USDT (Rs 16,34,177)
+  W4 | TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL | Sanctioned address: OFAC SDN | 1 | 15,010 USDT (Rs 14,37,808)
+  W5 | TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3 | Unlabelled wallet | 1 | 10,000 USDT (Rs 9,57,900)
+  W6 | TLznsw3NRumQAWPDkW7kSmFVKVunp9Eecq | Unlabelled wallet | 1 | 5,000 USDT (Rs 4,78,950)
+  W7 | TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv | Unlabelled wallet | 1 | 4,700 USDT (Rs 4,50,213)
+  W8 | TQesiewawewwf8oxQ8rELsYbFPKnucVsa6 | Unlabelled wallet (not followed) | 1 | 4,255 USDT (Rs 4,07,586)
+  W9 | TJ31bpdY1gtDmeBgcwszWFj75rBQNvoVrG | Unlabelled wallet | 1 | 2,000 USDT (Rs 1,91,580)
+  W10 | TXqSuHXbmTksTCYvALtm8q8oehme7j4mvT | Unlabelled wallet (not followed) | 1 | 1,000 USDT (Rs 95,790)
+  W11 | TKpUwCUaG6hnQU7t2MqvhfBsK8ERPK78YM | Unlabelled wallet (not followed) | 1 | 985 USDT (Rs 94,353)
+  W12 | TV6HVEK7eGvTMQ9YZxsvNMamHxUg7SqD2W | Unlabelled wallet (not followed) | 1 | 583 USDT (Rs 55,846)
+  W13 | TF1XFvJeXz16MbMUx74P3qQvAckpMBBiZN | Unlabelled wallet (not followed) | 1 | 500 USDT (Rs 47,895)
+  W14 | TL5ZgW4Cm4cYcYbzuGrb5zAeLQAmgAs3k1 | Unlabelled wallet (not followed) | 1 | 300 USDT (Rs 28,737)
+  W15 | TBPuoDykGaQj645UQ7WpTbgPnZn5PUuL5z | Unlabelled wallet (not followed) | 1 | 200 USDT (Rs 19,158)
+  W16 | TY5V4bzNYu4MXF5o42VvKnZ68dW6fASi9S | Unlabelled wallet (not followed) | 1 | 10 USDT (Rs 958)
+  W17 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 54,500 USDT (Rs 52,20,555)
+  W18 | TEPSrSYPDSQ7yXpMFPq91Fb1QEWpMkRGfn | High-activity wallet (not followed) | 2 | 20,800 USDT (Rs 19,92,432)
+  W19 | TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ | Unlabelled wallet | 2 | 5,000 USDT (Rs 4,78,950)
+  W20 | TMjB2dAXsdgXj1PmEuxe42JvLa5D3VqPvg | Unlabelled wallet | 2 | 4,000 USDT (Rs 3,83,160)
+  W21 | TEC83viZKCBCzWii43D7xLxRS7kDe4jFuQ | Unlabelled wallet (not followed) | 2 | 500 USDT (Rs 47,895)
+  W22 | TVCEYdpK6o8hBt71h82aUVbgfyyxJNMYfe | Unlabelled wallet (not followed) | funded it | 30,000 USDT (Rs 28,73,700)
+  W23 | TTQd8Bo1nhKEVgkKJVP3SRYZ1nDNStckvj | Unlabelled wallet (not followed) | funded it | 17,000 USDT (Rs 16,28,430)
+  W24 | TU5NsCdQAmzvChuNaeoyxDsnrKCsU9ncjL | Unlabelled wallet (not followed) | funded it | 15,101 USDT (Rs 14,46,525)
+  W25 | TEzCLwDAdidESmE2gr7btiqw7rQsThUkDs | Unlabelled wallet (not followed) | funded it | 10,000 USDT (Rs 9,57,900)
+  W26 | TGHSBEMXECFe4jmH22A8WxKuM1Ncx8CKq2 | Unlabelled wallet (not followed) | funded it | 4,000 USDT (Rs 3,83,160)
+  W27 | TMSZ9X48wGr5HNs4A5iej5X4Vsma5afcup | Unlabelled wallet (not followed) | funded it | 500 USDT (Rs 47,895)
+  W28 | TEnFuHNQb3H9kTspynyWSA3m1rtSfASi9S | Unlabelled wallet (not followed) | funded it | 1 USDT (Rs 96)
+  W29 | TYHGv2KEtSeVPBSaLjsgJYUUjkEnfASi9S | Unlabelled wallet (not followed) | funded it | 1 USDT (Rs 96)
+
+EXCHANGES REACHED
+-----------------
+The traced funds reached no labelled exchange or custodian.
+
+
+MAIN PATH OF THE FUNDS
+----------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W3 | 10,000 USDT (Rs 9,57,900) | 13 Jul 2024, 05:39:03 UTC | - | a4566cf202f208c74d23fd0d906e8aa9f4d73b83c94461cc085e00b6cacd7b30
+
+PATTERNS SEEN
+-------------
+Patterns in the traced funds. They describe how the money moved and never decide the result.
+
+    [Sanctioned contact (high)] TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ: 15% of the funds (17,060
+    USDT) reached a sanctioned address, TLDtPq…drVgoJ (OFAC SDN), 1 hop away; tagged terrorism
+    financing (ISIL KHORASAN, OFAC SDN list)
+        tx 2108152207b7d7a1bde834462c1f716316ec7f1ec4ca00244754acce42409062
+        tx a4566cf202f208c74d23fd0d906e8aa9f4d73b83c94461cc085e00b6cacd7b30
+        tx d8af25254f565e778e04d7483a793b9c517a8304250974a4d4b2d15f0f10a6d7
+    [Sanctioned contact (high)] TCEe3McjK9FWby8YsNmtRDwJt1x2s5dFTL: 13% of the funds (15,010
+    USDT) reached a sanctioned address, TCEe3M…s5dFTL (OFAC SDN), 1 hop away; tagged terrorism
+    financing (ISIL KHORASAN, OFAC SDN list)
+        tx 7cfbd6697980072ca9bfbaedc1215be7e4492515292156831a9bf0c2ff8026d5
+        tx 85fe0817625f534ba239ceec761693930b8e400ae2faa7afedfd6045f30a8e6a
+    [Rapid forwarding (warn)] TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp: TFCVo9…hGYznp passed on 100%
+    of the 20,800 USDT that reached it within 9 minutes of its arrival
+        tx 03f722eeda602119a52048c2e3193640463435723a0921647a184c1c92a60f26
+        tx 0cbd871010ec1732140a66f103c528107c226c9c40390fe873fd191973c36914
+        tx 23e3bf8bdc2ff05b43528e2c82f3348dd52dec28e903800c2be359249cc060a0
+        tx 2a0daec0a9382d709654366272a02ef1f75da550f96b5d4c97e06acae04cefa7
+        tx 366e228aecd383e3e48c6863643d0697be44dd527361efbfe88a3367c8cb539c
+        tx 435959dda9ba4faccb6ce7bd1db700d40f5c5ce0b2bbd88cdc43c7e88efad462
+        tx 451bc01e6cc6a057c51c11f8e9ab8151589906d7811a71633a31fdcf34897ee3
+        tx 54d91808be47ac737e27fdc81e792c04ee5bfbb90d31fcbd11c7b4bd361bc1dd
+        tx 5593257b179bf759a3724eb114b87e8ba24eaf891c82c83aa103a93acbd03835
+        tx 6130b6761e6f0303b4a2a622ac4963696e5d312ddb2c96f27b5dc2ba660eb844
+        tx 69174b81867398782eeb6bbcc322152c82bdbeb550dbb85aa7eeb72b97ca669d
+        tx 6d8849d6441c8ad41e64eaf5c7eb6d841b09dc00996e8a999b46df4b8331f4cf
+        tx 6e1564c3542b62f9025d6d1e46a057c3ed1e42d6de6882742dd228589be1ffba
+        tx 703421ae11a112a853205e7c5ff8858b4cfffd929b6c2a10b20e649b31cca4df
+        tx 71a9e7c5424ccc3a4b0c776b20764118a3fc49f93c9b93d0eb43eaf9fa9b3494
+        tx 797ca09a85409db09be7cfbe8519bfa61cd2dc2b05ab687309b52a43195561cb
+        tx 87a4ed4f08d8abe49e3e8c4f82c40a1ca538cdacdcd555bbc0609d43aa4baed5
+        tx 92b52bc3fa018ca66b9006a77c3a6758a0696be3b9f4dd9712c6da5a32ed3a18
+        tx ae1b85c6fb5207392772599545f76c34c00024e17663e6eb117c0d8a4086ba79
+        tx af6fbc6c1f0ab6d749b748b8aafc1c142bdf4d5cfbe957d1c2a0970b24a43355
+        tx bd551ea45ff3f0acbfb815024f71dee6b45b5da9e6f9b9c31777247329afcf8a
+        tx bef4a5da7f97688502716dbe76ea3ad550b0a6798c4546917e1fba43c25940c7
+        tx bf5e3605b4faeacde66e4114bc1de060597b80ffff5cc178cd90aa7efcb27ece
+        tx c4fd6048a1d14c885c860b2acb4dd7068743c71719540e22d6524dd3d59fe59c
+        tx c61b8c099194a321939a4e79911f113a482f22f1a53841c802360f9fe629c0c6
+        tx cd2aefd4c4faaff9c9d100936df1edb0e0792aed57df37c5333d4219f43a94e6
+        tx d374de5961cd7b981cd4ac8eda9d659f7db50c5befe6c9865fe5945dd0149f26
+        tx e7082493af69ad033a2442c37c5fc9202456daf858c9a958f2b6aa4f08a4a5a4
+    [Fan-in (info)] THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp: THr3E2…gLLLTp was funded by 10 wallets
+    (115,903 USDT in all)
+        tx 16dc3276c63d93f3efa39b44181162a9a70abfbd2c7085b6b841c507a1efded5
+        tx 1bf5d71a5718bd46d147995008f50bf2a202cc1c482f212c59e53ee3124045b1
+        tx 2559ef3740f7eef2cac71acb9533bbf8a5b40b20e3ef5767ab6d05b9e13a34db
+        tx 25bf5158a75a738614946d0ed754b81084500a807badab1fc42bc9bff9900803
+        tx 33c55f4097281d0d3d64315ea064a90d18a91a029711c6e79e5396aa244525f5
+        tx 5626233d2f9409447c0654611d254848702da98641869376c8fa40c37e17e614
+        tx 638b33e10d57d3405db67950dc8ba3e9816ac82532106361c884cec2fd9b0fc8
+        tx 6af38447a3eea96af0f823d217d24a4bcdbd7aa9d3add8802b7ea0fd42d09a5d
+        tx 8b37959202080c431ade642655969b0dca7b2b657879312e6ab8e11ee6758dd7
+        tx 8f931c08bf7dfd1aac1a9297e3f85e21b23ccf6e273327f9c62ed3f1783507f6
+        tx 8ff096d2c60b2b0618db997086fca34615c2016bf0456de41962133fb0ffd52b
+        tx 92f21d1f9176cfe84bb384ae581cfa20ee9dfb808561eab11cab96643fc1f6d7
+        tx a97a0b577fdffbbd870ee9eae0c1f729b887c44db8dac09c46dfb0f72b1a32fe
+        tx ac1ffb1d44dd285359f39d16a0ec5580fd2727cbe0656ea546ff3965b28bd88f
+        tx b15cba797e4f57a863581ab0df23507a5aa71c13cf74e526781b7734b3bc2b3d
+        tx baa89a4b0f0013be5edc007110e3ae200a42a65dd3a05c1ddd15b5f83f25b1d3
+        tx bbd761c8efe5fc80ade363d6ea0d963ba61d415618f065362412beb6bfe0239a
+        tx bc0ea831ee361fb79e2b04e3f7e23e324a399db1d13fe9db0cdd3c2eff9ff278
+        tx c93c80da5162d481239a22a53db6eebea07717c9bb057291cf0fd06864a1c7e6
+        tx cd5f42cad97e209631c74f79eab585823aff563a5de90e1526298014faae3f9f
+        tx cf457d62cb11dae893f9f5c9ea93384902309d7d7b60fb8d752423b5c2d957fb
+        tx eb88675d981febcba3cbfa6b0784d1513d9f7b6f9f51123e8f1169d076f9a234
+        tx ec6270039e8c9d1b30743a2734ede900a57592c2b3cc1077cfbb3cf5d5bf2fd7
+        tx f0c4c42336f7ac19ff1d4a4a2ff6dba5da86c31dc25bfd784ecbcb59d489f000
+        tx fa77fefa6c2025fde2d1b32ebbfc256729bc7226ba9fd930db5d3ab140afcc3b
+    [Round amounts (info)] THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp: 52 of the wallet's 63 USDT
+    payments are whole multiples of 100 (110,800 USDT in all)
+        tx 03f722eeda602119a52048c2e3193640463435723a0921647a184c1c92a60f26
+        tx 0b9ddfd78c0660d41e4a90a2e1b2db36cc975e0c82dbefe417d715fb31e487d4
+        tx 106706afb9f7603b0f79a4169e2b75ef5369a609d9193ebb00e38a74968c3387
+        tx 18582bae67767148eadfa82b45287a9005e95bd110cb8af42f9dfc232547f886
+        tx 194078200f2f72f62ae6c6995234b4ec6dad65bf0aa5ab6de1b80a0f94cef60a
+        tx 1ae4ef21375591d7342ddd530db9d9e6ad9ef38465ad67344186816fc5a534d3
+        tx 1ce701e588bd43025759359b46b01c76ab9d15707951a4115ac9c7c4fad820c7
+        tx 23e3bf8bdc2ff05b43528e2c82f3348dd52dec28e903800c2be359249cc060a0
+        tx 252fb79a881c390ad671d2780a1da50589afd66cd7f0f37ea1d4cf8cc1272ae6
+        tx 2a0daec0a9382d709654366272a02ef1f75da550f96b5d4c97e06acae04cefa7
+        tx 355a04fc94b3c59c18222bf4f6488a7b5dc04e7ee74bafdbe9ef3a22c3a384b5
+        tx 451bc01e6cc6a057c51c11f8e9ab8151589906d7811a71633a31fdcf34897ee3
+        tx 4850ad548ace0d5a35d1b9bbdb08b105640d5d617506ff1bc89c1d95400d40fd
+        tx 4eba077fc8f73b8ddbb44f132f26d3c339f1840461b9d1e95bec04b5f6a41c3a
+        tx 54d91808be47ac737e27fdc81e792c04ee5bfbb90d31fcbd11c7b4bd361bc1dd
+        tx 57ce310968fe098e9b38645a966482baec9bbbf3076e747915c0bd4d21167ee0
+        tx 5aa8d3c2a9ab1a6e5cf450f0190cb6639bc4a0e9e95f51ca00a6456cdd525125
+        tx 618de233fc49d5e1d96069e78f4c44b6c296b01fcd7417a37622a978fa07ce7a
+        tx 69174b81867398782eeb6bbcc322152c82bdbeb550dbb85aa7eeb72b97ca669d
+        tx 6ac058c040fae3cf5b7398500b1135d1bd67d8aef99b5a0d146a24ff3256fc97
+        tx 6e1564c3542b62f9025d6d1e46a057c3ed1e42d6de6882742dd228589be1ffba
+        tx 703421ae11a112a853205e7c5ff8858b4cfffd929b6c2a10b20e649b31cca4df
+        tx 71a9e7c5424ccc3a4b0c776b20764118a3fc49f93c9b93d0eb43eaf9fa9b3494
+        tx 797ca09a85409db09be7cfbe8519bfa61cd2dc2b05ab687309b52a43195561cb
+        tx 7b46ba970d615e5466a8fc11b44caeea95c4e886cc9a4be06c607b85b1783589
+        tx 7cfbd6697980072ca9bfbaedc1215be7e4492515292156831a9bf0c2ff8026d5
+        tx 818299088f4d1fa86459e99ef92b2a0714a321eda291635ff652f8beb375185b
+        tx 8a32ed6463b2ff7406f03c2444fbffe0476fa0af608b7c8a48d06aa9a38e244a
+        tx 8db9a01bdb738f404f25f451f90f572179c33323b81b5dfd685b06207d86f232
+        tx 91ce7cccbba09fff7f7758c694e2ff0c40e35ad6f5d7ee5a90ae7f2dc57eb158
+        tx 92b52bc3fa018ca66b9006a77c3a6758a0696be3b9f4dd9712c6da5a32ed3a18
+        tx 971fbeca3f0a44d0680f010ce5027041243b34293d00edb3239ff636811fea14
+        tx 99bc1c2723bcaa5c8d0ed25f993cf2074549b93ca60467b04be4ed7f78ebdbe5
+        tx 9bbc96d59bacb0c4b04b3dc371f4370545a8d810d9e9ba186584496ceb390a34
+        tx a4566cf202f208c74d23fd0d906e8aa9f4d73b83c94461cc085e00b6cacd7b30
+        tx b1e49590b61f08501741b74e2b3e557653d98f950d833b6ae03912a3afd8ee96
+        tx b531236d793b58749266b3fde8b0ffab7cecc418753e4a2fa274776e992f5d42
+        tx b906f48678fb948e4fe30afa119ce1f884686b60769c04338819ad158a3e5958
+        tx bb96dc7237e9887dca1c58918727278c5515c5e2866e4bb40786036ba4c7486a
+        tx bc689da3d4fb27b5dec0f8dcb153feb12cc922bf691ddb754adb7e87a9cb7aa1
+        tx bd551ea45ff3f0acbfb815024f71dee6b45b5da9e6f9b9c31777247329afcf8a
+        tx bef4a5da7f97688502716dbe76ea3ad550b0a6798c4546917e1fba43c25940c7
+        tx cda844709749fd9b8156cec6ee38c09ff4fdd12575289e7cf00094ca6960e11a
+        tx d019f79558f4f83f6c53ccc67c3afcee9edd609bd08c06a29bafd0d4d9466475
+        tx d29752cbd40771526b3002ae1f26153fbde9db99de817581b3f092f02509146a
+        tx d3885aa01e0616e2043b285a28bcfd29fe578450a72a0c94f4124d5577c97f91
+        tx d3af2deabf9937bcbdb613c6d09a2976868fd643b9c308727c09483021adac5f
+        tx d8af25254f565e778e04d7483a793b9c517a8304250974a4d4b2d15f0f10a6d7
+        tx ddb9edbffdaf2ea210b8eb7f9c1e031fb15afd4fc24cb19936cee1624c8eebcf
+        tx e00dc7941950b5f0cbb90f7ed02b673dabdc419191d99d1a83126d28258892ff
+        tx ee00270f96b4265f28e63d442a6622f2da6e335ee582ef91b2df926240641430
+        tx ef67637a7616167cecfbf5ac7f8e1d54defab92df30f00d845b4f4f86df32c1b
+
+LEADS TO CHECK
+--------------
+Unlabelled wallets that behave like an exchange deposit address. A lead is not a finding and
+does not change the result.
+
+    [Lead] TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY: TGwBuq…zPpRvY behaves like an exchange deposit
+    address: 47% of the funds (54,500 USDT) reached it, and the deposit-address model gives over
+    0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to
+    one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or
+    spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu…dkhSCf, the
+    wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a
+    finding: the model was measured on exchange customers and deposit addresses only.
+        tx 0b9ddfd78c0660d41e4a90a2e1b2db36cc975e0c82dbefe417d715fb31e487d4
+        tx 18582bae67767148eadfa82b45287a9005e95bd110cb8af42f9dfc232547f886
+        tx 1ae4ef21375591d7342ddd530db9d9e6ad9ef38465ad67344186816fc5a534d3
+        tx 1ce701e588bd43025759359b46b01c76ab9d15707951a4115ac9c7c4fad820c7
+        tx 252fb79a881c390ad671d2780a1da50589afd66cd7f0f37ea1d4cf8cc1272ae6
+        tx 2d7ffe877d65875ce05a6250727754fb71f21eb99265117ea7b7526addc8463d
+        tx 355a04fc94b3c59c18222bf4f6488a7b5dc04e7ee74bafdbe9ef3a22c3a384b5
+        tx 484f30b0d8e3247ea8285b45924b36c26dd194c8a468ea8d05b069a608729631
+        tx 4850ad548ace0d5a35d1b9bbdb08b105640d5d617506ff1bc89c1d95400d40fd
+        tx 4eba077fc8f73b8ddbb44f132f26d3c339f1840461b9d1e95bec04b5f6a41c3a
+        tx 57ce310968fe098e9b38645a966482baec9bbbf3076e747915c0bd4d21167ee0
+        tx 5804c7a239c4bc13b78e711bfdb9bec2963dd0708fb06aea32840c66fe50b4a9
+        tx 5aa8d3c2a9ab1a6e5cf450f0190cb6639bc4a0e9e95f51ca00a6456cdd525125
+        tx 618de233fc49d5e1d96069e78f4c44b6c296b01fcd7417a37622a978fa07ce7a
+        tx 7b46ba970d615e5466a8fc11b44caeea95c4e886cc9a4be06c607b85b1783589
+        tx 8151b15283a432fcefc04855ffcdd9b5d7dbe62b0cb89c464a7eb62083e94451
+        tx 8a32ed6463b2ff7406f03c2444fbffe0476fa0af608b7c8a48d06aa9a38e244a
+        tx 8b2e44d93eb58d92b3493d99599a1d3cc106a8fb1967535d699de4f664618c7f
+        tx 8db9a01bdb738f404f25f451f90f572179c33323b81b5dfd685b06207d86f232
+        tx 9bbc96d59bacb0c4b04b3dc371f4370545a8d810d9e9ba186584496ceb390a34
+        tx 9c70c30c82056ca9711fbc349f45c4f35cc611cba1679c22d55b1a88892d3786
+        tx b531236d793b58749266b3fde8b0ffab7cecc418753e4a2fa274776e992f5d42
+        tx b6b26d5c66fbee1ab393a0c6ffeb7b8c6fceb21f71dcde396465b3bc2cd01a15
+        tx bb96dc7237e9887dca1c58918727278c5515c5e2866e4bb40786036ba4c7486a
+        tx bc689da3d4fb27b5dec0f8dcb153feb12cc922bf691ddb754adb7e87a9cb7aa1
+        tx cda844709749fd9b8156cec6ee38c09ff4fdd12575289e7cf00094ca6960e11a
+        tx d019f79558f4f83f6c53ccc67c3afcee9edd609bd08c06a29bafd0d4d9466475
+        tx d29752cbd40771526b3002ae1f26153fbde9db99de817581b3f092f02509146a
+        tx d3885aa01e0616e2043b285a28bcfd29fe578450a72a0c94f4124d5577c97f91
+        tx d3af2deabf9937bcbdb613c6d09a2976868fd643b9c308727c09483021adac5f
+        tx ddb9edbffdaf2ea210b8eb7f9c1e031fb15afd4fc24cb19936cee1624c8eebcf
+        tx e00dc7941950b5f0cbb90f7ed02b673dabdc419191d99d1a83126d28258892ff
+        tx ee00270f96b4265f28e63d442a6622f2da6e335ee582ef91b2df926240641430
+        tx ef0e6cc3ea9637627582f6ebd6ad808baed3c856afa70ce797b1307a7982119e
+        tx f7070be3cfe9023f497f10c9d83bdee1ebd3ccd417c6e29594531254a2f127d1
+        tx fd616671e73aaef4423c7818ee72c10fbfe274d384b5558e3ad9cd4b6a71c314
+    [Lead] TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp: TFCVo9…hGYznp behaves like an exchange deposit
+    address: 18% of the funds (20,800 USDT) reached it, and the deposit-address model gives 0.98
+    (range 0.98 to over 0.99). What speaks for it: forwards 100% of what it receives to one
+    wallet; every outgoing transfer goes to one wallet. Neither it nor TEPSrS…MkRGfn, the wallet
+    it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a
+    finding: the model was measured on exchange customers and deposit addresses only.
+        tx 03f722eeda602119a52048c2e3193640463435723a0921647a184c1c92a60f26
+        tx 23e3bf8bdc2ff05b43528e2c82f3348dd52dec28e903800c2be359249cc060a0
+        tx 2a0daec0a9382d709654366272a02ef1f75da550f96b5d4c97e06acae04cefa7
+        tx 451bc01e6cc6a057c51c11f8e9ab8151589906d7811a71633a31fdcf34897ee3
+        tx 54d91808be47ac737e27fdc81e792c04ee5bfbb90d31fcbd11c7b4bd361bc1dd
+        tx 6130b6761e6f0303b4a2a622ac4963696e5d312ddb2c96f27b5dc2ba660eb844
+        tx 69174b81867398782eeb6bbcc322152c82bdbeb550dbb85aa7eeb72b97ca669d
+        tx 6e1564c3542b62f9025d6d1e46a057c3ed1e42d6de6882742dd228589be1ffba
+        tx 703421ae11a112a853205e7c5ff8858b4cfffd929b6c2a10b20e649b31cca4df
+        tx 71a9e7c5424ccc3a4b0c776b20764118a3fc49f93c9b93d0eb43eaf9fa9b3494
+        tx 797ca09a85409db09be7cfbe8519bfa61cd2dc2b05ab687309b52a43195561cb
+        tx 92b52bc3fa018ca66b9006a77c3a6758a0696be3b9f4dd9712c6da5a32ed3a18
+        tx bd551ea45ff3f0acbfb815024f71dee6b45b5da9e6f9b9c31777247329afcf8a
+        tx bef4a5da7f97688502716dbe76ea3ad550b0a6798c4546917e1fba43c25940c7
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar was checked on 280 real Tron wallets, traced with the derived labels hidden: at 0.60 an
+exchange was named for 155 wallets and the name was wrong for 15 (9.7%; upper bound 17.3%). That
+is a check on a label hold-out, not a calibration.
+
+
+NEXT STEPS
+----------
+  - Escalate: 15% of the funds (17,060 USDT) reached a sanctioned address, TLDtPq…drVgoJ (OFAC
+    SDN), 1 hop away; tagged terrorism financing (ISIL KHORASAN, OFAC SDN list)
+  - Identify TDqSqu…dkhSCf: TGwBuq…zPpRvY, which received 47% of the funds, behaves like a
+    deposit address and sweeps into it (check other label sources and block explorers)
+  - Identify TEPSrS…MkRGfn: TFCVo9…hGYznp, which received 18% of the funds, behaves like a
+    deposit address and sweeps into it (check other label sources and block explorers)
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify tron-terror-link
+
+  Findings fingerprint    deb5d67526996be1d5936c7b89cc328ca7d123c52e48cce83164f377ba7e57c6
+  Input                   tron THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp, hop limit 3
+  Input SHA-256           9c1ed7993ca0d62892aa69eeb249d773186ce6c121700369ef41d2487bc7aee3
+  Chain responses         24 read from api.trongrid.io
+  Responses SHA-256       5a0632460086fbb0956511639041de07e730b0a0843d09c002d597064542e535
+  Label database SHA-256  not recorded
+  Model                   model_v1/tron, SHA-256 d7dbbad0bc8f06526821c2b1376d44534037d1e967343217ce1b384eff0033d2
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Content SHA-256         d519e36ed2cc1f444efea2d7436776cf421a1a27e818f23fb5a18b2be7e731d6
+  Receipt SHA-256         00094866fa9e7775ffe9c8acc29b58119031b33b2003bf8dfa72f3ac8e901d4c
+
+  Chain responses read
+    e49e9397a6676b123a1c9789ca45c43ca203bd747c56173ba9a7cef1f4c3d1fa  https://api.trongrid.io/v1/accounts/TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1713098907000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    047889f21a5bdf933f7fc61c01c1fa4a1ec915d365094cd247bc19b7225b16d1  https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1707065169000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    372c9f5cd8d21f3ca90dd60140a1d0bd847401e4a072be4836c88a436d180573  https://api.trongrid.io/v1/accounts/TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1706456223000&only_confirmed=true&order_by=block_timestamp%2Casc
+    4995a5e71632987986bafeefc5762c48e7686f4ffb45f3d27ca3467e304f71a9  https://api.trongrid.io/v1/accounts/TEPSrSYPDSQ7yXpMFPq91Fb1QEWpMkRGfn/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1712049303000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    5cbdc810d77e7ea93aebd4c5c118d1fd5556b6d465309e3dcf459b9c202baf41  https://api.trongrid.io/v1/accounts/TEPSrSYPDSQ7yXpMFPq91Fb1QEWpMkRGfn/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1711444140000&only_confirmed=true&order_by=block_timestamp%2Casc
+    dc2ff9971bf77bab1181c06f54eb6cb6e9550797ba3b13c09a14f08c33a50439  https://api.trongrid.io/v1/accounts/TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1712048940000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    ba0ef38f005e11e03db5f25835a8b1806ef85a3953162cf5fe1d5d9029ecc2be  https://api.trongrid.io/v1/accounts/TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1711444140000&only_confirmed=true&order_by=block_timestamp%2Casc
+    f978fe1d174a7c8aa5c0a79532c45b70d516b6b40d1036cb4f5edf3235e31635  https://api.trongrid.io/v1/accounts/TFCVo9fVFVDxLnQwM3E1XoyMjrQghGYznp/transactions?limit=50&min_timestamp=1711444140000&only_confirmed=true&order_by=block_timestamp%2Casc
+    ee9c4ed5433d1f7c6dcacaf02ae4b9cee6820f95909cb6795f3c0a184505fc93  https://api.trongrid.io/v1/accounts/TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1707061023000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    c7f94edf677f17c1f681f5cd3177f8b1fe3469c0f08eda840c32a7048ebd0374  https://api.trongrid.io/v1/accounts/TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1706456223000&only_confirmed=true&order_by=block_timestamp%2Casc
+    6dba0c48042252990b79932ac5307a6b960304a37e305e9ba0ad59ed62447eed  https://api.trongrid.io/v1/accounts/TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1707830469000&only_confirmed=true&order_by=block_timestamp%2Casc
+    9a8d60f7b02db7328040e018f7de4d8545a54d931024d95cc07679f25a92a2ec  https://api.trongrid.io/v1/accounts/TGwBuq7w17oU2XG1Gg24kKmBSENezPpRvY/transactions?limit=50&min_timestamp=1706456223000&only_confirmed=true&order_by=block_timestamp%2Casc
+    e36f14fcd06490a83973cf2a77ce152baae844642da6c77cf63ebe3e2faa0140  https://api.trongrid.io/v1/accounts/THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    9bba07362170a634ed132e63c7fccc30c4ba983ab7fc80b6d3228bbb2bd1d7bc  https://api.trongrid.io/v1/accounts/THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc
+    eedccae14fbb3c6b38fbe0fbbee4c84d728371540e6494fe8b6f81afc8f4c569  https://api.trongrid.io/v1/accounts/THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp/transactions?fingerprint=9zPiuPCd7WXseRae4i1ET4bu4FET3YpgU6t1zoJoMdujcfsT7kn1cPesLJt2viw3m1A71UnpyuWBd7WFpPhrEk7TbRWXptXXZZfH7tzqN4UGWLksQLZYJ8xH4s9EK9ATgJ1Adt4qnUw76k6reJsoheefugj5dHrzVLyZbzHPJStr5E4NpkUPQ7D81Li9tozFT3z5AZZFRFo4W3p7RtXh6EV7x847fWMg&limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc
+    03d9150549d5abfaea4e8bb0397a6011c8397b681d3087f3abb0c82038f03d14  https://api.trongrid.io/v1/accounts/THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp/transactions?limit=100&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    f1ddb8847b0746316fe446db775ae0cf9cb144f22fb3a52ccd9b65ad40115e5b  https://api.trongrid.io/v1/accounts/THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp/transactions?limit=100&only_confirmed=true&only_to=true&order_by=block_timestamp%2Casc
+    e2b53f7b693bca50918573c2ee68df63fd7e44acfa9b1e87bb95e1b05617ddb1  https://api.trongrid.io/v1/accounts/TJ31bpdY1gtDmeBgcwszWFj75rBQNvoVrG/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1711814625000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    a44d073362bcd33049b8ed3a91709e2af67baac5d59ffd0a95b4ddb145c711c9  https://api.trongrid.io/v1/accounts/TLznsw3NRumQAWPDkW7kSmFVKVunp9Eecq/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1708435551000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    9b13e224f8e585cbaad136aa9bdc0210e7d62be6fdf34afe587a0bafb3df5a42  https://api.trongrid.io/v1/accounts/TMjB2dAXsdgXj1PmEuxe42JvLa5D3VqPvg/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1728723372000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    1952e23363241ecd2a4f5aeba569e9f5baa86448910f5e04fd7eaaab4dd50083  https://api.trongrid.io/v1/accounts/TWv4NuyPQjBi4bQbZdC1JQquJBUCv5bWVv/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1712142432000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    7d19f10f93202490874dbb0d6bc706e8f43c77968fb64d069c91e2317c6a844f  https://api.trongrid.io/v1/accounts/TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1708435269000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
+    f95eb3908940e4ac112ce25345973f3e2b826d43c0cb2439b29b6e2816019670  https://api.trongrid.io/v1/accounts/TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=50&min_timestamp=1707830469000&only_confirmed=true&order_by=block_timestamp%2Casc
+    24453221c831a49ea943d7a3757ad52bddaf94f18937b2d8681ca69905220271  https://api.trongrid.io/v1/accounts/TX78B8nPrQq2YwkLeSoUV44BMBwWF3uXa3/transactions?limit=50&min_timestamp=1707830469000&only_confirmed=true&order_by=block_timestamp%2Casc

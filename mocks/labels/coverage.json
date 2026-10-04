@@ -1,29 +1,29 @@
 {
   "_demo": true,
   "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
-  "total": 457125,
+  "total": 474142,
   "by_category": {
     "exchange": 378616,
-    "entity": 62948,
+    "entity": 74360,
     "defi": 11087,
+    "scam": 6146,
     "bridge": 2062,
-    "sanctioned": 941,
-    "scam": 652,
+    "sanctioned": 1052,
     "custodial_wallet": 454,
     "swap_service": 289,
     "mixer": 76
   },
   "by_tier": {
-    "curated": 338143,
-    "explorer_tag": 111795,
+    "curated": 349440,
+    "explorer_tag": 117515,
     "derived": 5497,
     "published_por": 1690
   },
   "by_chain": {
-    "bitcoin": 337192,
-    "ethereum": 88047,
+    "bitcoin": 348908,
+    "ethereum": 93272,
     "base": 5996,
-    "tron": 5895,
+    "tron": 5969,
     "avalanche": 4946,
     "worldchain": 4902,
     "arbitrum": 3186,
@@ -32,7 +32,7 @@
     "celo": 463,
     "gnosis": 302,
     "litecoin": 194,
-    "solana": 89,
+    "solana": 90,
     "near": 82,
     "evm": 66,
     "xrp": 64,
@@ -46,8 +46,8 @@
     "ethereum-classic": 14,
     "algorand": 12,
     "linea": 12,
+    "monero": 12,
     "tezos": 12,
-    "monero": 11,
     "fantom": 10,
     "sui": 10,
     "cosmos": 9,
@@ -72,14 +72,14 @@
   "by_source": [
     {
       "source": "graphsense-tagpacks",
-      "name": "GraphSense TagPacks: exchange packs",
+      "name": "GraphSense TagPacks: exchange, darknet-market, ransomware and fraud packs",
       "obtained_from": "GraphSense TagPacks",
       "licence": "MIT",
       "url": "https://github.com/graphsense/graphsense-tagpacks",
-      "labels": 336422,
+      "labels": 342142,
       "tiers": {
         "curated": 336300,
-        "explorer_tag": 122
+        "explorer_tag": 5842
       }
     },
     {
@@ -91,6 +91,17 @@
       "labels": 111673,
       "tiers": {
         "explorer_tag": 111673
+      }
+    },
+    {
+      "source": "ransomwhere",
+      "name": "Ransomwhere: crowdsourced ransomware payment addresses",
+      "obtained_from": "Ransomwhere",
+      "licence": "CC BY 4.0",
+      "url": "https://ransomwhe.re",
+      "labels": 11186,
+      "tiers": {
+        "curated": 11186
       }
     },
     {
@@ -146,6 +157,17 @@
       "labels": 162,
       "tiers": {
         "curated": 162
+      }
+    },
+    {
+      "source": "ofac-sdn-xml",
+      "name": "OFAC SDN list, the official XML with sanctions programme codes",
+      "obtained_from": "US Treasury, OFAC",
+      "licence": "US-government public record",
+      "url": "https://www.treasury.gov/ofac/downloads/sdn.xml",
+      "labels": 111,
+      "tiers": {
+        "curated": 111
       }
     },
     {

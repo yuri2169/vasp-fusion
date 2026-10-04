@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -18,6 +18,9 @@ labels:           ## build data/labels.duckdb from the research label CSVs + der
 tagpacks:         ## flatten the GraphSense exchange TagPacks ($(RESEARCH)/graphsense-tagpacks/packs) into the CSV `make labels` reads
 	$(PY) -m vaspfusion.cli tagpacks --packs "$(RESEARCH)/graphsense-tagpacks/packs" \
 		--out "$(RESEARCH)/graphsense_tagpacks_exchange.csv"
+
+threats:          ## flatten the threat sources ($(RESEARCH)/threats: OFAC SDN XML, Ransomwhere, GraphSense) into data/threat_tags.csv, which `make labels` joins on
+	$(PY) -m vaspfusion.cli threats --raw "$(RESEARCH)/threats"
 
 discover:         ## derive Tron deposit addresses into derived/ (cached; OFFLINE=1 replays), then `make labels`
 	$(PY) -m vaspfusion.cli discover --chain tron

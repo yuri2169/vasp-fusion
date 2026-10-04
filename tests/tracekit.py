@@ -48,12 +48,24 @@ class ToyProvider:
         return rows[:limit]
 
 
+def tagged(addr: str, entity: str, category: str, threat: str, who: str, source: str,
+           evidence: str = "the source's words") -> Label:
+    """A label with a threat tag, as the label store returns one."""
+    return Label(address=addr, chain=CHAIN, entity=entity, category=category, kind="unknown",
+                 tier="curated", source=source, source_url=None, label=entity, threat=threat,
+                 threat_entity=who, threat_source=source, threat_url=None,
+                 threat_evidence=evidence)
+
+
 class ToyLabels:
     """labels = {"HOT": ("ExA", "exchange"), "D1": ("ExA", "exchange", "deposit", "explorer_tag")}"""
 
     def __init__(self, labels: dict | None = None):
         self.labels = {}
         for addr, spec in (labels or {}).items():
+            if isinstance(spec, Label):         # a whole label, e.g. one with a threat tag
+                self.labels[addr] = spec
+                continue
             entity, category = spec[0], spec[1]
             kind = spec[2] if len(spec) > 2 else "unknown"
             tier = spec[3] if len(spec) > 3 else "curated"

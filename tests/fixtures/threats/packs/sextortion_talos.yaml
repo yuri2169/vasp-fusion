@@ -1,0 +1,12 @@
+title: Talos Sextortion Tagpack
+creator: Talos Cisco
+description: Addresses related to Sextortion Spam discovered by Talos
+abuse: sextortion
+currency: BTC
+label: Sextortion Spam
+lastmod: 2019-08-06
+confidence: forensic
+source: https://blog.talosintelligence.com/2018/10/anatomy-of-sextortion-scam.html
+tags:
+- address: 1121DWBuPTD7SuTxx7BivG6hyVJbhA3McT
+- address: 1122hj47AmnW3sCWayqm1ZDubmcwenw2x1

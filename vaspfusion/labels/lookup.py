@@ -9,7 +9,7 @@ from typing import Iterable
 import duckdb
 import pyarrow as pa
 
-from .load import LABEL_COLUMNS
+from .load import LABEL_COLUMNS, THREAT_COLUMNS
 from .normalize import EVM_CHAINS, VASP_CATEGORIES, normalize_address, normalize_chain
 
 DEFAULT_DB = Path(__file__).resolve().parents[2] / "data" / "labels.duckdb"
@@ -32,6 +32,13 @@ class Label:
     confidence_high: float | None = None
     # labels the deposit-address model scored: JSON {p, low, high, basis, scored_by, reasons}
     model: str | None = None
+    # tagged addresses only (G3): ransomware, darknet_market, terrorism_financing, fraud or
+    # sanctioned_other, with who the source names, the source, and its own words
+    threat: str | None = None
+    threat_entity: str | None = None
+    threat_source: str | None = None
+    threat_url: str | None = None
+    threat_evidence: str | None = None
 
     @property
     def is_vasp(self) -> bool:
@@ -40,6 +47,9 @@ class Label:
     def as_dict(self) -> dict:
         d = asdict(self)
         d["model"] = json.loads(self.model) if self.model else None
+        if self.threat is None:     # an untagged label reads as it did before tags existed
+            for key in THREAT_COLUMNS:
+                del d[key]
         return d
 
     @classmethod
@@ -113,8 +123,8 @@ class LabelStore:
         return {pairs[r[0]]: Label(*r[1:]) for r in rows}
 
     def search(self, q: str = "", chain: str | None = None, category: str | None = None,
-               tier: str | None = None, limit: int = 50, offset: int = 0
-               ) -> tuple[int, list[Label]]:
+               tier: str | None = None, limit: int = 50, offset: int = 0,
+               threat: str | None = None) -> tuple[int, list[Label]]:
         where, params = [], []
         q = q.strip()
         if q:
@@ -124,6 +134,11 @@ class LabelStore:
             if val:
                 where.append(f"{col} = ?")
                 params.append(val)
+        if threat:
+            if "NULL AS threat" in self._select:      # a DB built before threat tags
+                return 0, []
+            where.append("threat IS NOT NULL" if threat == "any" else "threat = ?")
+            params += [] if threat == "any" else [threat]
         clause = f"WHERE {' AND '.join(where)}" if where else ""
         total = self.con.execute(f"SELECT count(*) FROM labels {clause}", params).fetchone()[0]
         rows = self.con.execute(

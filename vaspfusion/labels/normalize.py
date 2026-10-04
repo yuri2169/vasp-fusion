@@ -42,7 +42,8 @@ _CHAIN_ALIASES = {"trx": "tron", "btc": "bitcoin", "eth": "ethereum", "evm": "ev
 # Source -> tier. Merged upstream sources are joined with "+"; the best part wins.
 _TIER_OF_SOURCE = (
     ("defillama-cex", "published_por"),     # exchange-published proof-of-reserves
-    ("ofac-sdn", "curated"),
+    ("ofac-sdn", "curated"),                # also the official XML (`ofac-sdn-xml`, G3)
+    ("ransomwhere", "curated"),             # crowdsourced, each report reviewed before listing
     ("cex-list", "curated"),
     ("mew-ethereum-lists", "curated"),
     ("dune-spellbook", "curated"),

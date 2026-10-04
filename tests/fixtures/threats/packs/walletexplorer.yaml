@@ -1,0 +1,22 @@
+title: WalletExplorer Tag Pack
+creator: GraphSense Core Team
+currency: BTC
+is_cluster_definer: true
+confidence: service_data
+lastmod: 2021-11-11
+tags:
+- address: 13xq4uaSh9RSXofnBudVBSfx1Fmo6YqS1W
+  label: AlphaBayMarket
+  source: https://www.walletexplorer.com/address/13xq4uaSh9RSXofnBudVBSfx1Fmo6YqS1W
+  category: market
+  actor: alphabaymarket
+- address: 1M6AsDG1XEKHkbDxkfBhFndKASNiVQGWnU
+  label: AlphaBayMarket
+  source: https://www.walletexplorer.com/address/1M6AsDG1XEKHkbDxkfBhFndKASNiVQGWnU
+  category: market
+  actor: alphabaymarket
+- address: 1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG
+  label: Huobi.com
+  source: https://www.walletexplorer.com/address/1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG
+  category: exchange
+  actor: huobi

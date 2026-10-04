@@ -43,7 +43,7 @@ def test_list_is_newest_first_summaries(store, tmp_path):
     assert "graph" not in items[1] and items[1]["outcome"] == "SANCTIONED_OR_MIXER_REACHED"
     assert set(items[1]) == {"id", "address", "chain", "status", "outcome", "top_vasp",
                              "confidence", "case_ref", "complaint_no", "amount_lost_inr",
-                             "created_at", "demo", "error"}
+                             "created_at", "demo", "error", "screening", "threats"}
 
 
 def test_list_filters_by_outcome_and_status(store, tmp_path):

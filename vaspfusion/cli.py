@@ -33,13 +33,44 @@ def cmd_tagpacks(args) -> None:
         print(f"    {source:<52}{n:>8,}")
 
 
+def cmd_threats(args) -> None:
+    import json
+
+    from .labels import threats as T
+    raw = Path(args.raw)
+    cfg = T.config()
+    rows = T.merge(T.read_ofac(raw / "sdn.xml", cfg) + T.read_ransomwhere(raw / "ransomwhere.json", cfg)
+                   + T.read_tagpacks(raw / "graphsense-tagpacks" / "packs", cfg), cfg)
+    T.write_csv(rows, args.out)
+    counts = T.counts(rows)
+    fetched = json.loads((raw / "SOURCES.json").read_text())
+    record = {"_notice": "Where data/threat_tags.csv comes from. Written by `python -m "
+                         "vaspfusion.cli threats`; the rules are in config/threats.yaml.",
+              "fetched": fetched["fetched"], "files": fetched["files"],
+              "sources": {k: {f: v[f] for f in ("name", "licence", "url")}
+                          for k, v in cfg["sources"].items()},
+              "skipped": cfg["graphsense"]["skipped"], "counts": counts}
+    Path(args.record).write_text(json.dumps(record, indent=1, ensure_ascii=False) + "\n",
+                                 encoding="utf-8")
+    print(f"threats -> {args.out}  ({counts['total']:,} tagged addresses; fetched "
+          f"{fetched['fetched']})")
+    for threat in cfg["threats"]:
+        n = counts["by_threat"].get(threat, 0)
+        chains = ", ".join(f"{c} {k:,}" for c, k in sorted(
+            counts["by_chain"].get(threat, {}).items(), key=lambda kv: (-kv[1], kv[0])))
+        sources = ", ".join(f"{s} {k:,}" for s, k in sorted(
+            counts["by_source"].get(threat, {}).items(), key=lambda kv: (-kv[1], kv[0])))
+        print(f"  {threat:<20}{n:>7,}  by chain: {chains}")
+        print(f"  {'':<27}  by source: {sources}")
+
+
 def cmd_labels(args) -> None:
     from .labels.load import build_labels
     research = Path(args.research)
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
                          research / "indian_vasps_dune_spellbook.csv",
                          derived_dir=Path(args.derived), model_dir=Path(args.model),
-                         tagpacks_csv=research / TAGPACKS_CSV)
+                         tagpacks_csv=research / TAGPACKS_CSV, threats_csv=Path(args.threats))
     t = stats["total"]
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
@@ -64,6 +95,19 @@ def cmd_labels(args) -> None:
           f"calibrated confidence and range (from {args.model}; `make model` writes it); "
           f"{stats['derived_model_unconfirmed']:,} keep the rules' confidence because the "
           "model did not confirm them; the rest were not scored")
+    tagged = sum(stats["by_threat"].values())
+    print(f"  threat tags ({args.threats}): {stats['threat_rows']:,} tagged addresses, "
+          f"{stats['threat_joined']:,} joined onto a label already held, "
+          f"{stats['threat_new_rows']:,} added as labels of their own; "
+          f"{stats['scam_retagged']:,} rows filed as scam tagged fraud. "
+          f"{stats['sanctioned_without_programme']:,} sanctioned rows are not in the SDN XML "
+          "(no programme code, no tag). `make threats` writes the file.")
+    if tagged:
+        print(_table("by threat", stats["by_threat"], tagged))
+        for threat, chains in stats["threat_by_chain"].items():
+            print(f"    {threat}: " + ", ".join(f"{c} {n:,}" for c, n in chains.items())
+                  + "  |  " + ", ".join(f"{s} {n:,}" for s, n in
+                                        stats["threat_by_source"][threat].items()))
     print(_table("by category", stats["by_category"], t))
     print(_table("by tier", stats["by_tier"], t))
     print(_table("by kind", stats["by_kind"], t))
@@ -938,7 +982,18 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--model", default=str(ROOT / "artifacts" / "model_v1"),
                    help="folder of the deposit-address model: its <chain>/scores.csv set the "
                         "confidence of the derived labels it scored")
+    s.add_argument("--threats", default=str(ROOT / "data" / "threat_tags.csv"),
+                   help="threat tags (`threats` writes it); joined onto the labels")
     s.set_defaults(fn=cmd_labels)
+
+    s = sub.add_parser("threats", help="flatten the OFAC SDN XML, Ransomwhere and the "
+                                       "GraphSense threat packs into the CSV `labels` reads")
+    s.add_argument("--raw", default=str(ROOT.parent / "research" / "data" / "threats"),
+                   help="folder with sdn.xml, ransomwhere.json, graphsense-tagpacks/packs "
+                        "and SOURCES.json (where and when each was fetched)")
+    s.add_argument("--out", default=str(ROOT / "data" / "threat_tags.csv"))
+    s.add_argument("--record", default=str(ROOT / "data" / "threat_sources.json"))
+    s.set_defaults(fn=cmd_threats)
 
     research = ROOT.parent / "research" / "data"
     s = sub.add_parser("tagpacks", help="flatten the GraphSense exchange TagPacks into the CSV "

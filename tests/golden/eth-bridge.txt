@@ -251,8 +251,8 @@ vaspfusion.cli verify eth-bridge
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         17310c66f13059778c7fc0cfad53e553ef67b90b78488b1e0d8f89729e8046dc
-  Receipt SHA-256         84a2a06d6b52bcaf46973c1d19a8e5a51ecb9d14686399ab340ffa50238ce7de
+  Content SHA-256         a0a8aa16682777fd4505f1d61e8ab94a03889e349fdad9c4a555ac975b5c3b8c
+  Receipt SHA-256         d95094ca284f01e22527e2052a84b9ed7515118c800b704fef992b0c013e8e88
 
   Chain responses read
     34a98eaee3e7b8b35f7da5d3ba3e7744ab64c7872cbcc47b50cfd03ef5faf433  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1770783215

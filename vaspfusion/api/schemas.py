@@ -31,9 +31,12 @@ NodeRole = Literal["suspect", "intermediary", "exchange_hot", "exchange_deposit"
                    "sanctioned", "hub", "unknown"]
 TypologyCode = Literal["peel_chain", "fan_out", "fan_in", "rapid_forwarding",
                        "round_amounts", "bridge_hop", "mixer_contact", "sanctioned_contact",
+                       "threat_contact",   # a link to a threat-tagged address (G3)
                        "deposit_like",
                        "coinjoin_shape"]   # Bitcoin: a pattern, never an alert (B5)
 Severity = Literal["info", "warn", "high"]
+Threat = Literal["terrorism_financing", "ransomware", "darknet_market", "fraud",
+                 "sanctioned_other"]
 EvidenceKind = Literal["label", "path", "sweep", "gas_payer", "model", "counterfactual"]
 RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered",
                         "freeze_confirmed", "refused", "withdrawn"]
@@ -71,6 +74,21 @@ class ModelScore(_M):
     reasons: list[ModelReason] = Field([], description="Strongest reasons, strongest first")
 
 
+class ThreatTag(_M):
+    """What a public source says an address belongs to (config/threats.yaml has the rule
+    that produced it). Never an inference of this tool."""
+    threat: Threat = Field(description=(
+        "sanctioned_other: on the OFAC SDN list under a programme that names none of the "
+        "other four"))
+    entity: str | None = Field(None, description="Who the source names: a ransomware family, "
+                                                 "a market, a listed person or organisation")
+    source: str | None = Field(None, description="ofac-sdn-xml, ransomwhere, "
+                                                 "graphsense-tagpack:<pack>, or a scam list")
+    url: str | None = None
+    evidence: str | None = Field(None, description="The source's own words: list entry, "
+                                                   "programme codes, pack fields")
+
+
 class LabelOut(_M):
     address: str
     chain: str = Field(description="Chain slug as stored; 'evm' = any EVM chain")
@@ -94,6 +112,13 @@ class LabelOut(_M):
     model: ModelScore | None = Field(None, description=(
         "Labels the deposit-address model scored: its own probability, range and reasons, "
         "whether or not the label's confidence is based on it"))
+    threat: Threat | None = Field(None, description=(
+        "Set when a public source ties the address to a threat ecosystem. Sits beside "
+        "`category`; the four fields below say who, per which source, in its own words"))
+    threat_entity: str | None = None
+    threat_source: str | None = None
+    threat_url: str | None = None
+    threat_evidence: str | None = None
 
 
 class LabelSearch(_M):
@@ -115,6 +140,14 @@ class CaseCreate(_M):
     max_hops: int = Field(3, ge=1, le=5)
 
 
+class Screening(_M):
+    """The check of the case's own address against the threat tags, made when the case
+    is opened and before the trace starts."""
+    hit: bool
+    text: str = Field(description="One sentence to show as it is")
+    tag: ThreatTag | None = None
+
+
 class CaseSummary(_M):
     id: str
     address: str
@@ -130,6 +163,12 @@ class CaseSummary(_M):
     demo: bool = False
     error: str | None = Field(None, description="Set when status is 'failed': what went "
                                                 "wrong, in plain English")
+    screening: Screening | None = Field(None, description=(
+        "Present from the moment the case is opened (also while queued or running). null "
+        "on a case stored before screening existed"))
+    threats: list[Threat] = Field([], description=(
+        "The distinct threats the case touches: its own address's tag and every flagged "
+        "link. While the trace runs it holds the screening hit only"))
 
 
 class CaseList(_M):
@@ -253,6 +292,9 @@ class TypologyFlag(_M):
     text: str
     figures: dict[str, float] = {}
     tx_hashes: list[str] = []
+    threat: ThreatTag | None = Field(None, description=(
+        "The tag of the flagged address: always on threat_contact, and on a "
+        "sanctioned_contact or mixer_contact whose address also carries one"))
 
 
 class CaseInput(_M):
@@ -613,6 +655,8 @@ class Alert(_M):
     text: str
     at: datetime
     case_id: str | None = None
+    threat: ThreatTag | None = Field(None, description="Why the wallet is high-risk, when "
+                                                       "the alert rests on a threat tag")
 
 
 class LabelSource(_M):
@@ -633,6 +677,7 @@ class LabelCoverage(_M):
     by_tier: dict[str, int]
     by_chain: dict[str, int]
     by_source: list[LabelSource] = []
+    by_threat: dict[str, int] = Field({}, description="Tagged labels per threat")
 
 
 class Dashboard(_M):
@@ -659,10 +704,13 @@ class WatchCreate(_M):
 
 
 class WatchChange(_M):
-    kind: Literal["new_activity", "new_exchange", "new_alert"]
+    kind: Literal["new_activity", "new_exchange", "new_alert", "new_threat_link"] = Field(
+        description="new_threat_link: a re-check found a link to a threat-tagged address "
+                    "that the baseline did not have")
     severity: Severity
     text: str
     at: datetime
+    threat: ThreatTag | None = None
 
 
 class WatchItem(_M):

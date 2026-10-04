@@ -24,6 +24,7 @@ import re
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Literal
 from urllib.parse import urlsplit
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response
@@ -36,6 +37,7 @@ from ..auth.officers import USERNAME, Locked, Officers
 from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..explain.progress import progress_sentence
 from ..labels.lookup import DEFAULT_DB, LabelStore
+from ..screening import screen
 from ..store.audit import AuditLog
 from ..store.cases import SUMMARY_KEYS, CaseStore
 from ..trace import TraceConfig
@@ -479,7 +481,12 @@ def create_case(body: S.CaseCreate, request: Request, response: Response,
         _ACTIVE.add(cid)
     # a re-run keeps the details the officer entered unless new ones are given
     old = existing or {}
+    # screened against the threat tags now, before the trace: a direct hit shows at once
+    with LabelStore(LABEL_DB) as labels:
+        screening = screen(labels.lookup(address, chain))
     summary = S.CaseSummary(
+        screening=screening,
+        threats=[screening["tag"]["threat"]] if screening["tag"] else [],
         id=cid, address=address, chain=chain, status="queued",
         case_ref=body.case_ref or old.get("case_ref"),
         complaint_no=body.complaint_no or old.get("complaint_no"),
@@ -508,11 +515,17 @@ def create_case(body: S.CaseCreate, request: Request, response: Response,
 
 @app.get("/api/cases", response_model=S.CaseList)
 def list_cases(response: Response, outcome: S.Outcome | None = None,
-               status: S.CaseStatus | None = None):
-    live = _cases().list(outcome=outcome, status=status)
+               status: S.CaseStatus | None = None,
+               threat: S.Threat | Literal["any"] | None = Query(None, description=(
+                   "Only cases that touch this threat; `any` = every case that touches one"))):
+    def touches(c: dict) -> bool:
+        found = c.get("threats") or []
+        return threat is None or (bool(found) if threat == "any" else threat in found)
+
+    live = [c for c in _cases().list(outcome=outcome, status=status) if touches(c)]
     mock = [c for c in _demo_cases()
             if (outcome is None or c.get("outcome") == outcome)
-            and (status is None or c["status"] == status)]
+            and (status is None or c["status"] == status) and touches(c)]
     _source(response, "live" if not demo_mode() else "mixed" if live else "mock")
     return {"total": len(live) + len(mock), "items": live + mock}
 
@@ -660,7 +673,8 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
 def _coverage(store: LabelStore) -> dict:
     with store:
         st = store.stats()
-    return {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain", "by_source")}
+    return {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain", "by_source",
+                               "by_threat")}
 
 
 @app.get("/api/labels/coverage", response_model=S.LabelCoverage)
@@ -680,6 +694,8 @@ def label_coverage(response: Response):
 @app.get("/api/labels/search", response_model=S.LabelSearch)
 def search_labels(response: Response, q: str = "", chain: str | None = None,
                   category: S.Category | None = None, tier: S.Tier | None = None,
+                  threat: S.Threat | Literal["any"] | None = Query(None, description=(
+                      "Only labels with this threat tag; `any` = every tagged label")),
                   limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0)):
     store = _labels()
     if store is None:
@@ -689,7 +705,7 @@ def search_labels(response: Response, q: str = "", chain: str | None = None,
         return load_mock("labels/search")
     with store:
         total, items = store.search(q, chain=chain, category=category, tier=tier,
-                                    limit=limit, offset=offset)
+                                    limit=limit, offset=offset, threat=threat)
     _source(response, "live")
     return {"query": q, "total": total, "limit": limit, "offset": offset,
             "items": [i.as_dict() for i in items]}

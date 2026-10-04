@@ -23,7 +23,8 @@ from .connect import connect
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB = ROOT / "data" / "case.duckdb"
 SUMMARY_KEYS = ("id", "address", "chain", "status", "outcome", "top_vasp", "confidence",
-                "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo", "error")
+                "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo", "error",
+                "screening", "threats")
 
 # DuckDB aborts one of two transactions that rewrite the same row at once. Writers in
 # this process queue on a lock; a writer in another process is retried.

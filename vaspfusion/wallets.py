@@ -8,6 +8,8 @@ sentence about a stored fact.
 """
 from __future__ import annotations
 
+from .labels.threats import named as threat_words, tag_of
+
 RISK_LABELS = {"sanctioned": "is on a sanctions list",
                "mixer": "is labelled as a mixer",
                "scam": "is labelled as a scam address"}
@@ -63,6 +65,11 @@ def wallet_view(address: str, chain: str, cases: list[dict], label: dict | None)
     level, reasons = None, []
     if label or cases:
         level = "none"
+    tag = tag_of(label)
+    if tag is not None:
+        level = "high"
+        reasons.append(f"This address is tagged {threat_words(tag)}."
+                       + (f" {tag['evidence']}" if tag.get("evidence") else ""))
     if label and label.get("category") in RISK_LABELS:
         level = "high"
         named = label.get("label") or label.get("entity")

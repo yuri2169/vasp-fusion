@@ -1,6 +1,6 @@
 """Typology flags over a trace: each has a wallet, figures and hashes that are in the trace.
 Toy transfers (tracekit.py); the real wallets' flags are pinned in test_demo_cases.py."""
-from tracekit import CHAIN, ToyLabels, ToyProvider, tx
+from tracekit import CHAIN, ToyLabels, ToyProvider, tagged, tx
 from vaspfusion.detect.typologies import typology_flags
 from vaspfusion.trace import TraceConfig, trace
 
@@ -13,8 +13,9 @@ def flags(transfers, labels=LABELS, **cfg):
     found = typology_flags(tr)
     hashes = {e.transfer.tx_hash for e in tr.edges}
     for f in found:
-        assert set(f) == {"code", "severity", "wallet", "text", "figures", "tx_hashes"}
-        assert f["tx_hashes"] and set(f["tx_hashes"]) <= hashes
+        assert set(f) - {"threat"} == {"code", "severity", "wallet", "text", "figures",
+                                       "tx_hashes"}
+        assert set(f["tx_hashes"]) <= hashes and (f["tx_hashes"] or f["wallet"] == "S")
         assert all(isinstance(v, float) for v in f["figures"].values())
     return found
 
@@ -173,3 +174,58 @@ def test_the_traced_wallet_is_not_one_of_the_wallets_its_money_was_split_across(
     rows = [tx(1, "S", "A", 100, 0), tx(2, "S", "B", 100, 1), tx(3, "S", "W", 100, 2),
             tx(4, "A", "W", 100, 30), tx(5, "B", "W", 100, 31)]
     assert "fan_in" not in codes(flags(rows))
+
+
+# ------------------------------------------------------------------ threat tags
+RANSOM = tagged("RW", "Conti", "entity", "ransomware", "Conti", "ransomwhere")
+TERROR = tagged("TF", "OFAC SDN", "sanctioned", "terrorism_financing", "ISIL KHORASAN",
+                "ofac-sdn-xml", "OFAC SDN list, uid 18647: ISIL KHORASAN; programme FTO, SDGT.")
+LISTED = tagged("SO", "OFAC SDN", "sanctioned", "sanctioned_other", "CHEIL CREDIT BANK",
+                "ofac-sdn-xml")
+
+
+def test_money_reaching_a_tagged_address_raises_a_named_alert():
+    rows = [tx(1, "S", "M", 1000, 0), tx(2, "M", "RW", 140, 5), tx(3, "M", "HOT", 860, 6)]
+    f = one(flags(rows, {**LABELS, "RW": RANSOM}), "threat_contact")
+    assert f["severity"] == "high" and f["wallet"] == "RW" and f["tx_hashes"] == ["tx2"]
+    assert f["text"] == ("Linked to ransomware (Conti, Ransomwhere): 2 hops away, 14% of the "
+                         "funds (140 USDT) reached RW")
+    assert f["figures"] == {"share": 0.14, "amount": 140.0, "hops": 2.0}
+    assert f["threat"] == {"threat": "ransomware", "entity": "Conti", "source": "ransomwhere",
+                           "url": None, "evidence": "the source's words"}
+
+
+def test_a_tagged_funder_is_named_too():
+    rows = [tx(1, "RW", "S", 300, 0), tx(2, "X", "S", 700, 1), tx(3, "S", "HOT", 1000, 9)]
+    f = one(flags(rows, {**LABELS, "RW": RANSOM}), "threat_contact")
+    assert f["text"] == ("Linked to ransomware (Conti, Ransomwhere): RW funded 30% of what "
+                         "the wallet received (300 USDT)")
+
+
+def test_a_sanctioned_address_keeps_its_flag_and_gains_its_tag():
+    rows = [tx(1, "S", "TF", 1000, 0)]
+    found = flags(rows, {"TF": TERROR})
+    f = one(found, "sanctioned_contact")
+    assert "threat_contact" not in codes(found)
+    assert f["text"].endswith("1 hop away; tagged terrorism financing (ISIL KHORASAN, "
+                              "OFAC SDN list)")
+    assert f["threat"]["threat"] == "terrorism_financing"
+    assert "programme FTO, SDGT" in f["threat"]["evidence"]
+
+
+def test_a_listing_with_no_specific_threat_adds_no_words_but_keeps_the_tag():
+    f = one(flags([tx(1, "S", "SO", 1000, 0)], {"SO": LISTED}), "sanctioned_contact")
+    assert "tagged" not in f["text"] and f["threat"]["entity"] == "CHEIL CREDIT BANK"
+
+
+def test_a_wallet_that_is_itself_tagged_says_so_first():
+    tr = trace("RW", CHAIN, ToyProvider([tx(1, "RW", "HOT", 500, 0)]),
+               ToyLabels({**LABELS, "RW": RANSOM}), TraceConfig())
+    found = typology_flags(tr)
+    assert found[0]["code"] == "threat_contact" and found[0]["wallet"] == "RW"
+    assert found[0]["text"] == "The wallet itself is tagged ransomware (Conti, Ransomwhere)"
+
+
+def test_an_untagged_trace_raises_no_threat_flag_and_carries_no_threat_key():
+    found = flags([tx(1, "S", "OFAC", 1000, 0)])
+    assert codes(found) == ["sanctioned_contact"] and "threat" not in found[0]

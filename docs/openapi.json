@@ -335,6 +335,35 @@
               ],
               "title": "Status"
             }
+          },
+          {
+            "name": "threat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "terrorism_financing",
+                    "ransomware",
+                    "darknet_market",
+                    "fraud",
+                    "sanctioned_other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "const": "any",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only cases that touch this threat; `any` = every case that touches one",
+              "title": "Threat"
+            },
+            "description": "Only cases that touch this threat; `any` = every case that touches one"
           }
         ],
         "responses": {
@@ -675,6 +704,35 @@
               ],
               "title": "Tier"
             }
+          },
+          {
+            "name": "threat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "terrorism_financing",
+                    "ransomware",
+                    "darknet_market",
+                    "fraud",
+                    "sanctioned_other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "const": "any",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Only labels with this threat tag; `any` = every tagged label",
+              "title": "Threat"
+            },
+            "description": "Only labels with this threat tag; `any` = every tagged label"
           },
           {
             "name": "limit",
@@ -1444,6 +1502,17 @@
               }
             ],
             "title": "Case Id"
+          },
+          "threat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreatTag"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the wallet is high-risk, when the alert rests on a threat tag"
           }
         },
         "additionalProperties": false,
@@ -2073,6 +2142,33 @@
             "title": "Error",
             "description": "Set when status is 'failed': what went wrong, in plain English"
           },
+          "screening": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Screening"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed"
+          },
+          "threats": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "terrorism_financing",
+                "ransomware",
+                "darknet_market",
+                "fraud",
+                "sanctioned_other"
+              ]
+            },
+            "type": "array",
+            "title": "Threats",
+            "description": "The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only",
+            "default": []
+          },
           "progress": {
             "anyOf": [
               {
@@ -2486,6 +2582,33 @@
             ],
             "title": "Error",
             "description": "Set when status is 'failed': what went wrong, in plain English"
+          },
+          "screening": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Screening"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed"
+          },
+          "threats": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "terrorism_financing",
+                "ransomware",
+                "darknet_market",
+                "fraud",
+                "sanctioned_other"
+              ]
+            },
+            "type": "array",
+            "title": "Threats",
+            "description": "The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -3710,6 +3833,15 @@
             "type": "array",
             "title": "By Source",
             "default": []
+          },
+          "by_threat": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Threat",
+            "description": "Tagged labels per threat",
+            "default": {}
           }
         },
         "additionalProperties": false,
@@ -3863,6 +3995,69 @@
               }
             ],
             "description": "Labels the deposit-address model scored: its own probability, range and reasons, whether or not the label's confidence is based on it"
+          },
+          "threat": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "terrorism_financing",
+                  "ransomware",
+                  "darknet_market",
+                  "fraud",
+                  "sanctioned_other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat",
+            "description": "Set when a public source ties the address to a threat ecosystem. Sits beside `category`; the four fields below say who, per which source, in its own words"
+          },
+          "threat_entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat Entity"
+          },
+          "threat_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat Source"
+          },
+          "threat_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat Url"
+          },
+          "threat_evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat Evidence"
           }
         },
         "additionalProperties": false,
@@ -5777,6 +5972,37 @@
         "title": "RuleBaseline",
         "description": "What one rule alone scores on the test addresses: the bar the model must clear."
       },
+      "Screening": {
+        "properties": {
+          "hit": {
+            "type": "boolean",
+            "title": "Hit"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "One sentence to show as it is"
+          },
+          "tag": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreatTag"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "hit",
+          "text"
+        ],
+        "title": "Screening",
+        "description": "The check of the case's own address against the threat tags, made when the case\nis opened and before the trace starts."
+      },
       "StatusEvent": {
         "properties": {
           "status": {
@@ -5830,6 +6056,76 @@
         ],
         "title": "StatusEvent"
       },
+      "ThreatTag": {
+        "properties": {
+          "threat": {
+            "type": "string",
+            "enum": [
+              "terrorism_financing",
+              "ransomware",
+              "darknet_market",
+              "fraud",
+              "sanctioned_other"
+            ],
+            "title": "Threat",
+            "description": "sanctioned_other: on the OFAC SDN list under a programme that names none of the other four"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity",
+            "description": "Who the source names: a ransomware family, a market, a listed person or organisation"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "ofac-sdn-xml, ransomwhere, graphsense-tagpack:<pack>, or a scam list"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence",
+            "description": "The source's own words: list entry, programme codes, pack fields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "threat"
+        ],
+        "title": "ThreatTag",
+        "description": "What a public source says an address belongs to (config/threats.yaml has the rule\nthat produced it). Never an inference of this tool."
+      },
       "TypologyFlag": {
         "properties": {
           "code": {
@@ -5843,6 +6139,7 @@
               "bridge_hop",
               "mixer_contact",
               "sanctioned_contact",
+              "threat_contact",
               "deposit_like",
               "coinjoin_shape"
             ],
@@ -5881,6 +6178,17 @@
             "type": "array",
             "title": "Tx Hashes",
             "default": []
+          },
+          "threat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreatTag"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The tag of the flagged address: always on threat_contact, and on a sanctioned_contact or mixer_contact whose address also carries one"
           }
         },
         "additionalProperties": false,
@@ -6403,9 +6711,11 @@
             "enum": [
               "new_activity",
               "new_exchange",
-              "new_alert"
+              "new_alert",
+              "new_threat_link"
             ],
-            "title": "Kind"
+            "title": "Kind",
+            "description": "new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have"
           },
           "severity": {
             "type": "string",
@@ -6424,6 +6734,16 @@
             "type": "string",
             "format": "date-time",
             "title": "At"
+          },
+          "threat": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThreatTag"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,

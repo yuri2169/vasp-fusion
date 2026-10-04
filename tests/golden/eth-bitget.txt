@@ -158,8 +158,8 @@ vaspfusion.cli verify eth-bitget
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         30d4c8d0a6e479ac64c3b6d868362072c2736ada35e21baea0f5515a45b9d3bb
-  Receipt SHA-256         e34da5a3c07cc5229ba82e7a3b19c13916d11efd8b02e002c1b4087e6e86720e
+  Content SHA-256         a33923200e0391b7acd60048b45cd61e0c7982fd923c3b7f3c9415fd284c57ba
+  Receipt SHA-256         633ed9358d6e5a0e81cb0d24461f9f4251589bf9ad13675e722eab1f6f2d34d5
 
   Chain responses read
     ff9e592eee27ddb05c43b2ba9f3521e51e72c2b49aa6dc1add6174bbc36f752d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1706030459
