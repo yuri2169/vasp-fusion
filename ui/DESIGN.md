@@ -1,6 +1,6 @@
 # VASP-FUSION design system
 
-Every UI phase follows this file. It describes the interface as built in U1; when a rule here and the code disagree, fix one of them in the same change. Every component in every state is on the `/kit` page.
+Every UI phase follows this file. It describes the interface as built in U6: **the BTC-FUSION look**, so that the two submissions (SIH26146 and SIH26182) read as one product family. The source of the language is BTC-FUSION's `docs/ui_architecture.md` and `ui/src/index.css`; where this file and that one disagree about the look, that one wins. When a rule here and the code disagree, fix one of them in the same change. Every component in every state is on the `/kit` page (demo fixtures only).
 
 ## Who it is for, and the one job
 
@@ -10,105 +10,92 @@ Every UI phase follows this file. It describes the interface as built in U1; whe
 
 ## The concept
 
-**A case file that ends in a routing slip.** The world this comes from is legal notices, evidence tags, chain-of-custody seals and docket stamps. It is not a neon crypto dashboard.
+**Instrument software.** A dense, flat, ruled plate: hairlines, square corners, small-caps labels, and a palette in which every accent names where a fact comes from. It is not a product page and not a neon crypto dashboard.
 
-What that means in practice:
-- Flat surfaces, hairline rules, 4px corners. No gradients. Shadows only on things that float (tooltip, toast, dialog, the search bar's hint).
-- One bold element, the **Hop Rail** with its ticket stubs and docket stamp. Everything else stays quiet.
-- Saffron is rare, so it means something: the attributed exchange, or the one primary action.
+House rules (they are also at the top of `src/styles/index.css`):
+- Radius 0 to 2px. Nothing is a floating rounded card. `rounded-full` is for dots only.
+- Depth comes from hairlines and background steps, **never box-shadow** (the Tailwind theme has no shadow). A tooltip, toast or dialog is told apart by an ink hairline.
+- No gradients, unless one encodes a magnitude. (The landing's veil and grid are the two grounds; nothing is written on the grid.)
+- **Mono is for values only**: addresses, transaction hashes, amounts, timestamps, counts. Labels, headings, chips and prose are Public Sans.
+- Every figure is tabular and right-aligned so columns compare vertically.
+- Density is the feature.
+- **One frame between a leaf and the page.** A frame is a border on three or more sides. `Panel` enforces it: a `Panel` inside a `Panel` (or inside `Frame`) renders `panel-sub`, and a `DataTable` inside a frame is ruled, not boxed again. Single-edge accent rules, inline controls and `gap-px` grids are not frames. Never a border on top of a fill.
+- **Three panel weights, no more:** `panel-primary` (ink hairline; exactly one focal panel per screen: on a case, the answer), `panel` (the default hairline), `panel-sub` (filled, borderless).
+- Spacing is a scale: `2 4 8 12 16 24 32 48`.
 
 ## Colour
 
-Tokens live in `src/styles/tokens.css`. Two layers.
+Tokens live in `src/styles/tokens.css`. **The palette is BTC-FUSION's, hex for hex** (a test pins it). A colour is a claim about where a fact comes from, never a mood:
 
-**Brand: six colours, the same in both themes.**
-
-| Token | Hex | Use |
-|---|---|---|
-| `--ink` | `#2B1622` | Deep plum. Nav rail, headings |
-| `--paper` | `#F5F4F8` | Cool lavender-grey page (deliberately not cream) |
-| `--saffron` | `#E8772E` | The attributed exchange and the primary action. Nothing else |
-| `--verified` | `#1F7A74` | Evidence published by an exchange, or tagged by an explorer |
-| `--seal` | `#B3261E` | Sanctioned, mixer, freeze, errors |
-| `--slate` | `#5B5566` | Secondary text, derived-tier evidence |
-
-**Role: what a component asks for. These switch with the theme.**
-
-| Token (Tailwind class) | Light | Dark | Use |
+| Token | Light | Dark | Means here |
 |---|---|---|---|
-| `--bg` (`bg-page`) | `#F5F4F8` | `#1A0F16` | Page |
-| `--surface` (`bg-surface`) | `#FFFFFF` | `#24161F` | Cards, tables, chips |
-| `--surface-sunk` (`bg-sunk`) | `#ECE9F1` | `#140B11` | Wells, table header, hover |
-| `--rule` (`border-rule`) | `#DAD6E1` | `#3E2A37` | Hairlines |
-| `--rule-strong` (`border-rule-strong`) | `#8A8296` | `#8A7584` | Control borders (3:1) |
-| `--fg` (`text-fg`) | `#2B1622` | `#EDE9F0` | Text, headings |
-| `--fg-muted` (`text-muted`) | `#5B5566` | `#B9AEBB` | Secondary text |
-| `--focus` | `#2B1622` | `#EDE9F0` | Focus ring (paper on the rail) |
-| `--rail-bg` (`bg-rail`) | `#2B1622` | `#120A0F` | Nav rail; `text-rail-fg`, `text-rail-muted`, `bg-rail-active` |
-| `--saffron-text` (`text-saffron-text`) | `#A5460E` | `#E8772E` | Saffron as text |
-| `--verified-text` (`text-verified-text`) | `#196A65` | `#57BDB4` | Teal as text or outline |
-| `--seal-text` (`text-seal-text`) | `#B3261E` | `#F08A82` | Red as text or outline |
-| `--*-wash` (`bg-saffron-wash` …) | pale tints | deep tints | Tinted backgrounds |
-| `--on-saffron`, `--on-verified`, `--on-seal` | `#2B1622`, white, white | same | Text on a brand fill (`text-saffron-on` …) |
+| `--chain` | `#2D6A9F` | `#6BAEE8` | On-chain facts: addresses, transfers, amounts, hops, the suspect wallet |
+| `--network` | `#7B4B94` | `#C199DA` | **Label evidence**: who an address belongs to (exchange labels and their tier) |
+| `--fusion` | `#8C5B0E` | `#E0A63F` | The attribution answer: the named exchange, proximity and confidence, model output |
+| `--confirm` | `#2E7D5B` | `#54C793` | Officer actions: the primary button, approve, mark as sent, a reply recorded |
+| `--danger` | `#A2453B` | `#EE8279` | Sanctioned or mixer contact, failures |
+| `--data` | `#5C6B78` | `#9AA8B6` | Unlabelled, insufficient evidence |
+| `--active`, `--active-wash` | ink, `#DCE3EA` | ink, `#2B3641` | **Interaction only**: hover, focus, selected. Never provenance |
 
-Rules:
-- **Components use role tokens only**, through the Tailwind classes. Tailwind's default palette is removed, so `bg-red-500` does not exist.
-- A brand fill takes its `on-` colour for text: `bg-saffron text-saffron-on`, `bg-verified text-verified-on`, `bg-seal text-seal-on`.
-- An accent used as text or as an outline takes the `-text` variant, never the brand hex (the brand teal and red fail contrast on the dark surface).
-- `src/styles/tokens.test.ts` pins the six brand hexes and checks every text and background pair for WCAG AA (4.5:1 text, 3:1 control borders and focus) in both themes. A new token pair gets a line there.
+Surfaces and text: `--paper` (page), `--surface` (panels), `--surface-2` (filled panels, table heads), `--surface-3` (bar tracks), `--ink`, `--ink-soft`, `--ink-dim`, `--rule`, `--rule-soft`, and a wash per layer. Dark is re-picked, not inverted: surfaces step up from an almost-black ground.
 
-**Dark mode.** `data-theme="light" | "dark"` on `<html>` wins; with no attribute, `prefers-color-scheme` decides. The officer's choice is stored as `vaspfusion.theme` and applied before first paint (`index.html`). `?theme=dark` forces a theme for one page load (screenshots). The dark block is written twice in `tokens.css` (attribute and media query); a test keeps the two identical.
+- The footer carries the colour key (spelled out on the landing, five swatches with tooltips elsewhere), because nobody can infer it.
+- Hover and selection are ink (`row-hover`, `bg-active-wash`), so no layer colour ever means "you are pointing at this".
+- Colour is never the only signal: a label tier is icon + words + colour; an outcome is words + border + fill.
+- **Contrast floors are load-bearing. Do not lighten `--ink-dim` or the layer colours.** `tokens.test.ts` checks AA for every text colour on every ground in both themes. Two things it knows: `--ink-dim` on `--surface-3` is 4.47:1 in dark, so text on that ground is `--ink-soft`; `--confirm` as text sits on a panel or its own wash, not on paper.
+
+**The U1 role names are aliases.** Components written in U1 to U5 ask for `bg-page`, `text-fg`, `text-muted`, `bg-sunk`, `border-rule-strong`, `saffron`, `verified`, `seal`, `slate`. Those names still work; each points at a palette token (`tokens.css`, "aliases"): `page→paper`, `sunk→surface-2`, `fg→ink`, `muted→ink-soft`, `rule-strong→ink-dim`, `saffron→fusion`, `verified→network`, `seal→danger`, `slate→data`. New code uses the palette names.
 
 ## Type
 
 Self-hosted through `@fontsource` (the demo runs with no network).
 
-| Face | Class | Use |
+| Role | Face | Class |
 |---|---|---|
-| Bricolage Grotesque | `display` | Page titles, exchange names on stamps and cards. Nothing else |
-| IBM Plex Sans | default | Everything read |
-| IBM Plex Mono | `font-mono` | **Every address, transaction hash and amount.** Non-negotiable |
+| Masthead, names, headline figures | **Archivo** 700 to 800 | `.display`, `.title`, `.figure`, `font-cond` |
+| UI and prose | **Public Sans** | default |
+| Values and identifiers | **Spline Sans Mono** | `font-mono`, `.mono` |
 
-- Scale: **12 / 14 / 16 / 20 / 28 / 40** (`text-xs`, `sm`, `base`, `lg`, `xl`, `2xl`). There is nothing in between; do not add sizes.
-- 14 is the default. 16 is for the case narrative, the paragraph an officer reads in full.
-- Amounts and any column of figures take `tabular`.
-- Field labels and table headers take `eyebrow` (12px, caps, tracked, muted).
-- Sentence case everywhere. Capitals come only from `eyebrow` and the stamps.
+Seven sizes, BTC-FUSION's names: `text-2xs` 11 (colheads, tags), `text-sm` 12 (dense values, hints), `text-base` 13 (body), `text-md` 16 (prose meant to be read), `text-lg` 18 (sub-headings), `text-2xl` 24, `text-3xl` 34.
+
+- `.display`: the one masthead per screen (uppercase, 800, `clamp(22px, 2.9vw, 32px)`). **Never put an address or a hash in it bare**: it uppercases. The case and wallet pages add `normal-case` to the address.
+- `.title`: a name at reading size in the same face, in its own case (an exchange, a panel's heading).
+- `.figure`: the headline number a screen is about.
+- `.eyebrow`: a section label. `.colhead`: a table column label. They are different objects on purpose.
 
 ## Layout
 
-```
-┌────────┬───────────────────────────────────────────────────────────┐
-│ VASP-  │ [ Paste a wallet address to open a case    TRON ]  Trace  │
-│ FUSION │───────────────────────────────────────────────────────────│
-│ Cases  │ Case reference                         Draft request to X │
-│ Desk   │ Title (display 28)                                        │
-│ Dashb. │ ┌ Hop Rail ──────────────────────────────────── [STAMP] ┐ │
-│ Labels │ └───────────────────────────────────────────────────────┘ │
-│ Model  │ content                                                   │
-│────────│                                                           │
-│ officer│                                                           │
-└────────┴───────────────────────────────────────────────────────────┘
-```
+- **The header is the page, not a bar on it** (`shell/Header.tsx`): transparent with one hairline; it takes a `bg-surface` ground once `window.scrollY > 4`. Left to right: the wordmark **VASP·Fusion** (the way back to `/`), the six places (Cases, Request desk, Dashboard, Watchlist, Labels, Model), the wallet search, the data-source tag, the officer, the three-state theme control. There is no nav rail.
+- **The footer status bar** (`shell/Footer.tsx`): the programme line (SIH 2026 · PS 26182 · MHA / I4C) and the colour key.
+- The page scrolls; nothing pins itself to the viewport. **In a flex column, stretch children with `flex-1 min-h-0`, never `h-full`** (BTC-FUSION's height trap).
+- Content column: `max-w-content` (1320px), `px-3 sm:px-6`. The landing is full-bleed.
+- **Theme:** `system` / `light` / `dark`, applied as `<html data-theme>`, stored under `vaspfusion.theme`, applied before first paint by the inline script in `index.html`. `?theme=dark` forces it for one page load (screenshots).
 
-- Rail: 224px, icons only (64px) under 1024px. Content column: at most 1240px.
-- Routes: `/cases` (list), `/cases/new` (open a case: the file's cover sheet), `/cases/:id` (the case), `/desk`, `/vasps/:name`, `/requests`, `/requests/:id` (the request desk; the rail stays on "Request desk" for all four), `/dashboard`, `/watchlist`, `/labels`, `/wallets/:chain/:address` (a wallet; the rail stays on "Labels"), `/model`.
-- The top bar holds the search and the data-source tag, nothing else.
-- A page starts with `PageHeader` (optional eyebrow, title, one line of purpose, actions on the right).
-- Sections inside a page are headed by an `eyebrow` `<h2>`.
-- Designed at 1280 and 1440; holds down to 768.
+## Motion
+
+One idea: **instrumentation coming alive.** A trace draws, a bar grows, a counter settles. 150 to 900ms, `cubic-bezier(.16,1,.3,1)`, no bounce, no fade-up-on-scroll. Utilities: `.anim-rise`, `.anim-bar`, `.anim-draw` (with `drawOnMount`), and the Hop Rail's `rail-step`.
+
+- `prefers-reduced-motion` neutralises the **initial** states too, or `both` fill strands a zero-width bar or an undrawn curve.
+- **Any animated number is guaranteed to land**: `Counter` force-sets its value by a timer, because `requestAnimationFrame` stops in a hidden tab. A screen reader is read the value once, not the digits in motion.
+
+## The landing (`/`) and the wait screen
+
+- `pages/StartPage.tsx`: a one-viewport hero (the argument, the paste box, the recorded wallets; the trace drawn on the right), then "how it works" below the fold: the nine stages (`shell/StageTrack.tsx`, BTC-FUSION's serpentine track with square nodes) and the measured figures.
+- `src/stages.ts` holds the nine stages (INTAKE, FETCH, LABEL, TRACE, DISCOVER, ATTRIBUTE, DECIDE, EXPLAIN, DELIVER) in three registers (`STAGES`, `PLAIN`, `DETAIL`), read by the landing and by `case/TraceProgress.tsx`, so the two cannot drift apart. In the tour only the chosen row is coloured.
+- **No figure is typed.** The landing reads `GET /api/dashboard` (label coverage) and `GET /api/model` (calibration, coverage, the naming bar's measured error) when it opens, and writes "not yet measured" where there is no measurement.
+- A running trace reports four phases, not nine; `stageOf` lights the stage each belongs to, and the screen says so. There is no percentage.
 
 ## The Hop Rail (the signature)
 
-`suspect ──[ 48,500 USDT · 14 Sep 2026 ]──▶ hop ──[ 41,200 USDT · 7 min later ]──▶ deposit ── [ OKX ]`
+`suspect ──[ amount · time ]──▪ hop ──[ … ]──▪ deposit ── [ plate ]`. Hairlines and square stubs in `--chain` (hops are on-chain facts); the connector to the plate and the plate itself in `--fusion` when an exchange is named, dashed `--data` when none is, `--danger` when a sanctioned address or mixer was reached. The plate (`OutcomeStamp size="lg"`) is square and level; a long path scrolls sideways under it, so the answer is never off-screen. With `animate`, the rail extends hop by hop and the plate arrives last.
 
-- At the top of every case. Component: `HopRail`.
-- Each hop is an address chip; each arrow carries a **ticket stub** (perforated short sides) with the amount and the time taken. The stub is the link to the transaction; its tooltip has the whole hash.
-- The amount on a stub is the suspect's part of the transfer (`traced_amount`) when the transfer carried other money too; the tooltip gives both.
-- The rail ends in the **docket stamp**: double rule, exchange name in Bricolage, set 1.5° off level. Only this stamp is tilted.
-- A long path scrolls sideways under the stamp. The stamp stays in view: the answer is never off-screen.
-- While a case is queued or running the rail shows the suspect wallet and a line still being drawn.
-- **The one orchestrated animation in the app:** when a result arrives while the officer is watching, pass `animate` and the rail extends hop by hop, the stamp landing last. Nothing else in the app animates. Under `prefers-reduced-motion` it does not animate either.
+## What was deliberately not ported from BTC-FUSION
+
+- `Propagation`, `Sonar`, `MapView`: network and IP views with no equivalent in this problem statement.
+- The upload dropzone and the run flags (`entered`, `runReady`): intake here is a pasted address, and every route is reachable by URL.
+- `figures.json` and its export script: the figures are read from the running tool instead.
+- Mono on buttons and tags (BTC-FUSION's own primitives still do it): here the "mono is for values only" rule is applied to them too.
+- The A4 request letter keeps its own print styling (it is a document, always ink on white), with the new faces.
 
 ## The case page (`/cases/:id`)
 
@@ -130,9 +117,9 @@ Complaint 3150… · Reported loss ₹40,50,000 · Opened 2 Oct 2026
 [ Timeline | Transfers 8 | Wallets 7 | Patterns 1 | Inbound funding 5 | Audit ]
 ```
 
-- **The answer panel holds the one saffron button**, under the meters it follows from. The page header has only secondary actions ("Case file", "Trace again").
+- **The answer panel holds the one the fusion colour button**, under the meters it follows from. The page header has only secondary actions ("Case file", "Trace again").
 - **The selected wallet and the open tab are in the address** (`?wallet=<address>&tab=<id>`), so a view can be linked to and the back button undoes a selection. A wallet can be selected from the graph, the Hop Rail, any address chip in the panel or the tabs; the panel then shows that wallet ("Back to the answer" returns), and the rail marks the path to it.
-- **INSUFFICIENT EVIDENCE is the same frame with its own panel**: slate, dashed, headed "No exchange is named"; the reason verbatim at 16px, what was reached (meters hatched under the bar), what would change this, next steps, leads. Nothing on that screen is saffron.
+- **INSUFFICIENT EVIDENCE is the same frame with its own panel**: slate, dashed, headed "No exchange is named"; the reason verbatim at 16px, what was reached (meters hatched under the bar), what would change this, next steps, leads. Nothing on that screen is the fusion colour.
 - **SANCTIONED OR MIXER REACHED** leads with the alert in a red-bordered panel; a nearest exchange follows only if the trace kept one, and a request is offered only at or above the bar.
 - **The evidence of an exchange that is not the answer is folded** ("Evidence (3)"); the answer's own is open.
 - **A running trace shows what the server says it has read** (`CaseDetail.progress`): its sentence as it came, three counts (hops out, wallets read, transfers read), and on the rail a dashed place for each hop gone out so far. No percentage: a trace does not know how much is left. A labelled wallet reached is not shown as an answer; the stamp comes with the result. The server has no cancel, so the button is "Stop waiting" and says the trace goes on. When the result arrives while the officer watches, the rail extends and one line reports what the run read.
@@ -142,15 +129,15 @@ Complaint 3150… · Reported loss ₹40,50,000 · Opened 2 Oct 2026
 
 The unit of work is an exchange, not a complaint. The desk's own parts are in `src/desk/`.
 
-- **`/desk`** starts with the **Follow up** strip (what is past its day, in a red-outlined row each; when nothing is, one quiet line says so), then one row per exchange: wallets, traced US dollars, cases, status, and the server's `next_action` sentence as it came. A row offers "Draft request" only while a wallet of that exchange is in no request, and "Open request" once one exists. No button in a row is saffron.
+- **`/desk`** starts with the **Follow up** strip (what is past its day, in a red-outlined row each; when nothing is, one quiet line says so), then one row per exchange: wallets, traced US dollars, cases, status, and the server's `next_action` sentence as it came. A row offers "Draft request" only while a wallet of that exchange is in no request, and "Open request" once one exists. No button in a row is the fusion colour.
 - **Drafting** is a dialog (`DraftDialog`): the cases to include, what to ask for, the officer's line. `/desk?vasp=&case=` (the case page's link) opens it with that case ticked; `/vasps/:name?draft=1` opens it from the exchange's page. The server writes the letter; the page then opens it as a draft.
 - **`/vasps/:name`** shows only cited facts (`DirectoryFacts`), each with its source and the kind of source under it. **A blank is "No source found", never "No"**; a registration always carries its date; one known only from the exchange's own statement says so. Wallets that no request can be drafted on are marked "Context only".
-- **`/requests/:id`** is the letter on an A4 sheet with, beside it: the next step (the one saffron button), what to check, the routing slip, the gateway's receipt, and print. Each step is a dialog that says what it does; the buttons are the ones `allowed_next` allows, nothing else. Under 1024px the side column comes first.
+- **`/requests/:id`** is the letter on an A4 sheet with, beside it: the next step (the one the fusion colour button), what to check, the routing slip, the gateway's receipt, and print. Each step is a dialog that says what it does; the buttons are the ones `allowed_next` allows, nothing else. Under 1024px the side column comes first.
 - **`/requests`** is the register: every request, with filters kept in the address (`?status=&vasp=&q=`).
 
-**The routing slip** (`RoutingSlip`) is this part's one drawn element: the slip on a file. Five boxes in order (Drafted, Approved, Sent, Acknowledged, Reply), each stamped with its day once it happened. A box not reached is dashed and empty; the one awaited is shaded; a step passed over has a dash; a refusal or a withdrawal ends the slip in a red-washed box with a cross. `layout="row"` fits a table row (the whole sentence is on hover and in the box's name); `layout="column"` beside the letter adds who and the note of each step, as recorded. It is never tilted and never saffron.
+**The routing slip** (`RoutingSlip`) is this part's one drawn element: the slip on a file. Five boxes in order (Drafted, Approved, Sent, Acknowledged, Reply), each stamped with its day once it happened. A box not reached is dashed and empty; the one awaited is shaded; a step passed over has a dash; a refusal or a withdrawal ends the slip in a red-washed box with a cross. `layout="row"` fits a table row (the whole sentence is on hover and in the box's name); `layout="column"` beside the letter adds who and the note of each step, as recorded. It is never tilted and never the fusion colour.
 
-**Status** (`StatusTag`) is an icon and a word: Not requested and Draft are dashed, Approved solid, Sent and Acknowledged shaded, Answered and Freeze confirmed teal, Refused red, Withdrawn struck through.
+**Status** (`StatusTag`) is an icon and a word: Not requested and Draft are dashed, Approved solid, Sent and Acknowledged shaded, Answered and Freeze confirmed the label (network) colour, Refused red, Withdrawn struck through.
 
 **The letter sheet** (`LetterSheet`, `letter.css`):
 - Paper is paper: white with ink text in both themes. The sheet sets the role tokens back to their light values, so the rule "role tokens only" still holds on it.
@@ -163,10 +150,10 @@ The unit of work is an exchange, not a complaint. The desk's own parts are in `s
 The pages an officer goes to between cases. Their shared parts are in `src/overview/` (`Panel`, `Ledger`, `words.ts`) and `src/charts/`.
 
 - **Every figure is a count of stored records and opens the list behind it.** The dashboard's counts link to `/cases?outcome=&status=&chain=&open=1`, `/desk`, `/requests?status=awaiting`, `/watchlist`, `/vasps/:name` and `/labels?tier=&chain=&category=`; those lists read the filter from the address and show it as a chip that can be removed.
-- **The ledger** (`Ledger`) is the page's counts on one ruled line, as the totals row of a register: a figure in mono at 28px, what it counts under it. It is one sheet with hairlines, not a row of cards, and no figure on it is saffron. `perRow={3}` where six cells would crowd the figures (the model's "over 0.999").
+- **The ledger** (`Ledger`) is the page's counts on one ruled line, as the totals row of a register: a figure in mono at 28px, what it counts under it. It is one sheet with hairlines, not a row of cards, and no figure on it is the fusion colour. `perRow={3}` where six cells would crowd the figures (the model's "over 0.999").
 - **A figure that was not measured says so** ("Not yet measured", "Not recorded", "Not assessed") and shows no number. The model page with `status: not_measured` shows no plot and no metric.
-- **`/dashboard`**: the ledger; how the cases ended; the exchanges the funds reached (US-dollar stablecoins only, and the note says so); cases by chain; the time the funds took to reach the exchange (chain time, with how many cases it is the median of); alerts, each in the case's or the watchlist's own sentence, with a word and an icon for its severity; label coverage. There is no primary action on this page, so nothing on it is saffron except the "exchange named" part of the outcome bar.
-- **`/wallets/:chain/:address`**: the address whole in mono (never shortened in its own title), its label with source and evidence (the case page's `LabelBlock`), **what is on record against it** as a level in words (High, Elevated, Nothing on record, Not assessed) with the sentences it rests on, and the sentence that **no risk score is computed**; the cases it is in; the transfers those cases read of it, under a note that this is not the wallet's whole history. The one saffron button is "Trace this wallet", only when the wallet has no case of its own.
+- **`/dashboard`**: the ledger; how the cases ended; the exchanges the funds reached (US-dollar stablecoins only, and the note says so); cases by chain; the time the funds took to reach the exchange (chain time, with how many cases it is the median of); alerts, each in the case's or the watchlist's own sentence, with a word and an icon for its severity; label coverage. There is no primary action on this page, so nothing on it is the fusion colour except the "exchange named" part of the outcome bar.
+- **`/wallets/:chain/:address`**: the address whole in mono (never shortened in its own title), its label with source and evidence (the case page's `LabelBlock`), **what is on record against it** as a level in words (High, Elevated, Nothing on record, Not assessed) with the sentences it rests on, and the sentence that **no risk score is computed**; the cases it is in; the transfers those cases read of it, under a note that this is not the wallet's whole history. The one the fusion colour button is "Trace this wallet", only when the wallet has no case of its own.
 - **`/labels`**: search (address prefix or owner) and three filters, all in the address; a result's address leads to its wallet page, an exchange's name to its page. Under it, what the store covers by tier, category, chain and **source, with the licence on record**: a licence this project holds no record of reads "Not recorded", never a guess. A label this tool derived says "rule" before its confidence unless the model confirmed it; a sourced label reads "as its source".
 - **`/model`**: Tron or Ethereum (`?chain=`); the ledger of measured figures; calibration; accuracy when answering against coverage; what the model reads; the one rule the figures are read against; each exchange held out; the check of the naming bar; and **every `notes[]` sentence as written**, under "What these numbers are, and are not". A recall under 0.5 on a held-out exchange is set in red with its figure: the page shows where the model fails.
 - **`/watchlist`**: the form (the address is checked as in the search bar), then one sheet per wallet, a changed one first. State is an icon and words (Changed since last seen, No change, Checking, Not traced yet, Last check failed). What is new is the server's sentences. The actions keep their names: "Check now", "Mark as seen" → "Marked as seen", "Stop watching" → "Stopped watching". The page says that nothing is checked in the background.
@@ -185,10 +172,10 @@ Hand-built (HTML bars, SVG plots): no chart library, so the demo needs no networ
 
 Rules (the `dataviz` skill's, fitted to this system):
 - **One hue for a measure: ink (`--fg`).** The six brand colours are not a categorical palette (see the funds bar), so no chart tells series apart by hue; each has one series, and a line to read it against is dashed, grey and named on the plot.
-- **The status fills are for statuses only**: saffron = an exchange was named, seal = sanctioned or mixer, hatch = unresolved. Never for "series 2".
+- **The status fills are for statuses only**: the fusion colour = an exchange was named, seal = sanctioned or mixer, hatch = unresolved. Never for "series 2".
 - **One x axis and one y axis.** Two measures get two charts (the counts under the reliability plot are their own strip on the same x axis).
 - **A zoomed axis says so** in a sentence under the plot ("The vertical axis starts at 90%, not at zero").
-- Thin marks: 8px bars with a rounded end, 2px lines, points of 9px with a 2px ring in the surface colour and a hit area of 28px. Grid lines are hairlines in `--rule`; axis text is 12px in `--fg-muted`. Values and labels are text tokens, never a mark's colour.
+- Thin marks: 6px square-ended bars that grow to their length, in the colour of the layer the measure belongs to (`layer` on `BarList`: label counts `network`, on-chain counts `chain`, model output `fusion`), 1.5px lines that draw themselves, points of 9px with a 2px ring in the surface colour and a hit area of 28px. Grid lines are hairlines in `--rule`; axis text is 12px in `--fg-muted`. Values and labels are text tokens, never a mark's colour.
 - **Every plot has "Show as table"** under it with the same figures, every point has a card on hover and on keyboard focus, and its name says the figures.
 - **A share or a score is never written as perfect unless it is**: `share()` writes "over 99.9%", `score()` "over 0.999" (`src/overview/words.ts`), as `formatConfidence` writes "over 0.99".
 
@@ -198,9 +185,9 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 
 | What | Encodes | How |
 |---|---|---|
-| Shape | The wallet's role | Suspect: filled ink circle. On the trail: circle. Not followed further: small circle. Busy wallet: hexagon. Deposit address: tag. Exchange wallet: rounded rectangle. Custodial: barrel. Swap service: rhomboid. Bridge: diamond with two opposed arrows. Mixer: concave hexagon, red, crossing arrows. Sanctioned: octagon, red, a bar |
-| Border | The tier of its label | The `TierTag` vocabulary: published by exchange = double teal; curated = solid teal on a tint; explorer tag = dotted teal; derived = solid slate; unlabelled = dashed slate |
-| Saffron fill | A wallet of the exchange the case names | Nothing else on the canvas is saffron |
+| Shape | The wallet's role | Suspect: square filled in the chain colour. On the trail: square. Not followed further: small square. Busy wallet: hexagon. Deposit address: tag. Exchange wallet: rectangle with cut corners. Custodial: barrel. Swap service: rhomboid. Bridge: diamond with two opposed arrows. Mixer: concave hexagon, red, crossing arrows. Sanctioned: octagon, red, a bar |
+| Border | The tier of its label | The `TierTag` vocabulary: published by exchange = double the label (network) colour; curated = solid the label (network) colour on a tint; explorer tag = dotted the label (network) colour; derived = solid slate; unlabelled = dashed slate |
+| The fusion colour fill | A wallet of the exchange the case names | Nothing else on the canvas is the fusion colour |
 | Line width | The amount (square-root scale, 1.5 to 8px) | Several transfers between two wallets are one line; the hover card lists them |
 | Line colour and dash | Ink = the path on the Hop Rail; slate = other transfers; dashed = money coming in | |
 
@@ -221,21 +208,21 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 
   | Tier | Words | Icon | Look |
   |---|---|---|---|
-  | `published_por` | Published by exchange | seal (badge-check) | solid teal |
-  | `curated` | Curated list | list-checks | teal tint |
-  | `explorer_tag` | Explorer tag | tag | teal outline |
+  | `published_por` | Published by exchange | seal (badge-check) | solid the label (network) colour |
+  | `curated` | Curated list | list-checks | the label (network) colour tint |
+  | `explorer_tag` | Explorer tag | tag | the label (network) colour outline |
   | `derived` | Derived by VASP-FUSION | flask | slate |
-  | none | Unlabelled | dashed circle | dashed slate |
+  | none | Unlabelled | dashed square in the chain colour | dashed slate |
 
 - **Outcome stamps** (`OutcomeStamp`):
-  - ATTRIBUTED: solid saffron, the exchange's name.
+  - ATTRIBUTED: a solid plate in the fusion colour, the exchange's name.
   - INSUFFICIENT EVIDENCE: slate, dashed border, "No exchange named", and a line saying what would change it.
-  - SANCTIONED OR MIXER REACHED: seal red; it still names the nearest exchange if the rules kept one.
+  - SANCTIONED OR MIXER REACHED: the danger colour; it still names the nearest exchange if the rules kept one.
   - No result yet: "Tracing…" (dashed), "Trace failed" (red outline).
-- **Patterns** (`TypologyFlag`): severity is a word and an icon as well as a colour: Alert (high), Pattern (warn), Note (info). A `deposit_like` flag is a **Lead**: dashed teal, kept apart from the answer.
+- **Patterns** (`TypologyFlag`): severity is a word and an icon as well as a colour: Alert (high), Pattern (warn), Note (info). A `deposit_like` flag is a **Lead**: dashed the label (network) colour, kept apart from the answer.
 - **Addresses** (`AddressChip`): shortened in the middle as the backend writes them (`TVZpWt…KjUtzR`, six and six; four and four on the rail). The whole address is one hover, one Tab or one click (copy) away. **Copy always copies the whole address.** Letters and tables of record print it whole (`full`).
 - **Numbers** follow `vaspfusion/explain/fmt.py` (`src/lib/format.ts`), so a figure in a meter reads the same as in the backend's sentence: `48,500 USDT`, `252,163.80 USDT`, `0.002428 ETH`, `85%`, `under 1%`, `₹40,50,000`. Times are UTC and say so.
-- **Where the funds went** (`FundsBar`) is one stacked bar of the whole of what the wallet sent. Kind is **not** told by hue: the six brand colours are not a categorical palette (checked with the dataviz validator: slate and teal are too close for a protan reader, saffron is under 3:1 on white). Three fills, each a status: saffron = the exchange named, ink = another named party, seal = sanctioned or mixer; everything unresolved is one hatch. Every slice is named under the bar with its share and amount, slices are 2px apart, and each has a hover card.
+- **Where the funds went** (`FundsBar`) is one stacked bar of the whole of what the wallet sent. Kind is **not** told by hue: the six brand colours are not a categorical palette (checked with the dataviz validator: slate and the label (network) colour are too close for a protan reader, the fusion colour is under 3:1 on white). Three fills, each a status: the fusion colour = the exchange named, ink = another named party, seal = sanctioned or mixer; everything unresolved is one hatch. Every slice is named under the bar with its share and amount, slices are 2px apart, and each has a hover card.
 - **Model reasons** (`EvidenceList`) are signed bars: solid = speaks for, hatched = against, with the SHAP value in mono. The model's probability is a sentence, never a bar.
 - **Demo data is marked.** The top bar shows "Demo data" or "Includes demo data" whenever the API's `X-Data-Source` is not `live`.
 
@@ -258,7 +245,7 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 
 | Component | Use it for |
 |---|---|
-| `Button`, `buttonClass` | Actions. `primary` (saffron) once per screen; `secondary`, `ghost`, `danger`. `buttonClass` styles a `<Link>` |
+| `Button`, `buttonClass` | Actions. `primary` (the fusion colour) once per screen; `secondary`, `ghost`, `danger`. `buttonClass` styles a `<Link>` |
 | `AddressChip` | Any address. `entity` + `tier` for a labelled one, `role="suspect"`, `full`, `to` (link to its page) |
 | `TxHash` | Any transaction hash |
 | `CopyButton` | Copy a whole value; announces "Copied" |

@@ -10,7 +10,7 @@ const VIEWS = [
 export function DeskNav({ counts }: { counts?: { exchanges?: number; requests?: number } }) {
   const count = [counts?.exchanges, counts?.requests]
   return (
-    <nav aria-label="Request desk views" className="mb-6 flex gap-1 border-b border-rule-strong">
+    <nav aria-label="Request desk views" className="mb-4 flex gap-0.5 border-b border-rule">
       {VIEWS.map(({ to, name }, i) => (
         <NavLink
           key={to}
@@ -18,13 +18,13 @@ export function DeskNav({ counts }: { counts?: { exchanges?: number; requests?: 
           end
           className={({ isActive }) =>
             cx(
-              '-mb-px inline-flex h-9 items-center gap-1.5 rounded-t border border-b-0 px-3.5 text-base',
-              isActive ? 'border-rule-strong bg-surface font-semibold text-fg' : 'border-transparent text-muted hover:bg-sunk hover:text-fg',
+              '-mb-px inline-flex h-9 items-center gap-2 border-b-2 px-3 text-base transition-colors duration-150',
+              isActive ? 'border-ink font-semibold text-ink' : 'border-transparent text-ink-dim hover:text-ink-soft',
             )
           }
         >
           {name}
-          {count[i] != null && <span className="tabular font-mono text-sm text-muted">{count[i]}</span>}
+          {count[i] != null && <span className="tabular font-mono text-2xs text-ink-dim">{count[i]}</span>}
         </NavLink>
       ))}
     </nav>
