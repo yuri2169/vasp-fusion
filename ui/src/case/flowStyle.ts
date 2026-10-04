@@ -129,7 +129,8 @@ export function toElements(view: FlowView): ElementDefinition[] {
         id: e.id,
         source: e.source,
         target: e.target,
-        width: edgeWidth(e.amount, view.maxAmount),
+        // Hairlines: the amount still sets the width, within a narrower range than the layout's own.
+        width: Math.max(1, Math.round(edgeWidth(e.amount, view.maxAmount) * 5.5) / 10),
         inbound: e.direction === 'inbound' ? 1 : 0,
         onPath: e.onPath ? 1 : 0,
         // Written on the main path and on the larger flows; the rest say it on hover.

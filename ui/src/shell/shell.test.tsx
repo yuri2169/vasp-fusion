@@ -152,7 +152,7 @@ describe('the app shell', () => {
   it('the landing quotes only figures the tool measured, as it reads them', async () => {
     const [model, dashboard] = await Promise.all([api.model('tron'), api.dashboard()])
     renderApp(<AppRoutes />, { route: '/' })
-    expect(await screen.findByLabelText(String(dashboard.label_coverage.total))).toBeInTheDocument()
+    expect(await screen.findByText(dashboard.label_coverage.total.toLocaleString('en-US'), { selector: '.sr-only' })).toBeInTheDocument()
     expect(await screen.findByText(model.metrics.ece!.toFixed(4))).toBeInTheDocument()
   })
 

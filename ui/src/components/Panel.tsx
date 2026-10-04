@@ -30,6 +30,10 @@ export const layerWash = (l: Layer) => LAYER_WASH[l]
  *  a Panel inside a Panel renders `panel-sub` (filled, borderless), never a second border. */
 const Framed = createContext(false)
 
+/** True inside a frame: a table, a list or a panel there draws no border of its own. */
+// eslint-disable-next-line react/only-export-components
+export const useFramed = () => useContext(Framed)
+
 /** Wrap a hand-drawn bordered region so Panels inside it know to go flat. */
 export function Frame({ children }: { children: ReactNode }) {
   return <Framed.Provider value={true}>{children}</Framed.Provider>
@@ -85,15 +89,16 @@ export function Eyebrow({ children, layer, right, as: As = 'h2', id }: { childre
   )
 }
 
-/** A metric: its label above, the figure below. `lead` is the one headline figure of a screen. */
+/** A metric: its label above, the figure below. `lead` is the one headline figure of a screen.
+ *  It is a term and its value: put it inside a <dl>. */
 export function Stat({ label, value, sub, layer, size = 'md' }: { label: string; value: ReactNode; sub?: ReactNode; layer?: Layer; size?: 'md' | 'lead' }) {
   return (
     <div className="min-w-0">
-      <div className="colhead mb-0.5 truncate">{label}</div>
-      <div className={size === 'lead' ? 'figure truncate' : 'mono truncate text-md font-semibold leading-tight'} style={layer ? { color: LAYER_VAR[layer] } : undefined}>
+      <dt className="colhead mb-0.5 truncate">{label}</dt>
+      <dd className={size === 'lead' ? 'figure truncate' : 'mono truncate text-md font-semibold leading-tight'} style={layer ? { color: LAYER_VAR[layer] } : undefined}>
         {value}
-      </div>
-      {sub ? <div className="text-2xs text-ink-dim">{sub}</div> : null}
+        {sub ? <span className="block font-sans text-2xs font-normal tracking-normal text-ink-dim">{sub}</span> : null}
+      </dd>
     </div>
   )
 }
@@ -165,9 +170,14 @@ export function Counter({ value, format, className, duration = 700 }: { value: n
       window.clearTimeout(settle)
     }
   }, [value, duration, still])
+  const write = (n: number) => (format ? format(n) : Math.round(n).toLocaleString('en-US'))
+  // A screen reader is read the value itself, once; the digits in motion are for the eye only.
   return (
-    <span className={className} aria-label={format ? format(value) : String(value)}>
-      <span aria-hidden>{format ? format(shown) : Math.round(shown).toLocaleString('en-US')}</span>
+    <span className={className}>
+      <span className="sr-only">{write(value)}</span>
+      <span aria-hidden data-testid="counter">
+        {write(shown)}
+      </span>
     </span>
   )
 }

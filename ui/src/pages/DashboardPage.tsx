@@ -126,6 +126,7 @@ function Coverage({ d }: { d: Dashboard }) {
     >
       <BarList
         caption="Labels by tier"
+                layer="network"
         labelWidth="12.5rem"
         rows={TIER_ORDER.filter((t) => cov.by_tier[t]).map((t) => ({
           key: t,
@@ -138,6 +139,7 @@ function Coverage({ d }: { d: Dashboard }) {
       <div className="border-t border-rule pt-3">
         <BarList
           caption="Labels by chain"
+                layer="network"
           labelWidth="12.5rem"
           rows={chains.slice(0, CHAINS_SHOWN).map(([chain, n]) => ({
             key: chain,
@@ -225,6 +227,7 @@ export function DashboardPage() {
               >
                 <BarList
                   caption="Exchanges by traced US dollars"
+                layer="fusion"
                   rows={d.top_vasps.map((v) => ({
                     key: v.vasp,
                     label: <span className="font-medium">{v.vasp}</span>,
@@ -241,6 +244,7 @@ export function DashboardPage() {
                 <Panel title="Cases by chain">
                   <BarList
                     caption="Cases by chain"
+                layer="chain"
                     labelWidth="6.5rem"
                     rows={d.chain_mix.map((c) => ({
                       key: c.chain,

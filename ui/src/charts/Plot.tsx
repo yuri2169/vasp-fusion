@@ -1,4 +1,5 @@
 import type { ReactNode, SVGAttributes } from 'react'
+import { drawOnMount } from '../components/Panel'
 import { Tip, useTip } from '../components/Tip'
 import { linear, niceTicks } from './scale'
 
@@ -58,7 +59,7 @@ export function PlotFrame({
     <svg viewBox={`0 0 ${W} ${height}`} role="group" aria-label={label} className="tabular block w-full" style={{ maxWidth: W }}>
       {ys.map((t) => (
         <g key={`y${t}`}>
-          <line x1={frame.left} x2={frame.right} y1={frame.y(t)} y2={frame.y(t)} stroke="var(--rule)" strokeWidth={1} />
+          <line x1={frame.left} x2={frame.right} y1={frame.y(t)} y2={frame.y(t)} stroke="var(--rule-soft)" strokeWidth={1} />
           <text x={frame.left - 8} y={frame.y(t)} dy="0.32em" textAnchor="end" {...TEXT}>
             {yFormat(t)}
           </text>
@@ -66,13 +67,13 @@ export function PlotFrame({
       ))}
       {xs.map((t) => (
         <g key={`x${t}`}>
-          <line x1={frame.x(t)} x2={frame.x(t)} y1={frame.bottom} y2={frame.bottom + 4} stroke="var(--rule-strong)" strokeWidth={1} />
+          <line x1={frame.x(t)} x2={frame.x(t)} y1={frame.bottom} y2={frame.bottom + 4} stroke="var(--rule-soft)" strokeWidth={1} />
           <text x={frame.x(t)} y={frame.bottom + 18} textAnchor="middle" {...TEXT}>
             {xFormat(t)}
           </text>
         </g>
       ))}
-      <line x1={frame.left} x2={frame.right} y1={frame.bottom} y2={frame.bottom} stroke="var(--rule-strong)" strokeWidth={1} />
+      <line x1={frame.left} x2={frame.right} y1={frame.bottom} y2={frame.bottom} stroke="var(--ink-dim)" strokeWidth={1} />
       <text x={(frame.left + frame.right) / 2} y={height - 6} textAnchor="middle" {...TEXT}>
         {xTitle}
       </text>
@@ -91,7 +92,7 @@ export function PlotPoint({ cx, cy, name, children }: { cx: number; cy: number; 
   return (
     <g tabIndex={0} role="img" aria-label={name} {...(tip.bind as unknown as SVGAttributes<SVGGElement>)} style={{ outline: 'none' }} className="plot-point">
       <circle cx={cx} cy={cy} r={14} fill="transparent" />
-      <circle cx={cx} cy={cy} r={tip.open ? 6 : 4.5} fill="var(--fg)" stroke="var(--surface)" strokeWidth={2} />
+      <circle cx={cx} cy={cy} r={tip.open ? 6 : 4.5} fill="var(--fusion)" stroke="var(--surface)" strokeWidth={2} />
       <Tip id={tip.id} anchor={tip.anchor}>
         {children}
       </Tip>
@@ -101,7 +102,7 @@ export function PlotPoint({ cx, cy, name, children }: { cx: number; cy: number; 
 
 export function PlotLine({ points }: { points: [number, number][] }) {
   if (points.length < 2) return null
-  return <polyline points={points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} fill="none" stroke="var(--fg)" strokeWidth={2} strokeLinejoin="round" />
+  return <polyline points={points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} ref={drawOnMount()} fill="none" stroke="var(--fusion)" strokeWidth={1.5} strokeLinejoin="miter" />
 }
 
 /** A dashed line to read the marks against (the diagonal of a reliability plot, a baseline), named where it ends. */

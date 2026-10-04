@@ -169,6 +169,7 @@ function CoveragePanels({ cov, pick }: { cov: LabelCoverage; pick: (key: string,
       <Panel title="By tier" className="lg:col-span-4" note="How a label is known. A trace weighs a label by its tier.">
         <BarList
           caption="Labels by tier"
+                layer="network"
           labelWidth="12.5rem"
           rows={TIER_ORDER.filter((t) => cov.by_tier[t]).map((t) => ({
             key: t,
@@ -182,6 +183,7 @@ function CoveragePanels({ cov, pick }: { cov: LabelCoverage; pick: (key: string,
       <Panel title="By category" className="lg:col-span-4" note="Who the address belongs to, as its source files it.">
         <BarList
           caption="Labels by category"
+                layer="network"
           labelWidth="9.5rem"
           rows={categories.map(([c, n]) => ({
             key: c,
@@ -199,6 +201,7 @@ function CoveragePanels({ cov, pick }: { cov: LabelCoverage; pick: (key: string,
       >
         <BarList
           caption="Labels by chain"
+                layer="network"
           labelWidth="8rem"
           rows={chains.slice(0, CHAINS_SHOWN).map(([c, n]) => ({
             key: c,

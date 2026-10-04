@@ -55,15 +55,15 @@ describe('Counter', () => {
     vi.useFakeTimers()
     vi.stubGlobal('requestAnimationFrame', () => 0) // frames never fire
     render(<Counter value={1614} />)
-    expect(screen.getByLabelText('1614')).toHaveTextContent('0')
+    expect(screen.getByTestId('counter')).toHaveTextContent('0')
     act(() => void vi.advanceTimersByTime(800))
-    expect(screen.getByLabelText('1614')).toHaveTextContent('1,614')
+    expect(screen.getByTestId('counter')).toHaveTextContent('1,614')
     vi.unstubAllGlobals()
   })
 
   it('shows the value at once under reduced motion', () => {
     setMedia('(prefers-reduced-motion: reduce)')
     render(<Counter value={0.85} format={(n) => n.toFixed(2)} />)
-    expect(screen.getByLabelText('0.85')).toHaveTextContent('0.85')
+    expect(screen.getByTestId('counter')).toHaveTextContent('0.85')
   })
 })

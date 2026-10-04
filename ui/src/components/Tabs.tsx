@@ -1,5 +1,6 @@
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { cx } from '../lib/cx'
+import { Frame } from './Panel'
 
 export interface TabItem {
   id: string
@@ -80,7 +81,7 @@ export function Tabs({
         tabIndex={0}
         className="panel border-t-0 p-4"
       >
-        {children}
+        <Frame>{children}</Frame>
       </div>
     </div>
   )

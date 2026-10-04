@@ -45,7 +45,7 @@ const shot = async (name) => {
   writeFileSync(join(FRAMES, `still-${String(step).padStart(2, '0')}-${name}.png`), Buffer.from(data, 'base64'))
 }
 const count = async (name) =>
-  page.evaluate(`(() => { const li = [...document.querySelectorAll('ul[aria-label="Counts"] li')].find((x) => x.innerText.toLowerCase().startsWith(${JSON.stringify(name.toLowerCase())})); return li ? Number(li.querySelector('.font-mono').innerText.replace(/,/g, '')) : null })()`)
+  page.evaluate(`(() => { const li = [...document.querySelectorAll('ul[aria-label="Counts"] li')].find((x) => x.innerText.toLowerCase().startsWith(${JSON.stringify(name.toLowerCase())})); return li ? Number(li.querySelector('.figure').innerText.replace(/,/g, '')) : null })()`)
 
 try {
   await page.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
@@ -73,7 +73,7 @@ try {
     await pause(600)
     await click('Sign in', 'button[type="submit"]')
     await see('Open a case', 'the list of cases after signing in')
-    expect((await text()).includes(officer.name), `the rail names the officer signed in (${officer.name})`)
+    expect((await text()).includes(officer.name), `the header names the officer signed in (${officer.name})`)
   } else say('This server asks for no login (VASPFUSION_AUTH=off, or no officer account)')
 
   // --- how fast the first screen is -------------------------------------------------------------

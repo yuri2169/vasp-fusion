@@ -74,14 +74,14 @@ function CountStrip({ bins, most }: { bins: Bin[]; most: number }) {
         const height = Math.max(1.5, h(b.count))
         return (
           <g key={b.bin_mid}>
-            <path d={`M${cx - 5} 62 V${62 - height + 2} q0 -2 2 -2 h6 q2 0 2 2 V62 Z`} fill="var(--fg)" />
+            <path d={`M${cx - 5} 62 V${62 - height} h10 V62 Z`} fill="var(--fusion)" />
             <text x={cx} y={75} textAnchor="middle" fontSize={12} fill="var(--fg-muted)">
               {b.count >= 1000 ? `${(b.count / 1000).toFixed(1)}k` : b.count}
             </text>
           </g>
         )
       })}
-      <line x1={52} x2={502} y1={62.5} y2={62.5} stroke="var(--rule-strong)" strokeWidth={1} />
+      <line x1={52} x2={502} y1={62.5} y2={62.5} stroke="var(--rule)" strokeWidth={1} />
     </svg>
   )
 }

@@ -59,6 +59,7 @@ try {
     (await api('POST', '/api/requests', { vasp: 'Bitget', case_ids: ['eth-bitget'], asks: ['kyc', 'transactions'], officer: `${officer.name}, ${officer.post}` }))
 
   const SHOTS = [
+    ['start', '/'],
     ['cases', '/cases'],
     ['case-intake', '/cases/new'],
     ['case-attributed', '/cases/tron-coindcx', GRAPH],

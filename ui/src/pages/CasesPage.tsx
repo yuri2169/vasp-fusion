@@ -11,6 +11,7 @@ import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
 import { OutcomeStamp } from '../components/OutcomeStamp'
 import { PageHeader } from '../components/PageHeader'
+import { Stat } from '../components/Panel'
 import { CHAINS } from '../lib/chains'
 import { formatConfidence, formatDate, formatInr } from '../lib/format'
 
@@ -25,7 +26,7 @@ const columns: Column<CaseSummary>[] = [
       <span className="flex items-center gap-2">
         <span className="font-medium text-fg">{c.case_ref ?? c.id}</span>
         {c.demo && (
-          <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="rounded-sm border border-dashed border-rule-strong px-1 text-sm text-muted">
+          <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="border border-dashed border-rule px-1 text-2xs text-ink-dim">
             Recorded
           </span>
         )}
@@ -169,7 +170,7 @@ export function CasesPage() {
                   type="button"
                   onClick={() => drop(f.key)}
                   aria-label={`Remove the filter: ${f.words}`}
-                  className="inline-flex h-7 items-center gap-1.5 rounded border border-fg bg-fg px-2.5 text-sm font-semibold text-page"
+                  className="inline-flex h-6 items-center gap-1.5 border border-ink bg-ink px-2 text-sm font-medium text-paper"
                 >
                   {f.words}
                   <X size={13} aria-hidden />
@@ -179,6 +180,16 @@ export function CasesPage() {
                 Show all cases
               </Link>
             </div>
+          )}
+          {/* The receipt strip: what the list holds, counted from the list itself. */}
+          {cases.data && (
+            <dl aria-label="What the list holds" className="mb-3 grid grid-cols-2 gap-x-8 gap-y-3 sm:flex sm:flex-wrap sm:items-end">
+              <Stat size="lead" label="Cases shown" value={shown.length.toLocaleString('en-US')} />
+              <Stat label="An exchange is named" layer="fusion" value={shown.filter((c) => c.outcome === 'ATTRIBUTED').length} />
+              <Stat label="Insufficient evidence" layer="data" value={shown.filter((c) => c.outcome === 'INSUFFICIENT_EVIDENCE').length} />
+              <Stat label="Sanctioned or mixer reached" layer="danger" value={shown.filter((c) => c.outcome === 'SANCTIONED_OR_MIXER_REACHED').length} />
+              <Stat label="Being traced" layer="chain" value={shown.filter(STATUS_FILTERS.tracing.has).length} />
+            </dl>
           )}
           <DataTable
             caption="Cases"

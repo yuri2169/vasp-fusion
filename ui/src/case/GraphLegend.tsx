@@ -123,14 +123,14 @@ export function GraphLegend({ view, named }: { view: FlowView; named?: string | 
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
         <li className={item}>
           <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
-            <path d="M2 6h26" stroke="var(--rule-strong)" strokeWidth={1.5} />
-            <path d="M2 14h26" stroke="var(--rule-strong)" strokeWidth={5} />
+            <path d="M2 6h26" stroke="var(--rule-strong)" strokeWidth={1} />
+            <path d="M2 14h26" stroke="var(--rule-strong)" strokeWidth={4} />
           </svg>
           Width is the amount
         </li>
         <li className={item}>
           <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
-            <path d="M2 10h26" stroke="var(--chain)" strokeWidth={3} />
+            <path d="M2 10h26" stroke="var(--chain)" strokeWidth={2} />
           </svg>
           The path on the Hop Rail
         </li>

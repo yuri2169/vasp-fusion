@@ -9,9 +9,9 @@ export type ShareFill = 'named' | 'party' | 'seal' | 'open'
 
 const FILL: Record<ShareFill, string> = {
   named: 'bg-saffron',
-  party: 'bg-fg',
+  party: 'bg-chain',
   seal: 'bg-seal',
-  open: 'hatch border border-rule-strong bg-sunk',
+  open: 'hatch bg-surface-3',
 }
 
 export interface SharePart {

@@ -44,7 +44,7 @@ describe('toElements', () => {
     const edges = elements.filter((e) => e.group === 'edges')
     expect(edges).toHaveLength(view.edges.length)
     const funding = edges.find((e) => String(e.data.source).startsWith('TT9b4u'))!
-    expect(funding.data).toMatchObject({ width: 8, inbound: 1, onPath: 0, label: '2,332 USDT' })
+    expect(funding.data).toMatchObject({ width: 4.4, inbound: 1, onPath: 0, label: '2,332 USDT' })
     const dust = edges.find((e) => String(e.data.source).startsWith('TYASr5'))!
     expect(dust.data.width).toBeLessThan(3)
     expect(dust.data.label).toBe('')

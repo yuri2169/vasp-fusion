@@ -57,6 +57,7 @@ const requests = (await api('GET', '/api/requests'))?.items ?? []
 const request = requests[0] ?? (await api('POST', '/api/requests', { vasp: 'CoinDCX', case_ids: ['tron-coindcx'], asks: ['kyc'], officer: 'Accessibility audit' }))
 
 const ROUTES = [
+  '/',
   '/cases',
   '/cases/new',
   '/cases/tron-coindcx',

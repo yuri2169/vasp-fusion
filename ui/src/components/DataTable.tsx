@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react'
 import { useMemo, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react'
 import { cx } from '../lib/cx'
+import { useFramed } from './Panel'
 import { Skeleton } from './Skeleton'
 
 export interface Column<T> {
@@ -47,6 +48,8 @@ function compare(a: string | number | null, b: string | number | null, dir: 1 | 
 export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRowOpen, loading, empty, maxHeight, pageSize = PAGE }: DataTableProps<T>) {
   const [sort, setSort] = useState<Sort | null>(initialSort ?? null)
   const [limit, setLimit] = useState(pageSize)
+  // One frame between a leaf and the page: inside a panel the table is ruled, not boxed again.
+  const framed = useFramed()
 
   const sorted = useMemo(() => {
     const column = sort && columns.find((c) => c.key === sort.key)
@@ -73,7 +76,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
   }
 
   return (
-    <div className="panel overflow-auto" style={{ maxHeight }}>
+    <div className={cx('overflow-auto', framed ? 'border-t border-rule' : 'panel')} style={{ maxHeight }}>
       <table aria-busy={loading || undefined} className="w-full border-separate border-spacing-0 text-base">
         <caption className="sr-only">{caption}</caption>
         <thead>

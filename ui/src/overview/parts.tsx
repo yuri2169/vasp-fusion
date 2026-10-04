@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Frame } from '../components/Panel'
 import { cx } from '../lib/cx'
 
 /** A part of a page on its own sheet: a printed heading, an optional way to the list behind it, the content. */
@@ -28,7 +29,7 @@ export function Panel({
         )}
       </div>
       {note && <p className="-mt-1.5 max-w-prose text-sm text-muted">{note}</p>}
-      {children}
+      <Frame>{children}</Frame>
     </section>
   )
 }
@@ -61,16 +62,18 @@ export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntr
       {entries.map((e) => {
         const body = (
           <>
-            <span className="eyebrow">{e.name}</span>
-            <span className={cx('tabular mt-1 whitespace-nowrap font-mono text-2xl', e.alert ? 'text-seal-text' : 'text-fg')}>{e.value}</span>
-            {e.note && <span className="mt-1 text-sm text-muted">{e.note}</span>}
+            <span className="colhead">{e.name}</span>
+            <span className={cx('figure mt-1 whitespace-nowrap', e.alert ? 'text-danger' : 'text-ink')} style={{ fontSize: 28 }}>
+              {e.value}
+            </span>
+            {e.note && <span className="mt-1 text-2xs text-ink-dim">{e.note}</span>}
           </>
         )
         const cell = 'flex h-full flex-col px-4 py-3'
         return (
-          <li key={e.key} className="-mb-px -mr-px border-b border-r border-rule">
+          <li key={e.key} className="-mb-px -mr-px border-b border-r border-rule-soft">
             {e.to ? (
-              <Link to={e.to} className={cx(cell, 'hover:bg-sunk')}>
+              <Link to={e.to} className={cx(cell, 'row-hover')}>
                 {body}
               </Link>
             ) : (
