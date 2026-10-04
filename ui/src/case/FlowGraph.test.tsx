@@ -183,7 +183,7 @@ describe('FlowGraph on a large graph (2,000 wallets, a synthetic shape)', () => 
     expect(fake.state.added.at(-1)!.length).toBeLessThan(400)
     const note = screen.getByRole('group', { name: 'Parts of the graph not drawn' })
     expect(note).toHaveTextContent(new RegExp(`Drawing ${walletsDrawn().length} wallets of 2,000`))
-    expect(note).toHaveTextContent('Every wallet is in the Wallets tab')
+    expect(note).toHaveTextContent('Every wallet and transfer is in the tabs below')
     expect(screen.getByRole('img', { name: /of 2000 wallets drawn.*Wallets tab/ })).toBeInTheDocument()
   })
 
@@ -207,6 +207,15 @@ describe('FlowGraph on a large graph (2,000 wallets, a synthetic shape)', () => 
     expect(walletsDrawn().some((e) => e.data.id === last)).toBe(false)
     rerender(<FlowGraph c={big} selected={last} onSelect={() => {}} />)
     expect(walletsDrawn().some((e) => e.data.id === last)).toBe(true)
+  })
+
+  it('draws as far as a selected wallet that sits past the hops drawn, and does not refit for a selection', () => {
+    const deep = big.graph.nodes.filter((n) => n.hop === 4).at(-1)!.id
+    const { rerender } = render(<FlowGraph c={big} selected={null} onSelect={() => {}} />)
+    const fits = fake.state.calls.filter((x) => x === 'fit').length
+    rerender(<FlowGraph c={big} selected={deep} onSelect={() => {}} />)
+    expect(walletsDrawn().some((e) => e.data.id === deep)).toBe(true)
+    expect(fake.state.calls.filter((x) => x === 'fit').length).toBe(fits)
   })
 
   it('leaves a small case exactly as it was: no note, every wallet drawn', () => {

@@ -73,3 +73,24 @@ describe('a graph of 2,000 wallets (a synthetic shape, scripts/big-graph.mjs)', 
     expect(same.folded).toEqual([])
   })
 })
+
+describe('what the review of foldFlow found', () => {
+  const full = buildFlow(c)
+
+  it('a wallet kept for a selection does not push another into the fold', () => {
+    const plain = foldFlow(full, { perColumn: 12, maxHop: 2 })
+    const hidden = full.nodes.filter((n) => n.column === 2 && !plain.nodes.some((x) => x.id === n.id))[0]
+    const kept = foldFlow(full, { perColumn: 12, maxHop: 2, keep: new Set([hidden.id]) })
+    const drawn = (v: typeof plain) => v.nodes.filter((n) => n.column === 2 && n.kind === 'wallet').map((n) => n.id)
+    expect(drawn(kept)).toEqual(expect.arrayContaining(drawn(plain)))
+    expect(drawn(kept)).toHaveLength(drawn(plain).length + 1)
+  })
+
+  it('draws no line from a fold to itself', () => {
+    const twoInOneHop = bigCase(400)
+    const [a, b] = twoInOneHop.graph.nodes.filter((n) => n.hop === 3).slice(-2)
+    twoInOneHop.graph.edges.push({ ...twoInOneHop.graph.edges[0], id: 'same-hop', source: a.id, target: b.id })
+    const view = foldFlow(buildFlow(twoInOneHop), { perColumn: 2, maxHop: null })
+    expect(view.edges.every((e) => e.source !== e.target)).toBe(true)
+  })
+})

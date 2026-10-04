@@ -97,12 +97,18 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const folded = useMemo(() => {
     if (!big) return null
     // The wallet being looked at, and the way to it, are drawn whatever their size.
-    const keep = selected ? pathTo(full, shownAs(full, selected) ?? selected).nodes : undefined
-    return foldFlow(full, { perColumn: PER_HOP, maxHop: hops ?? pathEnds, keep, shown: opened })
+    const at = selected ? (shownAs(full, selected) ?? selected) : null
+    const keep = at ? pathTo(full, at).nodes : undefined
+    // A wallet picked from the Wallets tab may sit past the hops drawn: draw as far as it is.
+    const reach = Math.abs(full.nodes.find((n) => n.id === at)?.column ?? 0)
+    return foldFlow(full, { perColumn: PER_HOP, maxHop: Math.max(hops ?? pathEnds, reach), keep, shown: opened })
   }, [big, full, hops, pathEnds, opened, selected])
   const view: FlowView = folded ?? full
   const elements = useMemo(() => toElements(view), [view])
   const shown = shownAs(view, selected)
+
+  const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}`
+  const fitted = useRef<string | null>(null)
 
   const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
 
@@ -203,8 +209,13 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       cy.elements().remove()
       cy.add(elements)
     })
-    fit()
-  }, [elements])
+    // Fit when the picture is a different one (another case, grouped, a hop opened), not when a
+    // selection in a large graph only brought one more wallet into it: the officer's place stays.
+    if (fitted.current !== shape) {
+      fit()
+      fitted.current = shape
+    }
+  }, [elements, shape])
 
   // --- the selection: its path stays, the rest steps back ---------------------
   useEffect(() => {
@@ -287,8 +298,8 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       {folded && (
         <div role="group" aria-label="Parts of the graph not drawn" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-xs text-muted">
           <p className="mr-auto">
-            Drawing {plural(drawn, 'wallet')} of {c.graph.nodes.length.toLocaleString('en-US')}: the path, and the {PER_HOP} largest of each hop. Every wallet
-            is in the Wallets tab.
+            Drawing {plural(drawn, 'wallet')} of {c.graph.nodes.length.toLocaleString('en-US')}: the path, then {PER_HOP} of each hop (labelled wallets first,
+            then the largest). Every wallet and transfer is in the tabs below.
           </p>
           {folded.folded.map(({ column, wallets: left }) => (
             <Button key={column} size="sm" variant="ghost" onClick={() => openMore(column)}>
@@ -337,7 +348,7 @@ function NodeCard({ node }: { node: FlowNode }) {
         <span className="block font-medium">
           {count(node.members.length)} more {node.members.length === 1 ? 'wallet' : 'wallets'} at {hopName(node.column)}
         </span>
-        <span className="mt-1 block text-muted">Not drawn one by one: each got less than the wallets shown.</span>
+        <span className="mt-1 block text-muted">Not drawn one by one. Labelled wallets and the largest of the hop are.</span>
         <span className="mt-1 block text-muted">Click to draw {Math.min(MORE, node.members.length)} more. All are in the Wallets tab.</span>
       </>
     )

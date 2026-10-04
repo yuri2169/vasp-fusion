@@ -728,7 +728,8 @@ def get_vasp(name: str, response: Response):
     page = svc.vasp(vasp, counts)
     if not (page["wallets"] or page["requests"]):
         try:                             # a demo exchange keeps its demo page
-            mock = demo_fixture(f"vasps/{name}", "")
+            mock = demo_fixture(f"vasps/{name}", f'Nothing is on file for "{name[:80]}": no label, '
+                                                 "no directory entry and no case names it.")
             _source(response, "mock")
             return mock
         except HTTPException:

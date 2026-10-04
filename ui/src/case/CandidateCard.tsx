@@ -49,7 +49,8 @@ function BarChecked({ chain }: { chain: string }) {
       <span className="font-medium text-fg">
         {bar.wallets_named} were named an exchange, {bar.wallets_wrong} of them wrongly ({pct(bar.risk)}; upper bound {pct(bar.risk_upper_bound)}).
       </span>{' '}
-      An attribution is a lead to confirm with the exchange, not proof.{' '}
+      The bar is a rule that was checked, not calibrated, and that test is harder than a case that keeps those labels. An attribution is a lead to
+      confirm with the exchange, not proof.{' '}
       <Link to={`/model?chain=${chain}`} className="underline underline-offset-2 hover:no-underline">
         The measurement
       </Link>
@@ -82,7 +83,7 @@ export function CandidateCard({
   // The request this case is already in, if any: the page then leads to it, not to a second draft.
   const requests = useRequests()
   const existing = canRequest
-    ? requests.data?.items.find((r) => r.vasp === candidate.vasp && r.case_ids.includes(c.id) && r.status !== 'withdrawn')
+    ? requests.data?.items.find((r) => r.vasp === candidate.vasp && r.case_ids.includes(c.id) && r.status !== 'withdrawn' && r.status !== 'refused')
     : undefined
 
   return (

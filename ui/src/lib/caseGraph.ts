@@ -261,8 +261,11 @@ export interface FoldedView extends FlowView {
 }
 
 /** A view with at most `perColumn` wallets a hop (plus the path), in the order `buildFlow` gave
- *  them. Nothing is dropped: a wallet is drawn, counted in its hop's `more:` node, or counted in
- *  `beyond`; a transfer to a folded wallet is added into the line to its `more:` node. */
+ *  them. Which ones: the wallets asked for (`keep`), then the named exchange's, then any labelled
+ *  wallet, then by amount. So a labelled wallet is drawn before a larger unlabelled one. No wallet
+ *  is dropped: it is drawn, counted in its hop's `more:` node, or counted in `beyond`. A transfer
+ *  to a folded wallet is added into the line to its `more:` node; a transfer between two wallets of
+ *  one fold, or across the hop limit, is not drawn (the Transfers tab has every one). */
 export function foldFlow(view: FlowView, opts: FoldOptions): FoldedView {
   const columns = new Map<number, FlowNode[]>()
   let beyond = 0
@@ -285,7 +288,9 @@ export function foldFlow(view: FlowView, opts: FoldOptions): FoldedView {
   for (const column of [...columns.keys()].sort((a, b) => a - b)) {
     const all = columns.get(column)!.sort((a, b) => a.row - b.row)
     const rest = all.filter((n) => !n.onPath && n.column !== 0)
-    const limit = Math.max(opts.shown?.get(column) ?? opts.perColumn, rest.filter((n) => rank(n) === 3).length)
+    // Wallets that are kept for a selection are drawn besides the hop's own number, so looking
+    // at one wallet never pushes another into the fold.
+    const limit = (opts.shown?.get(column) ?? opts.perColumn) + rest.filter((n) => rank(n) === 3).length
     for (const n of all) if (n.onPath || n.column === 0) nodes.push(n), standsFor.set(n.id, n.id)
     if (rest.length <= limit) {
       for (const n of rest) nodes.push(n), standsFor.set(n.id, n.id)
@@ -324,6 +329,7 @@ export function foldFlow(view: FlowView, opts: FoldOptions): FoldedView {
     const source = standsFor.get(e.source)
     const target = standsFor.get(e.target)
     if (!source || !target) continue // one end is past the hop limit
+    if (source === target) continue // both ends are in the same fold: nothing to draw between them
     if (source === e.source && target === e.target) {
       edges.set(e.id, e)
       continue

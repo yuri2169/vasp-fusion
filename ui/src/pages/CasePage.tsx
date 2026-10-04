@@ -276,7 +276,7 @@ export function CasePage() {
             </div>
           }
         >
-          <FlowGraph c={c} selected={selected} onSelect={select} className="lg:sticky lg:top-[76px]" />
+          <FlowGraph key={c.id} c={c} selected={selected} onSelect={select} className="lg:sticky lg:top-[76px]" />
         </Suspense>
         {selected ? (
           <WalletPanel c={c} id={selected} onSelect={select} onClose={() => select(null)} />

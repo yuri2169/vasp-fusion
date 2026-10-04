@@ -95,7 +95,8 @@ def test_an_unmeasured_model_says_so_and_shows_no_figure(client):
 
 
 def test_an_exchange_nobody_knows_is_404_not_a_fixture_page(client, monkeypatch):
-    assert client.get("/api/vasps/Nonexistent Exchange").status_code == 404
+    r = client.get("/api/vasps/Nonexistent Exchange")
+    assert r.status_code == 404 and "Nothing is on file" in r.json()["detail"]
 
 
 def test_with_demo_mode_on_the_fixtures_stand_in(client, monkeypatch):
