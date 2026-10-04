@@ -417,7 +417,13 @@ export function LabelsPage() {
       ) : cov ? (
         <>
           <p className="mb-3 max-w-prose text-base text-muted">
-            <span className="tabular font-mono text-fg">{count(cov.total)}</span> labelled addresses. Every count below opens the labels behind it.
+            <span className="tabular font-mono text-fg">{count(cov.total)}</span> labelled addresses
+            {cov.traceable_total != null && cov.traceable_total < cov.total && (
+              <>
+                , <span className="tabular font-mono text-fg">{count(cov.traceable_total)}</span> of them on chains this tool can trace
+              </>
+            )}
+            . Every count below opens the labels behind it.
           </p>
           <CoveragePanels cov={cov} pick={pick} />
         </>

@@ -126,7 +126,11 @@ function Coverage({ d }: { d: Dashboard }) {
     <Panel
       title="Label coverage"
       more={{ to: '/labels', text: 'Open the labels explorer' }}
-      note={`${count(cov.total)} labelled addresses. A trace can only name an exchange whose address is among them.`}
+      note={
+        cov.traceable_total != null && cov.traceable_total < cov.total
+          ? `${count(cov.traceable_total)} labelled addresses on chains this tool can trace, of ${count(cov.total)} on file. A trace can only name an exchange whose address is among them.`
+          : `${count(cov.total)} labelled addresses. A trace can only name an exchange whose address is among them.`
+      }
     >
       <BarList
         caption="Labels by tier"

@@ -211,6 +211,48 @@ class Smoke:
             ok(f"the letter is a PDF ({len(letter):,} bytes)",
                s == 200 and letter[:5] == b"%PDF-", s)
 
+        # --- the problem statement, risk, and the SAHYOG round trip on the simulator (G2)
+        s, _, cov = api.call("GET", "/api/coverage")
+        ok(f"the coverage page lists the problem statement ({cov.get('total')} lines: "
+           f"{cov.get('counts')})",
+           s == 200 and cov["total"] == len(cov["rows"]) == sum(cov["counts"].values())
+           and all(r["gap"] for r in cov["rows"] if r["status"] != "built"), (s, cov.get("counts")))
+        s, _, ofac = api.call("GET", "/api/cases/tron-ofac")
+        s2, _, quiet = api.call("GET", f"/api/cases/{hero['id']}")
+        ok("the sanctioned case is Severe and the attributed one is not, each with its reasons",
+           s == s2 == 200 and ofac["risk"]["risk_class"] == "severe" and ofac["risk"]["indicators"]
+           and quiet["risk"]["risk_class"] != "severe"
+           and "Not a probability" in ofac["risk"]["basis"], (ofac.get("risk"), quiet.get("risk")))
+        s, _, sim = api.call("GET", "/api/sahyog-sim")
+        ok("the simulator is on, and says it is a simulator",
+           s == 200 and sim["enabled"] and "Not the SAHYOG portal" in sim["notice"], (s, sim))
+        if not self.read_only:
+            s, _, body = api.call("POST", "/api/sahyog/complaints", {
+                "complaint_ref": "SMOKE-0001", "agency": "smoke", "officer": "smoke",
+                "wallets": [{"address": hero["address"]}]})
+            ok("the intake refuses a caller without its API key (401)", s == 401, (s, body))
+            s, _, filed = api.call("POST", "/api/sahyog-sim/complaints", {
+                "complaint_ref": "SMOKE-0001", "agency": "smoke test", "officer": "smoke test",
+                "wallets": [{"address": hero["address"]}, {"address": "not-a-wallet"}]})
+            good = filed["wallets"][0] if s == 202 else {}
+            ok("a complaint filed in the simulator has a case and a result; the bad address "
+               "is refused by name",
+               s == 202 and good.get("case_id") == hero["id"] and good.get("status") == "result"
+               and good.get("top_vasp") == hero["expect"]["top_vasp"]
+               and good.get("result_sent_at") and filed["wallets"][1]["accepted"] is False
+               and "not-a-wallet" in filed["wallets"][1]["error"], (s, filed))
+            s, _, case = api.call("GET", f"/api/cases/{hero['id']}")
+            ok("the case says it was reported through SAHYOG",
+               case.get("sahyog_complaint_ref") == "SMOKE-0001", case.get("sahyog_complaint_ref"))
+            if b'id="root"' in page:
+                s, _, ack = api.call("POST", f"/api/sahyog-sim/requests/{rid}/reply",
+                                     {"status": "freeze_confirmed", "note": "smoke test"})
+                s2, _, after = api.call("GET", f"/api/requests/{rid}")
+                ok("the exchange's side confirms the freeze and the desk reads it",
+                   s == 200 and ack["status"] == "freeze_confirmed"
+                   and after["status"] == "freeze_confirmed"
+                   and after["status_history"][-1].get("via") == "sahyog", (s, ack))
+
         s, _, audit = api.call("GET", "/api/audit?limit=500&verify=true")
         actions = [(a["officer"], a["action"], a["status"]) for a in audit["items"]]
         ok(f"the audit log has it all ({audit['total']} rows)",
