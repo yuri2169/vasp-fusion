@@ -17,7 +17,7 @@ src, out = Path(sys.argv[1]), Path(sys.argv[2])
 frames = json.loads((src / "frames.json").read_text())
 WIDTH, LONGEST_MS, SHORTEST_MS = 960, 2500, 40
 
-images, durations = [], []
+images, durations, size = [], [], None
 for i, f in enumerate(frames):
     nxt = frames[i + 1]["t"] if i + 1 < len(frames) else f["t"] + LONGEST_MS / 1000
     ms = int(max(SHORTEST_MS, min(LONGEST_MS, (nxt - f["t"]) * 1000)))
@@ -25,7 +25,9 @@ for i, f in enumerate(frames):
         durations[-1] += ms
         continue
     im = Image.open(src / f["file"]).convert("RGB")
-    images.append(im.resize((WIDTH, round(im.height * WIDTH / im.width)), Image.LANCZOS))
+    # The screencast's frames are not all one size: every frame is put on the first one's.
+    size = size or (WIDTH, round(im.height * WIDTH / im.width))
+    images.append(im.resize(size, Image.LANCZOS))
     durations.append(ms)
 
 total = sum(durations) / 1000

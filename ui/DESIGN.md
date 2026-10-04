@@ -209,6 +209,7 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 - Hover: a wallet's whole address, role and label; a transfer's amount, time and whole hash. Click: selects. With a selection, everything off the path to it steps back to 20%; the suspect wallet dims nothing (every transfer is its own).
 - The mouse wheel scrolls the page; zoom is on the buttons. Nodes are not draggable.
 - **Nothing is reachable by mouse only.** The canvas is `role="img"` with a sentence; the Wallets tab lists every wallet and selects it the same way a click does, the Transfers tab every transfer.
+- **A large case (over 250 wallets) is drawn in part** (`foldFlow`). A hop of 400 wallets is a column 36,000px tall that tells nobody anything. Drawn: the path, then 12 wallets of each hop, chosen as the selected wallet and the way to it, the named exchange's wallets, any labelled wallet, then the largest. The rest of a hop is one quiet dashed node, "+388 wallets"; hops past the path's end wait behind "Draw hop 3". A line under the toolbar says how many are drawn and has a button for every fold, so the keyboard can do what a click on the fold does. A selection never refits the picture. Nothing is dropped: the Wallets and Transfers tabs hold every one.
 - Straight lines, not square ("taxi") routing: square routing runs different transfers along one trunk, and the picture then no longer says which wallet paid which.
 
 ## Encoding rules
@@ -247,6 +248,11 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 - Empty screens invite the next action: "Paste a wallet address to open a case".
 - Show the backend's sentences verbatim (narrative, evidence, flags, notes). Do not paraphrase a finding.
 - Say "exchange" where the officer would; "VASP" only where the law or the product name does.
+- Never the system's furniture: no "server", "API", "cache", "log". Say "this installation", "saved copies", "whoever runs this installation".
+- A confidence is never shown without its error. Under the answer of a case: how the naming bar was checked, in the measurement's own figures (`BarChecked`, from `GET /api/model`), and that an attribution is a lead to confirm, not proof.
+- Nothing claims SAHYOG. The button is "Mark as sent"; its dialog and the receipt say the gateway is a local outbox unless a connection has been set up.
+- A wallet of the demonstration set is tagged "Recorded" (real, traced from recorded chain responses), never "Demo".
+- One action at a time: a case being traced again offers no request from its previous answer; a case already in a request offers "Open request to ‹exchange›" with its status, not a second draft.
 
 ## Components (`src/components/`)
 
@@ -291,6 +297,9 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 - Meaning never rests on colour alone: tiers, outcomes, severities and "under the bar" all have words and a shape or icon.
 - Meters are `role="meter"` with a sentence in `aria-valuetext`. Tables have a caption. Sort state is `aria-sort`.
 - `prefers-reduced-motion` turns the one animation off.
+- **Audited, not assumed:** `node scripts/a11y.mjs` runs axe-core (WCAG 2.1 A and AA, and its best practices) on every screen in both themes and walks Tab through four of them. It must end "No finding". What it taught: counts that are links are a list, not a `<dl>`; an empty state's title is a level-2 heading; two landmarks of one kind need different names; decoration (the draft watermark) is drawn by CSS, not written as page text.
+- A long table (`DataTable`) draws its first 200 rows and says "Showing 200 of 2,000", with "Show 200 more" and "Show all"; sorting sorts all rows. The timeline does the same in steps of 150.
+- A page that fails while it is drawn is caught (`PageBoundary`): the rail and search stay, and the officer is told what to do.
 
 ## Data
 

@@ -33,11 +33,14 @@ The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, th
 make labels          # once: the image bakes data/labels.duckdb in
 make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
 make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
-make docker-smoke    # 47 checks in a throwaway container started with --network none
+make docker-smoke    # 54 checks in a throwaway container started with --network none
+UI=build make docker # the same image with the interface compiled in (what the demo uses)
+make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
 - **Nothing reaches the network at run time.** The image sets `OFFLINE=1`: a chain request that is not in its cache is refused, never fetched. `make docker-smoke` proves it by running the whole demo with networking disabled.
 - **What is baked in:** the label database; the chain responses the eight demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the eight demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
-- **The interface.** `UI=build make docker` compiles `ui/` into the image. Without it (the default until the UI track lands) the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
+- **The interface.** `UI=build make docker` compiles `ui/` into the image (Node 22 stage; the build checks that the bundle carries no fixture and that the first load stays under 200 KB gzipped). The demo script is `docs/demo_script.md`. Without `UI=build` the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
+- **Only real records.** The fixtures in `mocks/` stand in for empty stores only with `VASPFUSION_DEMO_MODE=1` (off by default, off in the image): a server lists its own cases and nothing else.
 - **Login.** The image holds one demonstration account (`demo/officer.json`, published in the repository, so it protects nothing). `VASPFUSION_AUTH=off docker compose up` runs without a login. For real use, disable it and add officers: `docker compose exec vasp-fusion python -m vaspfusion.cli officer add <user> --name "..."`.
 - **State** (cases, requests, audit log, token secret) lives in the volume `vaspfusion-data`. A rebuilt image does not replace it: `docker compose down -v` starts again from the image's demo data.
 - The container runs as a non-root user with a read-only root filesystem and no Linux capabilities, bound to 127.0.0.1.

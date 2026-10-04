@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -94,8 +94,20 @@ ui-dev:           ## the interface on :5173 with demo fixtures; API=live talks t
 ui-test:          ## the interface's tests, type check and lint
 	cd ui && npm test && npm run typecheck && npm run lint
 
-ui-build:         ## compile ui/ into ui/dist, which `make serve` then serves at /
-	cd ui && npm run build
+ui-build:         ## compile ui/ into ui/dist, which `make serve` then serves at /; checks the bundle
+	cd ui && npm run build && node scripts/check-bundle.mjs
+
+ui-perf:          ## the case page on a synthetic graph of 2,000 wallets, timed in a real browser (after ui-build)
+	cd ui && node scripts/perf.mjs
+
+ui-a11y:          ## axe-core on every screen in both themes + a keyboard walk, against the tool on :$(PORT)
+	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/a11y.mjs
+
+demo-flow:        ## the 3-minute demo, driven and asserted in a real browser against :$(PORT); FRAMES=dir keeps the frames
+	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/demo-flow.mjs
+
+final-shots:      ## docs/screenshots/final-*: every screen in both themes, from the tool on :$(PORT) (run after demo-flow)
+	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/final-shots.mjs
 
 ui-shots:         ## screenshots of /kit and the shell into docs/screenshots/ (needs `make ui-dev` running; BASE_URL=..)
 	cd ui && npm run screenshots

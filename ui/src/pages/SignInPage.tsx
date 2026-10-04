@@ -27,7 +27,7 @@ export function SignInPage() {
     : null
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-page px-5 text-fg">
+    <main className="flex min-h-screen items-center justify-center bg-page px-5 text-fg">
       <form onSubmit={submit} className="flex w-full max-w-[360px] flex-col gap-4">
         <div>
           <h1 className="display text-xl">Sign in to VASP-FUSION</h1>
@@ -71,6 +71,6 @@ export function SignInPage() {
           {signIn.isPending ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
-    </div>
+    </main>
   )
 }
