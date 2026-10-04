@@ -24,7 +24,11 @@ const columns: Column<CaseSummary>[] = [
     cell: (c) => (
       <span className="flex items-center gap-2">
         <span className="font-medium text-fg">{c.case_ref ?? c.id}</span>
-        {c.demo && <span className="rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">Demo</span>}
+        {c.demo && (
+          <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">
+            Recorded
+          </span>
+        )}
       </span>
     ),
   },

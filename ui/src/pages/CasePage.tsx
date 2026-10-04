@@ -70,7 +70,11 @@ function Meta({ c }: { c: CaseDetail }) {
           </span>{' '}
         </span>
       ))}
-      {c.demo && <span className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">Demo</span>}
+      {c.demo && (
+        <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">
+          Recorded
+        </span>
+      )}
     </p>
   )
 }

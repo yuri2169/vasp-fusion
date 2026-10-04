@@ -1,7 +1,7 @@
 import { CircleHelp, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
 import type { Candidate, CaseDetail } from '../api/models'
-import { useRequests } from '../api/queries'
+import { useModel, useRequests } from '../api/queries'
 import { AddressChip } from '../components/AddressChip'
 import { Amount } from '../components/Amount'
 import { buttonClass } from '../components/Button'
@@ -19,9 +19,9 @@ function Counterfactual({ candidate }: { candidate: Candidate }) {
   const holds = candidate.counterfactual_holds
   const { Icon, words, tone } =
     holds === true
-      ? { Icon: ShieldCheck, words: 'Holds without its strongest label', tone: 'text-verified-text' }
+      ? { Icon: ShieldCheck, words: 'Still named with its strongest label removed', tone: 'text-verified-text' }
       : holds === false
-        ? { Icon: TriangleAlert, words: 'Rests on that one label', tone: 'text-fg' }
+        ? { Icon: TriangleAlert, words: 'Named on the strength of one label', tone: 'text-fg' }
         : { Icon: CircleHelp, words: 'Checked without its strongest label', tone: 'text-muted' }
   return (
     <div className="flex gap-2 rounded border border-rule bg-sunk px-3 py-2.5">
@@ -31,6 +31,29 @@ function Counterfactual({ candidate }: { candidate: Candidate }) {
         <p className="mt-0.5 text-sm text-fg [overflow-wrap:anywhere]">{candidate.counterfactual}</p>
       </div>
     </div>
+  )
+}
+
+/** How often naming an exchange at the bar was wrong when it was checked, in the measurement's
+ *  own figures (GET /api/model, `abstain`). Shown under the answer, so a confidence is never read
+ *  without its error. Nothing is shown for a chain the bar was not checked on. */
+function BarChecked({ chain }: { chain: string }) {
+  const model = useModel(chain)
+  const a = model.data?.abstain
+  const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
+  if (!a || !bar || bar.wallets_named === 0) return null
+  const pct = (v?: number | null) => (v == null ? "not measured" : `${(v * 100).toFixed(1)}%`)
+  return (
+    <p className="text-xs text-muted">
+      How the {a.current_threshold.toFixed(2)} bar was checked: {a.wallets} wallets on this chain were traced with the tool's own derived labels hidden.{' '}
+      <span className="font-medium text-fg">
+        {bar.wallets_named} were named an exchange, {bar.wallets_wrong} of them wrongly ({pct(bar.risk)}; upper bound {pct(bar.risk_upper_bound)}).
+      </span>{' '}
+      An attribution is a lead to confirm with the exchange, not proof.{' '}
+      <Link to={`/model?chain=${chain}`} className="underline underline-offset-2 hover:no-underline">
+        The measurement
+      </Link>
+    </p>
   )
 }
 
@@ -91,6 +114,8 @@ export function CandidateCard({
           : 'Rule-based, not calibrated: label weight × hop decay × share factor.'}
         {!named && ` An exchange is named at ${NAMING_BAR.toFixed(2)} or more.`}
       </p>
+
+      {action === 'primary' && named && <BarChecked chain={c.chain} />}
 
       {canRequest && tracing && <p className="text-sm text-muted">A request to {candidate.vasp} can be drafted once the new trace is in.</p>}
       {canRequest && !tracing && existing && (

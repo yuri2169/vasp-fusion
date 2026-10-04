@@ -8,7 +8,7 @@
 // Every step asserts what is on the screen; the script exits 1 at the first thing that is not
 // there. It signs in with the published demonstration account (demo/officer.json) when the
 // server asks for a login. Three cases, in the order the jury sees them:
-//   1. a recorded Tron wallet is traced while watched -> CoinDCX -> "Why CoinDCX?" -> a request is
+//   1. a recorded Tron wallet is traced while watched -> CoinDCX -> "Why CoinDCX?" -> Verify -> a request is
 //      drafted, approved, marked as sent -> the letter PDF -> the desk -> the dashboard's count moved;
 //   2. a wallet where the evidence is not enough: no exchange is named, and no request is offered;
 //   3. a wallet that paid a sanctioned address.
@@ -115,11 +115,27 @@ try {
   await see('Why CoinDCX?')
   const page1 = await text()
   expect(/0\.85/.test(page1), 'CoinDCX is named at 0.85')
-  expect(page1.includes('Holds without its strongest label'), 'the counterfactual is on the page')
+  expect(page1.includes('Still named with its strongest label removed'), 'the counterfactual is on the page')
   await waitFor(() => page.evaluate(`document.querySelectorAll('[role="img"] canvas').length > 0`), 'the fund-flow graph')
-  say('"Why CoinDCX?": 0.85, the evidence in sentences, and the answer holds without its strongest label')
+  say('"Why CoinDCX?": 0.85, the evidence in sentences, and the exchange is still named with its strongest label removed')
   await shot('case-coindcx')
   await pause(3500)
+
+  expect(/155 were named an exchange, 15 of them wrongly/.test(page1), 'the measured error of the naming bar is under the answer')
+
+  // --- is this fabricated? Verify traces it again and compares -----------------------------------
+  await click('Audit', '[role="tab"]')
+  await see('Verify this case')
+  await page.evaluate(`[...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Verify this case').scrollIntoView({ block: 'center' })`)
+  await pause(1200)
+  await click('Verify this case', 'main button')
+  await waitFor(() => page.evaluate(`!!document.querySelector('[role="tabpanel"] .border-verified-text, [role="tabpanel"] .border-seal-text')`), 'the result of Verify', 60000)
+  expect(await page.evaluate(`!!document.querySelector('[role="tabpanel"] .border-verified-text')`), 'Verify says the stored case matches a fresh trace')
+  say('Verify: the wallet is traced again from the recorded responses and the findings match the receipt, digest for digest')
+  await shot('verify')
+  await pause(3000)
+  await page.evaluate(`window.scrollTo({ top: 0 })`)
+  await pause(800)
 
   // --- draft, approve, send ---------------------------------------------------------------------
   await click('Draft request to CoinDCX', 'main a')

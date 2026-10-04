@@ -42,7 +42,7 @@ describe('a case that names an exchange', () => {
     expect(header).toHaveTextContent('Opened 13 Sep 2026')
     // a line that wraps never starts with a separator
     expect(header).toHaveTextContent('Complaint 31509260001234 · Reported loss ₹40,50,000 · Opened 13 Sep 2026')
-    expect(within(header).getByText('Demo')).toBeInTheDocument()
+    expect(within(header).getByText('Recorded')).toBeInTheDocument()
   })
 
   it('shows where the funds went, inside the rail’s card, for a real case', async () => {

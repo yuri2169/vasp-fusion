@@ -72,8 +72,9 @@ export function RequestActions({ request }: { request: RequestDetail }) {
       title: `Mark the request to ${request.vasp} as sent?`,
       body: (
         <p>
-          The letter and its data are handed to the SAHYOG gateway set up for this installation, and the day a reply is expected is set. A sent request
-          cannot be withdrawn or edited.
+          The letter and its data are handed to the gateway set up for this installation, and the day a reply is expected is set. Unless a
+          connection to SAHYOG has been set up, that gateway is a local outbox: nothing leaves this machine, and the officer submits the letter
+          through the portal. A sent request cannot be withdrawn or edited.
         </p>
       ),
       confirm: 'Mark as sent',
@@ -129,7 +130,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
       )}
       {next.includes('sent') && (
         <Button variant="primary" onClick={() => open('send')}>
-          Mark as sent (via SAHYOG)
+          Mark as sent
         </Button>
       )}
       {replies.length > 0 && (

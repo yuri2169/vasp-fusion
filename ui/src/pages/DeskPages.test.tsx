@@ -257,7 +257,7 @@ describe('the request letter', () => {
     expect(patch).toHaveBeenCalledWith('req-2026-0002', { status: 'approved', note: 'Checked against the case file' })
     expect(await screen.findByText('Request approved')).toBeInTheDocument()
     // the page now shows what the server answered
-    expect(await screen.findByRole('button', { name: 'Mark as sent (via SAHYOG)' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Mark as sent' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send back to draft' })).toBeInTheDocument()
   })
 
@@ -265,7 +265,7 @@ describe('the request letter', () => {
     serve(approved)
     const patch = vi.spyOn(api, 'patchRequest').mockResolvedValue(sent)
     const { user } = open('/requests/req-2026-0001')
-    await user.click(await screen.findByRole('button', { name: 'Mark as sent (via SAHYOG)' }))
+    await user.click(await screen.findByRole('button', { name: 'Mark as sent' }))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Mark as sent' }))
     expect(patch).toHaveBeenCalledWith('req-2026-0001', { status: 'sent', note: null })
     expect(await screen.findByText('Marked as sent')).toBeInTheDocument()
@@ -300,7 +300,7 @@ describe('the request letter', () => {
     const sentence = 'Case tron-coindcx was traced again and no longer supports this request. Withdraw this request and draft a new one.'
     vi.spyOn(api, 'patchRequest').mockRejectedValue(new ApiError(409, sentence))
     const { user } = open('/requests/req-2026-0001')
-    await user.click(await screen.findByRole('button', { name: 'Mark as sent (via SAHYOG)' }))
+    await user.click(await screen.findByRole('button', { name: 'Mark as sent' }))
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Mark as sent' }))
     expect(await within(screen.getByRole('dialog')).findByRole('alert')).toHaveTextContent(sentence)
   })

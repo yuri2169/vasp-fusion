@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { api } from '../api/api'
 import { ApiError } from '../api/client'
-import type { CaseDetail, CaseSummary, RequestDetail } from '../api/models'
+import type { CaseDetail, CaseSummary, ModelInfo, RequestDetail } from '../api/models'
 import { readCase, readMock } from '../test/files'
 import { renderApp } from '../test/render'
 import { AbstainPanel } from './AbstainPanel'
@@ -39,14 +39,14 @@ describe('AnswerPanel, an exchange is named', () => {
 
   it('shows the counterfactual sentence, and that the answer holds without its strongest label', () => {
     renderApp(<AnswerPanel c={hero} onSelect={noop} />)
-    expect(screen.getByText('Holds without its strongest label')).toBeInTheDocument()
+    expect(screen.getByText('Still named with its strongest label removed')).toBeInTheDocument()
     expect(screen.getByText(hero.candidates[0].counterfactual!)).toBeInTheDocument()
   })
 
   it('says so when a naming rests on one label', () => {
     renderApp(<AnswerPanel c={two} onSelect={noop} />)
     const htx = screen.getByRole('article', { name: 'HTX' })
-    expect(within(htx).getByText('Rests on that one label')).toBeInTheDocument()
+    expect(within(htx).getByText('Named on the strength of one label')).toBeInTheDocument()
     expect(within(htx).getByRole('meter', { name: 'Confidence' })).toHaveAttribute('aria-valuetext', expect.stringMatching(/^rule confidence 0\.71/))
     // a second exchange at or above the bar can be written to as well, as a secondary action
     expect(within(htx).getByRole('link', { name: 'Draft request to HTX' })).toHaveAttribute('href', '/desk?vasp=HTX&case=tron-htx-coindcx')
@@ -285,5 +285,30 @@ describe('a request from the case page', () => {
     })
     renderApp(<AnswerPanel c={hero} onSelect={noop} />)
     expect(await screen.findByRole('link', { name: 'Draft request to CoinDCX' })).toBeInTheDocument()
+  })
+})
+
+describe('the naming bar, checked', () => {
+  it("puts the bar's measured error under the answer, in the measurement's own figures", async () => {
+    vi.spyOn(api, 'model').mockResolvedValue({
+      status: 'measured',
+      metrics: {},
+      abstain: {
+        chain: 'tron', wallets: 280, claims: 303, current_threshold: 0.6, measured_threshold: null, target_risk: 0.05, delta: 0.05, risk_coverage: [], notes: [],
+        bars: [{ threshold: 0.6, claims_answered: 163, claims_wrong: 20, wallets_named: 155, wallets_wrong: 15, wallets_abstained: 125, risk: 0.0968, risk_upper_bound: 0.1733 }],
+      },
+    } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={hero} onSelect={noop} />)
+    const line = await screen.findByText(/155 were named an exchange, 15 of them wrongly \(9\.7%; upper bound 17\.3%\)/)
+    expect(line.closest('p')).toHaveTextContent('280 wallets on this chain were traced with the tool\'s own derived labels hidden')
+    expect(line.closest('p')).toHaveTextContent('a lead to confirm with the exchange, not proof')
+    expect(screen.getByRole('link', { name: 'The measurement' })).toHaveAttribute('href', '/model?chain=tron')
+  })
+
+  it('says nothing where the bar was not measured', async () => {
+    vi.spyOn(api, 'model').mockResolvedValue({ status: 'measured', metrics: {}, abstain: null } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={hero} onSelect={noop} />)
+    await screen.findByRole('link', { name: 'Draft request to CoinDCX' })
+    expect(screen.queryByText(/bar was checked/)).not.toBeInTheDocument()
   })
 })
