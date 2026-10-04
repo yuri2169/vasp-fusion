@@ -113,6 +113,97 @@
       "bitcoin-sv": 1,
       "sonic": 1,
       "verge": 1
-    }
+    },
+    "by_source": [
+      {
+        "source": "graphsense-tagpacks",
+        "name": "GraphSense TagPacks: exchange packs",
+        "obtained_from": "GraphSense TagPacks",
+        "licence": "MIT",
+        "url": "https://github.com/graphsense/graphsense-tagpacks",
+        "labels": 336422,
+        "tiers": {
+          "explorer_tag": 122,
+          "curated": 336300
+        }
+      },
+      {
+        "source": "eth-labels",
+        "name": "eth-labels: public tags of block explorers",
+        "obtained_from": "wallet-attribution set",
+        "licence": null,
+        "url": "https://github.com/dawsbot/eth-labels",
+        "labels": 111673,
+        "tiers": {
+          "explorer_tag": 111673
+        }
+      },
+      {
+        "source": "vaspfusion-discover",
+        "name": "Deposit addresses derived by VASP-FUSION (sweep and gas-payer rules)",
+        "obtained_from": "computed by this tool",
+        "licence": "computed here, not a third-party set",
+        "url": null,
+        "labels": 5497,
+        "tiers": {
+          "derived": 5497
+        }
+      },
+      {
+        "source": "defillama-cex",
+        "name": "DefiLlama adapters: reserve wallets the exchanges published",
+        "obtained_from": "wallet-attribution set",
+        "licence": null,
+        "url": "https://github.com/DefiLlama/DefiLlama-Adapters",
+        "labels": 1690,
+        "tiers": {
+          "published_por": 1690
+        }
+      },
+      {
+        "source": "ofac-sdn",
+        "name": "OFAC SDN list of sanctioned addresses",
+        "obtained_from": "wallet-attribution set",
+        "licence": "US-government public record",
+        "url": "https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses",
+        "labels": 941,
+        "tiers": {
+          "curated": 941
+        }
+      },
+      {
+        "source": "mew-ethereum-lists",
+        "name": "MyEtherWallet ethereum-lists: scam addresses",
+        "obtained_from": "wallet-attribution set",
+        "licence": null,
+        "url": "https://github.com/MyEtherWallet/ethereum-lists",
+        "labels": 652,
+        "tiers": {
+          "curated": 652
+        }
+      },
+      {
+        "source": "cex-list",
+        "name": "cex-list: exchange hot wallets",
+        "obtained_from": "wallet-attribution set",
+        "licence": null,
+        "url": "https://github.com/tradezon/cex-list",
+        "labels": 162,
+        "tiers": {
+          "curated": 162
+        }
+      },
+      {
+        "source": "dune-spellbook",
+        "name": "Dune spellbook: Indian exchanges' wallets",
+        "obtained_from": "Dune spellbook extract",
+        "licence": null,
+        "url": "https://github.com/duneanalytics/spellbook",
+        "labels": 88,
+        "tiers": {
+          "curated": 88
+        }
+      }
+    ]
   }
 }

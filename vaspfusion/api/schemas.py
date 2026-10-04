@@ -357,10 +357,20 @@ class FlowSummary(_M):
     first_seen: datetime | None = None
     last_seen: datetime | None = None
     top_counterparties: list[str] = []
+    total: float | None = Field(None, description="In `asset`; null when the transfers "
+                                                   "are in more than one asset")
+    asset: str | None = None
+    counterparties: int | None = None
 
 
 class RiskInfo(_M):
-    score: float | None = Field(None, ge=0, le=1, description="null = not yet scored")
+    score: float | None = Field(None, ge=0, le=1, description=(
+        "Always null: no wallet risk score is computed. `level` is a plain rule"))
+    level: Literal["high", "elevated", "none"] | None = Field(None, description=(
+        "high: the address is itself labelled sanctioned, mixer or scam, or a high-severity "
+        "flag of a case names it. elevated: a pattern flag names it, or funds it sent "
+        "reached a sanctioned or mixer address. none: nothing on record. null: not "
+        "assessed (unlabelled and in no case)"))
     reasons: list[str] = []
 
 
@@ -378,6 +388,10 @@ class WalletDetail(_M):
     cases: list[WalletCaseRef]
     inbound: FlowSummary | None = None
     outbound: FlowSummary | None = None
+    flows_from_cases: int = Field(0, description=(
+        "How many stored cases `inbound` and `outbound` were read from. They are the "
+        "transfers those traces read, not the wallet's whole history"))
+    watched: bool = False
 
 
 # ------------------------------------------------------------------ desk / requests
@@ -569,9 +583,16 @@ class RequestList(_M):
 # ------------------------------------------------------------------ dashboard / model
 class DashboardCounts(_M):
     cases_total: int
-    open_cases: int
-    wallets_attributed: int
-    requests_awaiting_reply: int
+    open_cases: int = Field(description=(
+        "Cases being traced, plus cases with a wallet routed to an exchange that has not "
+        "replied yet (or has not been asked)"))
+    wallets_attributed: int = Field(description="Cases whose outcome is ATTRIBUTED")
+    requests_awaiting_reply: int = Field(description="Requests sent or acknowledged")
+    tracing: int = 0
+    failed: int = 0
+    awaiting_request: int = Field(0, description=(
+        "Exchanges with a routed wallet that no request asks about yet"))
+    watched: int = 0
 
 
 class VaspCount(_M):
@@ -594,11 +615,24 @@ class Alert(_M):
     case_id: str | None = None
 
 
+class LabelSource(_M):
+    source: str
+    name: str
+    obtained_from: str | None = None
+    licence: str | None = Field(None, description=(
+        "The licence on record for the set these rows were obtained from; null = not "
+        "recorded in this project (show 'Not recorded', never a guess)"))
+    url: str | None = None
+    labels: int
+    tiers: dict[str, int]
+
+
 class LabelCoverage(_M):
     total: int
     by_category: dict[str, int]
     by_tier: dict[str, int]
     by_chain: dict[str, int]
+    by_source: list[LabelSource] = []
 
 
 class Dashboard(_M):
@@ -606,9 +640,51 @@ class Dashboard(_M):
     outcomes: dict[Outcome, int]
     top_vasps: list[VaspCount]
     chain_mix: list[ChainCount]
-    median_time_to_attribution_s: float | None = None
+    median_time_to_attribution_s: float | None = Field(None, description=(
+        "Median, over the cases that name an exchange, of the time the funds took to "
+        "reach it (`time_to_reach_s` of the named candidate). null with no such case"))
+    attribution_times_n: int = 0
     recent_alerts: list[Alert]
     label_coverage: LabelCoverage
+
+
+# ------------------------------------------------------------------ watchlist (U4)
+WatchState = Literal["not_traced", "checking", "unchanged", "changed", "failed"]
+
+
+class WatchCreate(_M):
+    address: str = Field(min_length=20, max_length=128)
+    chain: TraceChain | None = None
+    note: str | None = Field(None, max_length=200)
+
+
+class WatchChange(_M):
+    kind: Literal["new_activity", "new_exchange", "new_alert"]
+    severity: Severity
+    text: str
+    at: datetime
+
+
+class WatchItem(_M):
+    """A watched wallet, compared with its baseline: the trace it had when it was added
+    or when its changes were last marked as seen."""
+    id: str
+    chain: TraceChain
+    address: str
+    note: str | None = None
+    added_at: datetime
+    added_by: str | None = None
+    case_id: str | None = None
+    state: WatchState
+    last_checked_at: datetime | None = None
+    baseline_at: datetime | None = None
+    changes: list[WatchChange] = []
+    error: str | None = None
+    label: LabelOut | None = None
+
+
+class WatchList(_M):
+    items: list[WatchItem]
 
 
 class ReliabilityBin(_M):

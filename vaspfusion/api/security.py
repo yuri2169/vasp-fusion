@@ -43,6 +43,12 @@ ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("GET", "/api/requests/{request_id}.pdf"): ("request.export", "request_id"),
     ("GET", "/api/requests/{request_id}/pdf"): ("request.export", "request_id"),
     ("GET", "/api/dashboard"): ("dashboard.view", None),
+    ("GET", "/api/labels/coverage"): ("label.coverage", None),
+    ("GET", "/api/watchlist"): ("watch.list", None),
+    ("POST", "/api/watchlist"): ("watch.add", None),            # target set by the handler
+    ("POST", "/api/watchlist/{watch_id}/check"): ("watch.check", "watch_id"),
+    ("POST", "/api/watchlist/{watch_id}/seen"): ("watch.seen", "watch_id"),
+    ("DELETE", "/api/watchlist/{watch_id}"): ("watch.remove", "watch_id"),
     ("GET", "/api/model"): ("model.view", None),
     ("GET", "/api/audit"): ("audit.view", None),
     ("POST", "/api/auth/login"): ("auth.login", None),          # target set by the handler

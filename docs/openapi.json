@@ -500,6 +500,7 @@
     "/api/wallets/{chain}/{address}": {
       "get": {
         "summary": "Get Wallet",
+        "description": "Everything on record about one address: its label, the cases it appears in, the\ntransfers those cases read of it, and what is on record against it (wallets.py).",
         "operationId": "get_wallet_api_wallets__chain___address__get",
         "parameters": [
           {
@@ -550,6 +551,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/labels/coverage": {
+      "get": {
+        "summary": "Label Coverage",
+        "description": "How many labels the store holds, by chain, category, tier and source (with the\nlicence on record for each source).",
+        "operationId": "label_coverage_api_labels_coverage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelCoverage"
                 }
               }
             }
@@ -977,6 +997,7 @@
     "/api/dashboard": {
       "get": {
         "summary": "Get Dashboard",
+        "description": "Counted from the stored cases, the desk and the watchlist (dashboard.py). With no\nstored case it answers the demo fixture, as the desk does.",
         "operationId": "get_dashboard_api_dashboard_get",
         "responses": {
           "200": {
@@ -985,6 +1006,180 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist": {
+      "get": {
+        "summary": "Get Watchlist",
+        "description": "Watched wallets, newest first, each compared with its baseline (watch.py).",
+        "operationId": "get_watchlist_api_watchlist_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Watch",
+        "operationId": "add_watch_api_watchlist_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist/{watch_id}/check": {
+      "post": {
+        "summary": "Check Watch",
+        "description": "Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the\nwatchlist: the item is `checking` until the trace is done, then says what is new.",
+        "operationId": "check_watch_api_watchlist__watch_id__check_post",
+        "parameters": [
+          {
+            "name": "watch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Watch Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist/{watch_id}/seen": {
+      "post": {
+        "summary": "Seen Watch",
+        "description": "The officer has read the changes: the wallet's trace as it is now is the baseline.",
+        "operationId": "seen_watch_api_watchlist__watch_id__seen_post",
+        "parameters": [
+          {
+            "name": "watch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Watch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchItem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist/{watch_id}": {
+      "delete": {
+        "summary": "Remove Watch",
+        "operationId": "remove_watch_api_watchlist__watch_id__delete",
+        "parameters": [
+          {
+            "name": "watch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Watch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2396,7 +2591,13 @@
                 "type": "null"
               }
             ],
-            "title": "Median Time To Attribution S"
+            "title": "Median Time To Attribution S",
+            "description": "Median, over the cases that name an exchange, of the time the funds took to reach it (`time_to_reach_s` of the named candidate). null with no such case"
+          },
+          "attribution_times_n": {
+            "type": "integer",
+            "title": "Attribution Times N",
+            "default": 0
           },
           "recent_alerts": {
             "items": {
@@ -2429,15 +2630,39 @@
           },
           "open_cases": {
             "type": "integer",
-            "title": "Open Cases"
+            "title": "Open Cases",
+            "description": "Cases being traced, plus cases with a wallet routed to an exchange that has not replied yet (or has not been asked)"
           },
           "wallets_attributed": {
             "type": "integer",
-            "title": "Wallets Attributed"
+            "title": "Wallets Attributed",
+            "description": "Cases whose outcome is ATTRIBUTED"
           },
           "requests_awaiting_reply": {
             "type": "integer",
-            "title": "Requests Awaiting Reply"
+            "title": "Requests Awaiting Reply",
+            "description": "Requests sent or acknowledged"
+          },
+          "tracing": {
+            "type": "integer",
+            "title": "Tracing",
+            "default": 0
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed",
+            "default": 0
+          },
+          "awaiting_request": {
+            "type": "integer",
+            "title": "Awaiting Request",
+            "description": "Exchanges with a routed wallet that no request asks about yet",
+            "default": 0
+          },
+          "watched": {
+            "type": "integer",
+            "title": "Watched",
+            "default": 0
           }
         },
         "additionalProperties": false,
@@ -2858,6 +3083,40 @@
             "type": "array",
             "title": "Top Counterparties",
             "default": []
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total",
+            "description": "In `asset`; null when the transfers are in more than one asset"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset"
+          },
+          "counterparties": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparties"
           }
         },
         "additionalProperties": false,
@@ -3336,6 +3595,14 @@
             },
             "type": "object",
             "title": "By Chain"
+          },
+          "by_source": {
+            "items": {
+              "$ref": "#/components/schemas/LabelSource"
+            },
+            "type": "array",
+            "title": "By Source",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -3540,6 +3807,72 @@
           "items"
         ],
         "title": "LabelSearch"
+      },
+      "LabelSource": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "obtained_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Obtained From"
+          },
+          "licence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Licence",
+            "description": "The licence on record for the set these rows were obtained from; null = not recorded in this project (show 'Not recorded', never a guess)"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "labels": {
+            "type": "integer",
+            "title": "Labels"
+          },
+          "tiers": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Tiers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "name",
+          "labels",
+          "tiers"
+        ],
+        "title": "LabelSource"
       },
       "LegalCitation": {
         "properties": {
@@ -5257,7 +5590,24 @@
               }
             ],
             "title": "Score",
-            "description": "null = not yet scored"
+            "description": "Always null: no wallet risk score is computed. `level` is a plain rule"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "elevated",
+                  "none"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "high: the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it. elevated: a pattern flag names it, or funds it sent reached a sanctioned or mixer address. none: nothing on record. null: not assessed (unlabelled and in no case)"
           },
           "reasons": {
             "items": {
@@ -5915,6 +6265,17 @@
                 "type": "null"
               }
             ]
+          },
+          "flows_from_cases": {
+            "type": "integer",
+            "title": "Flows From Cases",
+            "description": "How many stored cases `inbound` and `outbound` were read from. They are the transfers those traces read, not the wallet's whole history",
+            "default": 0
+          },
+          "watched": {
+            "type": "boolean",
+            "title": "Watched",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -5927,6 +6288,255 @@
           "cases"
         ],
         "title": "WalletDetail"
+      },
+      "WatchChange": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "new_activity",
+              "new_exchange",
+              "new_alert"
+            ],
+            "title": "Kind"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "high"
+            ],
+            "title": "Severity"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "severity",
+          "text",
+          "at"
+        ],
+        "title": "WatchChange"
+      },
+      "WatchCreate": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 20,
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "title": "WatchCreate"
+      },
+      "WatchItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "added_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Added At"
+          },
+          "added_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added By"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "not_traced",
+              "checking",
+              "unchanged",
+              "changed",
+              "failed"
+            ],
+            "title": "State"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "baseline_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline At"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/WatchChange"
+            },
+            "type": "array",
+            "title": "Changes",
+            "default": []
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "chain",
+          "address",
+          "added_at",
+          "state"
+        ],
+        "title": "WatchItem",
+        "description": "A watched wallet, compared with its baseline: the trace it had when it was added\nor when its changes were last marked as seen."
+      },
+      "WatchList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WatchItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "WatchList"
       }
     }
   }

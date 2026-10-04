@@ -49,6 +49,7 @@ MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make mo
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 DESK_DB: Path | None = None      # None = data/desk.duckdb (or VASPFUSION_DESK_DB)
+WATCH_DB: Path | None = None     # None = data/watch.duckdb (or VASPFUSION_WATCH_DB)
 OUTBOX: Path | None = None       # None = data/sahyog_outbox (or VASPFUSION_SAHYOG_OUTBOX)
 DIRECTORY = ROOT / "data" / "vasp_directory.yaml"   # cited facts only (B8)
 OFFICERS: Path | None = None     # None = data/officers.json (or VASPFUSION_OFFICERS)
@@ -204,6 +205,8 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"requests/[^/]+", S.RequestDetail),
     (r"dashboard", S.Dashboard),
     (r"model", S.ModelInfo),
+    (r"labels/coverage", S.LabelCoverage),
+    (r"watchlist", S.WatchList),
     (r"audit", S.AuditPage),
     (r"auth/me", S.Me),
 ]
@@ -577,6 +580,12 @@ def verify_case(case_id: str, response: Response):
 # ------------------------------------------------------------------ wallets + labels
 @app.get("/api/wallets/{chain}/{address}", response_model=S.WalletDetail)
 def get_wallet(chain: S.TraceChain, address: str, response: Response):
+    """Everything on record about one address: its label, the cases it appears in, the
+    transfers those cases read of it, and what is on record against it (wallets.py)."""
+    from ..store.watch import watch_id
+    from ..wallets import wallet_view
+    if chain in chains.EVM_FAMILY or address.lower().startswith("bc1"):
+        address = address.lower()
     try:
         wallet = load_mock(f"wallets/{chain}/{address}")
         kind = "mock"
@@ -590,11 +599,36 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
             hit = store.lookup(address, chain)
         wallet["labels"] = [hit.as_dict()] if hit else []
         kind = "mixed" if kind == "mock" else kind
+    cases = _cases()
+    refs = cases.wallet_cases(address, chain)
+    if kind == "live" or refs:      # a demo wallet's mock figures stand until a real case reads it
+        details = [d for d in (cases.get(r["case_id"]) for r in refs)
+                   if d and d.get("status") == "done"]
+        wallet.update(wallet_view(address, chain, details,
+                                  wallet["labels"][0] if wallet["labels"] else None))
     seen = {c["case_id"] for c in wallet["cases"]}
-    wallet["cases"] = wallet["cases"] + [c for c in _cases().wallet_cases(address, chain)
-                                         if c["case_id"] not in seen]
+    wallet["cases"] = wallet["cases"] + [c for c in refs if c["case_id"] not in seen]
+    wallet["watched"] = _watch().get(watch_id(chain, address)) is not None
     _source(response, kind)
     return wallet
+
+
+def _coverage(store: LabelStore) -> dict:
+    with store:
+        st = store.stats()
+    return {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain", "by_source")}
+
+
+@app.get("/api/labels/coverage", response_model=S.LabelCoverage)
+def label_coverage(response: Response):
+    """How many labels the store holds, by chain, category, tier and source (with the
+    licence on record for each source)."""
+    store = _labels()
+    if store is None:
+        _source(response, "mock")
+        return load_mock("labels/coverage")
+    _source(response, "live")
+    return _coverage(store)
 
 
 @app.get("/api/labels/search", response_model=S.LabelSearch)
@@ -800,15 +834,132 @@ def get_request_pdf(request_id: str):
 # ------------------------------------------------------------------ dashboard + model
 @app.get("/api/dashboard", response_model=S.Dashboard)
 def get_dashboard(response: Response):
-    dash = load_mock("dashboard")
+    """Counted from the stored cases, the desk and the watchlist (dashboard.py). With no
+    stored case it answers the demo fixture, as the desk does."""
+    from ..dashboard import build_dashboard
+    from ..watch import alerts_of
+    cases = _cases()
+    details = [d for d in (cases.get(c["id"]) for c in cases.list()) if d]
     store = _labels()
+    if details:
+        svc = _desk()
+        watched = _watch_items()
+        dash = build_dashboard(details, svc.desk(), svc.list(),
+                               [a for w in watched for a in alerts_of(w)], len(watched))
+        dash["label_coverage"] = load_mock("dashboard")["label_coverage"]
+        _source(response, "live" if store else "mixed")
+    else:
+        dash = load_mock("dashboard")
+        _source(response, "mixed" if store else "mock")
     if store:
-        with store:
-            st = store.stats()
-        dash["label_coverage"] = {k: st[k] for k in ("total", "by_category", "by_tier",
-                                                     "by_chain")}
-    _source(response, "mixed" if store else "mock")
+        dash["label_coverage"] = _coverage(store)
     return dash
+
+
+# ------------------------------------------------------------------ watchlist (U4)
+_SAFE_WATCH = re.compile(r"^[a-z]+-[A-Za-z0-9]{20,128}$")
+
+
+def _watch():
+    from ..store.watch import WatchStore
+    return WatchStore(WATCH_DB)
+
+
+def _finished(case: dict | None) -> bool:
+    return case is not None and case.get("status") == "done" and "candidates" in case
+
+
+def _watch_item(entry: dict, labels: LabelStore | None = None) -> dict:
+    """A stored entry with what its wallet's case says now. The first finished trace of
+    a wallet added before it had one becomes its baseline: it is not news."""
+    from ..watch import snapshot, watch_item
+    case = _cases().find(entry["chain"], entry["address"])
+    with _ACTIVE_LOCK:
+        tracing = case is not None and case["id"] in _ACTIVE
+    if entry.get("baseline") is None and _finished(case) and not tracing:
+        entry = {**entry, "baseline": snapshot(case)}
+        _watch().save(entry)
+    hit = labels.lookup(entry["address"], entry["chain"]) if labels else None
+    return watch_item(entry, case, tracing, hit.as_dict() if hit else None)
+
+
+def _watch_items(entries: list[dict] | None = None) -> list[dict]:
+    entries = _watch().list() if entries is None else entries
+    store = _labels() if entries else None
+    if store is None:
+        return [_watch_item(e) for e in entries]
+    with store:
+        return [_watch_item(e, store) for e in entries]
+
+
+def _watched(watch_id: str) -> dict:
+    entry = _watch().get(watch_id) if _SAFE_WATCH.match(watch_id) else None
+    if entry is None:
+        raise HTTPException(404, "This wallet is not on the watchlist.")
+    return entry
+
+
+@app.get("/api/watchlist", response_model=S.WatchList)
+def get_watchlist(response: Response):
+    """Watched wallets, newest first, each compared with its baseline (watch.py)."""
+    _source(response, "live")
+    return {"items": _watch_items()}
+
+
+@app.post("/api/watchlist", response_model=S.WatchItem, status_code=201)
+def add_watch(body: S.WatchCreate, request: Request, response: Response):
+    from ..store.watch import watch_id
+    from ..watch import snapshot
+    chain, address = _resolve(S.CaseCreate(address=body.address, chain=body.chain))
+    wid = watch_id(chain, address)
+    _note(request, target=wid)
+    store = _watch()
+    if store.get(wid) is not None:
+        raise HTTPException(409, "This wallet is already on the watchlist.")
+    case = _cases().find(chain, address)
+    entry = {"id": wid, "chain": chain, "address": address,
+             "note": (body.note or "").strip() or None,
+             "added_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+             "added_by": _by(request),
+             "baseline": snapshot(case) if _finished(case) else None}
+    store.save(entry)
+    _source(response, "live")
+    return _watch_items([entry])[0]
+
+
+@app.post("/api/watchlist/{watch_id}/check", response_model=S.WatchItem, status_code=202)
+def check_watch(watch_id: str, request: Request, response: Response,
+                background: BackgroundTasks):
+    """Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the
+    watchlist: the item is `checking` until the trace is done, then says what is new."""
+    entry = _watched(watch_id)
+    case = _cases().find(entry["chain"], entry["address"])
+    hops = (((case or {}).get("provenance") or {}).get("input") or {}).get("max_hops") or 3
+    create_case(S.CaseCreate(address=entry["address"], chain=entry["chain"], max_hops=hops),
+                request, response, background, refresh=True)
+    _note(request, target=watch_id)
+    return _watch_items([entry])[0]
+
+
+@app.post("/api/watchlist/{watch_id}/seen", response_model=S.WatchItem)
+def seen_watch(watch_id: str, response: Response):
+    """The officer has read the changes: the wallet's trace as it is now is the baseline."""
+    from ..watch import snapshot
+    entry = _watched(watch_id)
+    case = _cases().find(entry["chain"], entry["address"])
+    if not _finished(case):
+        raise HTTPException(409, "This wallet has no finished trace to mark as seen.")
+    entry = {**entry, "baseline": snapshot(case)}
+    _watch().save(entry)
+    _source(response, "live")
+    return _watch_items([entry])[0]
+
+
+@app.delete("/api/watchlist/{watch_id}", response_model=S.Ok)
+def remove_watch(watch_id: str):
+    _watched(watch_id)
+    _watch().remove(watch_id)
+    return {"ok": True}
 
 
 @app.get("/api/model", response_model=S.ModelInfo)

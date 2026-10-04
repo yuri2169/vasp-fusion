@@ -212,8 +212,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Wallet */
+        /**
+         * Get Wallet
+         * @description Everything on record about one address: its label, the cases it appears in, the
+         *     transfers those cases read of it, and what is on record against it (wallets.py).
+         */
         get: operations["get_wallet_api_wallets__chain___address__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/labels/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Label Coverage
+         * @description How many labels the store holds, by chain, category, tier and source (with the
+         *     licence on record for each source).
+         */
+        get: operations["label_coverage_api_labels_coverage_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -346,11 +371,94 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Dashboard */
+        /**
+         * Get Dashboard
+         * @description Counted from the stored cases, the desk and the watchlist (dashboard.py). With no
+         *     stored case it answers the demo fixture, as the desk does.
+         */
         get: operations["get_dashboard_api_dashboard_get"];
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/watchlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Watchlist
+         * @description Watched wallets, newest first, each compared with its baseline (watch.py).
+         */
+        get: operations["get_watchlist_api_watchlist_get"];
+        put?: never;
+        /** Add Watch */
+        post: operations["add_watch_api_watchlist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/watchlist/{watch_id}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check Watch
+         * @description Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the
+         *     watchlist: the item is `checking` until the trace is done, then says what is new.
+         */
+        post: operations["check_watch_api_watchlist__watch_id__check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/watchlist/{watch_id}/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Seen Watch
+         * @description The officer has read the changes: the wallet's trace as it is now is the baseline.
+         */
+        post: operations["seen_watch_api_watchlist__watch_id__seen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/watchlist/{watch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Watch */
+        delete: operations["remove_watch_api_watchlist__watch_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -898,8 +1006,16 @@ export interface components {
             top_vasps: components["schemas"]["VaspCount"][];
             /** Chain Mix */
             chain_mix: components["schemas"]["ChainCount"][];
-            /** Median Time To Attribution S */
+            /**
+             * Median Time To Attribution S
+             * @description Median, over the cases that name an exchange, of the time the funds took to reach it (`time_to_reach_s` of the named candidate). null with no such case
+             */
             median_time_to_attribution_s?: number | null;
+            /**
+             * Attribution Times N
+             * @default 0
+             */
+            attribution_times_n: number;
             /** Recent Alerts */
             recent_alerts: components["schemas"]["Alert"][];
             label_coverage: components["schemas"]["LabelCoverage"];
@@ -908,12 +1024,42 @@ export interface components {
         DashboardCounts: {
             /** Cases Total */
             cases_total: number;
-            /** Open Cases */
+            /**
+             * Open Cases
+             * @description Cases being traced, plus cases with a wallet routed to an exchange that has not replied yet (or has not been asked)
+             */
             open_cases: number;
-            /** Wallets Attributed */
+            /**
+             * Wallets Attributed
+             * @description Cases whose outcome is ATTRIBUTED
+             */
             wallets_attributed: number;
-            /** Requests Awaiting Reply */
+            /**
+             * Requests Awaiting Reply
+             * @description Requests sent or acknowledged
+             */
             requests_awaiting_reply: number;
+            /**
+             * Tracing
+             * @default 0
+             */
+            tracing: number;
+            /**
+             * Failed
+             * @default 0
+             */
+            failed: number;
+            /**
+             * Awaiting Request
+             * @description Exchanges with a routed wallet that no request asks about yet
+             * @default 0
+             */
+            awaiting_request: number;
+            /**
+             * Watched
+             * @default 0
+             */
+            watched: number;
         };
         /** Desk */
         Desk: {
@@ -1055,6 +1201,15 @@ export interface components {
              * @default []
              */
             top_counterparties: string[];
+            /**
+             * Total
+             * @description In `asset`; null when the transfers are in more than one asset
+             */
+            total?: number | null;
+            /** Asset */
+            asset?: string | null;
+            /** Counterparties */
+            counterparties?: number | null;
         };
         /** FollowUp */
         FollowUp: {
@@ -1270,6 +1425,11 @@ export interface components {
             by_chain: {
                 [key: string]: number;
             };
+            /**
+             * By Source
+             * @default []
+             */
+            by_source: components["schemas"]["LabelSource"][];
         };
         /** LabelOut */
         LabelOut: {
@@ -1338,6 +1498,28 @@ export interface components {
             offset: number;
             /** Items */
             items: components["schemas"]["LabelOut"][];
+        };
+        /** LabelSource */
+        LabelSource: {
+            /** Source */
+            source: string;
+            /** Name */
+            name: string;
+            /** Obtained From */
+            obtained_from?: string | null;
+            /**
+             * Licence
+             * @description The licence on record for the set these rows were obtained from; null = not recorded in this project (show 'Not recorded', never a guess)
+             */
+            licence?: string | null;
+            /** Url */
+            url?: string | null;
+            /** Labels */
+            labels: number;
+            /** Tiers */
+            tiers: {
+                [key: string]: number;
+            };
         };
         /** LegalCitation */
         LegalCitation: {
@@ -1994,9 +2176,14 @@ export interface components {
         RiskInfo: {
             /**
              * Score
-             * @description null = not yet scored
+             * @description Always null: no wallet risk score is computed. `level` is a plain rule
              */
             score?: number | null;
+            /**
+             * Level
+             * @description high: the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it. elevated: a pattern flag names it, or funds it sent reached a sanctioned or mixer address. none: nothing on record. null: not assessed (unlabelled and in no case)
+             */
+            level?: ("high" | "elevated" | "none") | null;
             /**
              * Reasons
              * @default []
@@ -2250,6 +2437,95 @@ export interface components {
             cases: components["schemas"]["WalletCaseRef"][];
             inbound?: components["schemas"]["FlowSummary"] | null;
             outbound?: components["schemas"]["FlowSummary"] | null;
+            /**
+             * Flows From Cases
+             * @description How many stored cases `inbound` and `outbound` were read from. They are the transfers those traces read, not the wallet's whole history
+             * @default 0
+             */
+            flows_from_cases: number;
+            /**
+             * Watched
+             * @default false
+             */
+            watched: boolean;
+        };
+        /** WatchChange */
+        WatchChange: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "new_activity" | "new_exchange" | "new_alert";
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warn" | "high";
+            /** Text */
+            text: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+        };
+        /** WatchCreate */
+        WatchCreate: {
+            /** Address */
+            address: string;
+            /** Chain */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /** Note */
+            note?: string | null;
+        };
+        /**
+         * WatchItem
+         * @description A watched wallet, compared with its baseline: the trace it had when it was added
+         *     or when its changes were last marked as seen.
+         */
+        WatchItem: {
+            /** Id */
+            id: string;
+            /**
+             * Chain
+             * @enum {string}
+             */
+            chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
+            /** Address */
+            address: string;
+            /** Note */
+            note?: string | null;
+            /**
+             * Added At
+             * Format: date-time
+             */
+            added_at: string;
+            /** Added By */
+            added_by?: string | null;
+            /** Case Id */
+            case_id?: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "not_traced" | "checking" | "unchanged" | "changed" | "failed";
+            /** Last Checked At */
+            last_checked_at?: string | null;
+            /** Baseline At */
+            baseline_at?: string | null;
+            /**
+             * Changes
+             * @default []
+             */
+            changes: components["schemas"]["WatchChange"][];
+            /** Error */
+            error?: string | null;
+            label?: components["schemas"]["LabelOut"] | null;
+        };
+        /** WatchList */
+        WatchList: {
+            /** Items */
+            items: components["schemas"]["WatchItem"][];
         };
     };
     responses: never;
@@ -2616,6 +2892,26 @@ export interface operations {
             };
         };
     };
+    label_coverage_api_labels_coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabelCoverage"];
+                };
+            };
+        };
+    };
     search_labels_api_labels_search_get: {
         parameters: {
             query?: {
@@ -2881,6 +3177,152 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Dashboard"];
+                };
+            };
+        };
+    };
+    get_watchlist_api_watchlist_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WatchList"];
+                };
+            };
+        };
+    };
+    add_watch_api_watchlist_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WatchCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WatchItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_watch_api_watchlist__watch_id__check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                watch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WatchItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    seen_watch_api_watchlist__watch_id__seen_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                watch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WatchItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_watch_api_watchlist__watch_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                watch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Ok"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

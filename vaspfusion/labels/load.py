@@ -233,13 +233,18 @@ def _dedupe(rows: list[dict]) -> pl.DataFrame:
              .select([*LABEL_COLUMNS, "_promoted"])
 
 
+from .sources import by_source  # noqa: E402
+
+
 def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
     def by(col: str) -> dict:
         return dict(con.execute(f"SELECT {col}, count(*) FROM labels GROUP BY 1 "
                                 "ORDER BY 2 DESC, 1").fetchall())
     return {"total": con.execute("SELECT count(*) FROM labels").fetchone()[0],
             "by_chain": by("chain"), "by_category": by("category"),
-            "by_tier": by("tier"), "by_kind": by("kind")}
+            "by_tier": by("tier"), "by_kind": by("kind"),
+            "by_source": by_source(con.execute(
+                "SELECT source, tier, count(*) FROM labels GROUP BY 1, 2").fetchall())}
 
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,

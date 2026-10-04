@@ -451,6 +451,8 @@ def main() -> None:
                                            "created_at", "due")}
         total, found = store.search("coindcx", limit=10)
         st = store.stats()
+        coverage = {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain",
+                                       "by_source")}
         files = {
             "cases": {"total": 3, "items": [summary(c) for c in cases]},
             **{f"cases/{c['id']}": c for c in cases},
@@ -493,8 +495,9 @@ def main() -> None:
                                    "severity": "high", "at": at(-26), "case_id": c3["id"],
                                    "text": "Case DEMO/2026/003 reached an OFAC-sanctioned "
                                            "address"}],
-                "label_coverage": {k: st[k] for k in ("total", "by_category", "by_tier",
-                                                      "by_chain")}},
+                "label_coverage": coverage},
+            "labels/coverage": coverage,
+            "watchlist": {"items": []},
             "model": model_mock(),
             "audit": audit_mock(c1, c3, req),
             "auth/me": {"auth_required": True,

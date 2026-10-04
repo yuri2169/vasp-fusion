@@ -11,6 +11,7 @@ from vaspfusion.api import main, security
 def own_desk(tmp_path, monkeypatch):
     monkeypatch.setattr(main, "DESK_DB", tmp_path / "desk.duckdb")
     monkeypatch.setattr(main, "OUTBOX", tmp_path / "outbox")
+    monkeypatch.setattr(main, "WATCH_DB", tmp_path / "watch.duckdb")
     monkeypatch.setattr(main, "OFFICERS", tmp_path / "officers.json")
     monkeypatch.setattr(main, "AUDIT_DB", tmp_path / "audit.duckdb")
     monkeypatch.setattr(main, "AUTH_SECRET", tmp_path / "auth_secret")
