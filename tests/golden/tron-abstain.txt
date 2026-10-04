@@ -45,10 +45,10 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  74% | 1,160 USDT | Stopped at a high-activity wallet (not followed)
-  16% | 250 USDT | Moved on past the hop limit
-  10% | 150 USDT | Reached an exchange or custodian: CoinDCX
-  100% | 1,560 USDT | Sent by the traced wallet
+  74% | 1,160 USDT (Rs 1,11,116) | Stopped at a high-activity wallet (not followed)
+  16% | 250 USDT (Rs 23,948) | Moved on past the hop limit
+  10% | 150 USDT (Rs 14,369) | Reached an exchange or custodian: CoinDCX
+  100% | 1,560 USDT (Rs 1,49,432) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -69,41 +69,41 @@ FLOW OF FUNDS
     W12  column Hop 2, row 4: Unlabelled wallet
     W13  column Hop 2, row 5: High-activity wallet
     W14  column Hop 2, row 6: High-activity wallet
-    arrow TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 2 transfers, 300 USDT)
-    arrow TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 180 USDT)
-    arrow TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv -> TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b (outbound, 1 transfer, 250 USDT)
-    arrow TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 241 USDT)
-    arrow TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn -> TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW (inbound, 3 transfers, 1,300 USDT)
-    arrow TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ -> TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ (outbound, 1 transfer, 395 USDT)
-    arrow TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE -> TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo (outbound, 1 transfer, 24 USDT)
-    arrow TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz -> TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv (outbound, 1 transfer, 250 USDT)
-    arrow TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1 -> TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW (inbound, 1 transfer, 260 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b (outbound, 2 transfers, 300 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 (outbound, 1 transfer, 150 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr (outbound, 1 transfer, 241 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ (outbound, 1 transfer, 395 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE (outbound, 1 transfer, 24 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz (outbound, 1 transfer, 250 USDT)
-    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv (outbound, 1 transfer, 180 USDT)
-    arrow TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv -> TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy (outbound, 1 transfer, 180 USDT)
+    arrow TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 2 transfers, 300 USDT (Rs 28,737))
+    arrow TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 180 USDT (Rs 17,242))
+    arrow TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv -> TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b (outbound, 1 transfer, 250 USDT (Rs 23,948))
+    arrow TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 241 USDT (Rs 23,085))
+    arrow TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn -> TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW (inbound, 3 transfers, 1,300 USDT (Rs 1,24,527))
+    arrow TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ -> TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ (outbound, 1 transfer, 395 USDT (Rs 37,837))
+    arrow TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE -> TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo (outbound, 1 transfer, 24 USDT (Rs 2,299))
+    arrow TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz -> TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv (outbound, 1 transfer, 250 USDT (Rs 23,948))
+    arrow TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1 -> TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW (inbound, 1 transfer, 260 USDT (Rs 24,905))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b (outbound, 2 transfers, 300 USDT (Rs 28,737))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 (outbound, 1 transfer, 150 USDT (Rs 14,369))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr (outbound, 1 transfer, 241 USDT (Rs 23,085))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ (outbound, 1 transfer, 395 USDT (Rs 37,837))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE (outbound, 1 transfer, 24 USDT (Rs 2,299))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz (outbound, 1 transfer, 250 USDT (Rs 23,948))
+    arrow TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW -> TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv (outbound, 1 transfer, 180 USDT (Rs 17,242))
+    arrow TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv -> TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy (outbound, 1 transfer, 180 USDT (Rs 17,242))
   No. | Address | What it is | Hop | Traced funds
-  W0 | TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW | Traced wallet | - | 1,560 USDT
-  W1 | TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b | Unlabelled wallet | 1 | 550 USDT
-  W2 | TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ | Unlabelled wallet | 1 | 395 USDT
-  W3 | TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz | Unlabelled wallet | 1 | 250 USDT
-  W4 | TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr | Unlabelled wallet | 1 | 241 USDT
-  W5 | TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv | Unlabelled wallet | 1 | 180 USDT
-  W6 | THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 | Exchange deposit address: CoinDCX | 1 | 150 USDT
-  W7 | TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE | Unlabelled wallet | 1 | 24 USDT
-  W8 | THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi | Unlabelled wallet | 1 | 20 USDT
-  W9 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 721 USDT
-  W10 | TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ | High-activity wallet (not followed) | 2 | 395 USDT
-  W11 | TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv | Unlabelled wallet | 2 | 250 USDT
-  W12 | TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy | Unlabelled wallet | 2 | 180 USDT
-  W13 | TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo | High-activity wallet (not followed) | 2 | 24 USDT
-  W14 | TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1 | High-activity wallet (not followed) | 2 | 20 USDT
-  W15 | TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn | Unlabelled wallet (not followed) | funded it | 1,300 USDT
-  W16 | TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1 | Unlabelled wallet (not followed) | funded it | 260 USDT
+  W0 | TXXvb9hWwZr6CaYGPG3c9DpoUmGmBCz4pW | Traced wallet | - | 1,560 USDT (Rs 1,49,432)
+  W1 | TF4tagY7ZCcPik9mRoTsERZzcV9crg6M1b | Unlabelled wallet | 1 | 550 USDT (Rs 52,685)
+  W2 | TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ | Unlabelled wallet | 1 | 395 USDT (Rs 37,837)
+  W3 | TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz | Unlabelled wallet | 1 | 250 USDT (Rs 23,948)
+  W4 | TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr | Unlabelled wallet | 1 | 241 USDT (Rs 23,085)
+  W5 | TYBVYMeMD28ZCvHZ9jA6rwpnDwY7UPcrMv | Unlabelled wallet | 1 | 180 USDT (Rs 17,242)
+  W6 | THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9 | Exchange deposit address: CoinDCX | 1 | 150 USDT (Rs 14,369)
+  W7 | TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE | Unlabelled wallet | 1 | 24 USDT (Rs 2,299)
+  W8 | THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi | Unlabelled wallet | 1 | 20 USDT (Rs 1,916)
+  W9 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 721 USDT (Rs 69,065)
+  W10 | TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ | High-activity wallet (not followed) | 2 | 395 USDT (Rs 37,837)
+  W11 | TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv | Unlabelled wallet | 2 | 250 USDT (Rs 23,948)
+  W12 | TFpHnnL423Fi87EhCxLZjKKw1U35EVMvFy | Unlabelled wallet | 2 | 180 USDT (Rs 17,242)
+  W13 | TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo | High-activity wallet (not followed) | 2 | 24 USDT (Rs 2,299)
+  W14 | TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1 | High-activity wallet (not followed) | 2 | 20 USDT (Rs 1,916)
+  W15 | TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn | Unlabelled wallet (not followed) | funded it | 1,300 USDT (Rs 1,24,527)
+  W16 | TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1 | Unlabelled wallet (not followed) | funded it | 260 USDT (Rs 24,905)
 
 EXCHANGES REACHED
 -----------------
@@ -112,7 +112,7 @@ share of the funds, then time. Confidence is how far the evidence supports that 
 funds reached belongs to that exchange.
 
   Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
-  1 | CoinDCX | under 0.60: not named | 0.33 (range narrower than 0.01) | 1 | 10% | 150 USDT | derived by VASP-FUSION
+  1 | CoinDCX | under 0.60: not named | 0.33 (range narrower than 0.01) | 1 | 10% | 150 USDT (Rs 14,369) | derived by VASP-FUSION
 
   CoinDCX (rank 1)
   Address reached  THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9
@@ -141,7 +141,7 @@ funds reached belongs to that exchange.
 MAIN PATH OF THE FUNDS
 ----------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W6 | 150 USDT | 17 Apr 2025, 12:16:45 UTC | - | a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf
+  1 | W0 -> W6 | 150 USDT (Rs 14,369) | 17 Apr 2025, 12:16:45 UTC | - | a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf
 
 PATTERNS SEEN
 -------------

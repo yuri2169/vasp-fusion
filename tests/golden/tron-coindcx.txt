@@ -18,8 +18,8 @@ RESULT
 ------
 EXCHANGE NAMED
 Nearest exchange: CoinDCX. Confidence 0.85 (range narrower than 0.01).
-58% of the funds (1,530 USDT) reached it in 1 hop, at TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
-(derived by VASP-FUSION).
+58% of the funds (1,530 USDT (Rs 1,46,559)) reached it in 1 hop, at
+TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 (derived by VASP-FUSION).
 
 
 SUMMARY
@@ -47,9 +47,9 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  58% | 1,530 USDT | Reached an exchange or custodian: CoinDCX
-  42% | 1,122.22 USDT | Stopped at a high-activity wallet (not followed)
-  100% | 2,652.22 USDT | Sent by the traced wallet
+  58% | 1,530 USDT (Rs 1,46,559) | Reached an exchange or custodian: CoinDCX
+  42% | 1,122.22 USDT (Rs 1,07,497) | Stopped at a high-activity wallet (not followed)
+  100% | 2,652.22 USDT (Rs 2,54,056) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -61,20 +61,20 @@ FLOW OF FUNDS
     W1  column Hop 1, row 1: CoinDCX
     W2  column Hop 1, row 2: Unlabelled wallet
     W3  column Hop 2, row 1: High-activity wallet
-    arrow TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,122.22 USDT)
-    arrow TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 349 USDT)
-    arrow TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 3 transfers, 2,332 USDT)
-    arrow TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 14 USDT)
-    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 (outbound, 1 transfer, 1,530 USDT)
-    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ (outbound, 1 transfer, 1,122.22 USDT)
+    arrow TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,122.22 USDT (Rs 1,07,497))
+    arrow TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 349 USDT (Rs 33,431))
+    arrow TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 3 transfers, 2,332 USDT (Rs 2,23,382))
+    arrow TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS -> TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c (inbound, 1 transfer, 14 USDT (Rs 1,341))
+    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 (outbound, 1 transfer, 1,530 USDT (Rs 1,46,559))
+    arrow TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c -> TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ (outbound, 1 transfer, 1,122.22 USDT (Rs 1,07,497))
   No. | Address | What it is | Hop | Traced funds
-  W0 | TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c | Traced wallet | - | 2,652.22 USDT
-  W1 | TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 | Exchange deposit address: CoinDCX | 1 | 1,530 USDT
-  W2 | TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ | Unlabelled wallet | 1 | 1,122.22 USDT
-  W3 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 1,122.22 USDT
-  W4 | TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 | Unlabelled wallet (not followed) | funded it | 2,332 USDT
-  W5 | TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y | Unlabelled wallet (not followed) | funded it | 349 USDT
-  W6 | TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS | Exchange wallet: Binance | funded it | 14 USDT
+  W0 | TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c | Traced wallet | - | 2,652.22 USDT (Rs 2,54,056)
+  W1 | TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5 | Exchange deposit address: CoinDCX | 1 | 1,530 USDT (Rs 1,46,559)
+  W2 | TDYCQEb133CBz8mGDpkBXh9TcafSyPdsUJ | Unlabelled wallet | 1 | 1,122.22 USDT (Rs 1,07,497)
+  W3 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | High-activity wallet (not followed) | 2 | 1,122.22 USDT (Rs 1,07,497)
+  W4 | TT9b4u3AHrjyDuTddpQ1iYSno3PVXRBD11 | Unlabelled wallet (not followed) | funded it | 2,332 USDT (Rs 2,23,382)
+  W5 | TJ5usJLLwjwn7Pw3TPbdzreG7dvgKzfQ5y | Unlabelled wallet (not followed) | funded it | 349 USDT (Rs 33,431)
+  W6 | TYASr5UV6HEcXatwdFQfmLVUqQQQMUxHLS | Exchange wallet: Binance | funded it | 14 USDT (Rs 1,341)
 
 EXCHANGES REACHED
 -----------------
@@ -83,8 +83,8 @@ share of the funds, then time. Confidence is how far the evidence supports that 
 funds reached belongs to that exchange.
 
   Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
-  1 | CoinDCX | named | 0.85 (range narrower than 0.01) | 1 | 58% | 1,530 USDT | derived by VASP-FUSION
-  2 | Binance | funded the wallet | 0.02 (rule confidence) | 1 | 1% | 14 USDT | curated list
+  1 | CoinDCX | named | 0.85 (range narrower than 0.01) | 1 | 58% | 1,530 USDT (Rs 1,46,559) | derived by VASP-FUSION
+  2 | Binance | funded the wallet | 0.02 (rule confidence) | 1 | 1% | 14 USDT (Rs 1,341) | curated list
 
   CoinDCX (rank 1)
   Address reached  TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5
@@ -126,7 +126,7 @@ funds reached belongs to that exchange.
 PATH TO THE NAMED EXCHANGE
 --------------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W1 | 1,530 USDT | 25 May 2025, 03:22:15 UTC | - | 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
+  1 | W0 -> W1 | 1,530 USDT (Rs 1,46,559) | 25 May 2025, 03:22:15 UTC | - | 54baf9710b1e898f9184986b66ed77e6c3782f0aa265344a296392c863d83072
 
 LEADS TO CHECK
 --------------

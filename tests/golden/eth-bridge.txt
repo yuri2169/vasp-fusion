@@ -45,14 +45,14 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  60% | 8,250 USDT | Went into a bridge (left this chain): Across Protocol
-  25% | 3,471.12 USDT | Reached another labelled party: Uniswap V4
-  4% | 587.37 USDT | Not followed (too small, or the listing could not be read to the end)
-  4% | 567.88 USDT | Stopped at a high-activity wallet (not followed)
-  4% | 500 USDT | Went into a bridge (left this chain): Optimism
-  2% | 320 USDT | Moved on past the hop limit
-  under 1% | 8.68 USDT | Came back to the traced wallet
-  100% | 13,705.05 USDT | Sent by the traced wallet
+  60% | 8,250 USDT (Rs 7,90,268) | Went into a bridge (left this chain): Across Protocol
+  25% | 3,471.12 USDT (Rs 3,32,499) | Reached another labelled party: Uniswap V4
+  4% | 587.37 USDT (Rs 56,265) | Not followed (too small, or the listing could not be read to the end)
+  4% | 567.88 USDT (Rs 54,397) | Stopped at a high-activity wallet (not followed)
+  4% | 500 USDT (Rs 47,895) | Went into a bridge (left this chain): Optimism
+  2% | 320 USDT (Rs 30,653) | Moved on past the hop limit
+  under 1% | 8.68 USDT (Rs 831) | Came back to the traced wallet
+  100% | 13,705.05 USDT (Rs 13,12,807) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -74,43 +74,43 @@ FLOW OF FUNDS
     W11  column Hop 3, row 1: Unlabelled wallet
     W12  column Hop 3, row 2: Optimism
     W13  column Hop 3, row 3: Unlabelled wallet
-    arrow 0x06ac98cad9598ce082567aee360371e4a57eedc5 -> 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 (outbound, 1 transfer, 320 USDT)
-    arrow 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 3 transfers, 745.88 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c (outbound, 1 transfer, 11 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x06ac98cad9598ce082567aee360371e4a57eedc5 (outbound, 1 transfer, 320 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae (outbound, 1 transfer, 567.88 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x46c754ae7d9f172052c7a4093a217136670f6357 (outbound, 3 transfers, 3,479.80 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5 (outbound, 2 transfers, 8,250 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x7f54f05635d15cde17a49502fedb9d1803a3be8a (outbound, 1 transfer, 76.37 USDT)
-    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0xf0bd6a0eef022198876d5cc115954f9ee6039185 (outbound, 2 transfers, 1,000 USDT)
-    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 3 transfers, 8.68 USDT)
-    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (outbound, 3 transfers, 8.68 USDT)
-    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0xa000b020c290d000020aac04026b5306d60050f0 (outbound, 3 transfers, 3,471.12 USDT)
-    arrow 0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 2 transfers, 12,800 USDT)
-    arrow 0xa000b020c290d000020aac04026b5306d60050f0 -> 0x66a9893cc07d91d95644aedd05d03f95e1dba8af (outbound, 3 transfers, 3,471.12 USDT)
-    arrow 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 -> 0x8f8caeab8b6cefe82176eecd8a975a0155794543 (outbound, 1 transfer, 320 USDT)
-    arrow 0xc38e4e6a15593f908255214653d3d947ca1c2338 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 2 transfers, 125.49 USDT)
-    arrow 0xf0bd6a0eef022198876d5cc115954f9ee6039185 -> 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf (outbound, 2 transfers, 1,000 USDT)
-    arrow 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf -> 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 (outbound, 1 transfer, 500 USDT)
-    arrow 0xf70da97812cb96acdf810712aa562db8dfa3dbef -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 1 transfer, 25.01 USDT)
+    arrow 0x06ac98cad9598ce082567aee360371e4a57eedc5 -> 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 (outbound, 1 transfer, 320 USDT (Rs 30,653))
+    arrow 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 3 transfers, 745.88 USDT (Rs 71,448))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c (outbound, 1 transfer, 11 USDT (Rs 1,054))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x06ac98cad9598ce082567aee360371e4a57eedc5 (outbound, 1 transfer, 320 USDT (Rs 30,653))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae (outbound, 1 transfer, 567.88 USDT (Rs 54,397))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x46c754ae7d9f172052c7a4093a217136670f6357 (outbound, 3 transfers, 3,479.80 USDT (Rs 3,33,330))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5 (outbound, 2 transfers, 8,250 USDT (Rs 7,90,268))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0x7f54f05635d15cde17a49502fedb9d1803a3be8a (outbound, 1 transfer, 76.37 USDT (Rs 7,316))
+    arrow 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 -> 0xf0bd6a0eef022198876d5cc115954f9ee6039185 (outbound, 2 transfers, 1,000 USDT (Rs 95,790))
+    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 3 transfers, 8.68 USDT (Rs 831))
+    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (outbound, 3 transfers, 8.68 USDT (Rs 831))
+    arrow 0x46c754ae7d9f172052c7a4093a217136670f6357 -> 0xa000b020c290d000020aac04026b5306d60050f0 (outbound, 3 transfers, 3,471.12 USDT (Rs 3,32,499))
+    arrow 0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 2 transfers, 12,800 USDT (Rs 12,26,112))
+    arrow 0xa000b020c290d000020aac04026b5306d60050f0 -> 0x66a9893cc07d91d95644aedd05d03f95e1dba8af (outbound, 3 transfers, 3,471.12 USDT (Rs 3,32,499))
+    arrow 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 -> 0x8f8caeab8b6cefe82176eecd8a975a0155794543 (outbound, 1 transfer, 320 USDT (Rs 30,653))
+    arrow 0xc38e4e6a15593f908255214653d3d947ca1c2338 -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 2 transfers, 125.49 USDT (Rs 12,020))
+    arrow 0xf0bd6a0eef022198876d5cc115954f9ee6039185 -> 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf (outbound, 2 transfers, 1,000 USDT (Rs 95,790))
+    arrow 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf -> 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 (outbound, 1 transfer, 500 USDT (Rs 47,895))
+    arrow 0xf70da97812cb96acdf810712aa562db8dfa3dbef -> 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 (inbound, 1 transfer, 25.01 USDT (Rs 2,395))
   No. | Address | What it is | Hop | Traced funds
-  W0 | 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 | Traced wallet | - | 13,705.05 USDT
-  W1 | 0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5 | Bridge: Across Protocol | 1 | 8,250 USDT
-  W2 | 0x46c754ae7d9f172052c7a4093a217136670f6357 | Unlabelled wallet | 1 | 3,479.80 USDT
-  W3 | 0xf0bd6a0eef022198876d5cc115954f9ee6039185 | Unlabelled wallet | 1 | 1,000 USDT
-  W4 | 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae | High-activity wallet (not followed) | 1 | 567.88 USDT
-  W5 | 0x06ac98cad9598ce082567aee360371e4a57eedc5 | Unlabelled wallet | 1 | 320 USDT
-  W6 | 0x7f54f05635d15cde17a49502fedb9d1803a3be8a | Unlabelled wallet (not followed) | 1 | 76.37 USDT
-  W7 | 0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c | Unlabelled wallet (not followed) | 1 | 11 USDT
-  W8 | 0xa000b020c290d000020aac04026b5306d60050f0 | Unlabelled wallet | 2 | 3,471.12 USDT
-  W9 | 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf | Unlabelled wallet | 2 | 1,000 USDT
-  W10 | 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 | Unlabelled wallet | 2 | 320 USDT
-  W11 | 0x66a9893cc07d91d95644aedd05d03f95e1dba8af | Unlabelled wallet (not followed): Uniswap V4 | 3 | 3,471.12 USDT
-  W12 | 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 | Bridge: Optimism | 3 | 500 USDT
-  W13 | 0x8f8caeab8b6cefe82176eecd8a975a0155794543 | Unlabelled wallet (not followed) | 3 | 320 USDT
-  W14 | 0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745 | Unlabelled wallet (not followed) | funded it | 12,800 USDT
-  W15 | 0xc38e4e6a15593f908255214653d3d947ca1c2338 | Unlabelled wallet (not followed) | funded it | 125.49 USDT
-  W16 | 0xf70da97812cb96acdf810712aa562db8dfa3dbef | Unlabelled wallet (not followed) | funded it | 25.01 USDT
+  W0 | 0x210297c6996b3008ed6ef0d4deb74b9515f364b0 | Traced wallet | - | 13,705.05 USDT (Rs 13,12,807)
+  W1 | 0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5 | Bridge: Across Protocol | 1 | 8,250 USDT (Rs 7,90,268)
+  W2 | 0x46c754ae7d9f172052c7a4093a217136670f6357 | Unlabelled wallet | 1 | 3,479.80 USDT (Rs 3,33,330)
+  W3 | 0xf0bd6a0eef022198876d5cc115954f9ee6039185 | Unlabelled wallet | 1 | 1,000 USDT (Rs 95,790)
+  W4 | 0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae | High-activity wallet (not followed) | 1 | 567.88 USDT (Rs 54,397)
+  W5 | 0x06ac98cad9598ce082567aee360371e4a57eedc5 | Unlabelled wallet | 1 | 320 USDT (Rs 30,653)
+  W6 | 0x7f54f05635d15cde17a49502fedb9d1803a3be8a | Unlabelled wallet (not followed) | 1 | 76.37 USDT (Rs 7,316)
+  W7 | 0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c | Unlabelled wallet (not followed) | 1 | 11 USDT (Rs 1,054)
+  W8 | 0xa000b020c290d000020aac04026b5306d60050f0 | Unlabelled wallet | 2 | 3,471.12 USDT (Rs 3,32,499)
+  W9 | 0xf4e147db314947fc1275a8cbb6cde48c510cd8cf | Unlabelled wallet | 2 | 1,000 USDT (Rs 95,790)
+  W10 | 0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7 | Unlabelled wallet | 2 | 320 USDT (Rs 30,653)
+  W11 | 0x66a9893cc07d91d95644aedd05d03f95e1dba8af | Unlabelled wallet (not followed): Uniswap V4 | 3 | 3,471.12 USDT (Rs 3,32,499)
+  W12 | 0x99c9fc46f92e8a1c0dec1b1747d010903e884be1 | Bridge: Optimism | 3 | 500 USDT (Rs 47,895)
+  W13 | 0x8f8caeab8b6cefe82176eecd8a975a0155794543 | Unlabelled wallet (not followed) | 3 | 320 USDT (Rs 30,653)
+  W14 | 0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745 | Unlabelled wallet (not followed) | funded it | 12,800 USDT (Rs 12,26,112)
+  W15 | 0xc38e4e6a15593f908255214653d3d947ca1c2338 | Unlabelled wallet (not followed) | funded it | 125.49 USDT (Rs 12,020)
+  W16 | 0xf70da97812cb96acdf810712aa562db8dfa3dbef | Unlabelled wallet (not followed) | funded it | 25.01 USDT (Rs 2,395)
 
 EXCHANGES REACHED
 -----------------
@@ -120,7 +120,7 @@ The traced funds reached no labelled exchange or custodian.
 MAIN PATH OF THE FUNDS
 ----------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W1 | 7,800 USDT | 1 Jun 2026, 02:54:59 UTC | - | 0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f
+  1 | W0 -> W1 | 7,800 USDT (Rs 7,47,162) | 1 Jun 2026, 02:54:59 UTC | - | 0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f
 
 PATTERNS SEEN
 -------------

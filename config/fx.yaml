@@ -1,0 +1,16 @@
+# The one rate used to show rupees beside US dollar amounts.
+#
+# RULE: a real, dated, sourced rate. It is a reference rate for reading the figures, not
+# the rate of any transaction: every screen and document that shows a rupee amount says
+# which rate and which date. To change it, read the newer figure from the source below
+# and update all of rate, as_of, published and accessed together.
+usd_inr:
+  rate: 95.79                # rupees per 1 US dollar
+  as_of: 2026-09-18          # the day the rate is for
+  name: "RBI reference rate"
+  source:
+    title: "Weekly Statistical Supplement, table \"FBIL Reference Rate and Forward Premia\" (INR per 1 USD, spot)"
+    publisher: "Reserve Bank of India (rate computed by Financial Benchmarks India Pvt Ltd)"
+    url: "https://www.rbi.org.in/Scripts/WSSView.aspx?Id=28732"
+    published: 2026-09-25
+    accessed: 2026-10-04

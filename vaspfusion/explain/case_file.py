@@ -20,6 +20,7 @@ from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 
+from .. import fx
 from .. import provenance as P
 from ..attribute.rules import TIER_WEIGHT, RuleConfig
 from ..trace import TraceConfig
@@ -72,7 +73,10 @@ class NotReady(ValueError):
 
 # ------------------------------------------------------------------ small helpers
 def _amount(value, asset) -> str:
-    return "-" if value is None else fmt.amount(Decimal(str(value)), asset)
+    """The amount, with rupees at the reference rate beside it when it is in dollars."""
+    if value is None:
+        return "-"
+    return fmt.amount(Decimal(str(value)), asset) + fx.beside(value, asset)
 
 
 def when(value) -> str:

@@ -40,9 +40,9 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  55% | 12,214.70 USDT | Has not moved on
-  45% | 10,000 USDT | Not followed (too small, or the listing could not be read to the end)
-  100% | 22,214.70 USDT | Sent by the traced wallet
+  55% | 12,214.70 USDT (Rs 11,70,046) | Has not moved on
+  45% | 10,000 USDT (Rs 9,57,900) | Not followed (too small, or the listing could not be read to the end)
+  100% | 22,214.70 USDT (Rs 21,27,946) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -55,22 +55,22 @@ FLOW OF FUNDS
     W4  column Hop 2, row 2: Unlabelled wallet
     W5  column Hop 2, row 3: Unlabelled wallet
     W6  column Hop 2, row 4: Unlabelled wallet
-    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0x7bb71f2a25a978243b419248decf3d76835230a9 (outbound, 1 transfer, 10,000 USDT)
-    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0xa750329456abf7f57674be83e592221501ecf7a5 (outbound, 1 transfer, 12,214.70 USDT)
-    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x505fedb20789614d21ed9d454e5146a5f61845f2 (outbound, 1 transfer, 500 USDT)
-    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 (outbound, 1 transfer, 9,500 USDT)
-    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0xf6506a66f72543aa3dd4293022b66c645572bb22 (outbound, 1 transfer, 0.0001 USDT)
-    arrow 0xa750329456abf7f57674be83e592221501ecf7a5 -> 0x172243a85a00afb20810224860bf2e17d41bd259 (outbound, 1 transfer, 12,214.70 USDT)
-    arrow 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 -> 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb (inbound, 1 transfer, 22,214.69 USDT)
+    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0x7bb71f2a25a978243b419248decf3d76835230a9 (outbound, 1 transfer, 10,000 USDT (Rs 9,57,900))
+    arrow 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb -> 0xa750329456abf7f57674be83e592221501ecf7a5 (outbound, 1 transfer, 12,214.70 USDT (Rs 11,70,046))
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x505fedb20789614d21ed9d454e5146a5f61845f2 (outbound, 1 transfer, 500 USDT (Rs 47,895))
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 (outbound, 1 transfer, 9,500 USDT (Rs 9,10,005))
+    arrow 0x7bb71f2a25a978243b419248decf3d76835230a9 -> 0xf6506a66f72543aa3dd4293022b66c645572bb22 (outbound, 1 transfer, 0.0001 USDT (Rs 0))
+    arrow 0xa750329456abf7f57674be83e592221501ecf7a5 -> 0x172243a85a00afb20810224860bf2e17d41bd259 (outbound, 1 transfer, 12,214.70 USDT (Rs 11,70,046))
+    arrow 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 -> 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb (inbound, 1 transfer, 22,214.69 USDT (Rs 21,27,945))
   No. | Address | What it is | Hop | Traced funds
-  W0 | 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb | Traced wallet | - | 22,214.70 USDT
-  W1 | 0xa750329456abf7f57674be83e592221501ecf7a5 | Unlabelled wallet | 1 | 12,214.70 USDT
-  W2 | 0x7bb71f2a25a978243b419248decf3d76835230a9 | Unlabelled wallet | 1 | 10,000 USDT
-  W3 | 0x172243a85a00afb20810224860bf2e17d41bd259 | Unlabelled wallet | 2 | 12,214.70 USDT
-  W4 | 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 | Unlabelled wallet | 2 | 9,500 USDT
-  W5 | 0x505fedb20789614d21ed9d454e5146a5f61845f2 | Unlabelled wallet | 2 | 500 USDT
-  W6 | 0xf6506a66f72543aa3dd4293022b66c645572bb22 | Unlabelled wallet (not followed) | 2 | 0.0001 USDT
-  W7 | 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 | Unlabelled wallet (not followed) | funded it | 22,214.69 USDT
+  W0 | 0x0bad8ba03dd113931d4db1058f32c4d4b72424bb | Traced wallet | - | 22,214.70 USDT (Rs 21,27,946)
+  W1 | 0xa750329456abf7f57674be83e592221501ecf7a5 | Unlabelled wallet | 1 | 12,214.70 USDT (Rs 11,70,046)
+  W2 | 0x7bb71f2a25a978243b419248decf3d76835230a9 | Unlabelled wallet | 1 | 10,000 USDT (Rs 9,57,900)
+  W3 | 0x172243a85a00afb20810224860bf2e17d41bd259 | Unlabelled wallet | 2 | 12,214.70 USDT (Rs 11,70,046)
+  W4 | 0x6f48ce755c458fac12120f250cf7cb9f7d68b679 | Unlabelled wallet | 2 | 9,500 USDT (Rs 9,10,005)
+  W5 | 0x505fedb20789614d21ed9d454e5146a5f61845f2 | Unlabelled wallet | 2 | 500 USDT (Rs 47,895)
+  W6 | 0xf6506a66f72543aa3dd4293022b66c645572bb22 | Unlabelled wallet (not followed) | 2 | 0.0001 USDT (Rs 0)
+  W7 | 0xd37bbe5744d730a1d98d8dc97c42f0ca46ad7146 | Unlabelled wallet (not followed) | funded it | 22,214.69 USDT (Rs 21,27,945)
 
 EXCHANGES REACHED
 -----------------
@@ -80,8 +80,8 @@ The traced funds reached no labelled exchange or custodian.
 MAIN PATH OF THE FUNDS
 ----------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W1 | 12,214.70 USDT | 23 Sep 2024, 22:14:47 UTC | - | 0x21375a33aa3cb670baa052db6f35d327ad1b0bdee99edb7dbfcc5c76441467e8
-  2 | W1 -> W3 | 12,214.70 USDT | 23 Apr 2025, 14:06:59 UTC | 212 days | 0xb937ffc7e8c0985122208d4aa101f2baec9708b8f21d7616cf82f491af54dfe0
+  1 | W0 -> W1 | 12,214.70 USDT (Rs 11,70,046) | 23 Sep 2024, 22:14:47 UTC | - | 0x21375a33aa3cb670baa052db6f35d327ad1b0bdee99edb7dbfcc5c76441467e8
+  2 | W1 -> W3 | 12,214.70 USDT (Rs 11,70,046) | 23 Apr 2025, 14:06:59 UTC | 212 days | 0xb937ffc7e8c0985122208d4aa101f2baec9708b8f21d7616cf82f491af54dfe0
 
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------

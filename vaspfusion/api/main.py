@@ -304,6 +304,15 @@ def health():
                     offline=chains.cache.offline_mode(), git_commit=git_state()[0])
 
 
+@app.get("/api/fx", response_model=S.FxRate)
+def get_fx(response: Response):
+    """The reference rate rupee amounts are shown at, with its date and source."""
+    from .. import fx
+    rate = fx.usd_inr()
+    _source(response, "live")
+    return {**rate, "basis": fx.basis(rate)}
+
+
 # ------------------------------------------------------------------ login (B9)
 @app.post("/api/auth/login", response_model=S.LoginResult)
 def login(body: S.Login, request: Request, response: Response):

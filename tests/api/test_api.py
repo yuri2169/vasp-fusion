@@ -150,3 +150,13 @@ def test_committed_openapi_matches_the_schemas():
     """docs/openapi.json feeds ui/src/api/types.ts; if this fails, run `make types`."""
     committed = json.loads((main.ROOT / "docs" / "openapi.json").read_text())
     assert committed == json.loads(json.dumps(main.app.openapi()))
+
+
+def test_fx_is_the_rate_on_file_with_its_date_source_and_basis(client):
+    from vaspfusion import fx
+    r = client.get("/api/fx")
+    assert r.status_code == 200 and r.headers["X-Data-Source"] == "live"
+    body = r.json()
+    on_file = fx.usd_inr()
+    assert body["rate"] == on_file["rate"] and body["as_of"] == on_file["as_of"].isoformat()
+    assert body["basis"] == fx.basis() and body["source_url"] == on_file["source_url"]

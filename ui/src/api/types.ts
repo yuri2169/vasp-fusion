@@ -21,6 +21,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/fx": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Fx
+         * @description The reference rate rupee amounts are shown at, with its date and source.
+         */
+        get: operations["get_fx_api_fx_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/login": {
         parameters: {
             query?: never;
@@ -1249,6 +1269,43 @@ export interface components {
             share: number;
             /** Amount */
             amount: number;
+        };
+        /**
+         * FxRate
+         * @description The one reference rate rupee amounts are shown at (config/fx.yaml). Never estimated.
+         */
+        FxRate: {
+            /**
+             * Rate
+             * @description Rupees per 1 US dollar
+             */
+            rate: number;
+            /**
+             * As Of
+             * Format: date
+             * @description The day the rate is for
+             */
+            as_of: string;
+            /**
+             * Name
+             * @description What the rate is called on screen, e.g. 'RBI reference rate'
+             */
+            name: string;
+            /**
+             * Basis
+             * @description The sentence to show once per screen and in a PDF footer
+             */
+            basis: string;
+            /** Source Title */
+            source_title: string;
+            /** Source Publisher */
+            source_publisher?: string | null;
+            /** Source Url */
+            source_url: string;
+            /** Published */
+            published?: string | null;
+            /** Accessed */
+            accessed?: string | null;
         };
         /** GatewayReceipt */
         GatewayReceipt: {
@@ -2552,6 +2609,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    get_fx_api_fx_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FxRate"];
                 };
             };
         };

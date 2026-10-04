@@ -24,6 +24,25 @@
         }
       }
     },
+    "/api/fx": {
+      "get": {
+        "summary": "Get Fx",
+        "description": "The reference rate rupee amounts are shown at, with its date and source.",
+        "operationId": "get_fx_api_fx_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FxRate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/login": {
       "post": {
         "summary": "Login",
@@ -3217,6 +3236,87 @@
         ],
         "title": "FundsSlice",
         "description": "One part of the answer to \"where did the wallet's money end up?\"."
+      },
+      "FxRate": {
+        "properties": {
+          "rate": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Rate",
+            "description": "Rupees per 1 US dollar"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "title": "As Of",
+            "description": "The day the rate is for"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "What the rate is called on screen, e.g. 'RBI reference rate'"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis",
+            "description": "The sentence to show once per screen and in a PDF footer"
+          },
+          "source_title": {
+            "type": "string",
+            "title": "Source Title"
+          },
+          "source_publisher": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Publisher"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published"
+          },
+          "accessed": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accessed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rate",
+          "as_of",
+          "name",
+          "basis",
+          "source_title",
+          "source_url"
+        ],
+        "title": "FxRate",
+        "description": "The one reference rate rupee amounts are shown at (config/fx.yaml). Never estimated."
       },
       "GatewayReceipt": {
         "properties": {

@@ -18,8 +18,8 @@ RESULT
 ------
 EXCHANGE NAMED
 Nearest exchange: CoinDCX. Confidence 0.85 (range narrower than 0.01).
-46% of the funds (6,000 USDT) reached it in 1 hop, at TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk
-(derived by VASP-FUSION).
+46% of the funds (6,000 USDT (Rs 5,74,740)) reached it in 1 hop, at
+TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk (derived by VASP-FUSION).
 Also named: HTX, confidence 0.71 (rule confidence), 54% of the funds in 2 hops.
 
 
@@ -49,9 +49,9 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  54% | 7,000 USDT | Reached an exchange or custodian: HTX
-  46% | 6,000 USDT | Reached an exchange or custodian: CoinDCX
-  100% | 13,000 USDT | Sent by the traced wallet
+  54% | 7,000 USDT (Rs 6,70,530) | Reached an exchange or custodian: HTX
+  46% | 6,000 USDT (Rs 5,74,740) | Reached an exchange or custodian: CoinDCX
+  100% | 13,000 USDT (Rs 12,45,270) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -62,19 +62,19 @@ FLOW OF FUNDS
     W2  column Hop 1, row 2: CoinDCX
     W3  column Hop 1, row 3: Unlabelled wallet
     W4  column Hop 2, row 1: HTX
-    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a (outbound, 1 transfer, 1,200 USDT)
-    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas (outbound, 1 transfer, 5,800 USDT)
-    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk (outbound, 1 transfer, 6,000 USDT)
-    arrow THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a -> TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu (outbound, 2 transfers, 7,000 USDT)
-    arrow TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas -> THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a (outbound, 1 transfer, 5,800 USDT)
-    arrow TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k -> TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr (inbound, 1 transfer, 13,000 USDT)
+    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a (outbound, 1 transfer, 1,200 USDT (Rs 1,14,948))
+    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas (outbound, 1 transfer, 5,800 USDT (Rs 5,55,582))
+    arrow TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr -> TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk (outbound, 1 transfer, 6,000 USDT (Rs 5,74,740))
+    arrow THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a -> TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu (outbound, 2 transfers, 7,000 USDT (Rs 6,70,530))
+    arrow TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas -> THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a (outbound, 1 transfer, 5,800 USDT (Rs 5,55,582))
+    arrow TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k -> TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr (inbound, 1 transfer, 13,000 USDT (Rs 12,45,270))
   No. | Address | What it is | Hop | Traced funds
-  W0 | TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr | Traced wallet | - | 13,000 USDT
-  W1 | THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a | Unlabelled wallet | 1 | 7,000 USDT
-  W2 | TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk | Exchange deposit address: CoinDCX | 1 | 6,000 USDT
-  W3 | TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas | Unlabelled wallet | 1 | 5,800 USDT
-  W4 | TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu | Exchange wallet: HTX | 2 | 7,000 USDT
-  W5 | TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k | Unlabelled wallet (not followed) | funded it | 13,000 USDT
+  W0 | TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr | Traced wallet | - | 13,000 USDT (Rs 12,45,270)
+  W1 | THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a | Unlabelled wallet | 1 | 7,000 USDT (Rs 6,70,530)
+  W2 | TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk | Exchange deposit address: CoinDCX | 1 | 6,000 USDT (Rs 5,74,740)
+  W3 | TKSm1fbzsWJetiAJjaQgbE5Azdjsvh2Gas | Unlabelled wallet | 1 | 5,800 USDT (Rs 5,55,582)
+  W4 | TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu | Exchange wallet: HTX | 2 | 7,000 USDT (Rs 6,70,530)
+  W5 | TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k | Unlabelled wallet (not followed) | funded it | 13,000 USDT (Rs 12,45,270)
 
 EXCHANGES REACHED
 -----------------
@@ -83,8 +83,8 @@ share of the funds, then time. Confidence is how far the evidence supports that 
 funds reached belongs to that exchange.
 
   Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
-  1 | CoinDCX | named | 0.85 (range narrower than 0.01) | 1 | 46% | 6,000 USDT | derived by VASP-FUSION
-  2 | HTX | named | 0.71 (rule confidence) | 2 | 54% | 7,000 USDT | published by the exchange itself
+  1 | CoinDCX | named | 0.85 (range narrower than 0.01) | 1 | 46% | 6,000 USDT (Rs 5,74,740) | derived by VASP-FUSION
+  2 | HTX | named | 0.71 (rule confidence) | 2 | 54% | 7,000 USDT (Rs 6,70,530) | published by the exchange itself
 
   CoinDCX (rank 1)
   Address reached  TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk
@@ -131,7 +131,7 @@ funds reached belongs to that exchange.
 PATH TO THE NAMED EXCHANGE
 --------------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W2 | 6,000 USDT | 23 Jul 2024, 08:44:12 UTC | - | a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae
+  1 | W0 -> W2 | 6,000 USDT (Rs 5,74,740) | 23 Jul 2024, 08:44:12 UTC | - | a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae
 
 PATTERNS SEEN
 -------------

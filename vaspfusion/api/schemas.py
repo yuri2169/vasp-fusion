@@ -927,6 +927,19 @@ class AuditPage(_M):
                                      "recomputed")
 
 
+class FxRate(_M):
+    """The one reference rate rupee amounts are shown at (config/fx.yaml). Never estimated."""
+    rate: float = Field(gt=0, description="Rupees per 1 US dollar")
+    as_of: date = Field(description="The day the rate is for")
+    name: str = Field(description="What the rate is called on screen, e.g. 'RBI reference rate'")
+    basis: str = Field(description="The sentence to show once per screen and in a PDF footer")
+    source_title: str
+    source_publisher: str | None = None
+    source_url: str
+    published: date | None = None
+    accessed: date | None = None
+
+
 class Health(_M):
     status: Literal["ok"]
     version: str

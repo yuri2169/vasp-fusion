@@ -22,6 +22,7 @@ from reportlab.platypus import (Flowable, KeepTogether, Paragraph, SimpleDocTemp
                                 Table, TableStyle)
 
 from ..desk.pdf import BODY, BOLD, CELL, DRAFT, HEAD, INK, MONO, RULE, SMALL, SOFT, _t, _unescaped
+from .. import fx
 from . import fmt
 from .case_file import bar_check_for, case_file, reference
 
@@ -257,6 +258,9 @@ def case_pdf(case: dict, *, watermark: str | None = None, bar_check: dict | None
     footer = f"Case file {ref}  |  VASP-FUSION {case['provenance']['code_version']}" + \
              (f"  |  fingerprint {fingerprint}" if fingerprint else "")
 
+    # which rate the rupee amounts in the file are at, and of what date
+    rupees = "Rupee amounts: " + fx.basis(sign=fx.PRINT) + ". A reference rate, not the rate of any transfer."
+
     def page(canvas, doc):
         canvas.saveState()
         if watermark:
@@ -273,6 +277,7 @@ def case_pdf(case: dict, *, watermark: str | None = None, bar_check: dict | None
         canvas.setFont("Helvetica", 6.5)
         canvas.setFillColor(SOFT)
         canvas.drawString(18 * mm, 10 * mm, _unescaped(_t(footer)))
+        canvas.drawString(18 * mm, 7 * mm, rupees)
         canvas.drawRightString(A4[0] - 18 * mm, 10 * mm, f"Page {doc.page}")
         canvas.restoreState()
 

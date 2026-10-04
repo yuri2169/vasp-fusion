@@ -18,7 +18,7 @@ RESULT
 ------
 EXCHANGE NAMED
 Nearest exchange: Bitget. Confidence 0.75 (rule confidence).
-100% of the funds (552,163.80 USDT) reached it in 1 hop, at
+100% of the funds (552,163.80 USDT (Rs 5,28,91,771)) reached it in 1 hop, at
 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 (explorer tag).
 
 
@@ -42,8 +42,8 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  100% | 552,163.80 USDT | Reached an exchange or custodian: Bitget
-  100% | 552,163.80 USDT | Sent by the traced wallet
+  100% | 552,163.80 USDT (Rs 5,28,91,771) | Reached an exchange or custodian: Bitget
+  100% | 552,163.80 USDT (Rs 5,28,91,771) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -53,16 +53,16 @@ FLOW OF FUNDS
     W4  column Funded the wallet, row 3: Unlabelled wallet
     W0  column Traced wallet, row 1: Traced wallet
     W1  column Hop 1, row 1: Bitget
-    arrow 0x1111111254fb6c44bac0bed2854e76f90643097d -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 44,431.63 USDT)
-    arrow 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 277,437.31 USDT)
-    arrow 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 -> 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 (outbound, 2 transfers, 552,163.80 USDT)
-    arrow 0x98d11399eab29a6eee726fc3a7316d07e98e1875 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 230,294.87 USDT)
+    arrow 0x1111111254fb6c44bac0bed2854e76f90643097d -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 44,431.63 USDT (Rs 42,56,106))
+    arrow 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 277,437.31 USDT (Rs 2,65,75,720))
+    arrow 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 -> 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 (outbound, 2 transfers, 552,163.80 USDT (Rs 5,28,91,771))
+    arrow 0x98d11399eab29a6eee726fc3a7316d07e98e1875 -> 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 (inbound, 1 transfer, 230,294.87 USDT (Rs 2,20,59,945))
   No. | Address | What it is | Hop | Traced funds
-  W0 | 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 | Traced wallet | - | 552,163.80 USDT
-  W1 | 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 | Exchange deposit address: Bitget | 1 | 552,163.80 USDT
-  W2 | 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 | Unlabelled wallet (not followed) | funded it | 277,437.31 USDT
-  W3 | 0x98d11399eab29a6eee726fc3a7316d07e98e1875 | Unlabelled wallet (not followed) | funded it | 230,294.87 USDT
-  W4 | 0x1111111254fb6c44bac0bed2854e76f90643097d | Unlabelled wallet (not followed): 1inch | funded it | 44,431.63 USDT
+  W0 | 0x8971dd825ba5dd32b60307773f71f6e3efb0eda9 | Traced wallet | - | 552,163.80 USDT (Rs 5,28,91,771)
+  W1 | 0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24 | Exchange deposit address: Bitget | 1 | 552,163.80 USDT (Rs 5,28,91,771)
+  W2 | 0x7d06dd1481e66e6eb3ac964bda657d32e6700f34 | Unlabelled wallet (not followed) | funded it | 277,437.31 USDT (Rs 2,65,75,720)
+  W3 | 0x98d11399eab29a6eee726fc3a7316d07e98e1875 | Unlabelled wallet (not followed) | funded it | 230,294.87 USDT (Rs 2,20,59,945)
+  W4 | 0x1111111254fb6c44bac0bed2854e76f90643097d | Unlabelled wallet (not followed): 1inch | funded it | 44,431.63 USDT (Rs 42,56,106)
 
 EXCHANGES REACHED
 -----------------
@@ -71,7 +71,7 @@ share of the funds, then time. Confidence is how far the evidence supports that 
 funds reached belongs to that exchange.
 
   Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
-  1 | Bitget | named | 0.75 (rule confidence) | 1 | 100% | 552,163.80 USDT | explorer tag
+  1 | Bitget | named | 0.75 (rule confidence) | 1 | 100% | 552,163.80 USDT (Rs 5,28,91,771) | explorer tag
 
   Bitget (rank 1)
   Address reached  0x0008ea70c0ef744f4d8ebe412b9bd875b40c8f24
@@ -89,7 +89,7 @@ funds reached belongs to that exchange.
 PATH TO THE NAMED EXCHANGE
 --------------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W1 | 300,000 USDT | 23 Jan 2024, 17:20:59 UTC | - | 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
+  1 | W0 -> W1 | 300,000 USDT (Rs 2,87,37,000) | 23 Jan 2024, 17:20:59 UTC | - | 0x6e26e484ec1c2d9643ab4d38303c992d52918bc8ba5c318e15915f3d47384ce1
 
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------

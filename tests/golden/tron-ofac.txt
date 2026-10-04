@@ -39,10 +39,10 @@ characters, so check the full address before acting on it.
 WHERE THE FUNDS WENT
 --------------------
   Share | Amount | Where
-  99% | 100,008 USDT | Reached a sanctioned address: OFAC SDN
-  1% | 1,052 USDT | Moved on past the hop limit
-  under 1% | 18.34 USDT | Not followed (too small, or the listing could not be read to the end)
-  100% | 101,078.34 USDT | Sent by the traced wallet
+  99% | 100,008 USDT (Rs 95,79,766) | Reached a sanctioned address: OFAC SDN
+  1% | 1,052 USDT (Rs 1,00,771) | Moved on past the hop limit
+  under 1% | 18.34 USDT (Rs 1,757) | Not followed (too small, or the listing could not be read to the end)
+  100% | 101,078.34 USDT (Rs 96,82,294) | Sent by the traced wallet
 
 FLOW OF FUNDS
 -------------
@@ -55,22 +55,22 @@ FLOW OF FUNDS
     W4  column Hop 1, row 4: Unlabelled wallet
     W5  column Hop 2, row 1: Unlabelled wallet
     W6  column Hop 3, row 1: Unlabelled wallet
-    arrow TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC -> TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS (outbound, 1 transfer, 1,052 USDT)
-    arrow TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M -> TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV (inbound, 4 transfers, 101,078.13 USDT)
-    arrow TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,052 USDT)
-    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC (outbound, 4 transfers, 1,052 USDT)
-    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (outbound, 3 transfers, 100,008 USDT)
-    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT (outbound, 1 transfer, 8 USDT)
-    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d (outbound, 1 transfer, 10.34 USDT)
+    arrow TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC -> TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS (outbound, 1 transfer, 1,052 USDT (Rs 1,00,771))
+    arrow TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M -> TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV (inbound, 4 transfers, 101,078.13 USDT (Rs 96,82,274))
+    arrow TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS -> TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf (outbound, 1 transfer, 1,052 USDT (Rs 1,00,771))
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC (outbound, 4 transfers, 1,052 USDT (Rs 1,00,771))
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFdHux43bs21qRsygv5WQWfgtbQeT6nXey (outbound, 3 transfers, 100,008 USDT (Rs 95,79,766))
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT (outbound, 1 transfer, 8 USDT (Rs 766))
+    arrow TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV -> TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d (outbound, 1 transfer, 10.34 USDT (Rs 990))
   No. | Address | What it is | Hop | Traced funds
-  W0 | TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV | Traced wallet | - | 101,078.34 USDT
-  W1 | TFdHux43bs21qRsygv5WQWfgtbQeT6nXey | Sanctioned address: OFAC SDN | 1 | 100,008 USDT
-  W2 | TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC | Unlabelled wallet | 1 | 1,052 USDT
-  W3 | TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d | Unlabelled wallet (not followed) | 1 | 10.34 USDT
-  W4 | TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT | Unlabelled wallet (not followed) | 1 | 8 USDT
-  W5 | TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS | Unlabelled wallet | 2 | 1,052 USDT
-  W6 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | Unlabelled wallet (not followed) | 3 | 1,052 USDT
-  W7 | TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M | Unlabelled wallet (not followed) | funded it | 101,078.13 USDT
+  W0 | TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV | Traced wallet | - | 101,078.34 USDT (Rs 96,82,294)
+  W1 | TFdHux43bs21qRsygv5WQWfgtbQeT6nXey | Sanctioned address: OFAC SDN | 1 | 100,008 USDT (Rs 95,79,766)
+  W2 | TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC | Unlabelled wallet | 1 | 1,052 USDT (Rs 1,00,771)
+  W3 | TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d | Unlabelled wallet (not followed) | 1 | 10.34 USDT (Rs 990)
+  W4 | TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT | Unlabelled wallet (not followed) | 1 | 8 USDT (Rs 766)
+  W5 | TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS | Unlabelled wallet | 2 | 1,052 USDT (Rs 1,00,771)
+  W6 | TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf | Unlabelled wallet (not followed) | 3 | 1,052 USDT (Rs 1,00,771)
+  W7 | TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M | Unlabelled wallet (not followed) | funded it | 101,078.13 USDT (Rs 96,82,274)
 
 EXCHANGES REACHED
 -----------------
@@ -80,7 +80,7 @@ The traced funds reached no labelled exchange or custodian.
 MAIN PATH OF THE FUNDS
 ----------------------
   Hop | From -> to | Traced funds | Time | After | Transaction
-  1 | W0 -> W1 | 52,000 USDT | 25 Nov 2024, 06:27:45 UTC | - | 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
+  1 | W0 -> W1 | 52,000 USDT (Rs 49,81,080) | 25 Nov 2024, 06:27:45 UTC | - | 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
 
 PATTERNS SEEN
 -------------

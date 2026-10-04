@@ -54,6 +54,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | POST | `/api/watchlist/{id}/check` | – | `WatchItem` (202) | – | **live** | U4 |
 | POST | `/api/watchlist/{id}/seen` | – | `WatchItem` | – | **live** | U4 |
 | DELETE | `/api/watchlist/{id}` | – | `Ok` | – | **live** | U4 |
+| GET | `/api/fx` | – | `FxRate` | – | **live** from `config/fx.yaml` (the same answer in demo mode) | U7 |
 | GET | `/api/model` | `?chain=tron` (default) or `ethereum` | `ModelInfo` | `model.json` (the measured Tron model) | **live** from `artifacts/model_v1/<chain>/metrics.json` | B6 |
 
 ### Cases are live (B3)
@@ -272,6 +273,11 @@ Everything here is counted from stored records (cases, requests, labels, the wat
 - A new live demo case: **`btc-htx`** (eight demo cases now).
 
 **`ModelInfo`**: `status: "measured"` once `make model` has run (see "The deposit-address model (B6)"). With no `metrics.json` for the chain the route answers `status: "not_measured"`: every metric is null and the lists are empty, and the UI shows "not yet measured". Every number is measured; there are no placeholders.
+
+### Rupees beside dollars (U7)
+- `GET /api/fx` returns the one USD→INR reference rate in `config/fx.yaml`: `rate` (rupees per dollar), `as_of`, `name`, the `source_*` fields, and `basis`, the sentence shown once per screen and in every PDF footer ("₹ at 1 USD = ₹95.79, RBI reference rate, 18 Sep 2026"). The rate is read from the file and is never estimated; a file without a date or a source is refused when it is read.
+- No amount field changed. Rupee amounts are computed where they are shown (`usd × rate`, rounded to the rupee, Indian digit grouping), from fields that are already US dollars: `amount_usd`, `total_usd`, and amounts in the dollar stablecoins.
+- The request letter and the case file print the rupee amount beside each dollar amount and the basis in the footer.
 
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
