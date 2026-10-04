@@ -135,8 +135,12 @@ describe('the app shell', () => {
     expect(location()).toBe('/')
     // One paste box: the landing's own. The header does not carry a second.
     expect(screen.getAllByRole('searchbox', { name: 'Wallet address' })).toHaveLength(1)
-    const recorded = await screen.findByRole('list', { name: 'Recorded wallets' })
+    const recorded = await screen.findByRole('region', { name: 'Recorded wallets' })
     expect(within(recorded).getByRole('link', { name: /DEMO\/2026\/001/ })).toHaveAttribute('href', '/cases/demo-tron-okx')
+    // Grouped by what the tool said: every case under "Named" is attributed, none under the other.
+    const stamps = (name: string) => within(within(recorded).getByRole('list', { name })).getAllByTestId('outcome-stamp').map((x) => x.dataset.outcome)
+    expect(new Set(stamps('Named an exchange'))).toEqual(new Set(['ATTRIBUTED']))
+    expect(stamps('Did not name one, and says why')).not.toContain('ATTRIBUTED')
     const stages = within(screen.getByRole('list', { name: 'The nine stages' })).getAllByRole('button')
     expect(stages.map((b) => b.querySelector('span span')!.textContent)).toEqual(['intake', 'fetch', 'label', 'trace', 'discover', 'attribute', 'decide', 'explain', 'deliver'])
   })
@@ -189,7 +193,7 @@ describe('the app shell', () => {
   it('offers three themes, and says which is on', async () => {
     const { user } = renderApp(<AppRoutes />, { route: '/cases' })
     const themes = await screen.findByRole('radiogroup', { name: 'Colour theme' })
-    expect(within(themes).getByRole('radio', { name: 'Device theme' })).toBeChecked()
+    expect(within(themes).getByRole('radio', { name: 'Light theme' })).toBeChecked()
     await user.click(within(themes).getByRole('radio', { name: 'Dark theme' }))
     expect(within(themes).getByRole('radio', { name: 'Dark theme' })).toBeChecked()
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark')

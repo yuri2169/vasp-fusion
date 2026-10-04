@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import type { CaseSummary } from '../api/models'
 import { useCases, useDashboard, useModel } from '../api/queries'
 import { ChainBadge } from '../components/ChainBadge'
 import { OutcomeStamp } from '../components/OutcomeStamp'
@@ -11,6 +12,7 @@ import { formatPercent, truncateMiddle } from '../lib/format'
 import { GlobalSearch } from '../shell/GlobalSearch'
 import { StageTrack } from '../shell/StageTrack'
 import { DETAIL, PLAIN, STAGE_LAYER, STAGES } from '../stages'
+import { featuredCases } from './featured'
 
 const NOT_MEASURED = 'not yet measured'
 const NOT_READ = 'could not be read'
@@ -74,35 +76,78 @@ function TraceSchematic() {
   )
 }
 
-/** The recorded wallets: real, already traced, one click from a case. */
+function CaseTile({ c }: { c: CaseSummary }) {
+  return (
+    <Link
+      to={`/cases/${encodeURIComponent(c.id)}`}
+      className="flex h-full flex-col gap-1.5 border border-rule bg-surface px-3 py-2 transition-colors duration-150 hover:border-ink"
+    >
+      <span className="flex items-center gap-2">
+        <span className="truncate font-cond text-sm font-bold tracking-tight text-ink">{c.case_ref ?? c.id}</span>
+        <ChainBadge chain={c.chain} size="sm" />
+        <span className="ml-auto truncate font-mono text-2xs text-ink-dim">{truncateMiddle(c.address, 4, 4)}</span>
+      </span>
+      <OutcomeStamp outcome={c.outcome ?? null} status={c.status} vasp={c.top_vasp} className="self-start" />
+    </Link>
+  )
+}
+
+/** How often naming is right, beside the recorded wallets. Read from the measurement; with
+ *  no measurement the line is not drawn (the figures below the fold say "not yet measured"). */
+function NamingRecord() {
+  const a = useModel('tron').data?.abstain
+  const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
+  if (!a || !bar) return null
+  const n = (v: number) => <span className="font-mono text-ink">{v.toLocaleString('en-US')}</span>
+  return (
+    <p className="mt-3 border-l-2 border-fusion pl-3 text-sm text-ink-soft" data-testid="naming-record">
+      Measured on {n(a.wallets)} real exchange customers’ wallets: {n(bar.wallets_named)} named, {n(bar.wallets_wrong)} of those wrongly. The rest got
+      “insufficient evidence”.
+    </p>
+  )
+}
+
+/** The recorded wallets: real, already traced, one click from a case. Grouped by what the
+ *  tool said about each, because declining to name an exchange is an answer too. */
 function RecordedCases() {
   const cases = useCases()
   const all = cases.data?.items ?? []
-  const recorded = all.filter((c) => c.demo)
-  const shown = (recorded.length > 0 ? recorded : all).slice(0, 4)
+  const { named, notNamed } = featuredCases(all)
   if (cases.isPending) return <p className="colhead">Looking for recorded wallets…</p>
-  if (shown.length === 0) return null
+  if (named.length + notNamed.length === 0) {
+    const shown = all.slice(0, 4)
+    if (shown.length === 0) return null
+    return (
+      <div>
+        <p className="colhead mb-2">or open a case on file</p>
+        <ul aria-label="Cases on file" className="grid gap-2 sm:grid-cols-2">
+          {shown.map((c) => (
+            <li key={c.id}><CaseTile c={c} /></li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  const group = (heading: string, list: CaseSummary[]) =>
+    list.length > 0 && (
+      <div>
+        <h2 className="colhead mb-1.5 text-ink-soft">{heading}</h2>
+        <ul aria-label={heading} className="grid gap-2 sm:grid-cols-2">
+          {list.map((c) => (
+            <li key={c.id}><CaseTile c={c} /></li>
+          ))}
+        </ul>
+      </div>
+    )
   return (
-    <div>
-      <p className="colhead mb-2">{recorded.length > 0 ? 'or open a recorded wallet: real, already traced' : 'or open a case on file'}</p>
-      <ul aria-label={recorded.length > 0 ? 'Recorded wallets' : 'Cases on file'} className="grid gap-2 sm:grid-cols-2">
-        {shown.map((c) => (
-          <li key={c.id}>
-            <Link
-              to={`/cases/${encodeURIComponent(c.id)}`}
-              className="flex h-full flex-col gap-1.5 border border-rule bg-surface px-3 py-2 transition-colors duration-150 hover:border-ink"
-            >
-              <span className="flex items-center gap-2">
-                <span className="truncate font-cond text-sm font-bold tracking-tight text-ink">{c.case_ref ?? c.id}</span>
-                <ChainBadge chain={c.chain} size="sm" />
-                <span className="ml-auto truncate font-mono text-2xs text-ink-dim">{truncateMiddle(c.address, 4, 4)}</span>
-              </span>
-              <OutcomeStamp outcome={c.outcome ?? null} status={c.status} vasp={c.top_vasp} className="self-start" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <section aria-label="Recorded wallets">
+      <p className="colhead mb-2">or open a recorded wallet: real, already traced</p>
+      <div className="flex flex-col gap-3">
+        {group('Named an exchange', named)}
+        {group('Did not name one, and says why', notNamed)}
+      </div>
+      <NamingRecord />
+    </section>
   )
 }
 
