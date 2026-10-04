@@ -21,7 +21,8 @@ describe('a case that names an exchange', () => {
     expect(await screen.findByRole('heading', { level: 1, name: /TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR/ })).toBeInTheDocument()
     const rail = screen.getByRole('list', { name: 'Path of the funds' })
     expect(within(rail).getByTestId('outcome-stamp')).toHaveAttribute('data-outcome', 'ATTRIBUTED')
-    expect(await screen.findByRole('heading', { level: 2, name: 'Fund flow' })).toBeInTheDocument()
+    // The graph is loaded on demand; the first load of that chunk takes over a second when every suite runs at once.
+    expect(await screen.findByRole('heading', { level: 2, name: 'Fund flow' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Why OKX?' })).toBeInTheDocument()
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Timeline', 'Transfers 7', 'Wallets 8', 'Patterns 1', 'Inbound funding', 'Audit'])
   })
