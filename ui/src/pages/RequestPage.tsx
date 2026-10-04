@@ -35,7 +35,8 @@ function GatewayReceipt({ receipt }: { receipt: NonNullable<RequestDetail['recei
     ['Where', receipt.location],
   ]
   return (
-    <dl className="rounded border border-rule bg-surface px-3 py-2 text-xs">
+    <div className="rounded border border-rule bg-surface px-3 py-2 text-xs">
+      <dl>
       {rows.map(([name, value]) => (
         <div key={name} className="flex justify-between gap-3 py-0.5">
           <dt className="text-muted">{name}</dt>
@@ -49,12 +50,13 @@ function GatewayReceipt({ receipt }: { receipt: NonNullable<RequestDetail['recei
         </dt>
         <dd className="break-all font-mono text-fg">{receipt.payload_sha256}</dd>
       </div>
+      </dl>
       {receipt.gateway === 'mock-outbox' && (
         <p className="mt-1.5 border-t border-rule pt-1.5 text-muted">
           This installation is not connected to SAHYOG: the request was written to a local outbox, and nothing left this machine.
         </p>
       )}
-    </dl>
+    </div>
   )
 }
 
