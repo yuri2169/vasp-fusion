@@ -232,6 +232,37 @@ def load_mock(rel: str) -> dict:
     return {k: v for k, v in data.items() if not k.startswith("_")}
 
 
+def demo_mode() -> bool:
+    """VASPFUSION_DEMO_MODE=1: the fixtures in mocks/ stand in where a store is empty
+    (three fixture cases, a fixture desk, dashboard, request and model). Off, which is
+    the default, every answer comes from the stores: an empty store gives an empty
+    answer, an unknown id a 404."""
+    return os.environ.get("VASPFUSION_DEMO_MODE", "").strip().lower() in ("1", "true", "on", "yes")
+
+
+def demo_fixture(rel: str, missing: str) -> dict:
+    """mocks/<rel>.json in demo mode; otherwise (and for an unknown one) 404 `missing`."""
+    if demo_mode():
+        try:
+            return load_mock(rel)
+        except HTTPException:
+            pass
+    raise HTTPException(404, missing)
+
+
+def _no_case(case_id: str) -> str:
+    return (f"There is no case with the id {case_id[:80]}. Open one from the wallet's "
+            "address, or pick it from the list of cases.")
+
+
+def _no_request(request_id: str) -> str:
+    return (f"There is no request with the id {request_id[:80]}. Open it from the request "
+            "desk or the register.")
+
+
+LABELS_MISSING = "The label database is missing. Run `make labels` first."
+
+
 def _source(response: Response, kind: str) -> None:
     response.headers["X-Data-Source"] = kind
 
@@ -269,7 +300,7 @@ def label_db_sha256() -> str | None:
 def health():
     from ..provenance import git_state
     return S.Health(status="ok", version=VERSION, label_db=Path(LABEL_DB).exists(),
-                    data_mode="mixed", auth_required=auth_required(),
+                    data_mode="mixed" if demo_mode() else "live", auth_required=auth_required(),
                     offline=chains.cache.offline_mode(), git_commit=git_state()[0])
 
 
@@ -334,7 +365,7 @@ def get_audit(response: Response, limit: int = Query(100, ge=1, le=500),
 
 # ------------------------------------------------------------------ cases (B3)
 def _demo_cases() -> list[dict]:
-    return load_mock("cases")["items"]
+    return load_mock("cases")["items"] if demo_mode() else []
 
 
 def _resolve(body: S.CaseCreate) -> tuple[str, str]:
@@ -471,7 +502,7 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
     mock = [c for c in _demo_cases()
             if (outcome is None or c.get("outcome") == outcome)
             and (status is None or c["status"] == status)]
-    _source(response, "mixed" if live else "mock")
+    _source(response, "live" if not demo_mode() else "mixed" if live else "mock")
     return {"total": len(live) + len(mock), "items": live + mock}
 
 
@@ -490,8 +521,8 @@ def _case_or_mock(case_id: str) -> tuple[dict, bool]:
     live = _cases().get(case_id)
     if live is not None:
         return live, False
-    mock = S.CaseDetail.model_validate(load_mock(f"cases/{case_id}")).model_dump(mode="json")
-    return mock, True
+    fixture = demo_fixture(f"cases/{case_id}", _no_case(case_id))
+    return S.CaseDetail.model_validate(fixture).model_dump(mode="json"), True
 
 
 def _case_pdf(case_id: str) -> Response:
@@ -529,8 +560,9 @@ def get_case(case_id: str, response: Response):
                 live["progress"] = {**snapshot,
                                     "message": progress_sentence(live["chain"], snapshot)}
         return live
+    fixture = demo_fixture(f"cases/{case_id}", _no_case(case_id))
     _source(response, "mock")
-    return load_mock(f"cases/{case_id}")
+    return fixture
 
 
 @app.get("/api/cases/{case_id}/pdf", response_class=Response, responses=_CASE_PDF)
@@ -550,8 +582,9 @@ def get_case_receipt(case_id: str, response: Response):
     from ..provenance import receipt
     live = _cases().get(case_id)
     if live is None:
+        fixture = demo_fixture(f"cases/{case_id}/receipt", _no_case(case_id))
         _source(response, "mock")
-        return load_mock(f"cases/{case_id}/receipt")
+        return fixture
     doc = receipt(live)
     if doc is None:
         raise HTTPException(409, "This case carries no receipt: it has not finished, or it "
@@ -567,7 +600,7 @@ def verify_case(case_id: str, response: Response):
     from ..cases import verify_stored
     live = _cases().get(case_id)
     if live is None:
-        load_mock(f"cases/{case_id}")          # 404 for an unknown id
+        demo_fixture(f"cases/{case_id}", _no_case(case_id))      # 404 for an unknown id
         raise HTTPException(422, "A demo fixture has no trace to verify.")
     if not Path(LABEL_DB).exists():
         raise HTTPException(503, "The label database is missing. Run `make labels` first.")
@@ -587,7 +620,7 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
     if chain in chains.EVM_FAMILY or address.lower().startswith("bc1"):
         address = address.lower()
     try:
-        wallet = load_mock(f"wallets/{chain}/{address}")
+        wallet = demo_fixture(f"wallets/{chain}/{address}", "")
         kind = "mock"
     except HTTPException:
         wallet = {"address": address, "chain": chain, "labels": [],
@@ -625,6 +658,8 @@ def label_coverage(response: Response):
     licence on record for each source)."""
     store = _labels()
     if store is None:
+        if not demo_mode():
+            raise HTTPException(503, LABELS_MISSING)
         _source(response, "mock")
         return load_mock("labels/coverage")
     _source(response, "live")
@@ -637,6 +672,8 @@ def search_labels(response: Response, q: str = "", chain: str | None = None,
                   limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0)):
     store = _labels()
     if store is None:
+        if not demo_mode():
+            raise HTTPException(503, LABELS_MISSING)
         _source(response, "mock")
         return load_mock("labels/search")
     with store:
@@ -670,7 +707,7 @@ def _refused(e) -> HTTPException:
 @app.get("/api/desk", response_model=S.Desk)
 def get_desk(response: Response):
     desk = _desk().desk()
-    if not desk["rows"]:                 # no finished case names an exchange yet
+    if not desk["rows"] and demo_mode():     # no finished case names an exchange yet
         _source(response, "mock")
         return load_mock("desk")
     _source(response, "live")
@@ -691,7 +728,7 @@ def get_vasp(name: str, response: Response):
     page = svc.vasp(vasp, counts)
     if not (page["wallets"] or page["requests"]):
         try:                             # a demo exchange keeps its demo page
-            mock = load_mock(f"vasps/{name}")
+            mock = demo_fixture(f"vasps/{name}", "")
             _source(response, "mock")
             return mock
         except HTTPException:
@@ -713,7 +750,7 @@ def _demo_request_for(vasp: str) -> dict:
 def create_request(body: S.RequestCreate, request: Request, response: Response):
     from ..desk.service import DeskError
     demo = {c["id"]: c for c in _demo_cases()}
-    if all(c in demo for c in body.case_ids):     # the mock demo cases have no trace
+    if demo and all(c in demo for c in body.case_ids):   # the fixture cases have no trace
         _source(response, "mock")
         for cid in body.case_ids:                 # ...but they too must name the exchange
             if demo[cid].get("top_vasp") != body.vasp:
@@ -740,7 +777,7 @@ def list_requests(response: Response, vasp: str | None = None,
     The demo request is listed only while the desk itself is the mock."""
     svc = _desk()
     live = svc.list()
-    if not live and not svc.desk()["rows"]:
+    if demo_mode() and not live and not svc.desk()["rows"]:
         _source(response, "mock")
         items = load_mock("requests")["items"]
     else:
@@ -764,7 +801,7 @@ def _request_pdf(request_id: str) -> Response:
             pdf, kind = svc.pdf(request_id), "live"
             name = request_id + ("-draft" if req["letter"]["watermark"] else "")
         else:
-            req = load_mock(f"requests/{request_id}")
+            req = demo_fixture(f"requests/{request_id}", _no_request(request_id))
             req["letter"]["watermark"] = "Demo fixture - not evidence"
             pdf, name, kind = letter_pdf(req), f"{request_id}-demo", "mock"
     except DeskError as e:
@@ -789,8 +826,9 @@ def get_request(request_id: str, response: Response):
     if live is not None:
         _source(response, "live")
         return live
+    fixture = demo_fixture(f"requests/{request_id}", _no_request(request_id))
     _source(response, "mock")
-    return load_mock(f"requests/{request_id}")
+    return fixture
 
 
 @app.patch("/api/requests/{request_id}", response_model=S.RequestDetail)
@@ -810,8 +848,8 @@ def patch_request(request_id: str, body: S.RequestPatch, request: Request,
             raise _refused(e) from None
     # a mock demo request: the new status is applied to the reply, nothing persists
     from ..desk.service import TRANSITIONS
+    req = demo_fixture(f"requests/{request_id}", _no_request(request_id))
     _source(response, "mock")
-    req = load_mock(f"requests/{request_id}")
     if body.status not in TRANSITIONS[req["status"]]:
         raise HTTPException(409, f"A request that is {req['status']} cannot become "
                                  f"{body.status}.")
@@ -841,13 +879,15 @@ def get_dashboard(response: Response):
     cases = _cases()
     details = [d for d in (cases.get(c["id"]) for c in cases.list()) if d]
     store = _labels()
-    if details:
+    if details or not demo_mode():
         svc = _desk()
         watched = _watch_items()
         dash = build_dashboard(details, svc.desk(), svc.list(),
                                [a for w in watched for a in alerts_of(w)], len(watched))
-        dash["label_coverage"] = load_mock("dashboard")["label_coverage"]
-        _source(response, "live" if store else "mixed")
+        dash["label_coverage"] = (load_mock("dashboard")["label_coverage"] if demo_mode()
+                                  else {"total": 0, "by_category": {}, "by_tier": {},
+                                        "by_chain": {}, "by_source": []})
+        _source(response, "live" if store or not demo_mode() else "mixed")
     else:
         dash = load_mock("dashboard")
         _source(response, "mixed" if store else "mock")
@@ -970,9 +1010,13 @@ def get_model(response: Response, chain: str = "tron"):
     if not _SAFE.match(chain):
         raise HTTPException(404, "not found")
     metrics = read_metrics(MODEL_DIR, chain)
-    if metrics is None:
+    if metrics is None and demo_mode():
         _source(response, "mock")
         return load_mock("model")
+    if metrics is None:
+        _source(response, "live")
+        return {"status": "not_measured", "metrics": {}, "chain": chain,
+                "notes": [f"No model has been measured for {chain} on this machine."]}
     _source(response, "live")
     from ..eval.abstain import abstain_info, read_validation
     validation = read_validation(ABSTAIN_DIR, chain)

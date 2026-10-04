@@ -16,6 +16,9 @@ def own_desk(tmp_path, monkeypatch):
     monkeypatch.setattr(main, "AUDIT_DB", tmp_path / "audit.duckdb")
     monkeypatch.setattr(main, "AUTH_SECRET", tmp_path / "auth_secret")
     monkeypatch.setattr(main, "AUTH", None)
+    # These files test the routes with the B1 fixtures standing in for empty stores.
+    # test_demo_mode.py turns it off again, which is what a server runs with.
+    monkeypatch.setenv("VASPFUSION_DEMO_MODE", "1")
     monkeypatch.delenv("VASPFUSION_AUTH", raising=False)
     monkeypatch.delenv("VASPFUSION_JWT_SECRET", raising=False)
     security.forget()
