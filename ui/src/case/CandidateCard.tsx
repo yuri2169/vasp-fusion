@@ -1,6 +1,6 @@
 import { CircleHelp, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router'
-import type { Candidate, CaseDetail } from '../api/models'
+import type { Candidate, CaseDetail, Chain } from '../api/models'
 import { useModel, useRequests } from '../api/queries'
 import { AddressChip } from '../components/AddressChip'
 import { Amount } from '../components/Amount'
@@ -9,6 +9,7 @@ import { DualMeter } from '../components/DualMeter'
 import { EvidenceList } from '../components/EvidenceList'
 import { TierTag } from '../components/TierTag'
 import { StatusTag } from '../desk/StatusTag'
+import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { deskLink, isInbound, NAMING_BAR, routable } from './rules'
 
@@ -36,12 +37,27 @@ function Counterfactual({ candidate }: { candidate: Candidate }) {
 
 /** How often naming an exchange at the bar was wrong when it was checked, in the measurement's
  *  own figures (GET /api/model, `abstain`). Shown under the answer, so a confidence is never read
- *  without its error. Nothing is shown for a chain the bar was not checked on. */
-function BarChecked({ chain }: { chain: string }) {
+ *  without its error. On a chain the bar was not checked on, that is said instead: the error
+ *  measured on another chain is never lent to this one. */
+function BarChecked({ chain }: { chain: Chain }) {
   const model = useModel(chain)
-  const a = model.data?.abstain
+  // Without a measurement for the chain the demo server answers with the Tron one: not this chain's.
+  const a = model.data?.abstain?.chain === chain ? model.data.abstain : undefined
   const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
-  if (!a || !bar || bar.wallets_named === 0) return null
+  if (model.isPending || model.isError) return null
+  if (!a || !bar || bar.wallets_named === 0)
+    return (
+      <p className="text-sm text-muted" data-testid="bar-not-measured">
+        <span className="font-medium text-fg">
+          The {NAMING_BAR.toFixed(2)} bar has not been measured on {CHAINS[chain].name}.
+        </span>{' '}
+        This confidence rests on the label behind the answer and the tracing rules alone: no deposit-address model was trained for this chain,
+        and the error measured on Tron wallets does not cover it. An attribution is a lead to confirm with the exchange, not proof.{' '}
+        <Link to="/model" className="underline underline-offset-2 hover:no-underline">
+          What was measured
+        </Link>
+      </p>
+    )
   const pct = (v?: number | null) => (v == null ? "not measured" : `${(v * 100).toFixed(1)}%`)
   return (
     <p className="text-sm text-muted">

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import type { CaseSummary } from '../api/models'
+import type { CaseSummary, Chain } from '../api/models'
 import { useCases, useDashboard, useModel } from '../api/queries'
 import { ChainBadge } from '../components/ChainBadge'
 import { OutcomeStamp } from '../components/OutcomeStamp'
@@ -98,11 +98,12 @@ function NamingRecord() {
   const a = useModel('tron').data?.abstain
   const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
   if (!a || !bar) return null
+  const measuredOn = CHAINS[a.chain as Chain]?.name ?? a.chain
   const n = (v: number) => <span className="font-mono text-ink">{v.toLocaleString('en-US')}</span>
   return (
     <p className="mt-3 border-l-2 border-fusion pl-3 text-sm text-ink-soft" data-testid="naming-record">
-      Measured on {n(a.wallets)} real exchange customers’ wallets: {n(bar.wallets_named)} named, {n(bar.wallets_wrong)} of those wrongly. The rest got
-      “insufficient evidence”.
+      Measured on {n(a.wallets)} real exchange customers’ wallets on {measuredOn}: {n(bar.wallets_named)} named, {n(bar.wallets_wrong)} of those wrongly.
+      The rest got “insufficient evidence”. On every other chain an answer rests on labels and tracing rules, and that error rate does not cover it.
     </p>
   )
 }
@@ -266,7 +267,8 @@ function HowItWorks() {
           <Measured label="Named wrongly at the bar in use" value={bar && bar.wallets_named > 0 ? formatPercent(bar.wallets_wrong / bar.wallets_named) : model.isPending ? '…' : model.isError ? NOT_READ : NOT_MEASURED}>
             {a && bar ? (
               <>
-                Of <span className="font-mono text-ink">{a.wallets.toLocaleString('en-US')}</span> real exchange customers’ wallets traced with the derived
+                Of <span className="font-mono text-ink">{a.wallets.toLocaleString('en-US')}</span> real exchange customers’ wallets on{' '}
+                {CHAINS[a.chain as Chain]?.name ?? a.chain} traced with the derived
                 labels hidden, <span className="font-mono text-ink">{bar.wallets_named.toLocaleString('en-US')}</span> were named at the{' '}
                 <span className="font-mono text-ink">{a.current_threshold.toFixed(2)}</span> bar and{' '}
                 <span className="font-mono text-ink">{bar.wallets_wrong.toLocaleString('en-US')}</span> of those wrongly
@@ -276,7 +278,7 @@ function HowItWorks() {
                     (upper bound <span className="font-mono text-ink">{formatPercent(bar.risk_upper_bound)}</span>)
                   </>
                 )}
-                . A named exchange is a lead to confirm, not proof.
+                . Other chains were not in this measurement. A named exchange is a lead to confirm, not proof.
               </>
             ) : (
               model.isError ? unread : 'The naming bar has not been measured on this installation.'

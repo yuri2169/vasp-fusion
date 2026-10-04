@@ -18,8 +18,18 @@ const EIGHT = [
 ]
 const refs = (list: CaseSummary[]) => list.map((x) => Number(x.case_ref!.split('/')[2]))
 
+// demo/cases.json today: the eight, and one named case each on BNB Chain, Solana and Polygon.
+const ELEVEN = [...EIGHT, c(109, 'bsc', 'ATTRIBUTED'), c(110, 'solana', 'ATTRIBUTED'), c(111, 'polygon', 'ATTRIBUTED')]
+
 describe('featuredCases', () => {
-  it('shows six of the eight: four named (one per chain first), two that were not', () => {
+  it('shows one named wallet for each of the six chains', () => {
+    const f = featuredCases(ELEVEN)
+    expect(refs(f.named)).toEqual([101, 102, 108, 109, 110, 111])
+    expect(f.named.map((x) => x.chain)).toEqual(['tron', 'ethereum', 'bitcoin', 'bsc', 'solana', 'polygon'])
+    expect(refs(f.notNamed)).toEqual([105, 103])
+  })
+
+  it('with three chains shows four named (one per chain first), and two that were not', () => {
     const f = featuredCases(EIGHT)
     expect(refs(f.named)).toEqual([101, 102, 108, 104])
     expect(refs(f.notNamed)).toEqual([105, 103])

@@ -1,0 +1,163 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/111
+  Complaint number  -
+  Wallet traced     0x2f79f2e0f8c75889a218dfd295f0172392719efb
+  Chain             Polygon
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           polygon-bitget
+  Hop limit         3
+
+RESULT
+------
+EXCHANGE NAMED
+Nearest exchange: Bitget. Confidence 0.95 (rule confidence).
+100% of the funds (774.50 USDT (Rs 74,189)) reached it in 1 hop, at
+0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35 (published by the exchange itself).
+
+
+SUMMARY
+-------
+Wallet 0x2f79…719efb sent 774.50 USDT on Polygon in 2 transfers between 30 Aug 2026 and 28 Sep
+2026. 774.50 USDT (100%) reached Bitget in 1 hop, at 0x9b0c…4f0e35 ("Bitget
+(proof-of-reserves)", published by the exchange itself). Nearest exchange: Bitget, rule
+confidence 0.95 (rule-based, not calibrated). Checked without its strongest evidence: Without
+the label on 0x9b0c…4f0e35, Bitget is not reached at all: naming Bitget rests on that one label.
+Transaction hashes: 0x66fd7739c521b3eaee1a40a13d2d6602d9b314e1d4a5aeaf7767661254324fbe.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  100% | 774.50 USDT (Rs 74,189) | Reached an exchange or custodian: Bitget
+  100% | 774.50 USDT (Rs 74,189) | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  3 wallets, 4 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W2  column Funded the wallet, row 1: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: Bitget
+    arrow 0x2f79f2e0f8c75889a218dfd295f0172392719efb -> 0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35 (outbound, 2 transfers, 774.50 USDT (Rs 74,189))
+    arrow 0x4e6c48b5b71fee5bb123ed2b7860cb1b1d49b315 -> 0x2f79f2e0f8c75889a218dfd295f0172392719efb (inbound, 2 transfers, 774.50 USDT (Rs 74,189))
+  No. | Address | What it is | Hop | Traced funds
+  W0 | 0x2f79f2e0f8c75889a218dfd295f0172392719efb | Traced wallet | - | 774.50 USDT (Rs 74,189)
+  W1 | 0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35 | Exchange wallet: Bitget | 1 | 774.50 USDT (Rs 74,189)
+  W2 | 0x4e6c48b5b71fee5bb123ed2b7860cb1b1d49b315 | Unlabelled wallet (not followed) | funded it | 774.50 USDT (Rs 74,189)
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | Bitget | named | 0.95 (rule confidence) | 1 | 100% | 774.50 USDT (Rs 74,189) | published by the exchange itself
+
+  Bitget (rank 1)
+  Address reached  0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35
+  Route            W0  ->  W1
+  Time to reach    0 seconds
+    [Label] 0x9b0c…4f0e35 is labelled Bitget ("Bitget (proof-of-reserves)"): published by the
+    exchange itself, source defillama-cex [weight 0.95]
+    [Route] 100% of the wallet's USDT (774.50 USDT) reached it in 1 hop [weight 1.00]
+        tx 0x66fd7739c521b3eaee1a40a13d2d6602d9b314e1d4a5aeaf7767661254324fbe
+    [Without its label] Without the label on 0x9b0c…4f0e35, Bitget is not reached at all: naming
+    Bitget rests on that one label. [weight -0.95]
+
+PATH TO THE NAMED EXCHANGE
+--------------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 476 USDT (Rs 45,596) | 28 Sep 2026, 05:34:36 UTC | - | 0x66fd7739c521b3eaee1a40a13d2d6602d9b314e1d4a5aeaf7767661254324fbe
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+NEXT STEPS
+----------
+  - Draft a request to Bitget for KYC and a freeze on the account behind 0x9b0c…4f0e35
+  - Preserve the transaction records listed in the evidence
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify polygon-bitget
+
+  Findings fingerprint    77f3d68b271e124950a744ffb20f64951afa0c32a16065bdfbcd3687c25f7d76
+  Input                   polygon 0x2f79f2e0f8c75889a218dfd295f0172392719efb, hop limit 3
+  Input SHA-256           82973692be462da3979acc72b75c71ec95eb1cef08bb47e05592f0746a041773
+  Chain responses         9 read from api.etherscan.io
+  Responses SHA-256       c3a1b603a7d98ae140e915a694fa985b1902f802f5ea07cdc86d6772b7b2963d
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Content SHA-256         0efc80056b3b9b8fe679c8342a0d43d1327f2345bc1cdb95892df2e115ac0b34
+  Receipt SHA-256         1ac2a8cc639d572783fd68c8e138981b81faee14f23206511f4b5e70f365c787
+
+  Chain responses read
+    213cfe4857a1f99f22741a16aec1fb9c66a3e9eda506e64e6f07b27e3f37264c  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=137&closest=after&module=block&timestamp=1788133956
+    a5b13e44d88ca49487b428333241136e7b3379ea0b6fd7c2c14ddd8338e65073  https://api.etherscan.io/v2/api?action=tokentx&address=0x2f79f2e0f8c75889a218dfd295f0172392719efb&chainid=137&contractaddress=0x2791bca1f2de4661ed88a30c99a7a9449aa84174&module=account&offset=100&page=1&sort=asc&startblock=0
+    a5b13e44d88ca49487b428333241136e7b3379ea0b6fd7c2c14ddd8338e65073  https://api.etherscan.io/v2/api?action=tokentx&address=0x2f79f2e0f8c75889a218dfd295f0172392719efb&chainid=137&contractaddress=0x3c499c542cef5e3811e1192ce70d8cc03d5c3359&module=account&offset=100&page=1&sort=asc&startblock=0
+    188ceb929a5c0ea32d27b7f92270c1129e2a9caffcffe711bc581c2f98806ca4  https://api.etherscan.io/v2/api?action=tokentx&address=0x2f79f2e0f8c75889a218dfd295f0172392719efb&chainid=137&contractaddress=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&module=account&offset=100&page=1&sort=asc&startblock=0
+    0360eb45086c5fa1e0c3cd4ca5f2efd48d19c6c066e2f3f90ab361f4c6849685  https://api.etherscan.io/v2/api?action=tokentx&address=0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35&chainid=137&contractaddress=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&module=account&offset=100&page=1&sort=asc&startblock=92952619
+    48a49b390ade52aa7d640a93ffe395a124343eda615c0acf168d09c2054961b9  https://api.etherscan.io/v2/api?action=tokentx&address=0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35&chainid=137&contractaddress=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&module=account&offset=100&page=2&sort=asc&startblock=92952619
+    1f304f52783b31637f7dcadebf1a17c6dd7511845e8fa413f214a026c7d745e8  https://api.etherscan.io/v2/api?action=tokentx&address=0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35&chainid=137&contractaddress=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&module=account&offset=100&page=3&sort=asc&startblock=92952619
+    3632642990592e9e01c474024cdfe6952d3102c418a22a3547905b69a1ea5737  https://api.etherscan.io/v2/api?action=tokentx&address=0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35&chainid=137&contractaddress=0xc2132d05d31c914a87c6611c10748aeb04b58e8f&module=account&offset=100&page=4&sort=asc&startblock=92952619
+    d1467d056f3fb74029e7f27d45d20ff9a3ca7494bd24d375a107906e78e681a8  https://api.etherscan.io/v2/api?action=txlist&address=0x2f79f2e0f8c75889a218dfd295f0172392719efb&chainid=137&module=account&offset=100&page=1&sort=asc&startblock=0

@@ -60,7 +60,7 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 ### Cases are live (B3)
 - `POST /api/cases` validates the address (base58check / EIP-55 / bech32), stores the case as `queued`, answers 202 at once, then traces in the background: `queued → running → done | failed`. **Poll `GET /api/cases/{id}`** until the status is `done` or `failed`. A real trace takes about 1–10 s live, and well under a second from the cache.
 - `chain` is optional: Tron, Bitcoin and Solana addresses are unambiguous, and an EVM address is taken as `ethereum` unless the officer picks another chain. EVM addresses are stored lowercase.
-- 422 with a plain-English `detail` when: the chain can't be told from the address; the address is not valid on the chosen chain; or the chain can't be traced yet (traceable today: tron, bitcoin, ethereum, polygon, arbitrum, base, optimism).
+- 422 with a plain-English `detail` when: the chain can't be told from the address; the address is not valid on the chosen chain; or the chain can't be traced yet (traceable today: tron, bitcoin, solana, ethereum, bsc, polygon, arbitrum, base, optimism; `bsc` needs `ANKR_API_KEY` and `solana` needs `HELIUS_API_KEY` on the server for a live trace, and without it the case ends `failed` with a sentence naming the key).
 - Posting a wallet that already has a finished case returns that case (same `id`, no second trace), **even if `max_hops` or `incident_date` differ: send `?refresh=true` to trace again.** A `failed` case, and one left `queued`/`running` by a server restart, is always run again.
 - During a refresh the case keeps showing the previous result with status `queued`/`running`. If the refresh fails, the previous result stays, status goes back to `done`, and `error` says "Refresh failed (…)". The case reference, complaint number and amount are kept unless the refresh sends new ones.
 - A `failed` case has `error` set (for example `CacheMiss: OFFLINE=1 and not cached: …`) and empty lists.
@@ -278,6 +278,14 @@ Everything here is counted from stored records (cases, requests, labels, the wat
 - `GET /api/fx` returns the one USD→INR reference rate in `config/fx.yaml`: `rate` (rupees per dollar), `as_of`, `name`, the `source_*` fields, and `basis`, the sentence shown once per screen and in every PDF footer ("₹ at 1 USD = ₹95.79, RBI reference rate, 18 Sep 2026"). The rate is read from the file and is never estimated; a file without a date or a source is refused when it is read.
 - No amount field changed. Rupee amounts are computed where they are shown (`usd × rate`, rounded to the rupee, Indian digit grouping), from fields that are already US dollars: `amount_usd`, `total_usd`, and amounts in the dollar stablecoins.
 - The request letter and the case file print the rupee amount beside each dollar amount and the basis in the footer.
+
+### BNB Chain and Solana (G1)
+No schema changed: `bsc` and `solana` were already in the chain enum, and a case on them has the same shape as any other.
+- `POST /api/cases` and `POST /api/watchlist` accept both. A Solana address is unambiguous; an EVM address is `bsc` only when the officer picks it.
+- Solana addresses are case-sensitive and stored as given. `Candidate.deposit_address`, graph nodes and hops hold the **owning wallet**, never a token account. `asset` is `USDT`, `USDC` or `SOL`.
+- On BNB Chain USDT and USDC have 18 decimals; amounts are already in whole units, as everywhere.
+- **Confidence on chains without a measured model.** The deposit-address model scores Tron only, and the naming bar was measured on Tron only (`GET /api/model?chain=tron`, `abstain`). On every other chain `confidence_interval` is null (show "rule confidence"), `provenance.notes[]` says unlabelled wallets were not scored, and the case file says "The bar has not been measured on this chain." A client must not show the Tron error figures under a case on another chain: check `abstain.chain`.
+- Three more recorded demo cases (eleven now): **`bnb-coindcx`**, **`sol-okx`**, **`polygon-bitget`**.
 
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:

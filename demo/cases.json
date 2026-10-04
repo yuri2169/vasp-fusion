@@ -8,7 +8,10 @@
       "chain": "tron",
       "max_hops": 3,
       "case_ref": "DEMO/2026/101",
-      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "CoinDCX"}
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "CoinDCX"
+      }
     },
     {
       "id": "eth-bitget",
@@ -17,7 +20,10 @@
       "chain": "ethereum",
       "max_hops": 3,
       "case_ref": "DEMO/2026/102",
-      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "Bitget"}
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "Bitget"
+      }
     },
     {
       "id": "tron-ofac",
@@ -26,7 +32,10 @@
       "chain": "tron",
       "max_hops": 3,
       "case_ref": "DEMO/2026/103",
-      "expect": {"outcome": "SANCTIONED_OR_MIXER_REACHED", "top_vasp": null}
+      "expect": {
+        "outcome": "SANCTIONED_OR_MIXER_REACHED",
+        "top_vasp": null
+      }
     },
     {
       "id": "tron-htx-coindcx",
@@ -35,7 +44,10 @@
       "chain": "tron",
       "max_hops": 3,
       "case_ref": "DEMO/2026/104",
-      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "CoinDCX"}
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "CoinDCX"
+      }
     },
     {
       "id": "tron-abstain",
@@ -44,7 +56,10 @@
       "chain": "tron",
       "max_hops": 3,
       "case_ref": "DEMO/2026/105",
-      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "top_vasp": null
+      }
     },
     {
       "id": "eth-abstain",
@@ -53,7 +68,10 @@
       "chain": "ethereum",
       "max_hops": 3,
       "case_ref": "DEMO/2026/106",
-      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "top_vasp": null
+      }
     },
     {
       "id": "eth-bridge",
@@ -62,7 +80,10 @@
       "chain": "ethereum",
       "max_hops": 3,
       "case_ref": "DEMO/2026/107",
-      "expect": {"outcome": "INSUFFICIENT_EVIDENCE", "top_vasp": null}
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "top_vasp": null
+      }
     },
     {
       "id": "btc-htx",
@@ -71,7 +92,46 @@
       "chain": "bitcoin",
       "max_hops": 3,
       "case_ref": "DEMO/2026/108",
-      "expect": {"outcome": "ATTRIBUTED", "top_vasp": "HTX"}
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "HTX"
+      }
+    },
+    {
+      "id": "bnb-coindcx",
+      "title": "USDT on BNB Chain, 45% into a CoinDCX wallet and the rest into an unlabelled high-activity wallet",
+      "address": "0xd43dec662060a0a089d7fe3f476746676284fa0c",
+      "chain": "bsc",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/109",
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "CoinDCX"
+      }
+    },
+    {
+      "id": "sol-okx",
+      "title": "USDT on Solana, all of it into an OKX wallet",
+      "address": "34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe",
+      "chain": "solana",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/110",
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "OKX"
+      }
+    },
+    {
+      "id": "polygon-bitget",
+      "title": "USDT on Polygon, all of it into a Bitget wallet",
+      "address": "0x2f79f2e0f8c75889a218dfd295f0172392719efb",
+      "chain": "polygon",
+      "max_hops": 3,
+      "case_ref": "DEMO/2026/111",
+      "expect": {
+        "outcome": "ATTRIBUTED",
+        "top_vasp": "Bitget"
+      }
     }
   ]
 }

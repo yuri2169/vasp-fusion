@@ -75,7 +75,7 @@ UI=build make docker # the same image with the interface compiled in (what the d
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
 - **Nothing reaches the network at run time.** The image sets `OFFLINE=1`: a chain request that is not in its cache is refused, never fetched. `make docker-smoke` proves it by running the whole demo with networking disabled.
-- **What is baked in:** the label database; the chain responses the eight demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the eight demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
+- **What is baked in:** the label database; the chain responses the eleven demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the eight demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
 - **The interface.** `UI=build make docker` compiles `ui/` into the image (Node 22 stage; the build checks that the bundle carries no fixture and that the first load stays under 200 KB gzipped). The demo script is `docs/demo_script.md`. Without `UI=build` the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
 - **Only real records.** The fixtures in `mocks/` stand in for empty stores only with `VASPFUSION_DEMO_MODE=1` (off by default, off in the image): a server lists its own cases and nothing else.
 - **Login.** The image holds one demonstration account (`demo/officer.json`, published in the repository, so it protects nothing). `VASPFUSION_AUTH=off docker compose up` runs without a login. For real use, disable it and add officers: `docker compose exec vasp-fusion python -m vaspfusion.cli officer add <user> --name "..."`.
@@ -118,7 +118,7 @@ python -m vaspfusion.cli audit --verify
 | Path | What |
 |---|---|
 | `vaspfusion/labels/` | Label store: normalise → build (tier-ranked dedupe) → lookup/search |
-| `vaspfusion/chains/` | Chain adapters (Tron, EVM, Bitcoin, Solana stub) behind a cache-first fetcher; the only code that reaches the network |
+| `vaspfusion/chains/` | Chain adapters (Tron, EVM incl. BNB Chain, Bitcoin, Solana) behind a cache-first fetcher; the only code that reaches the network |
 | `vaspfusion/cluster.py` | Bitcoin: an address spent together with a labelled exchange address takes that exchange's label, with the cluster as evidence |
 | `vaspfusion/trace.py` | Bidirectional trace: follows the wallet's money hop by hop, allocating by amount |
 | `vaspfusion/attribute/rules.py` | Candidates, proximity rank, rule confidence, the three outcomes |
@@ -169,9 +169,9 @@ p.transfers("TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw", "in", since=None, limit=200)
 | tron | TronGrid `/v1/accounts/{a}/transactions/trc20` (USDT) + `/transactions` (TRX) | `TRONGRID_API_KEY` |
 | ethereum, polygon, arbitrum | Etherscan v2 with a key, else Blockscout | `ETHERSCAN_API_KEY` |
 | base, optimism | Blockscout (keyless) | – |
-| bsc | Etherscan v2 **paid** plan only (the free plan refuses) | `ETHERSCAN_API_KEY` |
+| bsc (BNB Chain) | Ankr Advanced API, JSON-RPC `ankr_getTransactionsByAddress` + `ankr_getTokenTransfers` (free plan; Etherscan's free plan refuses this chain). Etherscan v2 instead when `ETHERSCAN_PAID=1` | `ANKR_API_KEY` (**needed**) |
 | bitcoin | Esplora `/api/address/{a}/txs`: blockstream.info, or mempool.space with `VASPFUSION_BTC_API=mempool.space` (same API; a replay needs the backend it was recorded from) | – |
-| solana | address check only | – |
+| solana | Helius parsed history `/v0/addresses/{a}/transactions` (free plan): SOL and SPL transfers between the owning wallets, not the token accounts | `HELIUS_API_KEY` (**needed**) |
 
 - Keys come from the process env, then `.env` (never committed). They are never printed, cached or written to fixtures.
 - Every response is cached raw in `data/chain_cache.duckdb` with its SHA-256, keyed by `(chain, address, direction, query)`. Re-runs replay from the cache; `--refresh` re-fetches. **`OFFLINE=1`** serves only from the cache and fails loudly on a miss.
@@ -258,7 +258,7 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 - **One asset is followed:** the stablecoin the wallet sent most of, else the native coin. Unknown tokens are never followed (this is what keeps address-poisoning spoofs out). Whatever else the wallet sent is listed as "not followed".
 - **Allocation, "first out after arrival":** money that reached a wallet at time *t* is assigned to that wallet's next outgoing transfers at or after *t*, in time order. So every unit the wallet sent ends in exactly one place, and the case says where: an exchange, a sanctioned address, a hub, past the hop limit, or not moved.
 - **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
-- **Chains:** Tron, Bitcoin, and the EVM chains with a free data source (Ethereum, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below.
+- **Chains:** Tron, Bitcoin, Solana, and the EVM chains with a free data source (Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below. **The deposit-address model scores Tron only and the naming bar was measured on Tron only:** on every other chain an answer rests on labels and tracing rules, its confidence is marked "rule confidence", and the case file and the case page say the bar has not been measured on that chain.
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
 - **Confidence:** the average over the traced money of *label weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Label weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75; a derived deposit address weighs its own confidence. A VASP is named at 0.60 or more.
 - **What is calibrated and what is not.** Where the money reached a deposit address the model confirmed, the candidate carries a `confidence_interval` (the model's range through the same formula) and the model's reasons as evidence. The label weights, the hop decay and the share factor are rule-set, so a case confidence is not a calibrated probability end to end; every screen and narrative says which part is which. A candidate without a range is "rule confidence".

@@ -305,10 +305,30 @@ describe('the naming bar, checked', () => {
     expect(screen.getByRole('link', { name: 'The measurement' })).toHaveAttribute('href', '/model?chain=tron')
   })
 
-  it('says nothing where the bar was not measured', async () => {
+  it('says so where the bar was not measured, and lends the chain no other chain\'s error', async () => {
     vi.spyOn(api, 'model').mockResolvedValue({ status: 'measured', metrics: {}, abstain: null } as unknown as ModelInfo)
     renderApp(<AnswerPanel c={hero} onSelect={noop} />)
-    await screen.findByRole('link', { name: 'Draft request to CoinDCX' })
+    const line = await screen.findByTestId('bar-not-measured')
+    expect(line).toHaveTextContent('The 0.60 bar has not been measured on Tron.')
+    expect(line).toHaveTextContent('rests on the label behind the answer and the tracing rules alone')
     expect(screen.queryByText(/bar was checked/)).not.toBeInTheDocument()
+  })
+
+  it('does not show the Tron measurement under a case on another chain', async () => {
+    // what the demo server answers for a chain with no measurement of its own: the Tron one
+    vi.spyOn(api, 'model').mockResolvedValue({
+      status: 'measured',
+      metrics: {},
+      chain: 'tron',
+      abstain: {
+        chain: 'tron', wallets: 280, claims: 303, current_threshold: 0.6, measured_threshold: null, target_risk: 0.05, delta: 0.05, risk_coverage: [], notes: [],
+        bars: [{ threshold: 0.6, claims_answered: 163, claims_wrong: 20, wallets_named: 155, wallets_wrong: 15, wallets_abstained: 125, risk: 0.0968, risk_upper_bound: 0.1733 }],
+      },
+    } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={{ ...hero, chain: 'solana' }} onSelect={noop} />)
+    const line = await screen.findByTestId('bar-not-measured')
+    expect(line).toHaveTextContent('The 0.60 bar has not been measured on Solana.')
+    expect(line).toHaveTextContent('the error measured on Tron wallets does not cover it')
+    expect(screen.queryByText(/were named an exchange/)).not.toBeInTheDocument()
   })
 })

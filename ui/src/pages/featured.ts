@@ -9,14 +9,14 @@ const byRef = (a: CaseSummary, b: CaseSummary) => (a.case_ref ?? a.id).localeCom
 
 /** Which recorded wallets the landing offers, and in what order. Nothing is picked by name:
  *  the groups come from each case's own outcome.
- *  - Named an exchange: up to four, one per chain first (so every traceable chain shows),
- *    then the rest in case-reference order.
+ *  - Named an exchange: one per chain, so every chain with a recorded answer shows; with
+ *    fewer than four chains the rest follow in case-reference order, up to four.
  *  - Did not name one: one per outcome, "insufficient evidence" before "sanctioned or mixer". */
 export function featuredCases(cases: CaseSummary[]): FeaturedCases {
   const done = cases.filter((c) => c.demo && c.outcome != null).sort(byRef)
   const attributed = done.filter((c) => c.outcome === 'ATTRIBUTED')
   const firstOfChain = attributed.filter((c, i) => attributed.findIndex((o) => o.chain === c.chain) === i)
-  const named = [...firstOfChain, ...attributed.filter((c) => !firstOfChain.includes(c))].slice(0, 4)
+  const named = firstOfChain.length >= 4 ? firstOfChain : [...firstOfChain, ...attributed.filter((c) => !firstOfChain.includes(c))].slice(0, 4)
 
   const rest = done.filter((c) => c.outcome !== 'ATTRIBUTED')
   const notNamed = rest

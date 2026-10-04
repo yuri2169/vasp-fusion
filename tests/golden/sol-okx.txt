@@ -1,0 +1,162 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Demonstration case. This is a real public wallet, chosen because its on-chain history shows a
+pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
+case reference is not a real complaint.
+
+  Case reference    DEMO/2026/110
+  Complaint number  -
+  Wallet traced     34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe
+  Chain             Solana
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           sol-okx
+  Hop limit         3
+
+RESULT
+------
+EXCHANGE NAMED
+Nearest exchange: OKX. Confidence 0.95 (rule confidence).
+100% of the funds (12,739.49 USDT (Rs 12,20,316)) reached it in 1 hop, at
+C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo (published by the exchange itself).
+
+
+SUMMARY
+-------
+Wallet 34Zmaf…yVFnhe sent 12,739.49 USDT on Solana in 3 transfers between 25 Sep 2026 and 29 Sep
+2026. 12,739.49 USDT (100%) reached OKX in 1 hop, at C68a6R…XFdqyo ("OKX (OKEx)
+(proof-of-reserves)", published by the exchange itself). Nearest exchange: OKX, rule confidence
+0.95 (rule-based, not calibrated). Checked without its strongest evidence: Without the label on
+C68a6R…XFdqyo, OKX is not reached at all: naming OKX rests on that one label. Transaction
+hashes:
+48ir4Q8Ux2QECvSFj6q2MV7V6rhdsSgPTgayW4q9eQtsr7LiwCb8qcuPBHCpjrnWCAYjpJmsPsMxhpuniS6hfFff.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  100% | 12,739.49 USDT (Rs 12,20,316) | Reached an exchange or custodian: OKX
+  100% | 12,739.49 USDT (Rs 12,20,316) | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+  4 wallets, 5 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W2  column Funded the wallet, row 1: Unlabelled wallet
+    W3  column Funded the wallet, row 2: Unlabelled wallet
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: OKX
+    arrow 2qo8jvuc49pFmTjmUHLiARSV6ppPTaE7gw27ZJ6DnNZy -> 34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe (inbound, 1 transfer, 2,000 USDT (Rs 1,91,580))
+    arrow 34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe -> C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo (outbound, 3 transfers, 12,739.49 USDT (Rs 12,20,316))
+    arrow 5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9 -> 34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe (inbound, 1 transfer, 9,639.49 USDT (Rs 9,23,367))
+  No. | Address | What it is | Hop | Traced funds
+  W0 | 34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe | Traced wallet | - | 12,739.49 USDT (Rs 12,20,316)
+  W1 | C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo | Exchange wallet: OKX | 1 | 12,739.49 USDT (Rs 12,20,316)
+  W2 | 5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9 | Unlabelled wallet (not followed) | funded it | 9,639.49 USDT (Rs 9,23,367)
+  W3 | 2qo8jvuc49pFmTjmUHLiARSV6ppPTaE7gw27ZJ6DnNZy | Unlabelled wallet (not followed) | funded it | 2,000 USDT (Rs 1,91,580)
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | OKX | named | 0.95 (rule confidence) | 1 | 100% | 12,739.49 USDT (Rs 12,20,316) | published by the exchange itself
+
+  OKX (rank 1)
+  Address reached  C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo
+  Route            W0  ->  W1
+  Time to reach    0 seconds
+    [Label] C68a6R…XFdqyo is labelled OKX ("OKX (OKEx) (proof-of-reserves)"): published by the
+    exchange itself, source defillama-cex [weight 0.95]
+    [Route] 100% of the wallet's USDT (12,739.49 USDT) reached it in 1 hop [weight 1.00]
+        tx 48ir4Q8Ux2QECvSFj6q2MV7V6rhdsSgPTgayW4q9eQtsr7LiwCb8qcuPBHCpjrnWCAYjpJmsPsMxhpuniS6hfFff
+    [Without its label] Without the label on C68a6R…XFdqyo, OKX is not reached at all: naming
+    OKX rests on that one label. [weight -0.95]
+
+PATH TO THE NAMED EXCHANGE
+--------------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 9,639.49 USDT (Rs 9,23,367) | 25 Sep 2026, 06:59:08 UTC | - | 48ir4Q8Ux2QECvSFj6q2MV7V6rhdsSgPTgayW4q9eQtsr7LiwCb8qcuPBHCpjrnWCAYjpJmsPsMxhpuniS6hfFff
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+NEXT STEPS
+----------
+  - Draft a request to OKX for KYC and a freeze on the account behind C68a6R…XFdqyo
+  - Preserve the transaction records listed in the evidence
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify sol-okx
+
+  Findings fingerprint    f2440c23e3a66f848ef464dc01316983c1c48c836fa9dfe419c4e8163d8adaa3
+  Input                   solana 34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe, hop limit 3
+  Input SHA-256           dbc0906e577db47d136deea050eca6d2ae03c2574a091630eb753be9eb731b92
+  Chain responses         4 read from api.helius.xyz
+  Responses SHA-256       a0fbaab77f948525e3f695d442ff5c8177453bed0b48aacb1b0850f80ae62719
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Content SHA-256         294dac581ff629aa936efea7a02f8acbd473d5923b1bb91ac0dae0f411a32987
+  Receipt SHA-256         461310c4b32fec9234bfab2324020601d0278627b6e260d1437b6e04dea0f841
+
+  Chain responses read
+    950e1fd16a41f84e6ddeba4e9175fe5bb6d827f123a60a1abdd9e9287f395e7a  https://api.helius.xyz/v0/addresses/34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe/transactions?limit=100&sort-order=asc
+    5eb497ff82d4c026a1aad1972b1125d39c2d54ac0b7c8b51a4a266c1cb2fcb23  https://api.helius.xyz/v0/addresses/C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo/transactions?after-signature=3K3HgW4qyj3DnpgqFayjj3mNU7YWBmj7LesmicPZbG2Cqy7yXPG5d3W2urCLNPXj9Z4akuSYhA44YS8WwFvGZzz&gte-time=1790319548&limit=100&sort-order=asc
+    5acc1e39b63032eaeec603a6d316aa1ac12801d78ac201f1a1efdaa6b57b4255  https://api.helius.xyz/v0/addresses/C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo/transactions?after-signature=3psHPcWBHDQEZan6x2YeCAHdwWm9QsMMArgyJjhN15f5Qnf8nngpu43q88yGcUemk6yiHLQLFn1UqhJiHrcyzaq1&gte-time=1790319548&limit=100&sort-order=asc
+    5781620582358c642537163abf0ff20aa9262d6c8f2fc9f09f8f67d80144f1b2  https://api.helius.xyz/v0/addresses/C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo/transactions?gte-time=1790319548&limit=100&sort-order=asc

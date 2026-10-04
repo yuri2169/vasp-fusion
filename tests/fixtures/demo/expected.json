@@ -1,4 +1,54 @@
 {
+ "bnb-coindcx": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "CoinDCX",
+  "confidence": 0.75,
+  "asset": "USDT",
+  "total_sent": 567.450436764193,
+  "candidates": [
+   {
+    "vasp": "CoinDCX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.75,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 0.4521,
+    "deposit_address": "0xf379fcd9c996d85de025985ba9b1c9c96daa4a72",
+    "label_tier": "explorer_tag",
+    "counterfactual_holds": null
+   },
+   {
+    "vasp": "CoinDCX",
+    "direction": "inbound",
+    "proximity_rank": 2,
+    "confidence": 0.75,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 0.487,
+    "deposit_address": "0xf379fcd9c996d85de025985ba9b1c9c96daa4a72",
+    "label_tier": "explorer_tag",
+    "counterfactual_holds": null
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "hub",
+    "name": null,
+    "share": 0.5479,
+    "amount": 310.89412135439005
+   },
+   {
+    "kind": "vasp",
+    "name": "CoinDCX",
+    "share": 0.4521,
+    "amount": 256.55631540980295
+   }
+  ],
+  "nodes": 5,
+  "edges": 23,
+  "flags": []
+ },
  "btc-htx": {
   "outcome": "ATTRIBUTED",
   "top_vasp": "HTX",
@@ -196,6 +246,70 @@
     }
    ]
   ]
+ },
+ "polygon-bitget": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "Bitget",
+  "confidence": 0.95,
+  "asset": "USDT",
+  "total_sent": 774.5,
+  "candidates": [
+   {
+    "vasp": "Bitget",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.95,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 1.0,
+    "deposit_address": "0x9b0cb31f3e9232196aeaa7cac03ea95c5a4f0e35",
+    "label_tier": "published_por",
+    "counterfactual_holds": false
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "Bitget",
+    "share": 1.0,
+    "amount": 774.5
+   }
+  ],
+  "nodes": 3,
+  "edges": 4,
+  "flags": []
+ },
+ "sol-okx": {
+  "outcome": "ATTRIBUTED",
+  "top_vasp": "OKX",
+  "confidence": 0.95,
+  "asset": "USDT",
+  "total_sent": 12739.492295,
+  "candidates": [
+   {
+    "vasp": "OKX",
+    "direction": "outbound",
+    "proximity_rank": 1,
+    "confidence": 0.95,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 1.0,
+    "deposit_address": "C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo",
+    "label_tier": "published_por",
+    "counterfactual_holds": false
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "vasp",
+    "name": "OKX",
+    "share": 1.0,
+    "amount": 12739.492295
+   }
+  ],
+  "nodes": 4,
+  "edges": 5,
+  "flags": []
  },
  "tron-abstain": {
   "outcome": "INSUFFICIENT_EVIDENCE",

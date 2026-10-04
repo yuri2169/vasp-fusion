@@ -1,4 +1,9 @@
 {
+ "bnb-coindcx": {
+  "findings_sha256": "7584332982d110888c10afbecf03f0b6d3ee0edeabd163f3f4783f5b02c6765d",
+  "responses_sha256": "138b232c9d5e6dc5ab668354cd3b23af015c64b8a4784caa32449c3e43e706e0",
+  "pages": 28
+ },
  "btc-htx": {
   "findings_sha256": "9e16ad1315e5a5f808ce5b9609e525954e6acf1f5b336ff347ea5e48fe6332da",
   "responses_sha256": "31f4cac4eed2540f8cccddd12e31887b0caee0e669499a9a43fe066beccd183c",
@@ -18,6 +23,16 @@
   "findings_sha256": "23dc4404ad5dec800da124698f6ba3d65da4a6ccd45aa02f1f656ed919d38ad5",
   "responses_sha256": "d0ddae6afe46fb92b7e183130ac44a2a20eda527cbc279e0d47b7ed1304a8023",
   "pages": 24
+ },
+ "polygon-bitget": {
+  "findings_sha256": "77f3d68b271e124950a744ffb20f64951afa0c32a16065bdfbcd3687c25f7d76",
+  "responses_sha256": "c3a1b603a7d98ae140e915a694fa985b1902f802f5ea07cdc86d6772b7b2963d",
+  "pages": 9
+ },
+ "sol-okx": {
+  "findings_sha256": "f2440c23e3a66f848ef464dc01316983c1c48c836fa9dfe419c4e8163d8adaa3",
+  "responses_sha256": "a0fbaab77f948525e3f695d442ff5c8177453bed0b48aacb1b0850f80ae62719",
+  "pages": 4
  },
  "tron-abstain": {
   "findings_sha256": "d425646a16be4ff53d1c8fb1eadfec8c6d2edf5e975dd12e20f788b7da3d0a76",
