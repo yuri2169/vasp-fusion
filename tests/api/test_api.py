@@ -160,3 +160,22 @@ def test_fx_is_the_rate_on_file_with_its_date_source_and_basis(client):
     on_file = fx.usd_inr()
     assert body["rate"] == on_file["rate"] and body["as_of"] == on_file["as_of"].isoformat()
     assert body["basis"] == fx.basis() and body["source_url"] == on_file["source_url"]
+
+
+def test_reading_the_rate_is_an_action_the_audit_log_knows(client):
+    """Every route's action must be in the log's vocabulary, or the audit page cannot be read."""
+    assert client.get("/api/fx").status_code == 200
+    page = client.get("/api/audit?limit=50")
+    assert page.status_code == 200
+    assert "fx.view" in [row["action"] for row in page.json()["items"]]
+
+
+def test_every_action_a_route_can_log_is_in_the_audit_vocabulary():
+    """A logged action the schema does not know makes `GET /api/audit` fail for everyone
+    (opening the watchlist used to do this)."""
+    from typing import get_args
+
+    from vaspfusion.api import schemas as S
+    from vaspfusion.api import security
+    known = set(get_args(S.AuditAction))
+    assert {action for action, _ in security.ACTIONS.values()} <= known

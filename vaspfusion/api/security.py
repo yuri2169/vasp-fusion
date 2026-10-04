@@ -50,6 +50,7 @@ ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("POST", "/api/watchlist/{watch_id}/seen"): ("watch.seen", "watch_id"),
     ("DELETE", "/api/watchlist/{watch_id}"): ("watch.remove", "watch_id"),
     ("GET", "/api/model"): ("model.view", None),
+    ("GET", "/api/fx"): ("fx.view", None),
     ("GET", "/api/audit"): ("audit.view", None),
     ("POST", "/api/auth/login"): ("auth.login", None),          # target set by the handler
     ("POST", "/api/auth/logout"): ("auth.logout", None),

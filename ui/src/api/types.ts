@@ -631,7 +631,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "audit.view" | "auth.login" | "auth.logout" | "api.other";
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "auth.login" | "auth.logout" | "api.other";
             /**
              * Target
              * @description case id, `chain:address`, exchange name, request id, search text or user name, by action

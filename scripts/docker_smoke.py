@@ -120,11 +120,23 @@ class Smoke:
                s == 200 and b'id="root"' in deep, s)
 
         s, h, cases = api.call("GET", "/api/cases")
+        # the demo cases, and the wallets the demonstration watchlist had traced for it
+        watched = [w["trace"]["id"] for w in
+                   json.loads((ROOT / "demo" / "watchlist.json").read_text())["watch"] if w.get("trace")]
         ok(f"only real recorded cases are listed ({len(cases['items'])}), no fixture",
-           h.get("x-data-source") == "live" and len(cases["items"]) == len(specs)
+           h.get("x-data-source") == "live"
+           and sorted(c["id"] for c in cases["items"]) == sorted([s_["id"] for s_ in specs] + watched)
            and not any(c["id"].startswith("demo-") for c in cases["items"]),
            (h.get("x-data-source"), [c["id"] for c in cases["items"]]))
         by_id = {c["id"]: c for c in cases["items"]}
+        s, _, watch = api.call("GET", "/api/watchlist")
+        ok(f"the demonstration watchlist is there ({len(watch['items'])} wallets), each with a first check",
+           s == 200 and len(watch["items"]) == 5 and all(w["last_checked_at"] for w in watch["items"]),
+           [(w["address"], w["last_checked_at"]) for w in watch["items"]])
+        s, _, fx = api.call("GET", "/api/fx")
+        ok("the rupee reference rate is served with its date and source",
+           s == 200 and fx["rate"] > 0 and fx["as_of"] and fx["source_url"].startswith("https://"), fx)
+
         for spec in specs:
             c = by_id.get(spec["id"], {})
             ok(f"demo case {spec['id']}: {spec['expect']['outcome']}"

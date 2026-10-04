@@ -882,7 +882,8 @@ class Ok(_M):
 AuditAction = Literal[
     "case.open", "case.list", "case.view", "case.export", "case.receipt", "case.verify",
     "wallet.view", "label.search", "desk.view", "vasp.view", "request.draft", "request.view",
-    "request.status", "request.export", "dashboard.view", "model.view", "audit.view",
+    "request.status", "request.export", "dashboard.view", "model.view", "fx.view", "audit.view",
+    "watch.list", "watch.add", "watch.check", "watch.seen", "watch.remove", "label.coverage",
     "auth.login", "auth.logout", "api.other"]
 
 
