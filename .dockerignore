@@ -1,11 +1,10 @@
 # The build context is the repository minus everything the image does not read.
-.git
-.venv
+# Every dot-file and dot-directory at the top level (version control, the virtual
+# environment, caches, editor and tool folders): the build reads none of them.
+.*
 **/node_modules
 **/__pycache__
 **/*.pyc
-.pytest_cache
-.hypothesis
 ui/dist
 wheels
 

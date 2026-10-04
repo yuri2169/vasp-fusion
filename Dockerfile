@@ -36,6 +36,7 @@ RUN pip install --no-cache-dir -r requirements.lock
 COPY vaspfusion/ ./vaspfusion/
 COPY artifacts/ ./artifacts/
 COPY demo/ ./demo/
+COPY config/ ./config/
 COPY mocks/ ./mocks/
 COPY docs/ ./docs/
 COPY scripts/docker_smoke.py ./scripts/docker_smoke.py

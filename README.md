@@ -4,6 +4,43 @@ Given an unknown crypto wallet, find the nearest VASP (exchange, custodial walle
 
 Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, FastAPI, Polars, igraph, LightGBM, SHAP and DuckDB; React, Vite, Tailwind and Cytoscape on the front end side.
 
+## For judges: the one-minute version
+
+**The problem.** A stolen-funds complaint gives an investigator one thing: a wallet address. To freeze the money or identify who holds it, the investigator has to know which exchange (VASP) took the deposits, and has to be able to show why.
+
+**What this does.** Paste the wallet. VASP-FUSION follows its money on chain (Tron, Ethereum, Bitcoin), names the nearest exchange that took it, shows the evidence transfer by transfer, gives a confidence that has been measured, and drafts the request to that exchange for the SAHYOG channel. **When the evidence does not hold, it says "insufficient evidence" and says what would change that, instead of guessing.**
+
+**Check it yourself** (no network needed after the image is built):
+
+```bash
+UI=build make docker && make docker-up   # http://127.0.0.1:8000, sign in with demo/officer.json
+make demo-flow                           # the 3-minute demo, driven and asserted in a real browser
+make reproduce                           # every figure below, regenerated from tracked files
+```
+
+**Results.** Every figure is read from a file in this repository; `make reproduce` fails if one no longer matches.
+
+| What was measured | Result | Read from |
+|---|---|---|
+| Real exchange customers' wallets traced with our own derived labels hidden | 280 | `artifacts/abstain_v1/tron/validation.json` |
+| ...of which the tool named an exchange (at the 0.60 bar in use) | 155 | same |
+| ...of those, named wrongly | 15 (9.7%; upper bound 17.3%) | same |
+| ...and declined to name one ("insufficient evidence") | 125 | same |
+| Deposit-address model, calibration error (ECE) | 0.0093 | `artifacts/model_v1/tron/metrics.json` |
+| Deposit-address model, Brier score | 0.0026 | same |
+| Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
+| Labelled addresses on file | 457,125 (1,690 published by exchanges, 338,143 curated, 111,795 explorer tags, 5,497 derived here) | `make labels` |
+| Recorded demonstration cases that replay offline to the same fingerprint | 8 of 8 (4 name an exchange, 3 say insufficient evidence, 1 reaches a sanctioned address) | `tests/golden/fingerprints.json` |
+
+A named exchange is a lead to confirm with the exchange, not proof. The wrongly-named rate above is the honest one: it was measured on wallets whose true exchange we knew and whose labels we hid.
+
+| | | |
+|---|---|---|
+| ![Start: paste a wallet](docs/screenshots/final-start-light.png) | ![A case that names an exchange](docs/screenshots/final-case-attributed-light.png) | ![The request desk](docs/screenshots/final-desk-light.png) |
+| Paste a wallet, or open a recorded one | The path, the fund-flow graph and why this exchange | One consolidated request per exchange |
+
+Rupee amounts are shown beside US dollars at one dated reference rate (`config/fx.yaml`: the RBI reference rate, with its source).
+
 ## Quickstart
 ```bash
 make setup     # uv venv (Python 3.12) + install

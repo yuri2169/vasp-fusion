@@ -69,7 +69,7 @@ Seven sizes, BTC-FUSION's names: `text-2xs` 11 (colheads, tags), `text-sm` 12 (d
 - **The footer status bar** (`shell/Footer.tsx`): the programme line (SIH 2026 · PS 26182 · MHA / I4C) and the colour key.
 - The page scrolls; nothing pins itself to the viewport. **In a flex column, stretch children with `flex-1 min-h-0`, never `h-full`** (BTC-FUSION's height trap).
 - Content column: `max-w-content` (1320px), `px-3 sm:px-6`. The landing is full-bleed.
-- **Theme:** `system` / `light` / `dark`, applied as `<html data-theme>`, stored under `vaspfusion.theme`, applied before first paint by the inline script in `index.html`. `?theme=dark` forces it for one page load (screenshots).
+- **Theme:** the tool opens **light**. The control offers Device, Light and Dark; a choice is stored under `vaspfusion.theme` (`system`, `light` or `dark`) and wins from then on. `<html data-theme>` carries light or dark; with Device chosen the attribute is absent and `prefers-color-scheme` decides. The inline script in `index.html` applies the same rule before first paint. `?theme=dark` forces it for one page load (screenshots).
 
 ## Motion
 
@@ -79,6 +79,8 @@ One idea: **instrumentation coming alive.** A trace draws, a bar grows, a counte
 - **Any animated number is guaranteed to land**: `Counter` force-sets its value by a timer, because `requestAnimationFrame` stops in a hidden tab. A screen reader is read the value once, not the digits in motion.
 
 ## The landing (`/`) and the wait screen
+
+- **The recorded wallets are grouped by what the tool said** (`pages/featured.ts`): *Named an exchange* (up to four, one per chain first) and *Did not name one, and says why* (one per outcome). The groups come from each case's own outcome, never from a list of names. Under them, the measured naming record, read from the model's measurement (not drawn when there is none).
 
 - `pages/StartPage.tsx`: a one-viewport hero (the argument, the paste box, the recorded wallets; the trace drawn on the right), then "how it works" below the fold: the nine stages (`shell/StageTrack.tsx`, BTC-FUSION's serpentine track with square nodes) and the measured figures.
 - `src/stages.ts` holds the nine stages (INTAKE, FETCH, LABEL, TRACE, DISCOVER, ATTRIBUTE, DECIDE, EXPLAIN, DELIVER) in three registers (`STAGES`, `PLAIN`, `DETAIL`), read by the landing and by `case/TraceProgress.tsx`, so the two cannot drift apart. In the tour only the chosen row is coloured.
@@ -185,21 +187,27 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 
 | What | Encodes | How |
 |---|---|---|
-| Shape | The wallet's role | Suspect: square filled in the chain colour. On the trail: square. Not followed further: small square. Busy wallet: hexagon. Deposit address: tag. Exchange wallet: rectangle with cut corners. Custodial: barrel. Swap service: rhomboid. Bridge: diamond with two opposed arrows. Mixer: concave hexagon, red, crossing arrows. Sanctioned: octagon, red, a bar |
+| Icon | The wallet's role | Every wallet is a **square tile** (radius 0) with a lucide icon inside (`case/roleIcons.ts`, drawn on the canvas as an SVG image so the PNG export carries it). Suspect: crosshair. On the trail: wallet. Busy wallet: waypoints. Exchange wallet: landmark. Deposit address: inbox. Custodial: vault. Swap service: repeat. Bridge: compare arrows. Mixer: shuffle. Sanctioned: ban. **Not followed further: a small dashed tile with no icon** |
+| Tile size | The amount that passed through | Three sizes (28, 36, 46px): large from half of the largest amount in the picture, medium from a tenth, small below. The suspect wallet is always large |
+| Tile fill | The layer the fact belongs to | Suspect: the chain colour. On the trail: the chain wash, icon in the chain colour. A labelled party (exchange, bridge, swap): the label wash, icon in the label colour. Busy unlabelled wallet: the data colour. Sanctioned and mixer: danger. The icon and the border say the same thing; colour is never the only signal |
 | Border | The tier of its label | The `TierTag` vocabulary: published by exchange = double the label (network) colour; curated = solid the label (network) colour on a tint; explorer tag = dotted the label (network) colour; derived = solid slate; unlabelled = dashed slate |
 | The fusion colour fill | A wallet of the exchange the case names | Nothing else on the canvas is the fusion colour |
 | Line width | The amount (square-root scale, 1.5 to 8px) | Several transfers between two wallets are one line; the hover card lists them |
 | Line colour and dash | Ink = the path on the Hop Rail; slate = other transfers; dashed = money coming in | |
 
-- The legend under the canvas names, in words, every shape, border and line **this case** uses.
+- The legend under the canvas names, in words, every icon, border and line **this case** uses, and draws each tile as the canvas does.
 - The owner's name is written over a labelled wallet, the short address under every wallet (14px on the canvas; the picture is never drawn above life size, so type stays at or under the page's).
 - Hover: a wallet's whole address, role and label; a transfer's amount, time and whole hash. Click: selects. With a selection, everything off the path to it steps back to 20%; the suspect wallet dims nothing (every transfer is its own).
-- The mouse wheel scrolls the page; zoom is on the buttons. Nodes are not draggable.
+- The mouse wheel scrolls the page; zoom is on the buttons.
+- **A wallet can be dragged.** It stays where it is put while the case is open (through a selection, a theme change, a redraw); nothing refits or lays out again for a drag, and a drag is not a click. The name over a wallet moves with it. **Reset layout** (beside Fit) puts every wallet back.
+- **Replay** (the bar under the toolbar, when there are two or more transfers): Play / Pause, previous, next and a scrubber draw the transfers in block-time order. The newest line runs from payer to payee and its amount counts up, and always lands on the real figure. Space plays and pauses, the arrows step. The line beside the scrubber says which transfer, its amount and its time in words. **With reduced motion there is no Play and nothing animates:** the same control steps one transfer at a time.
 - **Nothing is reachable by mouse only.** The canvas is `role="img"` with a sentence; the Wallets tab lists every wallet and selects it the same way a click does, the Transfers tab every transfer.
 - **A large case (over 250 wallets) is drawn in part** (`foldFlow`). A hop of 400 wallets is a column 36,000px tall that tells nobody anything. Drawn: the path, then 12 wallets of each hop, chosen as the selected wallet and the way to it, the named exchange's wallets, any labelled wallet, then the largest. The rest of a hop is one quiet dashed node, "+388 wallets"; hops past the path's end wait behind "Draw hop 3". A line under the toolbar says how many are drawn and has a button for every fold, so the keyboard can do what a click on the fold does. A selection never refits the picture. Nothing is dropped: the Wallets and Transfers tabs hold every one.
 - Straight lines, not square ("taxi") routing: square routing runs different transfers along one trunk, and the picture then no longer says which wallet paid which.
 
 ## Encoding rules
+
+- **Rupees sit beside dollars** (`components/Rupees.tsx`). Wherever an amount is in US dollars (an `amount_usd`, a `total_usd`, or an amount in USDT or USDC), the rupee amount follows it in the muted colour, in Indian grouping (₹1,46,559), at the one reference rate in `config/fx.yaml` (read through `GET /api/fx`). **The status bar says once per screen which rate and of what date**; the letter says it in its foot. No rate, no rupee amount: nothing is estimated. Bitcoin and ether amounts have no dollar value here, so they get no rupees either.
 
 - **Proximity and confidence are two meters, never one score** (`DualMeter`). Proximity is a short rail of hops with the rank, hops, share of the funds and time. Confidence is a bar with the 0.60 naming bar marked and the model's range as a lighter band. They are drawn in different forms on purpose.
 - **Confidence wording.** With a range (`confidence_interval`): "confidence 0.85" and the range. Without one: "rule confidence 0.71". Under the bar the fill is hatched and the text says so.
