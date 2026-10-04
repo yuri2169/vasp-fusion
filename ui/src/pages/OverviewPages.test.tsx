@@ -25,6 +25,7 @@ const live: Dashboard = {
   ],
   median_time_to_attribution_s: 0,
   attribution_times_n: 4,
+  risk_classes: { low: 4, medium: 3, high: 0, severe: 1 },
   recent_alerts: [
     {
       wallet: 'TFdHux43bs21qRsygv5WQWfgtbQeT6nXey',
@@ -41,6 +42,8 @@ const live: Dashboard = {
     by_tier: { curated: 338143, explorer_tag: 111795, derived: 5497, published_por: 1690 },
     by_chain: { bitcoin: 337192, ethereum: 88047, tron: 5895 },
     by_source: [], by_threat: {},
+  traceable_total: 7,
+  traceable_chains: ['tron', 'ethereum', 'bitcoin'],
   },
 }
 
@@ -172,6 +175,8 @@ describe('the labels explorer', () => {
       by_category: { exchange: 10 },
       by_tier: { curated: 10 },
       by_chain: { tron: 10 },
+      traceable_total: 10,
+      traceable_chains: ['tron'],
       by_source: [{ source: 'x', name: 'A set nobody recorded', obtained_from: null, licence: null, url: null, labels: 10, tiers: { curated: 10 } }],
       by_threat: {},
     }
@@ -272,12 +277,25 @@ describe('a wallet’s page', () => {
       },
     ],
     risk: {
-      score: null,
-      level: 'high',
-      reasons: [
-        'This address is on a sanctions list: OFAC sanctioned (USDT) (source: ofac-sdn).',
-        'Case DEMO/2026/103: 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away',
+      score: 100,
+      risk_class: 'severe',
+      indicators: [
+        {
+          code: 'sanctioned_self',
+          name: 'The address is on a sanctions list',
+          points: 100,
+          text: 'This address is on a sanctions list: OFAC sanctioned (USDT) (source: ofac-sdn).',
+          fatf_category: 'Source of funds or wealth',
+          wallet: 'TFdHux43tEHL4pB1nMP6vcLgXpqpT6nXey',
+          case_id: null,
+          tx_hashes: [],
+        },
       ],
+      reasons: ['This address is on a sanctions list: OFAC sanctioned (USDT) (source: ofac-sdn).'],
+      flows: [],
+      path_class: null,
+      basis: 'An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.',
+      source: 'Financial Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September 2020',
     },
     cases: [{ case_id: 'tron-ofac', role: 'sanctioned', hop: 1 }],
     inbound: {
@@ -299,9 +317,13 @@ describe('a wallet’s page', () => {
     vi.spyOn(api, 'wallet').mockResolvedValue(sanctioned)
     open(`/wallets/tron/${address}`)
     const record = await screen.findByRole('region', { name: 'On record against this address' })
-    expect(within(record).getByText('High')).toBeInTheDocument()
+    expect(within(record).getByTestId('risk-tag')).toHaveTextContent('Severe risk')
+    expect(within(record).getByRole('meter', { name: 'Risk score' })).toHaveAttribute('aria-valuenow', '100')
     for (const reason of sanctioned.risk.reasons) expect(within(record).getByText(reason)).toBeInTheDocument()
-    expect(record).toHaveTextContent('No risk score is computed.')
+    expect(within(record).getByText('+100')).toBeInTheDocument()
+    expect(record).toHaveTextContent('Filed under: Source of funds or wealth')
+    // the score says what it is wherever it is shown
+    expect(record).toHaveTextContent('An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.')
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(address) // whole, never shortened
     expect(screen.getByRole('region', { name: 'Label' })).toHaveTextContent('OFAC SDN')

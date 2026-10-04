@@ -7,6 +7,12 @@
 import type {
   AuditPage,
   CaseCreate,
+  ComplaintCreate,
+  ComplaintStatus,
+  PsCoverage,
+  ReplyAck,
+  ReplyIn,
+  SahyogSim,
   CaseDetail,
   CaseList,
   CaseSummary,
@@ -141,6 +147,8 @@ export type CaseOpen = Pick<CaseCreate, 'address'> & Partial<Omit<CaseCreate, 'a
 export type CasesQuery = { outcome?: CaseSummary['outcome']; status?: CaseSummary['status'] }
 export type LabelQuery = { q?: string; chain?: string; category?: string; tier?: string; threat?: string; limit?: number; offset?: number }
 export type RequestsQuery = { vasp?: string; status?: RequestStatus }
+/** What the simulator's form has to give; the rest has server defaults. */
+export type ComplaintFile = Pick<ComplaintCreate, 'complaint_ref' | 'agency' | 'officer' | 'wallets'> & Partial<ComplaintCreate>
 export type AuditQuery = { limit?: number; offset?: number; officer?: string; action?: string; target?: string; verify?: boolean }
 
 const seg = encodeURIComponent
@@ -195,6 +203,15 @@ export function createApi(transport: Transport) {
     /** `chain`: 'tron' (the default) or 'ethereum'. */
     model: (chain?: string) => get<ModelInfo>('/model', { chain }),
     audit: (query?: AuditQuery) => get<AuditPage>('/audit', query),
+
+    /** Every line of the problem statement with what the tool does about it. */
+    coverage: () => get<PsCoverage>('/coverage'),
+    /** The simulator: complaints filed and sent requests, as the portal's side would see them. */
+    sahyogSim: () => get<SahyogSim>('/sahyog-sim'),
+    /** Files a complaint through the same intake the portal would call. */
+    fileComplaint: (body: ComplaintFile) => call<ComplaintStatus>('POST', '/sahyog-sim/complaints', { body }),
+    /** Plays the exchange's side: a reply arriving through the gateway. */
+    simReply: (id: string, body: ReplyIn) => call<ReplyAck>('POST', `/sahyog-sim/requests/${seg(id)}/reply`, { body }),
   }
 }
 

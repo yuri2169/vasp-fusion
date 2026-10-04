@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, Eye, LoaderCircle, OctagonAlert, Radar, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { CircleCheck, CircleDashed, Eye, LoaderCircle, OctagonAlert, Radar, TrendingUp, TriangleAlert, type LucideIcon } from 'lucide-react'
 import { ThreatChip } from '../components/ThreatChip'
 import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
@@ -52,6 +52,7 @@ const CHANGE_ICON: Record<WatchChange['kind'], LucideIcon> = {
   new_threat_link: OctagonAlert,
   new_exchange: TriangleAlert,
   new_activity: Radar,
+  risk_raised: TrendingUp,
 }
 
 function StateTag({ state }: { state: WatchState }) {

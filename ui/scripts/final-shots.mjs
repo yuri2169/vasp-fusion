@@ -95,9 +95,15 @@ try {
     ['wallet-threat', `/wallets/tron/${LISTED}`],
     ['labels-threat', '/labels?threat=terrorism_financing'],
     ['cases-threat', '/cases?threat=any'],
+    ['case-risk', '/cases/tron-ofac?tab=risk', GRAPH],
+    ['case-transfers-risk', '/cases/tron-ofac?tab=transfers', GRAPH],
+    ['wallet-risk', '/wallets/tron/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV'],
+    ['coverage', '/coverage'],
+    ['sahyog-sim', '/sahyog-sim'],
   ]
     .filter(Boolean)
-    .filter(([name]) => !ONLY || name.includes(ONLY))
+    // ONLY=coverage,sahyog-sim takes just the pictures whose name holds one of these
+    .filter(([name]) => !ONLY || ONLY.split(',').some((part) => name.includes(part)))
 
   for (const theme of ['light', 'dark']) {
     await media(theme)

@@ -1,3 +1,4 @@
+import { RISK_ORDER, RISK_WORDS, RiskTag } from '../components/RiskTag'
 import { FolderOpen, X } from 'lucide-react'
 import { ThreatChips, THREATS, THREAT_ORDER } from '../components/ThreatChip'
 import type { Threat } from '../api/models'
@@ -51,6 +52,12 @@ const columns: Column<CaseSummary>[] = [
     header: 'Outcome',
     sortValue: (c) => (c.outcome ? OUTCOME_ORDER[c.outcome] : 3),
     cell: (c) => <OutcomeStamp outcome={c.outcome ?? null} status={c.status} vasp={c.top_vasp} confidence={c.confidence} />,
+  },
+  {
+    key: 'risk',
+    header: 'Risk',
+    sortValue: (c) => (c.risk_class ? RISK_ORDER.indexOf(c.risk_class) : -1),
+    cell: (c) => (c.risk_class ? <RiskTag risk={c.risk_class} score={c.risk_score} kind="" /> : <span className="text-muted">-</span>),
   },
   {
     key: 'confidence',
@@ -114,6 +121,7 @@ export function CasesPage() {
   const outcome = params.get('outcome')
   const status = params.get('status')
   const chain = params.get('chain')
+  const risk = RISK_ORDER.find((r) => r === params.get('risk'))
   const open = params.get('open') === '1'
   const threat = params.get('threat')
   const threatOk = threat === 'any' || (threat != null && threat in THREATS)
@@ -124,6 +132,7 @@ export function CasesPage() {
     outcome && OUTCOME_WORDS[outcome] && { key: 'outcome', words: OUTCOME_WORDS[outcome] },
     status && STATUS_FILTERS[status] && { key: 'status', words: STATUS_FILTERS[status].words },
     chain && chain in CHAINS && { key: 'chain', words: `On ${CHAINS[chain as keyof typeof CHAINS].name}` },
+    risk && { key: 'risk', words: `${RISK_WORDS[risk]} risk` },
     open && { key: 'open', words: 'Open: being traced, or an exchange has not replied' },
     threatOk && { key: 'threat', words: threat === 'any' ? 'Touches a threat tag' : `Touches: ${THREATS[threat as Threat].name}` },
   ].filter((f): f is { key: string; words: string } => Boolean(f))
@@ -133,6 +142,7 @@ export function CasesPage() {
       (!outcome || !OUTCOME_WORDS[outcome] || c.outcome === outcome) &&
       (!status || !STATUS_FILTERS[status] || STATUS_FILTERS[status].has(c)) &&
       (!chain || !(chain in CHAINS) || c.chain === chain) &&
+      (!risk || c.risk_class === risk) &&
       (!open || STATUS_FILTERS.tracing.has(c) || waiting.has(c.id)) &&
       (!threatOk || (threat === 'any' ? Boolean(c.threats?.length) : Boolean(c.threats?.includes(threat as Threat)))),
   )

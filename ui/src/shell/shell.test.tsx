@@ -116,7 +116,7 @@ describe('the app shell', () => {
     renderApp(<AppRoutes />, { route: '/desk' })
     const nav = await screen.findByRole('navigation', { name: 'Main' })
     const names = within(nav).getAllByRole('link').map((a) => a.textContent)
-    expect(names.slice(0, 6)).toEqual(['Cases', 'Request desk', 'Dashboard', 'Watchlist', 'Labels', 'Model'])
+    expect(names.slice(0, 7)).toEqual(['Cases', 'Request desk', 'Dashboard', 'Watchlist', 'Labels', 'Model', 'SAHYOG simulator'])
     expect(within(nav).getByRole('link', { name: 'Request desk' })).toHaveAttribute('aria-current', 'page')
     expect(within(nav).getByRole('link', { name: 'Cases' })).not.toHaveAttribute('aria-current')
   })
@@ -156,7 +156,11 @@ describe('the app shell', () => {
   it('the landing quotes only figures the tool measured, as it reads them', async () => {
     const [model, dashboard] = await Promise.all([api.model('tron'), api.dashboard()])
     renderApp(<AppRoutes />, { route: '/' })
-    expect(await screen.findByText(dashboard.label_coverage.total.toLocaleString('en-US'), { selector: '.sr-only' })).toBeInTheDocument()
+    // the headline counts only labels on chains a trace can run on; the whole store is named beside it
+    const cover = dashboard.label_coverage
+    expect(cover.traceable_total).toBeLessThan(cover.total)
+    expect(await screen.findByText(cover.traceable_total!.toLocaleString('en-US'), { selector: '.sr-only' })).toBeInTheDocument()
+    expect(screen.getByText(cover.total.toLocaleString('en-US'))).toBeInTheDocument()
     expect(await screen.findByText(model.metrics.ece!.toFixed(4))).toBeInTheDocument()
   })
 

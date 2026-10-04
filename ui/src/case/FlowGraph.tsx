@@ -1,7 +1,7 @@
 import cytoscape, { type Core, type EventObject } from 'cytoscape'
 import { ChevronLeft, ChevronRight, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { CaseDetail } from '../api/models'
+import type { CaseDetail, FlowRisk } from '../api/models'
 import { Button } from '../components/Button'
 import { TIERS } from '../components/TierTag'
 import { Tip } from '../components/Tip'
@@ -14,7 +14,8 @@ import { toGraphML } from '../lib/graphml'
 import { replaySteps, shownAt, type ReplayStep } from '../lib/replay'
 import { ROLE_NAMES } from './caseText'
 import { GraphLegend } from './GraphLegend'
-import { captionY, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
+import { RISK_WORDS } from '../components/RiskTag'
+import { captionY, edgeRisk, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
 
 /** The page's colours as the canvas needs them, read again whenever the theme changes. */
 function useThemeColors(): ThemeColors {
@@ -113,7 +114,8 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     return foldFlow(full, { perColumn: PER_HOP, maxHop: Math.max(hops ?? pathEnds, reach), keep, shown: opened })
   }, [big, full, hops, pathEnds, opened, selected])
   const view: FlowView = folded ?? full
-  const elements = useMemo(() => toElements(view), [view])
+  const flows = useMemo(() => new Map((c.risk?.flows ?? []).map((f) => [f.edge_id, f])), [c.risk])
+  const elements = useMemo(() => toElements(view, flows), [view, flows])
   const shown = shownAs(view, selected)
 
   // --- the replay: transfers in the order they happened -----------------------
@@ -499,11 +501,11 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         </p>
       )}
 
-      <GraphLegend view={view} named={c.top_vasp} />
+      <GraphLegend view={view} named={c.top_vasp} flagged={flows.size > 0} />
 
       <Tip id={tipId} anchor={hover?.anchor ?? null}>
         {hover?.node && <NodeCard node={hover.node} />}
-        {hover?.edge && <EdgeCard edge={hover.edge} />}
+        {hover?.edge && <EdgeCard edge={hover.edge} flows={flows} />}
       </Tip>
     </section>
   )
@@ -581,14 +583,21 @@ function NodeCard({ node }: { node: FlowNode }) {
 
 const LISTED = 4
 
-function EdgeCard({ edge }: { edge: FlowEdge }) {
+function EdgeCard({ edge, flows }: { edge: FlowEdge; flows: ReadonlyMap<string, FlowRisk> }) {
   const many = edge.transfers.length > 1
+  const risk = edgeRisk(edge.transfers.map((t) => t.id), flows)
+  const reasons = [...new Set(edge.transfers.flatMap((t) => flows.get(t.id)?.reasons ?? []))]
   return (
     <>
       <span className="tabular block font-mono font-medium">
         {many && <span className="font-sans">{edge.transfers.length} transfers · </span>}
         {formatAmount(edge.amount, edge.asset)}
       </span>
+      {risk && (
+        <span className="mt-1 block">
+          <span className="font-semibold">{RISK_WORDS[risk]} risk:</span> {reasons.join('; ')}
+        </span>
+      )}
       {edge.transfers.slice(0, LISTED).map((t) => (
         <span key={t.id} className="mt-1.5 block">
           <span className="tabular block font-mono text-muted">

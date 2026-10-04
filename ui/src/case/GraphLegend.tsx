@@ -2,6 +2,7 @@ import type { Tier } from '../api/models'
 import { TIERS } from '../components/TierTag'
 import type { FlowView, Role } from '../lib/caseGraph'
 import { ROLE_NAMES, ROLE_ORDER } from './caseText'
+import { RISK_MARK } from './flowStyle'
 import { iconMarkup, ROLE_ICONS } from './roleIcons'
 
 const BOX = { w: 30, h: 20 }
@@ -73,7 +74,7 @@ const TIER_ORDER: (Tier | 'none')[] = ['published_por', 'curated', 'explorer_tag
 const item = 'flex items-center gap-1.5 whitespace-nowrap text-sm text-fg'
 
 /** How to read the picture, in words: only the shapes and borders this case uses. */
-export function GraphLegend({ view, named }: { view: FlowView; named?: string | null }) {
+export function GraphLegend({ view, named, flagged = false }: { view: FlowView; named?: string | null; flagged?: boolean }) {
   const wallets = view.nodes.filter((n) => n.kind !== 'more')
   const roles = ROLE_ORDER.filter((role) => wallets.some((n) => n.role === role))
   const tiers = TIER_ORDER.filter((tier) => wallets.some((n) => n.role !== 'suspect' && (n.tier ?? 'none') === tier))
@@ -144,6 +145,14 @@ export function GraphLegend({ view, named }: { view: FlowView; named?: string | 
               <path d="M2 10h26" stroke="var(--rule-strong)" strokeWidth={2.5} strokeDasharray="7 4" />
             </svg>
             Money coming in
+          </li>
+        )}
+        {flagged && (
+          <li className={item}>
+            <span aria-hidden className="inline-flex w-[30px] shrink-0 justify-center font-mono text-sm font-semibold text-danger">
+              {RISK_MARK}
+            </span>
+            A flagged transfer, with its risk class in words (the Risk tab says why)
           </li>
         )}
       </ul>

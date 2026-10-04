@@ -56,6 +56,13 @@ schemas.py ──(FastAPI)──▶ docs/openapi.json ──(openapi-typescript)
 | DELETE | `/api/watchlist/{id}` | – | `Ok` | – | **live** | U4 |
 | GET | `/api/fx` | – | `FxRate` | – | **live** from `config/fx.yaml` (the same answer in demo mode) | U7 |
 | GET | `/api/model` | `?chain=tron` (default) or `ethereum` | `ModelInfo` | `model.json` (the measured Tron model) | **live** from `artifacts/model_v1/<chain>/metrics.json` | B6 |
+| GET | `/api/coverage` | – | `PsCoverage` | `coverage.json` | **live** | G2 |
+| POST | `/api/sahyog/complaints` | `ComplaintCreate` + `X-SAHYOG-Key` | `ComplaintStatus` (202) | – | **live**; its own API key, no officer login (`docs/sahyog_contract.md`) | G2 |
+| GET | `/api/sahyog/complaints/{complaint_ref}` | `X-SAHYOG-Key` | `ComplaintStatus` | – | **live** | G2 |
+| POST | `/api/sahyog/requests/{request_id}/replies` | `ReplyIn` + `X-SAHYOG-Key` | `ReplyAck` | – | **live** | G2 |
+| GET | `/api/sahyog-sim` | – | `SahyogSim` | `sahyog-sim.json` | **live**; the simulator screen, behind the officer login | G2 |
+| POST | `/api/sahyog-sim/complaints` | `ComplaintCreate` | `ComplaintStatus` (202) | – | **live**; the same intake | G2 |
+| POST | `/api/sahyog-sim/requests/{request_id}/reply` | `ReplyIn` | `ReplyAck` | – | **live**; the same reply leg | G2 |
 
 ### Cases are live (B3)
 - `POST /api/cases` validates the address (base58check / EIP-55 / bech32), stores the case as `queued`, answers 202 at once, then traces in the background: `queued → running → done | failed`. **Poll `GET /api/cases/{id}`** until the status is `done` or `failed`. A real trace takes about 1–10 s live, and well under a second from the cache.
@@ -250,7 +257,7 @@ Everything here is counted from stored records (cases, requests, labels, the wat
   - `recent_alerts` (12 at most, newest first): one per high-severity flag of a finished case (`text` is "Case <ref>: " and the flag's own sentence), and one per change of a watched wallet (`text` starts "Watched wallet: ", `severity` high for a new alert, warn for a new exchange, info for new transfers).
 - **`GET /api/wallets/{chain}/{address}`**:
   - `inbound` / `outbound` (`FlowSummary`: `tx_count`, `total` in `asset` or null when the transfers are in several assets, `total_usd`, `first_seen`, `last_seen`, `counterparties`, `top_counterparties` by amount): **the transfers of this address that the stored finished cases read**, each counted once. `flows_from_cases` says how many cases that is. It is not the wallet's history; say so beside it.
-  - `risk.level`: `high` (the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it), `elevated` (a pattern flag names it, or it is the traced wallet of a case whose outcome is SANCTIONED_OR_MIXER_REACHED), `none` (labelled or in a case, nothing held against it), null (unlabelled and in no case: not assessed). `risk.reasons[]` are the sentences it rests on. **`risk.score` is always null: no wallet risk score is computed.**
+  - `risk` (`RiskInfo`): see "Risk, SAHYOG and coverage (G2)". `risk.risk_class` is null for an address that is unlabelled and in no finished case (not assessed).
   - `watched`: whether the address is on the watchlist.
 - **`LabelCoverage.by_source[]`** (on the dashboard and at `GET /api/labels/coverage`): `source` (a family: the first named source of a merged row; every `graphsense-tagpack:*` pack is one family), `name`, `obtained_from`, `licence`, `url`, `labels`, `tiers`. The rows add up to `total`. **`licence` is what this project has on record** (`vaspfusion/labels/sources.py`): GraphSense TagPacks are MIT; OFAC SDN is US-government public record; the wallet-attribution set releases its code under MIT and leaves each upstream source's data under that source's own licence, which is not recorded here, so those read null. Show null as "Not recorded".
 - **The watchlist.** A watched wallet has a **baseline**: a snapshot of its case (the wallet's own transfers, the exchanges among its candidates, its high-severity flags) taken when it was added, or when its changes were last marked as seen. A wallet added before it had a finished case takes its first finished trace as the baseline.
@@ -298,6 +305,21 @@ All additive.
 - `WalletDetail.risk`: a tag on the address's label makes the level `high`; the first reason is the tag with its evidence.
 - A new live demo case: **`tron-terror-link`** (twelve demo cases now).
 
+
+### Risk, SAHYOG and coverage (G2)
+
+All additive, except that **`RiskInfo.level` is gone** (it was a three-step rule; `risk_class` replaces it).
+
+- **Risk** (`vaspfusion/risk.py`, `config/risk.yaml`). **An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.** Show that sentence (`risk.basis`) wherever the score is shown.
+  - `RiskInfo`: `score` (0 to 100: the sum of the points of the indicators present, capped), `risk_class` (`low` 0-24, `medium` 25-49, `high` 50-74, `severe` 75-100), `indicators[]` (`code`, `name`, `points`, `text`, `fatf_category`, `wallet`, `case_id`, `tx_hashes[]`; largest first; one entry per indicator however often it is seen), `reasons[]` (the same sentences), `basis`, `source`. On a case also `flows[]` (`edge_id`, `tx_hash`, `risk_class`, `reasons[]`: **only the transfers above Low**; a transfer not listed is Low) and `path_class` (the path the Hop Rail shows).
+  - `CaseDetail.risk`, `CaseSummary.risk_class` and `risk_score`: set on a finished case, null otherwise. **Worked out when the case is read**, from its stored flags, labels and slices; never stored, so not part of `content_sha256` or the findings fingerprint. Changing `config/risk.yaml` changes every case's score at once.
+  - `WalletDetail.risk`: the address's own label, the pattern flags that name it in any stored case, and, where it is the wallet a case traced, that case's indicators.
+  - `Dashboard.risk_classes`: finished cases by class (all four keys). `WatchItem.risk_class`; a watched wallet whose class is higher than at its baseline has a change of kind `risk_raised` (severity high for High or Severe, else warn).
+  - Indicators: sanctioned (itself, contact, funding), mixer (itself, contact, funding), CoinJoin shape, scam list (itself, contact), bridge, swap service, peel chain, forwarding within minutes, fan-out, fan-in, round amounts, most funds stopping at an unlabelled busy wallet. A sanctioned or mixer contact alone is Severe; its points grow with the share of the funds and shrink with the distance. The list follows FATF, "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing" (September 2020); the filing under its categories and the points are this project's (`config/risk.yaml` says how the reference was checked).
+- **SAHYOG, both directions**: `POST /api/sahyog/complaints`, `GET /api/sahyog/complaints/{ref}`, `POST /api/sahyog/requests/{id}/replies` (API key, not an officer's session) and the simulator's `GET /api/sahyog-sim`, `POST /api/sahyog-sim/complaints`, `POST /api/sahyog-sim/requests/{id}/reply`. Specified in `docs/sahyog_contract.md`. `CaseSummary.sahyog_complaint_ref` is set on a case a complaint reported. `StatusEvent.via` is `sahyog` for a reply that arrived through the gateway.
+- **`GET /api/coverage`** → `PsCoverage`: `rows[]` (`id`, `section`, `text` = the line of the problem statement word for word, `status` built / partly / planned, `what`, `where` = a screen, `evidence_kind` test / make, `evidence`, `gap`, `computed`), `counts`, `total`, `traceable_chains`, `source`. From `data/ps_coverage.yaml`; a row with `computed` is worked out from the chains that trace.
+- **`LabelCoverage.traceable_total`**, `traceable_chains`: labels on the chains a trace can run on. The landing's headline shows this, not `total`.
+- Audit actions added: `coverage.view`, `sahyog.complaint`, `sahyog.status`, `sahyog.reply`, `sim.view`, `sim.complaint`, `sim.reply`.
 
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:

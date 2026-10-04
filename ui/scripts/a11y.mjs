@@ -87,6 +87,10 @@ const ROUTES = [
   '/model',
   '/model?chain=ethereum',
   '/watchlist',
+  '/cases/tron-ofac?tab=risk',
+  '/cases/tron-ofac?tab=transfers',
+  '/coverage',
+  '/sahyog-sim',
   `/wallets/tron/${HERO}`,
   '/nowhere',
 ].filter(Boolean)

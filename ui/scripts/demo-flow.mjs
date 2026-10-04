@@ -12,6 +12,9 @@
 //      drafted, approved, marked as sent -> the letter PDF -> the desk -> the dashboard's count moved;
 //   2. a wallet where the evidence is not enough: no exchange is named, and no request is offered;
 //   3. a wallet that paid a sanctioned address.
+// Around them, the SAHYOG round trip on the simulator screen (a simulator, not the portal): the
+// complaint is filed there first, and at the end the exchange's side confirms the freeze and the
+// request desk reads "Freeze confirmed".
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -92,6 +95,30 @@ try {
   await waitFor(() => count('Awaiting a reply').then((n) => n !== null), 'the dashboard counts')
   const before = { awaiting: await count('Awaiting a reply'), toWrite: await count('Exchanges to write to') }
   say(`Dashboard before: ${before.awaiting} request(s) awaiting a reply, ${before.toWrite} exchange(s) to write to`)
+  await pause(1500)
+
+  // --- the complaint comes in through the simulator ----------------------------------------------
+  await click('SAHYOG simulator', 'nav a')
+  await see('A simulator for demonstration. Not the SAHYOG portal.', 'the banner that says this is a simulator')
+  await waitFor(() => page.evaluate(`!!document.querySelector('form[aria-label="File a complaint"] textarea')`), 'the complaint form')
+  const complaintRef = await page.evaluate(`document.querySelector('form[aria-label="File a complaint"] input').value`)
+  await page.evaluate(dom.type('form[aria-label="File a complaint"] textarea', HERO))
+  await pause(1000)
+  await shot('simulator-form')
+  await click('File complaint', 'form[aria-label="File a complaint"] button[type="submit"]')
+  await see('Complaint filed', 'the toast "Complaint filed"')
+  await waitFor(
+    () => page.evaluate(`[...document.querySelectorAll('[data-testid="complaint"]')].some((c) => c.innerText.includes(${JSON.stringify(complaintRef)}) && !!c.querySelector('[aria-label="Status: Result"]') && c.innerText.includes('CoinDCX'))`),
+    `complaint ${complaintRef} reaching "Result" with CoinDCX named`,
+    60000,
+  )
+  say(`A complaint (${complaintRef}) is filed in the simulator through the intake: its wallet has a case and a result, CoinDCX with its confidence and risk class, with nobody touching the tool`)
+  await shot('simulator-result')
+  await pause(2500)
+  await click('Open the case', '[data-testid="complaint"] a')
+  await see('Reported through SAHYOG', 'the case saying it was reported through SAHYOG')
+  expect((await text()).includes(complaintRef) || /Reported through SAHYOG · SIM-/.test(await text()), 'the case names the complaint that reported it')
+  say('The case says where it came from: "Reported through SAHYOG" with the complaint reference')
   await pause(1500)
 
   // --- case 1: trace a recorded Tron wallet, watched --------------------------------------------
@@ -216,6 +243,21 @@ try {
   say('Third case: the funds went straight to an OFAC-listed address; the alert leads the page')
   await shot('case-sanctioned')
   await pause(4000)
+
+  // --- the reply comes back through the simulator ------------------------------------------------
+  await click('SAHYOG simulator', 'nav a')
+  await waitFor(() => page.evaluate(`[...document.querySelectorAll('[data-testid="sim-request"]')].some((c) => c.innerText.includes('CoinDCX') && [...c.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Confirm freeze'))`), 'the sent request to CoinDCX on the simulator, with "Confirm freeze"')
+  say('The simulator shows the request the desk sent, as the portal would see it')
+  await shot('simulator-request')
+  await pause(1500)
+  await page.evaluate(`[...document.querySelectorAll('[data-testid="sim-request"]')].find((c) => c.innerText.includes('CoinDCX') && [...c.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Confirm freeze')).querySelectorAll('button').forEach((b) => b.textContent.trim() === 'Confirm freeze' && b.click())`)
+  await see('Freeze confirmed', 'the toast "Freeze confirmed"')
+  await pause(1200)
+  await click('Request desk', 'nav a')
+  await waitFor(() => page.evaluate(`[...document.querySelectorAll('tbody tr')].some((tr) => tr.innerText.includes('CoinDCX') && /freeze confirmed/i.test(tr.querySelector('[data-testid="status-tag"]')?.innerText ?? ''))`), 'the desk row of CoinDCX reading "Freeze confirmed"')
+  say('The exchange\'s side confirms the freeze in the simulator; the request desk reads "Freeze confirmed"')
+  await shot('desk-freeze-confirmed')
+  await pause(3000)
 
   if (FRAMES) {
     await page.send('Page.stopScreencast')

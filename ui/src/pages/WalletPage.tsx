@@ -1,4 +1,4 @@
-import { Eye, EyeOff, OctagonAlert, ShieldQuestion, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { ThreatChip, threatOf } from '../components/ThreatChip'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
@@ -6,7 +6,6 @@ import type { Chain, FlowSummary, WalletDetail } from '../api/models'
 import { useCases, useOpenCase, useUnwatch, useWallet, useWatch } from '../api/queries'
 import { LabelBlock } from '../case/WalletPanel'
 import { ROLE_NAMES } from '../case/caseText'
-import { Sentences } from '../case/parts'
 import { AddressChip } from '../components/AddressChip'
 import { Button, buttonClass } from '../components/Button'
 import { ChainBadge } from '../components/ChainBadge'
@@ -15,45 +14,17 @@ import { DataTable, type Column } from '../components/DataTable'
 import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
 import { PageHeader } from '../components/PageHeader'
+import { RiskPanel } from '../components/RiskPanel'
 import { Skeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
 import { CHAINS } from '../lib/chains'
-import { cx } from '../lib/cx'
 import { addressUrl, explorerName } from '../lib/explorers'
 import { Rupees, usdOf } from '../components/Rupees'
 import { formatAmount, formatDate, formatUsd } from '../lib/format'
 import { Panel } from '../overview/parts'
 import { isChain, plural } from '../overview/words'
 
-type Level = NonNullable<WalletDetail['risk']['level']> | 'unassessed'
 type CaseRef = WalletDetail['cases'][number]
-
-const LEVELS: Record<Level, { words: string; Icon: LucideIcon; look: string; says: string }> = {
-  high: {
-    words: 'High',
-    Icon: OctagonAlert,
-    look: 'border-seal-text text-seal-text',
-    says: 'A threat tag, a sanctions, mixer or scam label, or an alert of a case, names this address.',
-  },
-  elevated: {
-    words: 'Elevated',
-    Icon: TriangleAlert,
-    look: 'border-rule-strong text-fg',
-    says: 'A pattern in a case names this address, or funds it sent reached a sanctioned address or a mixer.',
-  },
-  none: {
-    words: 'Nothing on record',
-    Icon: ShieldQuestion,
-    look: 'border-dashed border-rule-strong text-muted',
-    says: 'No label and no case holds anything against this address. That is not a clearance: it says only what is on file here.',
-  },
-  unassessed: {
-    words: 'Not assessed',
-    Icon: ShieldQuestion,
-    look: 'border-dashed border-rule-strong text-muted',
-    says: 'This address has no label and is in no case, so there is nothing to assess it on. Trace it to find out more.',
-  },
-}
 
 function Flow({ title, flow, chain, empty }: { title: string; flow: FlowSummary | null | undefined; chain: Chain; empty: string }) {
   return (
@@ -127,8 +98,6 @@ export function WalletPage() {
   const label = w?.labels[0]
   const refOf = (id: string) => cases.data?.items.find((c) => c.id === id)?.case_ref ?? id
   const own = w?.cases.find((c) => c.role === 'suspect')
-  const level: Level = w?.risk.level ?? 'unassessed'
-  const look = LEVELS[level]
   const failed = (title: string) => (e: unknown) =>
     toast.show({
       kind: 'error',
@@ -257,14 +226,12 @@ export function WalletPage() {
             </div>
 
             <Panel title="On record against this address">
-              <p className={cx('inline-flex w-fit items-center gap-1.5 rounded-sm border px-2 py-1 text-base font-semibold', look.look)}>
-                <look.Icon size={15} aria-hidden />
-                {look.words}
-              </p>
-              {w.risk.reasons.length > 0 ? <Sentences items={w.risk.reasons} /> : <p className="text-base text-fg">{look.says}</p>}
-              <p className="border-t border-rule pt-2 text-sm text-muted">
-                No risk score is computed. The level is a plain rule over this address's label and the patterns of the stored cases; the sentences above are what it rests on.
-              </p>
+              <RiskPanel risk={w.risk} chain={chain} subject="This address" />
+              {w.risk.risk_class === 'low' && w.risk.indicators.length === 0 && (
+                <p className="text-base text-fg">
+                  No label and no case holds anything against this address. That is not a clearance: it says only what is on file here.
+                </p>
+              )}
             </Panel>
           </div>
 

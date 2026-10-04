@@ -65,8 +65,8 @@ Seven sizes, BTC-FUSION's names: `text-2xs` 11 (colheads, tags), `text-sm` 12 (d
 
 ## Layout
 
-- **The header is the page, not a bar on it** (`shell/Header.tsx`): transparent with one hairline; it takes a `bg-surface` ground once `window.scrollY > 4`. Left to right: the wordmark **VASP·Fusion** (the way back to `/`), the six places (Cases, Request desk, Dashboard, Watchlist, Labels, Model), the wallet search, the data-source tag, the officer, the three-state theme control. There is no nav rail.
-- **The footer status bar** (`shell/Footer.tsx`): the programme line (SIH 2026 · PS 26182 · MHA / I4C) and the colour key.
+- **The header is the page, not a bar on it** (`shell/Header.tsx`): transparent with one hairline; it takes a `bg-surface` ground once `window.scrollY > 4`. Left to right: the wordmark **VASP·Fusion** (the way back to `/`), the seven places (Cases, Request desk, Dashboard, Watchlist, Labels, Model, SAHYOG simulator), the wallet search, the data-source tag, the officer, the three-state theme control. There is no nav rail.
+- **The footer status bar** (`shell/Footer.tsx`): the programme line (SIH 2026 · PS 26182 · MHA / I4C), the link "Problem statement coverage", and the colour key.
 - The page scrolls; nothing pins itself to the viewport. **In a flex column, stretch children with `flex-1 min-h-0`, never `h-full`** (BTC-FUSION's height trap).
 - Content column: `max-w-content` (1320px), `px-3 sm:px-6`. The landing is full-bleed.
 - **Theme:** the tool opens **light**. The control offers Device, Light and Dark; a choice is stored under `vaspfusion.theme` (`system`, `light` or `dark`) and wins from then on. `<html data-theme>` carries light or dark; with Device chosen the attribute is absent and `prefers-color-scheme` decides. The inline script in `index.html` applies the same rule before first paint. `?theme=dark` forces it for one page load (screenshots).
@@ -160,6 +160,31 @@ The pages an officer goes to between cases. Their shared parts are in `src/overv
 - **`/labels`**: search (address prefix or owner) and three filters, all in the address; a result's address leads to its wallet page, an exchange's name to its page. Under it, what the store covers by tier, category, chain and **source, with the licence on record**: a licence this project holds no record of reads "Not recorded", never a guess. A label this tool derived says "rule" before its confidence unless the model confirmed it; a sourced label reads "as its source".
 - **`/model`**: Tron or Ethereum (`?chain=`); the ledger of measured figures; calibration; accuracy when answering against coverage; what the model reads; the one rule the figures are read against; each exchange held out; the check of the naming bar; and **every `notes[]` sentence as written**, under "What these numbers are, and are not". A recall under 0.5 on a held-out exchange is set in red with its figure: the page shows where the model fails.
 - **`/watchlist`**: the form (the address is checked as in the search bar), then one sheet per wallet, a changed one first. State is an icon and words (Changed since last seen, No change, Checking, Not traced yet, Last check failed). What is new is the server's sentences. The actions keep their names: "Check now", "Mark as seen" → "Marked as seen", "Stop watching" → "Stopped watching". The page says that nothing is checked in the background.
+
+## Risk (`components/RiskTag.tsx`, `components/RiskPanel.tsx`)
+
+- **The sentence travels with the score.** Wherever a risk score or class is shown with any room, the page says: "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes." (`risk.basis`, as the API sends it). A tag alone carries it as its tooltip.
+- **`RiskTag`: steps + word, never colour alone.** Four rising steps, as many filled as the class is high, then "Low / Medium / High / Severe risk" and, when given, the score as `87/100` in mono. Low is quiet (soft ink), Medium and High are ink (High filled and bold), **only Severe takes the danger colour**, because danger means "sanctioned or mixer" in this palette and that is what makes a case Severe. A null class reads "Not assessed", dashed.
+- **`RiskPanel`**: the score as the screen's figure, the tag, one bar from 0 to 100 with the three class boundaries ruled on it (a `meter`), the basis sentence and the source, then each indicator on a ruled line: its points right-aligned in mono (`+75`), its name, the backend's sentence verbatim, the category it is filed under, and up to three transaction hashes.
+- **On a case**: two tags under the rail ("wallet risk" with the score, "flow risk" for the path on the rail) open the **Risk** tab. The Transfers tab has a "Flow risk" column: every transfer has a class, and one above Low says why. On the graph a flagged transfer's label is two lines, `▲ Severe risk` over the amount, and High and Severe lines are drawn in the danger colour; the legend explains the mark, and the hover card gives the reasons.
+- **Elsewhere**: a "Risk" column and `?risk=` filter on the cases list, "Cases by risk class" on the dashboard (each count opens its list), the wallet page's "On record against this address", and a `risk_raised` change on the watchlist.
+
+## The coverage page (`/coverage`)
+
+Every line of the problem statement, word for word, with what the tool does about it. Reached from the footer on every screen and from the landing.
+
+- Top: a ledger of the three counts and the number of lines, then **the strip**: one square per line in the statement's own order, each a link to its row. Status is a fill pattern, not a hue: **solid ink = built, hatched = partly built, dashed outline = planned** (the same vocabulary as `FundsBar`: solid is resolved, hatch is not yet).
+- A row: its number and status tag, the statement's line as a quotation at reading size, then what exists, **"Not yet"** with the gap (whenever the status is not built), the screen to see it on (a link) and the test or command that checks it, in mono.
+- Nothing on this page is typed in the interface: it is `GET /api/coverage`. The chain rows say they are worked out from the chains that trace.
+
+## The SAHYOG simulator (`/sahyog-sim`)
+
+A screen that plays the portal's side of our proposed contract. **It must never be mistaken for the portal.**
+
+- **The banner is permanent** and is the first thing on the screen: a dashed ink frame with "A simulator for demonstration. Not the SAHYOG portal." and why it exists. It stays when the simulator is switched off or fails to load. **No emblem, no logo, no colour or layout borrowed from the real portal**: it is drawn in this tool's own language. The header entry is "SAHYOG simulator", never "SAHYOG".
+- Left: **File a complaint** (the contract's fields; the reference is pre-filled `SIM-‹year›-‹nnnn›`; the one primary button "File complaint" → toast "Complaint filed"), then **Complaints filed**: each with three boxes Received → Tracing → Result (reached ones outlined, the present one solid), and per wallet the outcome stamp, the confidence, the risk tag, "Open the case", its request ids, and when the result was handed back. A refused address shows the sentence it was refused with.
+- Right: **Requests received**: each sent request with its status tag and, as buttons, exactly the replies that can follow ("Acknowledge", "Reply with records", "Confirm freeze", "Refuse"), under "Reply as ‹exchange›". The toast repeats the verb ("Freeze confirmed").
+- A case opened by a complaint reads **"Reported through SAHYOG · ‹ref›"** in its header line.
 
 ## Charts (`src/charts/`)
 
@@ -257,7 +282,7 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 - Say "exchange" where the officer would; "VASP" only where the law or the product name does.
 - Never the system's furniture: no "server", "API", "cache", "log". Say "this installation", "saved copies", "whoever runs this installation".
 - A confidence is never shown without its error. Under the answer of a case: how the naming bar was checked, in the measurement's own figures (`BarChecked`, from `GET /api/model`), and that an attribution is a lead to confirm, not proof.
-- Nothing claims SAHYOG. The button is "Mark as sent"; its dialog and the receipt say the gateway is a local outbox unless a connection has been set up.
+- Nothing claims SAHYOG. The simulator is always called a simulator. The button is "Mark as sent"; its dialog and the receipt say the gateway is a local outbox unless a connection has been set up.
 - A wallet of the demonstration set is tagged "Recorded" (real, traced from recorded chain responses), never "Demo".
 - One action at a time: a case being traced again offers no request from its previous answer; a case already in a request offers "Open request to ‹exchange›" with its status, not a second draft.
 

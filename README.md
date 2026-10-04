@@ -10,6 +10,8 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **What this does.** Paste the wallet. VASP-FUSION follows its money on chain (Tron, Ethereum, Bitcoin), names the nearest exchange that took it, shows the evidence transfer by transfer, gives a confidence that has been measured, and drafts the request to that exchange for the SAHYOG channel. **When the evidence does not hold, it says "insufficient evidence" and says what would change that, instead of guessing.**
 
+**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **12 lines built, 12 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability, and not measured against known outcomes** (`config/risk.yaml`).
+
 **Check it yourself** (no network needed after the image is built):
 
 ```bash
@@ -135,6 +137,9 @@ python -m vaspfusion.cli audit --verify
 | `vaspfusion/provenance.py` | The receipt: digests of the input, the responses, the findings; `verify_case` |
 | `vaspfusion/explain/case_file.py`, `flow.py`, `case_pdf.py` | The case file: what it says (blocks, text), the flow diagram's layout, the A4 PDF |
 | `vaspfusion/desk/`, `data/vasp_directory.yaml` | The request desk: routing, the cited exchange directory, letters, the mock SAHYOG gateway |
+| `vaspfusion/desk/intake.py`, `vaspfusion/store/complaints.py`, `docs/sahyog_contract.md` | SAHYOG, both directions: complaints in (one case per wallet, traced at once), results back, replies in; the simulator's routes |
+| `vaspfusion/risk.py`, `config/risk.yaml` | The wallet and flow risk score: named indicators with points, the class, the sentence and transactions behind each |
+| `vaspfusion/coverage.py`, `data/ps_coverage.yaml`, `docs/problem_statement.md` | The problem statement line by line with status, evidence and gap (`/coverage`) |
 | `vaspfusion/auth/`, `vaspfusion/store/audit.py`, `vaspfusion/api/security.py` | Officer accounts and tokens; the hash-chained audit log; login and audit in front of the API |
 | `vaspfusion/api/` | `schemas.py` (the contract), `main.py` (routes; only the dashboard and the three fixture cases still answer from mocks), `console.html` (served at `/` when no interface is built) |
 | `vaspfusion/{graph,features,detect,eval}/`, `explain/narrative.py`, `store/dao.py` | Carried over from BTC-FUSION |

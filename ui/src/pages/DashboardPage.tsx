@@ -10,6 +10,7 @@ import { AddressChip } from '../components/AddressChip'
 import { ChainBadge } from '../components/ChainBadge'
 import { ErrorState } from '../components/ErrorState'
 import { PageHeader } from '../components/PageHeader'
+import { RISK_BASIS, RISK_ORDER, RiskTag } from '../components/RiskTag'
 import { Skeleton } from '../components/Skeleton'
 import { TierTag } from '../components/TierTag'
 import { CHAINS } from '../lib/chains'
@@ -241,6 +242,21 @@ export function DashboardPage() {
                     to: `/vasps/${encodeURIComponent(v.vasp)}`,
                   }))}
                   empty="No finished case names an exchange yet."
+                />
+              </Panel>
+
+              <Panel title="Cases by risk class" more={{ to: '/cases', text: 'All cases' }} note={RISK_BASIS}>
+                <BarList
+                  caption="Finished cases by risk class"
+                  layer="data"
+                  labelWidth="8.5rem"
+                  rows={[...RISK_ORDER].reverse().map((r) => ({
+                    key: r,
+                    label: <RiskTag risk={r} />,
+                    value: d.risk_classes?.[r] ?? 0,
+                    valueText: count(d.risk_classes?.[r] ?? 0),
+                    to: `/cases?risk=${r}`,
+                  }))}
                 />
               </Panel>
 

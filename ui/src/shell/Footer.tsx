@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import type { Layer } from '../components/Panel'
 import { RupeeBasis } from '../components/Rupees'
 
@@ -21,6 +21,9 @@ export function Footer() {
   return (
     <footer className="relative flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t border-rule bg-surface px-4 py-2 print:hidden">
       <span className="text-2xs text-ink-dim">SIH 2026 · PS 26182 · MHA / I4C · Blockchain &amp; Cybersecurity</span>
+      <Link to="/coverage" className="text-2xs text-ink-soft underline decoration-ink-dim underline-offset-2 hover:text-ink">
+        Problem statement coverage
+      </Link>
       <RupeeBasis className="text-2xs text-ink-dim" />
       <ul aria-label="Colour key" className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {COLOUR_KEY.map(([layer, words]) => (

@@ -19,6 +19,8 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ 
 const WalletPage = lazy(() => import('./pages/WalletPage').then((m) => ({ default: m.WalletPage })))
 const LabelsPage = lazy(() => import('./pages/LabelsPage').then((m) => ({ default: m.LabelsPage })))
 const ModelPage = lazy(() => import('./pages/ModelPage').then((m) => ({ default: m.ModelPage })))
+const CoveragePage = lazy(() => import('./pages/CoveragePage').then((m) => ({ default: m.CoveragePage })))
+const SahyogSimPage = lazy(() => import('./pages/SahyogSimPage').then((m) => ({ default: m.SahyogSimPage })))
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage })))
 
 // The component kit shows every component on the demo fixtures, so it exists only where the
@@ -57,6 +59,8 @@ export function AppRoutes() {
         <Route path="labels" element={later(<LabelsPage />)} />
         <Route path="model" element={later(<ModelPage />)} />
         <Route path="watchlist" element={later(<WatchlistPage />)} />
+        <Route path="coverage" element={later(<CoveragePage />)} />
+        <Route path="sahyog-sim" element={later(<SahyogSimPage />)} />
         {KitPage && <Route path="kit" element={later(<KitPage />)} />}
         <Route path="*" element={<NotFoundPage />} />
       </Route>

@@ -2,8 +2,8 @@
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSyncExternalStore } from 'react'
 import { api } from './api'
-import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type LabelQuery } from './client'
-import type { CaseDetail, Chain, Login, RequestCreate, RequestPatch, WatchCreate, WatchList } from './models'
+import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type ComplaintFile, type LabelQuery } from './client'
+import type { CaseDetail, Chain, Login, ReplyIn, RequestCreate, RequestPatch, SahyogSim, WatchCreate, WatchList } from './models'
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -36,6 +36,8 @@ export const keys = {
   wallet: (chain: string, address: string) => ['wallet', chain, address] as const,
   coverage: ['labels', 'coverage'] as const,
   watchlist: ['watchlist'] as const,
+  psCoverage: ['ps-coverage'] as const,
+  sahyogSim: ['sahyog-sim'] as const,
 }
 
 export const useMe = () => useQuery({ queryKey: keys.me, queryFn: () => api.me(), staleTime: 60_000 })
@@ -215,6 +217,39 @@ export function useSignIn() {
 export function useSignOut() {
   const client = useQueryClient()
   return useMutation({ mutationFn: () => api.logout(), onSuccess: () => client.invalidateQueries() })
+}
+
+/** The problem statement, line by line. It changes only with a release. */
+export const usePsCoverage = () => useQuery({ queryKey: keys.psCoverage, queryFn: () => api.coverage(), staleTime: 300_000 })
+
+const waiting = (sim?: SahyogSim) => sim?.complaints.some((c) => c.status !== 'result') ?? false
+
+/** The simulator's two lists. While a complaint is still being traced it is asked for once a second. */
+export const useSahyogSim = () =>
+  useQuery({ queryKey: keys.sahyogSim, queryFn: () => api.sahyogSim(), staleTime: 0, refetchInterval: (q) => (waiting(q.state.data) ? 1000 : false) })
+
+/** File a complaint from the simulator: cases appear and are traced, so the case views are read again. */
+export function useFileComplaint() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: ComplaintFile) => api.fileComplaint(body),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: keys.sahyogSim })
+      invalidateCaseViews(client)
+    },
+  })
+}
+
+/** The simulator plays the exchange: the request, the desk and the dashboard change with the reply. */
+export function useSimReply() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: ReplyIn & { id: string }) => api.simReply(id, body),
+    onSuccess: (_ack, { id }) => {
+      for (const queryKey of [keys.sahyogSim, keys.desk, keys.requests, keys.request(id), keys.dashboard, ['vasp']])
+        void client.invalidateQueries({ queryKey })
+    },
+  })
 }
 
 /** 'mock' | 'live' | 'mixed' of the latest answer, or null before the first one. */

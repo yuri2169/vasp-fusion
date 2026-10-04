@@ -24,7 +24,7 @@ describe('a case that names an exchange', () => {
     // The graph is loaded on demand; the first load of that chunk takes over a second when every suite runs at once.
     expect(await screen.findByRole('heading', { level: 2, name: 'Fund flow' }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: 'Why OKX?' })).toBeInTheDocument()
-    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Timeline', 'Transfers 7', 'Wallets 8', 'Patterns 1', 'Inbound funding', 'Audit'])
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Timeline', 'Transfers 7', 'Wallets 8', 'Patterns 1', 'Risk 1', 'Inbound funding', 'Audit'])
   })
 
   it('has one primary action: draft the request', async () => {

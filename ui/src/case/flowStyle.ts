@@ -12,6 +12,8 @@
  *    edge width   the amount; hairlines, dashed for money coming in */
 import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
 import { THREATS } from '../components/ThreatChip'
+import type { FlowRisk, RiskClass } from '../api/models'
+import { RISK_ORDER, RISK_WORDS } from '../components/RiskTag'
 import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { formatAmount, truncateMiddle } from '../lib/format'
 import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
@@ -107,7 +109,22 @@ function captionOf(n: FlowNode): string | null {
   return null
 }
 
-export function toElements(view: FlowView): ElementDefinition[] {
+/** The mark a flagged transfer wears on the canvas, with its class in words beside it. */
+export const RISK_MARK = '▲'
+
+/** The highest class among the transfers one drawn line stands for; undefined when all are Low. */
+export function edgeRisk(transferIds: string[], flows?: ReadonlyMap<string, FlowRisk>): RiskClass | undefined {
+  let top: RiskClass | undefined
+  for (const id of transferIds) {
+    const klass = flows?.get(id)?.risk_class
+    if (klass && (!top || RISK_ORDER.indexOf(klass) > RISK_ORDER.indexOf(top))) top = klass
+  }
+  return top
+}
+
+/** `flows`: the case's transfers above Low (risk.flows), by transfer id. A line that stands for
+ *  one is marked and says its class in words; High and Severe are also drawn in the danger colour. */
+export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>): ElementDefinition[] {
   const elements: ElementDefinition[] = []
   const most = view.nodes.reduce((max, n) => (n.kind === 'more' ? max : Math.max(max, through(n))), 0)
   for (const n of view.nodes) {
@@ -143,7 +160,8 @@ export function toElements(view: FlowView): ElementDefinition[] {
         grabbable: false,
       })
   }
-  for (const e of view.edges)
+  for (const e of view.edges) {
+    const risk = edgeRisk(e.transfers.map((t) => t.id), flows)
     elements.push({
       group: 'edges',
       data: {
@@ -155,9 +173,16 @@ export function toElements(view: FlowView): ElementDefinition[] {
         inbound: e.direction === 'inbound' ? 1 : 0,
         onPath: e.onPath ? 1 : 0,
         // Written on the main path and on the larger flows; the rest say it on hover.
-        label: e.onPath || e.amount >= view.maxAmount * 0.1 ? formatAmount(e.amount, e.asset) : '',
+        label: risk
+          ? // two short lines: a flagged transfer is often the one between two close tiles
+            `${RISK_MARK} ${RISK_WORDS[risk]} risk\n${formatAmount(e.amount, e.asset)}`
+          : e.onPath || e.amount >= view.maxAmount * 0.1
+            ? formatAmount(e.amount, e.asset)
+            : '',
+        ...(risk ? { risk } : {}),
       },
     })
+  }
   return elements
 }
 
@@ -316,6 +341,9 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
       },
     },
     { selector: 'edge[onPath = 1]', style: { 'line-color': t.chain, 'target-arrow-color': t.chain } },
+    // A flagged transfer: the label says the class; High and Severe also take the danger colour.
+    { selector: 'edge[risk = "high"], edge[risk = "severe"]', style: { 'line-color': t.seal, 'target-arrow-color': t.seal, color: t.seal, 'font-weight': 600 } },
+    { selector: 'edge[risk]', style: { 'text-wrap': 'wrap', 'font-size': 11 } },
     { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], 'line-opacity': 0.7 } },
 
     // --- looking at one wallet: its path stays, the rest steps back --------

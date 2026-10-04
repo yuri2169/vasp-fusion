@@ -8,6 +8,7 @@
  *
  *  A live build (VITE_API=live) carries none of the fixtures: the glob is compiled out. */
 import { ApiError, type Transport } from './client'
+import { RISK_BASIS } from '../components/RiskTag'
 import { CHAINS } from '../lib/chains'
 import { detectChain, validate } from '../lib/addresses'
 import type { AuditPage, CaseDetail, CaseList, CaseProgress, CaseSummary, Chain, Desk, RequestDetail, RequestList, RequestStatus, WalletDetail, WatchItem } from './models'
@@ -182,7 +183,7 @@ export function createMockTransport(opts: { now?: () => number; traceMs?: number
               address,
               chain: chain as Chain,
               labels: [],
-              risk: { score: null, level: null, reasons: [] },
+              risk: { score: null, risk_class: null, indicators: [], reasons: [], flows: [], path_class: null, basis: RISK_BASIS, source: null },
               cases: cases.map((c) => ({ case_id: c.id, role: 'suspect', hop: 0 })),
               inbound: null,
               outbound: null,

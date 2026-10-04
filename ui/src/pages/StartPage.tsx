@@ -246,8 +246,15 @@ function HowItWorks() {
         </div>
 
         <div className="panel grid gap-x-8 gap-y-6 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Measured label="Labelled addresses on file" layer="network" value={cover ? <Counter value={cover.total} /> : dashboard.isPending ? '…' : dashboard.isError ? NOT_READ : NOT_MEASURED}>
+          <Measured label="Labelled addresses on chains that trace" layer="network" value={cover ? <Counter value={cover.traceable_total ?? cover.total} /> : dashboard.isPending ? '…' : dashboard.isError ? NOT_READ : NOT_MEASURED}>
             {cover ? (
+              <>
+              {cover.traceable_total != null && cover.traceable_total < cover.total && (
+                <p className="mb-1.5">
+                  Of <span className="font-mono text-ink">{cover.total.toLocaleString('en-US')}</span> on file: the rest are on chains this tool cannot trace yet. By
+                  evidence tier, all chains:
+                </p>
+              )}
               <ul className="mt-1 flex flex-col gap-1">
                 {tiers.map(([tier, n], i) => (
                   <li key={tier} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2">
@@ -259,6 +266,7 @@ function HowItWorks() {
                   </li>
                 ))}
               </ul>
+              </>
             ) : (
               dashboard.isError ? 'The label counts could not be read just now. Reload the page to try again.' : 'Counting…'
             )}
@@ -394,6 +402,9 @@ export function StartPage() {
               )}
               <Link to="/cases" className="text-chain hover:underline">
                 all cases
+              </Link>
+              <Link to="/coverage" className="text-chain hover:underline">
+                problem statement, line by line
               </Link>
             </p>
           </div>

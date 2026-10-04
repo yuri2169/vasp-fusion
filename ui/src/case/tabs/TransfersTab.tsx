@@ -1,4 +1,5 @@
 import type { CaseDetail, GraphEdge, GraphNode } from '../../api/models'
+import { RISK_ORDER, RiskTag } from '../../components/RiskTag'
 import { AddressChip } from '../../components/AddressChip'
 import { Amount } from '../../components/Amount'
 import { DataTable, type Column } from '../../components/DataTable'
@@ -9,6 +10,8 @@ import { formatAmount, formatDateTime } from '../../lib/format'
 /** Every transfer of the case, as a table of record: sortable, with the whole hash one click away. */
 export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (address: string) => void }) {
   const nodes = new Map<string, GraphNode>(c.graph.nodes.map((n) => [n.id, n]))
+  // A transfer not listed in risk.flows carries no indicator: it is Low.
+  const flows = new Map((c.risk?.flows ?? []).map((f) => [f.edge_id, f]))
   const chip = (address: string) => (
     <AddressChip
       address={address}
@@ -44,6 +47,24 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
       ),
     },
     { key: 'tx', header: 'Transaction', cell: (e) => <TxHash hash={e.tx_hash} chain={c.chain} /> },
+    ...(c.risk
+      ? [
+          {
+            key: 'risk',
+            header: 'Flow risk',
+            sortValue: (e: GraphEdge) => RISK_ORDER.indexOf(flows.get(e.id)?.risk_class ?? 'low'),
+            cell: (e: GraphEdge) => {
+              const flow = flows.get(e.id)
+              return (
+                <span className="flex flex-col items-start gap-0.5">
+                  <RiskTag risk={flow?.risk_class ?? 'low'} kind="" />
+                  {flow && <span className="max-w-[26ch] text-sm text-muted">{flow.reasons.join('; ')}</span>}
+                </span>
+              )
+            },
+          } satisfies Column<GraphEdge>,
+        ]
+      : []),
   ]
 
   return (

@@ -17,6 +17,8 @@ const PLACES: { to: string; name: string; also?: string[] }[] = [
   { to: '/watchlist', name: 'Watchlist' },
   { to: '/labels', name: 'Labels', also: ['/wallets'] },
   { to: '/model', name: 'Model' },
+  // Named for what it is: a simulator, never "SAHYOG" alone.
+  { to: '/sahyog-sim', name: 'SAHYOG simulator' },
   // The kit runs on the demo fixtures, so it is offered only where they are (App.tsx).
   ...(API_MODE !== 'live' ? [{ to: '/kit', name: 'Kit' }] : []),
 ]

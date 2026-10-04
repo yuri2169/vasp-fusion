@@ -26,6 +26,8 @@ import { FundsBar } from '../components/FundsBar'
 import { HopRail } from '../components/HopRail'
 import { PageHeader } from '../components/PageHeader'
 import { ScreeningNote, ThreatChips } from '../components/ThreatChip'
+import { RiskPanel } from '../components/RiskPanel'
+import { RiskTag } from '../components/RiskTag'
 import { Skeleton } from '../components/Skeleton'
 import { Tabs, type TabItem } from '../components/Tabs'
 import { useToast } from '../components/Toast'
@@ -54,7 +56,7 @@ function markedFor(c: CaseDetail, selected: string | null): ReadonlySet<string> 
   return pathTo(buildFlow(c), selected).nodes
 }
 
-const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'inbound', 'audit'] as const
+const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'audit'] as const
 type TabId = (typeof TAB_IDS)[number]
 
 function Meta({ c }: { c: CaseDetail }) {
@@ -74,6 +76,14 @@ function Meta({ c }: { c: CaseDetail }) {
           </span>{' '}
         </span>
       ))}
+      {c.sahyog_complaint_ref && (
+        <span
+          title="This case was opened by a complaint filed through the SAHYOG intake, not typed in here."
+          className="mx-1 inline-block whitespace-nowrap rounded-sm border border-rule-strong px-1 text-sm text-fg"
+        >
+          Reported through SAHYOG · <span className="font-mono">{c.sahyog_complaint_ref}</span>
+        </span>
+      )}
       {c.demo && (
         <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-sm text-muted">
           Recorded
@@ -153,6 +163,7 @@ export function CasePage() {
     { id: 'transfers', label: 'Transfers', count: c.graph.edges.length },
     { id: 'wallets', label: 'Wallets', count: c.graph.nodes.length },
     { id: 'patterns', label: 'Patterns', count: c.typology_flags.length || undefined },
+    ...(c.risk ? [{ id: 'risk' as const, label: 'Risk', count: c.risk.indicators.length || undefined }] : []),
     { id: 'inbound', label: 'Inbound funding', count: inbound || undefined },
     { id: 'audit', label: 'Audit' },
   ]
@@ -277,6 +288,16 @@ export function CasePage() {
 
       {rail}
 
+      {c.risk && (
+        <p aria-label="Risk class" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-ink-soft">
+          <button type="button" onClick={() => setParam('tab', 'risk')} className="inline-flex items-center gap-2 hover:underline" title="Open the Risk tab">
+            <RiskTag risk={c.risk.risk_class} score={c.risk.score} kind="wallet risk" />
+            <RiskTag risk={c.risk.path_class ?? 'low'} kind="flow risk" />
+          </button>
+          <span className="max-w-[80ch]">{c.risk.basis}</span>
+        </p>
+      )}
+
       {finished && (
         <p role="status" className="mt-2 text-sm text-muted">
           Trace finished. It read {c.provenance.pages != null ? `${c.provenance.pages} responses` : 'the chain'} and found {c.graph.nodes.length} wallets and{' '}
@@ -309,6 +330,19 @@ export function CasePage() {
           {tab === 'transfers' && <TransfersTab c={c} onSelect={selectFromBelow} />}
           {tab === 'wallets' && <WalletsTab c={c} selected={selected} onSelect={selectFromBelow} />}
           {tab === 'patterns' && <PatternsTab c={c} onSelect={selectFromBelow} />}
+          {tab === 'risk' && c.risk && (
+            <div className="panel p-4">
+              <RiskPanel risk={c.risk} chain={c.chain} subject="This wallet" />
+              {c.risk.path_class && (
+                <p className="mt-3 border-t border-rule-soft pt-3 text-base text-ink">
+                  Transaction flows: the path on the Hop Rail is <span className="font-semibold">{c.risk.path_class}</span>;{' '}
+                  {c.risk.flows.length === 0
+                    ? `all ${c.graph.edges.length} transfers read are low.`
+                    : `${c.risk.flows.length} of the ${c.graph.edges.length} transfers read are above low. The Transfers tab lists each with its class.`}
+                </p>
+              )}
+            </div>
+          )}
           {tab === 'inbound' && <InboundTab c={c} onSelect={selectFromBelow} />}
           {tab === 'audit' && <AuditTab c={c} />}
         </Tabs>
