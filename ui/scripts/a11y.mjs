@@ -40,6 +40,8 @@ const audit = async (name) => {
 
 // The API is spoken to from inside the page, so a server that asks for a login is signed in to once
 // (the published demonstration account) and the session cookie serves every later call.
+// The app opens light by default; the sign-in audit chooses the theme through the emulated device.
+await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.setItem('vaspfusion.theme', 'system') } catch (e) {}` })
 await page.send('Page.navigate', { url: BASE + '/' })
 await waitFor(() => page.evaluate(`!!document.querySelector('h1')`), 'the first screen')
 const api = (method, path, body) =>

@@ -49,6 +49,8 @@ const count = async (name) =>
 
 try {
   await page.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
+  // The app opens light by default; these runs choose the theme through the emulated device.
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.setItem('vaspfusion.theme', 'system') } catch (e) {}` })
   await page.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: THEME === 'dark' ? 'dark' : 'light' }] })
   if (FRAMES) {
     mkdirSync(FRAMES, { recursive: true })

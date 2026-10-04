@@ -1,6 +1,6 @@
-/** Theme: the officer's choice (light, dark) or the device's. tokens.css does the rest:
- *  `data-theme` on <html> wins; with no attribute, `prefers-color-scheme` decides.
- *  index.html applies the stored choice before first paint with the same key. */
+/** Theme: light unless the officer chose otherwise (light, dark, or follow the device).
+ *  tokens.css does the rest: `data-theme` on <html> wins; with no attribute,
+ *  `prefers-color-scheme` decides. index.html applies the same rule before first paint. */
 
 export type ThemePref = 'system' | 'light' | 'dark'
 
@@ -9,9 +9,9 @@ const KEY = 'vaspfusion.theme'
 export function getThemePref(): ThemePref {
   try {
     const v = localStorage.getItem(KEY)
-    return v === 'light' || v === 'dark' ? v : 'system'
+    return v === 'system' || v === 'dark' ? v : 'light'
   } catch {
-    return 'system' // storage blocked: follow the device
+    return 'light' // storage blocked: the default
   }
 }
 
@@ -23,8 +23,7 @@ export function applyTheme(pref: ThemePref = getThemePref()): void {
 
 export function setThemePref(pref: ThemePref): void {
   try {
-    if (pref === 'system') localStorage.removeItem(KEY)
-    else localStorage.setItem(KEY, pref)
+    localStorage.setItem(KEY, pref)
   } catch {
     /* storage blocked: the choice lasts for this page only */
   }

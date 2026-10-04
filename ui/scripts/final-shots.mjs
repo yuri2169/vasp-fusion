@@ -39,6 +39,8 @@ try {
     console.log(`final-${name}-${theme}.png`)
   }
 
+  // The app opens light by default; these runs choose the theme through the emulated device.
+  await page.send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.setItem('vaspfusion.theme', 'system') } catch (e) {}` })
   await page.send('Page.navigate', { url: BASE + '/' })
   await waitFor(() => page.evaluate(`!!document.querySelector('h1')`), 'the first screen')
   const api = (method, path, body) =>
