@@ -152,8 +152,8 @@ vaspfusion.cli verify sol-okx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         294dac581ff629aa936efea7a02f8acbd473d5923b1bb91ac0dae0f411a32987
-  Receipt SHA-256         461310c4b32fec9234bfab2324020601d0278627b6e260d1437b6e04dea0f841
+  Content SHA-256         badbeff8c3a3272a91be1b9add14d69b7ef25c07624e1c6746dbe18ace8c79e0
+  Receipt SHA-256         28c653dd7f3b47572855fa2155d936ea6545f6c877cc00cc5cd53b5515c77958
 
   Chain responses read
     950e1fd16a41f84e6ddeba4e9175fe5bb6d827f123a60a1abdd9e9287f395e7a  https://api.helius.xyz/v0/addresses/34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe/transactions?limit=100&sort-order=asc

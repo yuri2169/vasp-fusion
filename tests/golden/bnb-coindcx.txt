@@ -171,8 +171,8 @@ vaspfusion.cli verify bnb-coindcx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         f7cb354a3549830e2a4e22e1c59259d42b89b1436231244a2501dff24791abd4
-  Receipt SHA-256         935a2a03df21d52337e6874f4705b3686dbbbfe8087f65cd2ea472e00fe1195e
+  Content SHA-256         41aa49260e8932888ca36cbba4cbf98b8e33fe35f40ce8b006bffe0f5cd1468c
+  Receipt SHA-256         582c5e1b0e9b2424b097bd4a3770c543b5bb96b25a85246cc991458cd176a7e2
 
   Chain responses read
     d6f25bee34099ae9b15facf32f9ce3f3dec3b31b3d1bd73005dcb5c1d76b6ff9  https://rpc.ankr.com/multichain?method=ankr_getTokenTransfers&params=%7B%22address%22%3A%5B%220x16b9a82891338f9ba80e2d6970fdda79d1eb0dae%22%5D%2C%22blockchain%22%3A%22bsc%22%2C%22descOrder%22%3Afalse%2C%22fromTimestamp%22%3A1667540511%2C%22pageSize%22%3A100%2C%22pageToken%22%3A%22eyJic2MiOnsidG9rZW4iOiJ7XCJibG9ja1wiOjIyNzU2ODA2LFwiaW5kZXhcIjoyMzd9Iiwib2Zmc2V0IjowLCJuZXh0VG9rZW4iOiIiLCJuZXh0VG9rZW5JbmRleCI6MH19%22%7D

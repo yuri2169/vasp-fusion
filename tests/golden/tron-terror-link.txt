@@ -5,7 +5,7 @@ Demonstration case. This is a real public wallet, chosen because its on-chain hi
 pattern the tool should handle. Nothing here alleges wrongdoing by whoever controls it, and the
 case reference is not a real complaint.
 
-  Case reference    DEMO/2026/109
+  Case reference    DEMO/2026/112
   Complaint number  -
   Wallet traced     THr3E2bZ2w9VFWsSM2PctWqajsVtgLLLTp
   Chain             Tron
@@ -409,7 +409,7 @@ vaspfusion.cli verify tron-terror-link
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
   Content SHA-256         d519e36ed2cc1f444efea2d7436776cf421a1a27e818f23fb5a18b2be7e731d6
-  Receipt SHA-256         00094866fa9e7775ffe9c8acc29b58119031b33b2003bf8dfa72f3ac8e901d4c
+  Receipt SHA-256         24d55b61d643154b881de1cf67d1ef09d95d79fdf6a8b16a88dd4d00855a98a2
 
   Chain responses read
     e49e9397a6676b123a1c9789ca45c43ca203bd747c56173ba9a7cef1f4c3d1fa  https://api.trongrid.io/v1/accounts/TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1713098907000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc
