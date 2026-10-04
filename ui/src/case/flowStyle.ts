@@ -1,15 +1,19 @@
 /** A FlowView as Cytoscape elements, and the stylesheet that draws them.
  *
  *  What the picture encodes (ui/DESIGN.md, "The fund-flow graph"):
- *    shape        the wallet's role (square-cornered: nothing in this language is a rounded token)
+ *    icon         the wallet's role, inside a square tile (roleIcons.ts)
+ *    tile size    the amount that passed through it: three sizes
  *    border       the tier of its label, in the label colour (the same vocabulary as TierTag)
- *    chain colour the suspect wallet, unlabelled hops and the main path: on-chain facts
+ *    chain colour the suspect wallet, the hops and the main path: on-chain facts
+ *    label wash   a wallet a label names: an exchange, a bridge, a swap service
  *    fusion fill  a wallet of the exchange the case names, and nothing else
  *    danger fill  a sanctioned address or a mixer
+ *    data colour  an unlabelled wallet the trail stops at
  *    edge width   the amount; hairlines, dashed for money coming in */
 import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
 import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { formatAmount, truncateMiddle } from '../lib/format'
+import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
 
 /** The role tokens the canvas needs, resolved to colours (a canvas cannot read CSS variables). */
 export interface ThemeColors {
@@ -20,6 +24,8 @@ export interface ThemeColors {
   ruleStrong: string
   saffron: string
   chain: string
+  chainWash: string
+  data: string
   verifiedText: string
   verifiedWash: string
   seal: string
@@ -35,6 +41,8 @@ export const FALLBACK_THEME: ThemeColors = {
   ruleStrong: '#56646F',
   saffron: '#8C5B0E',
   chain: '#2D6A9F',
+  chainWash: '#EAF1F7',
+  data: '#5C6B78',
   verifiedText: '#7B4B94',
   verifiedWash: '#F4EEF7',
   seal: '#A2453B',
@@ -49,6 +57,8 @@ const TOKENS: Record<keyof ThemeColors, string> = {
   ruleStrong: '--rule-strong',
   saffron: '--saffron',
   chain: '--chain',
+  chainWash: '--chain-wash',
+  data: '--data',
   verifiedText: '--verified-text',
   verifiedWash: '--verified-wash',
   seal: '--seal',
@@ -65,21 +75,26 @@ export function readTheme(el: Element = document.documentElement): ThemeColors {
   return out
 }
 
-/** Shape and size per role. Every kind of labelled party has a shape of its own. */
-export const ROLE_SHAPES: Record<Role, { shape: string; width: number; height: number }> = {
-  suspect: { shape: 'rectangle', width: 30, height: 30 },
-  intermediary: { shape: 'rectangle', width: 20, height: 20 },
-  unknown: { shape: 'rectangle', width: 13, height: 13 },
-  hub: { shape: 'hexagon', width: 34, height: 30 },
-  exchange: { shape: 'cut-rectangle', width: 46, height: 28 },
-  exchange_hot: { shape: 'cut-rectangle', width: 46, height: 28 },
-  exchange_deposit: { shape: 'tag', width: 46, height: 28 },
-  custodial_wallet: { shape: 'barrel', width: 42, height: 28 },
-  swap_service: { shape: 'rhomboid', width: 46, height: 26 },
-  bridge: { shape: 'diamond', width: 38, height: 38 },
-  mixer: { shape: 'concave-hexagon', width: 40, height: 30 },
-  sanctioned: { shape: 'octagon', width: 34, height: 34 },
+/** The three tile sizes, by the amount that passed through the wallet. */
+export const TILE = { s: 28, m: 36, l: 46 } as const
+export type TileSize = keyof typeof TILE
+/** A wallet that was not followed further: a small dashed tile with no icon. */
+const UNFOLLOWED = 16
+
+const through = (n: Pick<FlowNode, 'received' | 'sent'>) => Math.max(n.received, n.sent)
+
+/** Large from half of the largest amount in the picture, medium from a tenth, small below.
+ *  The wallet the case is about is always large. */
+export function tileSize(n: FlowNode, most: number): TileSize {
+  if (n.role === 'suspect') return 'l'
+  const share = most > 0 ? through(n) / most : 0
+  return share >= 0.5 ? 'l' : share >= 0.1 ? 'm' : 's'
 }
+
+const sideOf = (n: FlowNode, most: number) => (n.role === 'unknown' && n.kind === 'wallet' ? UNFOLLOWED : TILE[tileSize(n, most)])
+
+/** Where a wallet's caption sits: just over its tile. */
+export const captionY = (y: number, side: number) => y - side / 2 - 9
 
 /** What is written over a node: the owner a label names, or what the wallet is to the case. */
 function captionOf(n: FlowNode): string | null {
@@ -91,8 +106,10 @@ function captionOf(n: FlowNode): string | null {
 
 export function toElements(view: FlowView): ElementDefinition[] {
   const elements: ElementDefinition[] = []
+  const most = view.nodes.reduce((max, n) => (n.kind === 'more' ? max : Math.max(max, through(n))), 0)
   for (const n of view.nodes) {
     const position = nodeXY(n)
+    const side = sideOf(n, most)
     elements.push({
       group: 'nodes',
       data: {
@@ -102,6 +119,7 @@ export function toElements(view: FlowView): ElementDefinition[] {
         tier: n.tier ?? 'none',
         named: n.named ? 1 : 0,
         onPath: n.onPath ? 1 : 0,
+        side,
         label:
           n.kind === 'more'
             ? `+${n.members.length.toLocaleString('en-US')} wallets`
@@ -116,7 +134,7 @@ export function toElements(view: FlowView): ElementDefinition[] {
       elements.push({
         group: 'nodes',
         data: { id: `caption:${n.id}`, owner: n.id, label: caption },
-        position: { x: position.x, y: position.y - ROLE_SHAPES[n.role].height / 2 - 9 },
+        position: { x: position.x, y: captionY(position.y, side) },
         classes: 'caption',
         selectable: false,
         grabbable: false,
@@ -140,21 +158,39 @@ export function toElements(view: FlowView): ElementDefinition[] {
   return elements
 }
 
-const svg = (body: string) => `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${body}</svg>`)}`
-const stroke = (colour: string, d: string) =>
-  `<path d="${d}" fill="none" stroke="${colour}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`
+/** A role's icon as an image the canvas can draw, in one colour. */
+export function iconUri(node: IconNode, colour: string): string {
+  const body = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(node)}</svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(body)}`
+}
 
-/** A bar (no entry), two crossing arrows (mixed), two opposed arrows (carried across). */
-const glyphs = (t: ThemeColors) => ({
-  sanctioned: svg(`<rect x="5" y="10" width="14" height="4" rx="1" fill="${t.onSeal}"/>`),
-  mixer: svg(stroke(t.onSeal, 'M4 8h2c6 0 6 8 12 8h2M4 16h2c6 0 6-8 12-8h2')),
-  bridge: svg(stroke(t.fg, 'M5 9h13M15 6l3 3-3 3M19 15H6M9 12l-3 3 3 3')),
-})
+/** A tile's fill and the colour of the icon on it, by what the wallet is to the case.
+ *  Colour repeats what the icon and the border already say; it is never the only signal. */
+export function tileLook(role: Role, t: ThemeColors): { fill: string; ink: string } {
+  switch (role) {
+    case 'suspect':
+      return { fill: t.chain, ink: t.surface }
+    case 'intermediary':
+      return { fill: t.chainWash, ink: t.chain }
+    case 'unknown':
+      return { fill: t.surface, ink: t.data }
+    case 'hub':
+      return { fill: t.data, ink: t.surface }
+    case 'mixer':
+    case 'sanctioned':
+      return { fill: t.seal, ink: t.onSeal }
+    default:
+      return { fill: t.verifiedWash, ink: t.verifiedText }
+  }
+}
+
+const ROLES = Object.keys(ROLE_ICONS) as Role[]
 
 export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
-  const glyph = glyphs(t)
-  const size = (role: Role) => ({ shape: ROLE_SHAPES[role].shape, width: ROLE_SHAPES[role].width, height: ROLE_SHAPES[role].height })
-  const withGlyph = (image: string) => ({ 'background-image': image, 'background-width': '62%', 'background-height': '62%', 'background-clip': 'none' })
+  const icon = (role: Role, colour: string) => {
+    const node = ROLE_ICONS[role]
+    return node ? { 'background-image': iconUri(node, colour), 'background-width': '58%', 'background-height': '58%', 'background-clip': 'none' } : {}
+  }
 
   // Cytoscape's own types want exact literals for shapes and styles; these are checked by
   // running the stylesheet through Cytoscape in flowStyle.test.ts.
@@ -162,6 +198,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     {
       selector: 'node',
       style: {
+        shape: 'rectangle',
         'background-color': t.surface,
         'border-width': 1,
         'border-style': 'dashed',
@@ -187,27 +224,28 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     },
     { selector: 'node[tier = "published_por"]', style: { 'border-style': 'double', 'border-width': 4, 'border-color': t.verifiedText } },
 
-    // --- shape: the role --------------------------------------------------
-    { selector: 'node[role = "suspect"]', style: { ...size('suspect'), 'background-color': t.chain, 'border-style': 'solid', 'border-width': 1, 'border-color': t.chain } },
-    { selector: 'node[role = "intermediary"]', style: size('intermediary') },
-    { selector: 'node[role = "unknown"]', style: size('unknown') },
-    { selector: 'node[role = "hub"]', style: { ...size('hub'), 'background-color': t.sunk } },
-    { selector: 'node[role = "exchange"]', style: size('exchange') },
-    { selector: 'node[role = "exchange_hot"]', style: size('exchange_hot') },
-    { selector: 'node[role = "exchange_deposit"]', style: size('exchange_deposit') },
-    { selector: 'node[role = "custodial_wallet"]', style: size('custodial_wallet') },
-    { selector: 'node[role = "swap_service"]', style: size('swap_service') },
-    { selector: 'node[role = "bridge"]', style: { ...size('bridge'), ...withGlyph(glyph.bridge) } },
-    { selector: 'node[role = "mixer"]', style: { ...size('mixer'), 'background-color': t.seal, 'border-color': t.fg, ...withGlyph(glyph.mixer) } },
-    { selector: 'node[role = "sanctioned"]', style: { ...size('sanctioned'), 'background-color': t.seal, 'border-color': t.fg, ...withGlyph(glyph.sanctioned) } },
+    // --- tile: three sizes, by the amount that passed through --------------
+    { selector: 'node[side]', style: { width: 'data(side)', height: 'data(side)' } },
+
+    // --- tile: the role, as a fill and an icon ----------------------------
+    ...ROLES.map((role) => {
+      const look = tileLook(role, t)
+      return { selector: `node[role = "${role}"]`, style: { 'background-color': look.fill, ...icon(role, look.ink) } }
+    }),
+    { selector: 'node[role = "suspect"]', style: { 'border-style': 'solid', 'border-width': 1, 'border-color': t.chain } },
+    { selector: 'node[role = "unknown"]', style: { 'border-color': t.data } },
+    { selector: 'node[role = "hub"]', style: { 'border-style': 'solid', 'border-color': t.data } },
+    { selector: 'node[role = "mixer"], node[role = "sanctioned"]', style: { 'border-style': 'solid', 'border-width': 1, 'border-color': t.fg } },
 
     // --- the exchange the case names: the one thing filled in the fusion colour ---
     { selector: 'node[named = 1]', style: { 'background-color': t.saffron } },
+    // its icon is drawn in the paper colour, so it reads on that fill
+    ...ROLES.filter((role) => ROLE_ICONS[role]).map((role) => ({ selector: `node[named = 1][role = "${role}"]`, style: icon(role, t.surface) })),
 
     // --- a group of one exchange's wallets: drawn as a stack --------------
     {
       selector: 'node[kind = "cluster"]',
-      style: { width: 58, height: 34, ghost: 'yes', 'ghost-offset-x': 4, 'ghost-offset-y': -4, 'ghost-opacity': 0.45 },
+      style: { ghost: 'yes', 'ghost-offset-x': 4, 'ghost-offset-y': -4, 'ghost-opacity': 0.45 },
     },
 
     // --- the rest of a hop in a large graph: one quiet node, not a wallet -----
@@ -218,6 +256,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         width: 58,
         height: 26,
         'background-color': t.sunk,
+        'background-image': 'none',
         'border-style': 'dashed',
         'border-width': 1,
         'border-color': t.muted,
@@ -276,6 +315,8 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
 
     // --- looking at one wallet: its path stays, the rest steps back --------
     { selector: '.dim', style: { opacity: 0.2 } },
+    // --- the replay: what has not moved yet is not drawn ---------------------
+    { selector: '.ahead', style: { visibility: 'hidden' } },
     { selector: 'node.sel', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.14, 'underlay-padding': 8, 'underlay-shape': 'rectangle' } },
     { selector: 'node.hover', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.08, 'underlay-padding': 6, 'underlay-shape': 'rectangle' } },
   ] as StylesheetJsonBlock[]

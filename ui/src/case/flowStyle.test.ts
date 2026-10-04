@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { CaseDetail, Tier } from '../api/models'
 import { buildFlow, nodeXY, type Role } from '../lib/caseGraph'
 import { MOCK_CASES, REAL_CASES, readCase, readMock } from '../test/files'
-import { FALLBACK_THEME, ROLE_SHAPES, stylesheet, toElements } from './flowStyle'
+import { FALLBACK_THEME, TILE, iconUri, stylesheet, tileLook, tileSize, toElements } from './flowStyle'
+import { ROLE_ICONS } from './roleIcons'
 
 const hero = readCase<CaseDetail>('tron-coindcx')
 const okx = readMock<CaseDetail>('cases/demo-tron-okx.json')
@@ -78,14 +79,41 @@ describe('the stylesheet', () => {
   const rules = stylesheet(FALLBACK_THEME)
   const selectors = rules.map((r) => r.selector)
 
-  it('has a shape for every role', () => {
+  it('draws every role as a square tile with an icon of its own', () => {
+    expect((rules.find((r) => r.selector === 'node') as unknown as { style: Record<string, unknown> }).style.shape).toBe('rectangle')
+    for (const role of ROLES) expect(selectors, role).toContain(`node[role = "${role}"]`)
+    // told apart by the icon, not by colour: no two kinds of party share one
+    const kinds = (['suspect', 'intermediary', 'hub', 'exchange', 'exchange_deposit', 'custodial_wallet', 'swap_service', 'bridge', 'mixer', 'sanctioned'] as Role[]).map((r) => ROLE_ICONS[r])
+    expect(kinds.every(Boolean)).toBe(true)
+    expect(new Set(kinds).size).toBe(kinds.length)
+    // a wallet not followed further is a bare tile
+    expect(ROLE_ICONS.unknown).toBeNull()
+  })
+
+  it('draws the icon as an image the canvas can read, in a colour that is not the fill', () => {
     for (const role of ROLES) {
-      expect(ROLE_SHAPES[role].shape, role).toBeTruthy()
-      expect(selectors, role).toContain(`node[role = "${role}"]`)
+      const look = tileLook(role, FALLBACK_THEME)
+      expect(look.ink, role).not.toBe(look.fill)
+      const node = ROLE_ICONS[role]
+      if (!node) continue
+      const uri = iconUri(node, look.ink)
+      expect(uri.startsWith('data:image/svg+xml;utf8,')).toBe(true)
+      const svg = decodeURIComponent(uri.slice('data:image/svg+xml;utf8,'.length))
+      expect(svg).toContain(`stroke="${look.ink}"`)
+      expect(new DOMParser().parseFromString(svg, 'image/svg+xml').querySelector('parsererror')).toBeNull()
     }
-    // told apart by shape, not by colour: no two kinds of labelled party share one
-    const shapes = (['exchange', 'exchange_deposit', 'bridge', 'mixer', 'sanctioned', 'hub', 'suspect'] as Role[]).map((r) => ROLE_SHAPES[r].shape)
-    expect(new Set(shapes).size).toBe(shapes.length)
+  })
+
+  it('has three tile sizes, by the amount that passed through', () => {
+    const view = buildFlow(hero, { collapse: false })
+    const most = Math.max(...view.nodes.map((n) => Math.max(n.received, n.sent)))
+    const node = (over: Partial<(typeof view.nodes)[number]>) => ({ ...view.nodes.find((n) => n.role !== 'suspect')!, ...over })
+    expect(tileSize(node({ received: most, sent: 0 }), most)).toBe('l')
+    expect(tileSize(node({ received: most * 0.2, sent: 0 }), most)).toBe('m')
+    expect(tileSize(node({ received: most * 0.01, sent: 0 }), most)).toBe('s')
+    expect(tileSize(view.nodes.find((n) => n.role === 'suspect')!, most)).toBe('l')
+    const sides = new Set(toElements(view).filter((e) => e.group === 'nodes' && e.data.side).map((e) => e.data.side))
+    for (const side of sides) expect([...Object.values(TILE), 16]).toContain(side)
   })
 
   it('has a border for every label tier, each of a different style', () => {

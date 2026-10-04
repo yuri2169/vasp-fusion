@@ -1,5 +1,5 @@
 import cytoscape, { type Core, type EventObject } from 'cytoscape'
-import { FileCode, Image, Layers, Maximize2, Minus, Plus, Route } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CaseDetail } from '../api/models'
 import { Button } from '../components/Button'
@@ -11,9 +11,10 @@ import { downloadText, downloadUrl } from '../lib/download'
 import { formatAmount, formatDateTime } from '../lib/format'
 import { count, plural } from '../overview/words'
 import { toGraphML } from '../lib/graphml'
+import { replaySteps, shownAt, type ReplayStep } from '../lib/replay'
 import { ROLE_NAMES } from './caseText'
 import { GraphLegend } from './GraphLegend'
-import { readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
+import { captionY, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
 
 /** The page's colours as the canvas needs them, read again whenever the theme changes. */
 function useThemeColors(): ThemeColors {
@@ -55,6 +56,12 @@ const PER_HOP = 12
 const MORE = 50
 const hopName = (column: number) => (column < 0 ? 'the funders' : `hop ${column}`)
 
+/** One transfer of the replay is on screen this long before the next. */
+const STEP_MS = 750
+const DRAW_MS = 520
+
+const reducedMotion = () => typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 /** Never drawn larger than life: the type on the canvas is then 14, as on the page. */
 const MAX_ZOOM = 1
 
@@ -76,8 +83,10 @@ export interface FlowGraphProps {
 }
 
 /** The fund-flow graph: the Hop Rail's path on the first line, its side branches under it,
- *  funders to the left. Click a wallet to open it; every wallet is also a row in the Wallets
- *  tab, so nothing here is reachable by mouse only. */
+ *  funders to the left. Click a wallet to open it; drag one to move it out of the way (it
+ *  stays there until Reset layout). The replay draws the transfers in the order they
+ *  happened. Every wallet is also a row in the Wallets tab, and every transfer a row in the
+ *  Transfers tab, so nothing here is reachable by mouse only. */
 export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) {
   const container = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
@@ -107,8 +116,29 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const elements = useMemo(() => toElements(view), [view])
   const shown = shownAs(view, selected)
 
+  // --- the replay: transfers in the order they happened -----------------------
+  const steps = useMemo(() => replaySteps(view), [view])
+  const [still] = useState(reducedMotion)
+  // How many transfers are drawn. All of them, unless the officer is replaying.
+  // It belongs to one picture: another case, a grouping or an opened hop starts it over.
+  const [replay, setReplay] = useState<{ shape: string; at: number | null; play: boolean }>({ shape: '', at: null, play: false })
   const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}`
   const fitted = useRef<string | null>(null)
+
+  const mine = replay.shape === shape
+  const now = Math.min((mine ? replay.at : null) ?? steps.length, steps.length)
+  const playing = mine && replay.play && now < steps.length
+  const setAt = (at: number, play = false) => setReplay({ shape, at, play })
+  const step = (by: number) => setAt(Math.max(0, Math.min(steps.length, now + by)))
+  const toggle = () => {
+    if (still) step(1)
+    else if (playing) setAt(now)
+    else setAt(now >= steps.length ? 0 : now, true)
+  }
+
+  // Where the officer dragged a wallet to. Kept while this case is open; a redraw puts each
+  // one back where it was left.
+  const moved = useRef({ id: c.id, at: new Map<string, { x: number; y: number }>() })
 
   const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
 
@@ -129,6 +159,17 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     }
   }
 
+  /** Every wallet back where the layout put it. */
+  const resetLayout = () => {
+    const cy = cyRef.current
+    moved.current.at.clear()
+    if (!cy) return
+    cy.batch(() => {
+      for (const el of elements) if (el.group === 'nodes' && el.position) cy.getElementById(el.data.id!).position({ ...el.position })
+    })
+    fit()
+  }
+
   const zoomBy = (factor: number) => {
     const cy = cyRef.current
     if (!cy) return
@@ -145,7 +186,9 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       // The wheel scrolls the page, as everywhere else; zoom is on the buttons.
       userZoomingEnabled: false,
       boxSelectionEnabled: false,
-      autoungrabify: true,
+      // A wallet can be dragged out of the way. A drag is not a click: Cytoscape sends
+      // `tap` only when the pointer did not move.
+      autoungrabify: false,
       // A large graph is moved as one picture and redrawn when the drag ends; a small one is
       // redrawn every frame, which is sharper and costs nothing at that size.
       textureOnViewport: big,
@@ -188,6 +231,24 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     cy.on('mouseout', 'node', leave)
     cy.on('mouseout', 'edge', leave)
     cy.on('pan zoom', () => setHover(null))
+    cy.on('grab drag', 'node', () => {
+      setHover(null)
+      if (container.current) container.current.style.cursor = 'grabbing'
+    })
+    // The name over a wallet goes where the wallet goes.
+    cy.on('position', 'node', (e: EventObject) => {
+      const id: string = e.target.id()
+      if (id.startsWith('caption:')) return
+      const caption = cy.getElementById(`caption:${id}`)
+      if (!caption.nonempty()) return
+      const { x, y } = e.target.position()
+      caption.position({ x, y: captionY(y, e.target.data('side') ?? 0) })
+    })
+    cy.on('dragfree', 'node', (e: EventObject) => {
+      const { x, y } = e.target.position()
+      moved.current.at.set(e.target.id(), { x, y })
+      if (container.current) container.current.style.cursor = ''
+    })
 
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => cy.resize())
     observer?.observe(container.current)
@@ -207,7 +268,15 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     if (!cy) return
     cy.batch(() => {
       cy.elements().remove()
-      cy.add(elements)
+      // Copies: Cytoscape keeps the position object it is given and moves it on a drag, and
+      // the layout's own positions are what Reset layout goes back to.
+      cy.add(elements.map((el) => (el.position ? { ...el, position: { ...el.position } } : el)))
+      // A wallet that was dragged stays where it was put; nothing here refits for it.
+      if (moved.current.id !== c.id) moved.current = { id: c.id, at: new Map() }
+      for (const [id, at] of moved.current.at) {
+        const node = cy.getElementById(id)
+        if (node.nonempty()) node.position(at)
+      }
     })
     // Fit when the picture is a different one (another case, grouped, a hop opened), not when a
     // selection in a large graph only brought one more wallet into it: the officer's place stays.
@@ -215,7 +284,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       fit()
       fitted.current = shape
     }
-  }, [elements, shape])
+  }, [elements, shape, c.id])
 
   // --- the selection: its path stays, the rest steps back ---------------------
   useEffect(() => {
@@ -234,6 +303,43 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     })
   }, [view, elements, shown])
 
+  // --- the replay on the canvas: what has not moved yet is not drawn -----------
+  useEffect(() => {
+    const cy = cyRef.current
+    if (!cy) return
+    cy.batch(() => {
+      cy.elements().removeClass('ahead')
+      if (now >= steps.length) return
+      const on = shownAt(view, steps, now)
+      cy.elements().forEach((el) => {
+        const id = el.data('owner') ?? el.id()
+        if (!on.nodes.has(id) && !on.edges.has(id)) el.addClass('ahead')
+      })
+    })
+  }, [view, elements, steps, now])
+
+  // The transfer that has just been added draws in, and its amount counts up to what it was.
+  // With reduced motion, or on a step back, it is simply there.
+  const last = useRef(now)
+  useEffect(() => {
+    const cy = cyRef.current
+    const forward = now === last.current + 1
+    last.current = now
+    if (!cy || still || !forward || now < 1) return
+    return drawIn(cy, steps[now - 1])
+  }, [steps, now, still])
+
+  useEffect(() => {
+    if (!playing) return
+    const timer = window.setTimeout(() => setReplay((r) => ({ ...r, at: now + 1 })), STEP_MS)
+    return () => window.clearTimeout(timer)
+  }, [playing, now])
+
+  const current = now > 0 ? steps[now - 1] : null
+  const said = current
+    ? `Transfer ${now} of ${steps.length}: ${formatAmount(current.amount, current.asset)}${current.time ? `, ${formatDateTime(current.time)}` : ''}`
+    : `Before the first of ${plural(steps.length, 'transfer')}`
+
   const rows = view.nodes.reduce((max, n) => Math.max(max, n.row), 0) + 1
   const height = Math.min(640, Math.max(320, rows * 90 + 96))
   const transfers = view.edges.reduce((n, e) => n + e.transfers.length, 0)
@@ -249,6 +355,9 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         <div className="flex flex-wrap items-center gap-1">
           <Button size="sm" variant="ghost" icon={<Maximize2 size={13} aria-hidden />} onClick={() => fit()}>
             Fit
+          </Button>
+          <Button size="sm" variant="ghost" icon={<RotateCcw size={13} aria-hidden />} title="Put every wallet back where the layout drew it" onClick={resetLayout}>
+            Reset layout
           </Button>
           <Button size="sm" variant="ghost" icon={<Route size={13} aria-hidden />} onClick={() => fit(true)}>
             Focus path
@@ -294,6 +403,65 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
           </Button>
         </div>
       </div>
+
+      {drawable && steps.length > 1 && (
+        <div
+          role="group"
+          aria-label="Replay the money"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule px-4 py-1.5"
+          onKeyDown={(e) => {
+            const on = e.target as HTMLElement
+            if (e.key === ' ' && on.tagName !== 'BUTTON') {
+              e.preventDefault()
+              toggle()
+            } else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && on.tagName !== 'INPUT') {
+              e.preventDefault()
+              step(e.key === 'ArrowRight' ? 1 : -1)
+            }
+          }}
+        >
+          <span className="colhead">Replay</span>
+          <div className="flex items-center gap-1">
+            {!still && (
+              <Button
+                size="sm"
+                variant={playing ? 'secondary' : 'ghost'}
+                aria-label={playing ? 'Pause the replay' : 'Play the transfers in the order they happened'}
+                title={playing ? 'Pause (space)' : 'Play the transfers in the order they happened (space)'}
+                icon={playing ? <Pause size={13} aria-hidden /> : <Play size={13} aria-hidden />}
+                onClick={toggle}
+              >
+                {playing ? 'Pause' : 'Play'}
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" aria-label="Previous transfer" title="Previous transfer (left arrow)" disabled={now <= 0} icon={<ChevronLeft size={13} aria-hidden />} onClick={() => step(-1)} />
+            <Button size="sm" variant="ghost" aria-label="Next transfer" title="Next transfer (right arrow)" disabled={now >= steps.length} icon={<ChevronRight size={13} aria-hidden />} onClick={() => step(1)} />
+          </div>
+          <input
+            type="range"
+            aria-label="Transfers drawn, in time order"
+            aria-valuetext={said}
+            min={0}
+            max={steps.length}
+            step={1}
+            value={now}
+            onChange={(e) => setAt(Number(e.target.value))}
+            className="h-1 min-w-[8rem] flex-1 cursor-pointer accent-[var(--chain)]"
+          />
+          <p className="tabular min-w-[18rem] text-sm text-muted" data-testid="replay-now">
+            {current ? (
+              <>
+                Transfer <span className="font-mono text-fg">{now}</span> of <span className="font-mono text-fg">{steps.length}</span>
+                {' · '}
+                <span className="font-mono text-fg">{formatAmount(current.amount, current.asset)}</span>
+                {current.time && ` · ${formatDateTime(current.time)}`}
+              </>
+            ) : (
+              said
+            )}
+          </p>
+        </div>
+      )}
 
       {folded && (
         <div role="group" aria-label="Parts of the graph not drawn" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-sm text-muted">
@@ -341,6 +509,40 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   )
 }
 
+/** Draw one transfer in: the line runs from payer to payee and the amount on it counts up.
+ *  Whatever happens (the end, a pause, another step), the line and the amount are left
+ *  exactly as the stylesheet and the data have them. Returns the way to stop early. */
+function drawIn(cy: Core, step: ReplayStep): () => void {
+  const edge = cy.getElementById(step.edge)
+  if (!edge.nonempty()) return () => {}
+  const real: string = edge.data('label')
+  const a = edge.source().position()
+  const b = edge.target().position()
+  const length = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y))
+  const started = performance.now()
+  let frame = 0
+  let done = false
+  const settle = () => {
+    if (done) return
+    done = true
+    cancelAnimationFrame(frame)
+    edge.stop(true, false)
+    edge.removeStyle()
+    edge.data('label', real)
+  }
+  edge.style({ 'line-style': 'dashed', 'line-dash-pattern': [length, length], 'line-dash-offset': length, 'target-arrow-shape': 'none' })
+  edge.animate({ style: { 'line-dash-offset': 0 } }, { duration: DRAW_MS, easing: 'ease-out', complete: settle })
+  const tick = () => {
+    if (done) return
+    const part = Math.min(1, (performance.now() - started) / DRAW_MS)
+    if (part >= 1) return settle()
+    if (real) edge.data('label', formatAmount(step.amount * part, step.asset))
+    frame = requestAnimationFrame(tick)
+  }
+  if (real) frame = requestAnimationFrame(tick)
+  return settle
+}
+
 function NodeCard({ node }: { node: FlowNode }) {
   if (node.kind === 'more')
     return (
@@ -372,7 +574,7 @@ function NodeCard({ node }: { node: FlowNode }) {
         {' · '}
         {TIERS[node.tier ?? 'none'].name}
       </span>
-      <span className="mt-1 block text-muted">Click to open it in the side panel</span>
+      <span className="mt-1 block text-muted">Click to open it in the side panel. Drag to move it.</span>
     </>
   )
 }

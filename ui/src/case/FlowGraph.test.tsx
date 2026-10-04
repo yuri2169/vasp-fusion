@@ -16,14 +16,34 @@ const fake = vi.hoisted(() => {
     handlers: [] as { event: string; selector?: string; handler: Handler }[],
     added: [] as { data: { id: string } }[][],
     calls: [] as string[],
+    options: {} as Record<string, unknown>,
+    placed: [] as [string, { x: number; y: number }][],
+    hidden: [] as string[],
   }
-  const collection = () => {
+  const collection = (id = '') => {
     const c = {
       remove: () => c,
       removeClass: () => c,
       addClass: () => c,
-      forEach: () => c,
-      nonempty: () => false,
+      forEach: (fn?: (el: unknown) => void) => {
+        // every element last handed over, so that the component's class passes can be seen
+        if (fn && id === '*')
+          for (const e of state.added.at(-1) ?? [])
+            fn({ id: () => e.data.id, data: (key: string) => (e.data as Record<string, unknown>)[key], addClass: (name: string) => name === 'ahead' && state.hidden.push(e.data.id) })
+        return c
+      },
+      nonempty: () => id !== '',
+      position: (at?: { x: number; y: number }) => {
+        if (at) state.placed.push([id, at])
+        return at ? c : { x: 0, y: 0 }
+      },
+      data: () => '',
+      source: () => c,
+      target: () => c,
+      style: () => c,
+      animate: () => c,
+      stop: () => c,
+      removeStyle: () => c,
     }
     return c
   }
@@ -33,9 +53,9 @@ const fake = vi.hoisted(() => {
       return cy
     },
     batch: (fn: () => void) => fn(),
-    elements: collection,
-    nodes: collection,
-    getElementById: collection,
+    elements: () => collection('*'),
+    nodes: () => collection(),
+    getElementById: (id: string) => collection(id),
     add: (elements: { data: { id: string } }[]) => {
       state.added.push(elements)
     },
@@ -52,7 +72,7 @@ const fake = vi.hoisted(() => {
   return { state, cy }
 })
 
-vi.mock('cytoscape', () => ({ default: () => fake.cy }))
+vi.mock('cytoscape', () => ({ default: (options: Record<string, unknown>) => ((fake.state.options = options), fake.cy) }))
 const downloads = vi.hoisted(() => ({ url: vi.fn(), text: vi.fn() }))
 vi.mock('../lib/download', () => ({ downloadUrl: downloads.url, downloadText: downloads.text }))
 
@@ -75,6 +95,8 @@ beforeEach(() => {
   fake.state.handlers.length = 0
   fake.state.added.length = 0
   fake.state.calls.length = 0
+  fake.state.placed.length = 0
+  fake.state.hidden.length = 0
   downloads.url.mockClear()
   downloads.text.mockClear()
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({} as never)
@@ -171,6 +193,131 @@ describe('FlowGraph', () => {
     expect(within(legend).getByText(/CoinDCX, the exchange this case names/)).toBeInTheDocument()
     // not in this case, so not in its legend
     expect(within(legend).queryByText('Mixer')).not.toBeInTheDocument()
+  })
+})
+
+describe('FlowGraph: dragging', () => {
+  it('lets a wallet be dragged, and a drag is not a click', () => {
+    const onSelect = vi.fn()
+    render(<FlowGraph c={hero} selected={null} onSelect={onSelect} />)
+    expect(fake.state.options.autoungrabify).toBe(false)
+    const id = hero.graph.nodes[1].id
+    fire('grab', 'node', element(id))
+    fire('dragfree', 'node', element(id, { position: () => ({ x: 400, y: -120 }) }))
+    expect(onSelect).not.toHaveBeenCalled()
+  })
+
+  it('keeps a dragged wallet where it was put when the picture is drawn again, without refitting', async () => {
+    const { rerender } = render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const id = hero.graph.nodes[1].id
+    fire('dragfree', 'node', element(id, { position: () => ({ x: 400, y: -120 }) }))
+    fake.state.calls.length = 0
+    fake.state.placed.length = 0
+    // the theme changes, a selection is made: the same case is handed over again
+    rerender(<FlowGraph c={{ ...hero }} selected={id} onSelect={() => {}} />)
+    expect(fake.state.placed).toContainEqual([id, { x: 400, y: -120 }])
+    expect(fake.state.calls).not.toContain('fit')
+  })
+
+  it('moves the name over a wallet with the wallet', () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    fake.state.placed.length = 0
+    fire('position', 'node', element('TXYZ', { position: () => ({ x: 50, y: 100 }), data: (key: string) => (key === 'side' ? 36 : undefined) }))
+    expect(fake.state.placed).toEqual([['caption:TXYZ', { x: 50, y: 100 - 18 - 9 }]])
+    // a caption moving does not move anything else
+    fake.state.placed.length = 0
+    fire('position', 'node', element('caption:TXYZ', { position: () => ({ x: 0, y: 0 }) }))
+    expect(fake.state.placed).toEqual([])
+  })
+
+  it('puts every wallet back on Reset layout', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const id = hero.graph.nodes[1].id
+    fire('dragfree', 'node', element(id, { position: () => ({ x: 400, y: -120 }) }))
+    fake.state.placed.length = 0
+    fake.state.calls.length = 0
+    await userEvent.click(screen.getByRole('button', { name: 'Reset layout' }))
+    const back = fake.state.placed.find(([at]) => at === id)!
+    expect(back[1]).not.toEqual({ x: 400, y: -120 })
+    expect(fake.state.calls).toContain('fit')
+  })
+})
+
+describe('FlowGraph: replay the money', () => {
+  const replay = () => screen.getByRole('group', { name: 'Replay the money' })
+  const nowText = () => screen.getByTestId('replay-now').textContent
+  const total = () => Number(within(replay()).getByRole('slider').getAttribute('max'))
+
+  it('starts complete: every transfer drawn, nothing hidden', () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const slider = within(replay()).getByRole('slider', { name: 'Transfers drawn, in time order' })
+    expect(Number((slider as HTMLInputElement).value)).toBe(total())
+    expect(fake.state.hidden).toEqual([])
+    expect(nowText()).toContain(`Transfer ${total()} of ${total()}`)
+  })
+
+  it('steps back and forward one transfer at a time, hiding what has not moved yet', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const n = total()
+    await userEvent.click(within(replay()).getByRole('button', { name: 'Previous transfer' }))
+    expect(nowText()).toContain(`Transfer ${n - 1} of ${n}`)
+    expect(fake.state.hidden.length).toBeGreaterThan(0)
+    await userEvent.click(within(replay()).getByRole('button', { name: 'Next transfer' }))
+    expect(nowText()).toContain(`Transfer ${n} of ${n}`)
+    expect(within(replay()).getByRole('button', { name: 'Next transfer' })).toBeDisabled()
+  })
+
+  it('plays from the start to the end and stops there, on the real amounts', () => {
+    vi.useFakeTimers()
+    try {
+      render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+      const n = total()
+      act(() => within(replay()).getByRole('button', { name: /^Play/ }).click())
+      expect(nowText()).toContain(`Before the first of ${n} transfers`)
+      expect(within(replay()).getByRole('button', { name: 'Pause the replay' })).toBeInTheDocument()
+      for (let i = 0; i < n + 2; i++) act(() => void vi.advanceTimersByTime(800))
+      expect(nowText()).toContain(`Transfer ${n} of ${n}`)
+      expect(within(replay()).getByRole('button', { name: /^Play/ })).toBeInTheDocument()
+      // every amount the replay says is one a drawn edge carries
+      expect(within(replay()).getByRole('slider').getAttribute('aria-valuetext')).toMatch(new RegExp(`^Transfer ${n} of ${n}: `))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('answers to the keyboard: space plays and pauses, arrows step', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const n = total()
+    const slider = within(replay()).getByRole('slider')
+    slider.focus()
+    await userEvent.keyboard(' ')
+    expect(within(replay()).getByRole('button', { name: 'Pause the replay' })).toBeInTheDocument()
+    await userEvent.keyboard(' ')
+    expect(within(replay()).getByRole('button', { name: /^Play/ })).toBeInTheDocument()
+    within(replay()).getByRole('button', { name: 'Next transfer' }).focus()
+    await userEvent.keyboard('{ArrowRight}{ArrowRight}')
+    expect(nowText()).toContain(`Transfer 2 of ${n}`)
+    await userEvent.keyboard('{ArrowLeft}')
+    expect(nowText()).toContain(`Transfer 1 of ${n}`)
+  })
+
+  it('with reduced motion, is a step-by-step control: no play, nothing animated', async () => {
+    const animate = vi.fn()
+    const original = fake.cy.getElementById
+    fake.cy.getElementById = ((id: string) => ({ ...original(id), animate })) as typeof original
+    const media = vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({ matches: query.includes('reduced-motion'), media: query, addEventListener: () => {}, removeEventListener: () => {} }) as unknown as MediaQueryList)
+    try {
+      render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+      const n = total()
+      expect(within(replay()).queryByRole('button', { name: /^Play/ })).not.toBeInTheDocument()
+      await userEvent.click(within(replay()).getByRole('button', { name: 'Previous transfer' }))
+      await userEvent.click(within(replay()).getByRole('button', { name: 'Next transfer' }))
+      expect(nowText()).toContain(`Transfer ${n} of ${n}`)
+      expect(animate).not.toHaveBeenCalled()
+    } finally {
+      media.mockRestore()
+      fake.cy.getElementById = original
+    }
   })
 })
 

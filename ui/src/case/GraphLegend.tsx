@@ -2,52 +2,48 @@ import type { Tier } from '../api/models'
 import { TIERS } from '../components/TierTag'
 import type { FlowView, Role } from '../lib/caseGraph'
 import { ROLE_NAMES, ROLE_ORDER } from './caseText'
+import { iconMarkup, ROLE_ICONS } from './roleIcons'
 
 const BOX = { w: 30, h: 20 }
 
-/** The node shapes of the canvas, redrawn small in SVG (Cytoscape's shape names in flowStyle.ts). */
-function shapePath(role: Role): { d?: string; circle?: number; rect?: number } {
+/** A tile's colours as on the canvas (flowStyle.ts, tileLook), in the page's own tokens. */
+function tileVars(role: Role): { fill: string; ink: string; stroke: string } {
   switch (role) {
     case 'suspect':
-      return { d: 'M8 3h14v14H8z' }
+      return { fill: 'var(--chain)', ink: 'var(--surface)', stroke: 'var(--chain)' }
     case 'intermediary':
-      return { d: 'M10 5h10v10H10z' }
+      return { fill: 'var(--chain-wash)', ink: 'var(--chain)', stroke: 'var(--chain)' }
     case 'unknown':
-      return { d: 'M12 7h6v6h-6z' }
+      return { fill: 'var(--surface)', ink: 'var(--data)', stroke: 'var(--data)' }
     case 'hub':
-      return { d: 'M9 2h12l6 8-6 8H9l-6-8z' }
-    case 'exchange':
-    case 'exchange_hot':
-      return { d: 'M7 3h16l4 4v6l-4 4H7l-4-4V7z' }
-    case 'exchange_deposit':
-      return { d: 'M3 3h16l8 7-8 7H3z' }
-    case 'custodial_wallet':
-      return { rect: 8 }
-    case 'swap_service':
-      return { d: 'M9 3h19l-7 14H2z' }
-    case 'bridge':
-      return { d: 'M15 1l10 9-10 9-10-9z' }
+      return { fill: 'var(--data)', ink: 'var(--surface)', stroke: 'var(--data)' }
     case 'mixer':
-      return { d: 'M3 3h24l-5 7 5 7H3l5-7z' }
     case 'sanctioned':
-      return { d: 'M10 2h10l6 5v6l-6 5H10l-6-5V7z' }
+      return { fill: 'var(--danger)', ink: 'var(--on-seal)', stroke: 'var(--ink)' }
+    default:
+      return { fill: 'var(--network-wash)', ink: 'var(--network)', stroke: 'var(--network)' }
   }
 }
 
+/** The tile of the canvas, redrawn small: the same square, fill and icon. */
 function RoleGlyph({ role }: { role: Role }) {
-  const shape = shapePath(role)
-  const fill = role === 'suspect' ? 'var(--chain)' : role === 'sanctioned' || role === 'mixer' ? 'var(--danger)' : role === 'hub' ? 'var(--surface-2)' : 'var(--surface)'
-  const common = { fill, stroke: role === 'suspect' || role === 'intermediary' || role === 'unknown' ? 'var(--chain)' : 'var(--ink)', strokeWidth: 1 }
+  const look = tileVars(role)
+  const icon = ROLE_ICONS[role]
+  const side = icon ? 20 : 12
   return (
-    <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
-      {shape.circle ? (
-        <circle cx={BOX.w / 2} cy={BOX.h / 2} r={shape.circle} {...common} />
-      ) : shape.rect ? (
-        <rect x={3} y={3} width={24} height={14} rx={shape.rect} {...common} />
-      ) : (
-        <path d={shape.d} {...common} />
+    <svg aria-hidden width={BOX.h} height={BOX.h} viewBox="0 0 20 20" className="shrink-0">
+      <rect x={(20 - side) / 2 + 0.5} y={(20 - side) / 2 + 0.5} width={side - 1} height={side - 1} fill={look.fill} stroke={look.stroke} strokeDasharray={icon ? undefined : '3 2'} />
+      {icon && (
+        <g
+          transform="translate(4 4) scale(0.5)"
+          fill="none"
+          stroke={look.ink}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          dangerouslySetInnerHTML={{ __html: iconMarkup(icon) }}
+        />
       )}
-      {role === 'sanctioned' && <rect x={10} y={8.5} width={10} height={3} fill="var(--on-seal)" />}
     </svg>
   )
 }
@@ -87,7 +83,7 @@ export function GraphLegend({ view, named }: { view: FlowView; named?: string | 
 
   return (
     <div role="group" aria-label="How to read the graph" className="grid gap-x-6 gap-y-2 border-t border-rule px-4 py-3 sm:grid-cols-[auto_1fr]">
-      <span className="colhead pt-1">Shape: role</span>
+      <span className="colhead pt-1">Icon: role</span>
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
         {roles.map((role) => (
           <li key={role} className={item}>
@@ -95,6 +91,14 @@ export function GraphLegend({ view, named }: { view: FlowView; named?: string | 
             {ROLE_NAMES[role]}
           </li>
         ))}
+        <li className={item}>
+          <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
+            <rect x={0.5} y={12.5} width={5} height={5} fill="none" stroke="var(--ink-soft)" />
+            <rect x={7.5} y={9.5} width={8} height={8} fill="none" stroke="var(--ink-soft)" />
+            <rect x={17.5} y={5.5} width={12} height={12} fill="none" stroke="var(--ink-soft)" />
+          </svg>
+          A larger tile carried more of the money
+        </li>
         {hasMore && (
           <li className={item}>
             <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
