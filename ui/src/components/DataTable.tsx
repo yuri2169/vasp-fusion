@@ -29,7 +29,12 @@ export interface DataTableProps<T> {
   empty?: ReactNode
   /** The body scrolls under a sticky header once the table is taller than this. */
   maxHeight?: CSSProperties['maxHeight']
+  /** Rows drawn at first, and added by each "Show more". A table of thousands of rows (a large
+   *  case's wallets or transfers) would otherwise hold up the page while it is laid out. */
+  pageSize?: number
 }
+
+const PAGE = 200
 
 const INTERACTIVE = 'a, button, input, select, textarea, [role="button"]'
 
@@ -39,8 +44,9 @@ function compare(a: string | number | null, b: string | number | null, dir: 1 | 
   return String(a).localeCompare(String(b), 'en', { numeric: true }) * dir
 }
 
-export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRowOpen, loading, empty, maxHeight }: DataTableProps<T>) {
+export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRowOpen, loading, empty, maxHeight, pageSize = PAGE }: DataTableProps<T>) {
   const [sort, setSort] = useState<Sort | null>(initialSort ?? null)
+  const [limit, setLimit] = useState(pageSize)
 
   const sorted = useMemo(() => {
     const column = sort && columns.find((c) => c.key === sort.key)
@@ -52,6 +58,9 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
       .sort((a, b) => compare(value(a.row), value(b.row), dir) || a.i - b.i)
       .map(({ row }) => row)
   }, [rows, columns, sort])
+
+  const visible = sorted.length > limit ? sorted.slice(0, limit) : sorted
+  const left = sorted.length - visible.length
 
   const toggle = (key: string) => setSort((s) => (s?.key === key && s.dir === 'asc' ? { key, dir: 'desc' } : { key, dir: 'asc' }))
 
@@ -122,7 +131,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
             </tr>
           )}
           {!loading &&
-            sorted.map((row) => (
+            visible.map((row) => (
               <tr
                 key={rowKey(row)}
                 tabIndex={onRowOpen ? 0 : undefined}
@@ -145,6 +154,19 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
             ))}
         </tbody>
       </table>
+      {!loading && left > 0 && (
+        <div className="sticky left-0 flex flex-wrap items-center gap-3 border-t border-rule px-3 py-2 text-xs text-muted">
+          <span aria-live="polite">
+            Showing {visible.length.toLocaleString('en-US')} of {sorted.length.toLocaleString('en-US')}
+          </span>
+          <button type="button" className="rounded-sm font-medium text-fg underline underline-offset-2 hover:no-underline" onClick={() => setLimit((n) => n + pageSize)}>
+            Show {Math.min(pageSize, left).toLocaleString('en-US')} more
+          </button>
+          <button type="button" className="rounded-sm font-medium text-fg underline underline-offset-2 hover:no-underline" onClick={() => setLimit(Number.POSITIVE_INFINITY)}>
+            Show all {sorted.length.toLocaleString('en-US')}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

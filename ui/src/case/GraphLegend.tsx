@@ -78,8 +78,10 @@ const item = 'flex items-center gap-1.5 whitespace-nowrap text-xs text-fg'
 
 /** How to read the picture, in words: only the shapes and borders this case uses. */
 export function GraphLegend({ view, named }: { view: FlowView; named?: string | null }) {
-  const roles = ROLE_ORDER.filter((role) => view.nodes.some((n) => n.role === role))
-  const tiers = TIER_ORDER.filter((tier) => view.nodes.some((n) => n.role !== 'suspect' && (n.tier ?? 'none') === tier))
+  const wallets = view.nodes.filter((n) => n.kind !== 'more')
+  const roles = ROLE_ORDER.filter((role) => wallets.some((n) => n.role === role))
+  const tiers = TIER_ORDER.filter((tier) => wallets.some((n) => n.role !== 'suspect' && (n.tier ?? 'none') === tier))
+  const hasMore = view.nodes.some((n) => n.kind === 'more')
   const hasInbound = view.edges.some((e) => e.direction === 'inbound')
   const hasNamed = view.nodes.some((n) => n.named)
 
@@ -93,6 +95,14 @@ export function GraphLegend({ view, named }: { view: FlowView; named?: string | 
             {ROLE_NAMES[role]}
           </li>
         ))}
+        {hasMore && (
+          <li className={item}>
+            <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
+              <rect x={2} y={4} width={26} height={12} rx={3} fill="var(--surface-sunk)" stroke="var(--fg-muted)" strokeWidth={1.5} strokeDasharray="4 3" />
+            </svg>
+            The rest of a hop, not drawn one by one
+          </li>
+        )}
       </ul>
       <span className="eyebrow pt-0.5">Border: label</span>
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5">

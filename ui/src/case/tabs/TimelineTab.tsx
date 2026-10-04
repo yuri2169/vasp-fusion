@@ -1,6 +1,8 @@
+import { useMemo, useState } from 'react'
 import type { CaseDetail, Chain, GraphNode } from '../../api/models'
 import { AddressChip } from '../../components/AddressChip'
 import { Amount } from '../../components/Amount'
+import { Button } from '../../components/Button'
 import { EmptyState } from '../../components/EmptyState'
 import { TxHash } from '../../components/TxHash'
 import { TypologyFlag } from '../../components/TypologyFlag'
@@ -93,11 +95,24 @@ function Event({
   )
 }
 
+const TIMELINE_PAGE = 150
+
 /** The money in the order it moved: received, sent, forwarded within minutes, deposited.
  *  Times are block times, in UTC. A pattern the trace saw sits on the transfer that shows it. */
 export function TimelineTab({ c, onSelect }: { c: CaseDetail; onSelect: (address: string) => void }) {
-  const { days, unplaced } = timelineOf(c)
-  if (days.length === 0)
+  const { days: all, unplaced } = useMemo(() => timelineOf(c), [c])
+  const [limit, setLimit] = useState(TIMELINE_PAGE)
+  // A large case has thousands of transfers: whole days are shown until the limit is passed.
+  const total = all.reduce((n, day) => n + day.events.length, 0)
+  const days: typeof all = []
+  let shown = 0
+  for (const day of all) {
+    if (shown >= limit) break
+    const events = day.events.slice(0, limit - shown)
+    days.push(events.length === day.events.length ? day : { ...day, events })
+    shown += events.length
+  }
+  if (all.length === 0)
     return <EmptyState title="No transfers were read for this wallet">The timeline fills in once a trace has found transfers.</EmptyState>
   const nodes = new Map(c.graph.nodes.map((n) => [n.id, n]))
 
@@ -118,6 +133,16 @@ export function TimelineTab({ c, onSelect }: { c: CaseDetail; onSelect: (address
           </li>
         ))}
       </ol>
+      {shown < total && (
+        <p className="flex flex-wrap items-center gap-3 text-xs text-muted">
+          <span aria-live="polite">
+            Showing the first {shown.toLocaleString('en-US')} of {total.toLocaleString('en-US')} transfers
+          </span>
+          <Button size="sm" onClick={() => setLimit((n) => n + TIMELINE_PAGE)}>
+            Show {Math.min(TIMELINE_PAGE, total - shown).toLocaleString('en-US')} more
+          </Button>
+        </p>
+      )}
       {unplaced.length > 0 && (
         <section aria-label="Across the trail" className="flex flex-col gap-2">
           <h3 className="eyebrow">Across the trail</h3>

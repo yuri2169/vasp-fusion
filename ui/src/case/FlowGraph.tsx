@@ -5,10 +5,11 @@ import type { CaseDetail } from '../api/models'
 import { Button } from '../components/Button'
 import { TIERS } from '../components/TierTag'
 import { Tip } from '../components/Tip'
-import { buildFlow, clusterable, focusOf, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
+import { BIG_GRAPH, buildFlow, clusterable, focusOf, foldFlow, pathTo, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
 import { cx } from '../lib/cx'
 import { downloadText, downloadUrl } from '../lib/download'
 import { formatAmount, formatDateTime } from '../lib/format'
+import { count, plural } from '../overview/words'
 import { toGraphML } from '../lib/graphml'
 import { ROLE_NAMES } from './caseText'
 import { GraphLegend } from './GraphLegend'
@@ -48,6 +49,12 @@ type Hover = { anchor: DOMRect; node?: FlowNode; edge?: FlowEdge }
 const rectAt = (left: number, top: number, width: number, height: number) =>
   ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) }) as DOMRect
 
+/** A large graph (over BIG_GRAPH wallets): this many wallets a hop are drawn besides the path,
+ *  and a hop's fold gives up this many more each time it is asked. */
+const PER_HOP = 12
+const MORE = 50
+const hopName = (column: number) => (column < 0 ? 'the funders' : `hop ${column}`)
+
 /** Never drawn larger than life: the type on the canvas is then 14, as on the page. */
 const MAX_ZOOM = 1
 
@@ -76,18 +83,33 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const cyRef = useRef<Core | null>(null)
   const tipId = useId()
   const theme = useThemeColors()
-  const [collapse, setCollapse] = useState(false)
+  const big = c.graph.nodes.length > BIG_GRAPH
+  const [collapse, setCollapse] = useState(big)
   const [hover, setHover] = useState<Hover | null>(null)
+  // A large graph: how many hops are drawn (null = as far as the Hop Rail's path goes, 2 at
+  // least), and the hops the officer asked to see more wallets of.
+  const [hops, setHops] = useState<number | null>(null)
+  const [opened, setOpened] = useState<ReadonlyMap<number, number>>(new Map())
 
   const canGroup = clusterable(c)
-  const view = useMemo(() => buildFlow(c, { collapse: collapse && canGroup }), [c, collapse, canGroup])
+  const full = useMemo(() => buildFlow(c, { collapse: collapse && canGroup }), [c, collapse, canGroup])
+  const pathEnds = useMemo(() => full.nodes.reduce((max, n) => (n.onPath ? Math.max(max, n.column) : max), 2), [full])
+  const folded = useMemo(() => {
+    if (!big) return null
+    // The wallet being looked at, and the way to it, are drawn whatever their size.
+    const keep = selected ? pathTo(full, shownAs(full, selected) ?? selected).nodes : undefined
+    return foldFlow(full, { perColumn: PER_HOP, maxHop: hops ?? pathEnds, keep, shown: opened })
+  }, [big, full, hops, pathEnds, opened, selected])
+  const view: FlowView = folded ?? full
   const elements = useMemo(() => toElements(view), [view])
   const shown = shownAs(view, selected)
 
+  const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
+
   // The canvas's handlers outlive a render: they read what is current through these.
-  const live = useRef({ view, onSelect })
+  const live = useRef({ view, onSelect, openMore })
   useEffect(() => {
-    live.current = { view, onSelect }
+    live.current = { view, onSelect, openMore }
   })
 
   const fit = (onlyPath = false) => {
@@ -118,13 +140,21 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       userZoomingEnabled: false,
       boxSelectionEnabled: false,
       autoungrabify: true,
+      // A large graph is moved as one picture and redrawn when the drag ends; a small one is
+      // redrawn every frame, which is sharper and costs nothing at that size.
+      textureOnViewport: big,
       minZoom: 0.2,
       maxZoom: 3,
     })
     cyRef.current = cy
 
     const frame = () => container.current!.getBoundingClientRect()
-    cy.on('tap', 'node', (e: EventObject) => live.current.onSelect(e.target.id()))
+    cy.on('tap', 'node', (e: EventObject) => {
+      const id: string = e.target.id()
+      // The rest of a hop is not a wallet to open: a click draws more of that hop.
+      if (id.startsWith('more:')) live.current.openMore(Number(id.slice('more:'.length)))
+      else live.current.onSelect(id)
+    })
     cy.on('tap', (e: EventObject) => {
       if (e.target === cy) live.current.onSelect(null)
     })
@@ -160,7 +190,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       cy.destroy()
       cyRef.current = null
     }
-  }, [drawable])
+  }, [drawable, big])
 
   useEffect(() => {
     cyRef.current?.style(stylesheet(theme))
@@ -197,6 +227,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const height = Math.min(640, Math.max(320, rows * 90 + 96))
   const transfers = view.edges.reduce((n, e) => n + e.transfers.length, 0)
   const wallets = view.nodes.reduce((n, node) => n + node.members.length, 0)
+  const drawn = view.nodes.reduce((n, node) => n + (node.kind === 'more' ? 0 : node.members.length), 0)
 
   return (
     <section aria-labelledby={`${tipId}-title`} className={cx('rounded-md border border-rule bg-surface', className)}>
@@ -253,10 +284,33 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         </div>
       </div>
 
+      {folded && (
+        <div role="group" aria-label="Parts of the graph not drawn" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-xs text-muted">
+          <p className="mr-auto">
+            Drawing {plural(drawn, 'wallet')} of {c.graph.nodes.length.toLocaleString('en-US')}: the path, and the {PER_HOP} largest of each hop. Every wallet
+            is in the Wallets tab.
+          </p>
+          {folded.folded.map(({ column, wallets: left }) => (
+            <Button key={column} size="sm" variant="ghost" onClick={() => openMore(column)}>
+              Draw {Math.min(MORE, left)} more of {hopName(column)} ({left.toLocaleString('en-US')} folded)
+            </Button>
+          ))}
+          {folded.beyond && (
+            <Button size="sm" variant="secondary" onClick={() => setHops(folded.beyond!.hop)}>
+              Draw hop {folded.beyond.hop} ({plural(folded.beyond.wallets, 'wallet')} from there on)
+            </Button>
+          )}
+        </div>
+      )}
+
       <div
         ref={container}
         role="img"
-        aria-label={`Fund-flow graph: ${wallets} wallets and ${transfers} transfers, left to right by hop. Every wallet is also listed in the Wallets tab.`}
+        aria-label={
+          folded
+            ? `Fund-flow graph: ${drawn} of ${c.graph.nodes.length} wallets drawn, left to right by hop. Every wallet is listed in the Wallets tab.`
+            : `Fund-flow graph: ${wallets} wallets and ${transfers} transfers, left to right by hop. Every wallet is also listed in the Wallets tab.`
+        }
         style={{ height: drawable ? height : undefined }}
         className="w-full"
       />
@@ -277,6 +331,16 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
 }
 
 function NodeCard({ node }: { node: FlowNode }) {
+  if (node.kind === 'more')
+    return (
+      <>
+        <span className="block font-medium">
+          {count(node.members.length)} more {node.members.length === 1 ? 'wallet' : 'wallets'} at {hopName(node.column)}
+        </span>
+        <span className="mt-1 block text-muted">Not drawn one by one: each got less than the wallets shown.</span>
+        <span className="mt-1 block text-muted">Click to draw {Math.min(MORE, node.members.length)} more. All are in the Wallets tab.</span>
+      </>
+    )
   return (
     <>
       {node.kind === 'cluster' ? (

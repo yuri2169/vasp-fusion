@@ -9,9 +9,10 @@ import type { CaseDetail, GraphEdge, GraphNode, LabelOut, Tier } from '../api/mo
 export type Role = GraphNode['role']
 
 export interface FlowNode {
-  /** The address, or `cluster:<name>` for the grouped wallets of one exchange. */
+  /** The address, `cluster:<name>` for the grouped wallets of one exchange, or `more:<column>`
+   *  for the wallets of one hop that a large graph does not draw one by one (foldFlow). */
   id: string
-  kind: 'wallet' | 'cluster'
+  kind: 'wallet' | 'cluster' | 'more'
   role: Role
   /** 0 = the wallet the case is about, 1.. = hops out, -1.. = funders. */
   column: number
@@ -155,9 +156,15 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
 
   // --- rows: the path on line 0, the rest under it, each near what pays it --
   const columns = new Map<number, FlowNode[]>()
-  for (const n of nodes.values()) columns.set(n.column, [...(columns.get(n.column) ?? []), n])
+  // Appended in place: copying the list for every wallet is quadratic in a hop's wallets.
+  const into = <K, V>(map: Map<K, V[]>, key: K, value: V) => {
+    const list = map.get(key)
+    if (list) list.push(value)
+    else map.set(key, [value])
+  }
+  for (const n of nodes.values()) into(columns, n.column, n)
   const sourcesOf = new Map<string, string[]>()
-  for (const e of flowEdges.values()) if (e.direction === 'outbound') sourcesOf.set(e.target, [...(sourcesOf.get(e.target) ?? []), e.source])
+  for (const e of flowEdges.values()) if (e.direction === 'outbound') into(sourcesOf, e.target, e.source)
   const placed = new Set<string>()
   const meanSourceRow = (n: FlowNode) => {
     const rows = (sourcesOf.get(n.id) ?? []).filter((id) => placed.has(id)).map((id) => nodes.get(id)!.row)
@@ -197,7 +204,12 @@ export function pathTo(view: FlowView, id: string): { nodes: Set<string>; edges:
   // Breadth-first along the direction money moved; the heaviest edges are tried first.
   const walk = (from: string, to: string, direction: 'outbound' | 'inbound') => {
     const out = new Map<string, FlowEdge[]>()
-    for (const e of view.edges) if (e.direction === direction) out.set(e.source, [...(out.get(e.source) ?? []), e])
+    for (const e of view.edges) {
+      if (e.direction !== direction) continue
+      const list = out.get(e.source)
+      if (list) list.push(e)
+      else out.set(e.source, [e])
+    }
     for (const list of out.values()) list.sort((a, b) => b.amount - a.amount)
     const cameBy = new Map<string, FlowEdge>()
     const queue = [from]
@@ -221,6 +233,119 @@ export function pathTo(view: FlowView, id: string): { nodes: Set<string>; edges:
   const chain = walk(suspect.id, target.id, 'outbound') ?? walk(target.id, suspect.id, 'inbound')
   if (!chain) return { nodes: new Set([target.id]), edges: new Set() }
   return { nodes: new Set([chain[0].source, ...chain.map((e) => e.target)]), edges: new Set(chain.map((e) => e.id)) }
+}
+
+// --- a large graph: drawn in part, opened on request ---------------------------
+
+/** Above this many wallets a graph is not drawn whole: a column of 400 wallets is 36,000 px
+ *  tall and tells nobody anything. The largest wallets of each hop are drawn, the rest of the
+ *  hop is one node that says how many it stands for, and hops past the answer wait to be asked for. */
+export const BIG_GRAPH = 250
+
+export interface FoldOptions {
+  /** Wallets drawn per hop, besides the ones on the path. */
+  perColumn: number
+  /** Hops out (and funders in) that are drawn; null = all of them. */
+  maxHop: number | null
+  /** Wallets that must be drawn whatever their size: the one being looked at, and the path to it. */
+  keep?: ReadonlySet<string>
+  /** A hop the officer asked to see more of: column → wallets drawn there. */
+  shown?: ReadonlyMap<number, number>
+}
+
+export interface FoldedView extends FlowView {
+  /** Per hop, how many wallets its `more:` node stands for. */
+  folded: { column: number; wallets: number }[]
+  /** The first hop that is not drawn, and how many wallets are at or past it. */
+  beyond: { hop: number; wallets: number } | null
+}
+
+/** A view with at most `perColumn` wallets a hop (plus the path), in the order `buildFlow` gave
+ *  them. Nothing is dropped: a wallet is drawn, counted in its hop's `more:` node, or counted in
+ *  `beyond`; a transfer to a folded wallet is added into the line to its `more:` node. */
+export function foldFlow(view: FlowView, opts: FoldOptions): FoldedView {
+  const columns = new Map<number, FlowNode[]>()
+  let beyond = 0
+  for (const n of view.nodes) {
+    if (opts.maxHop != null && Math.abs(n.column) > opts.maxHop) {
+      beyond += n.members.length
+      continue
+    }
+    const list = columns.get(n.column)
+    if (list) list.push(n)
+    else columns.set(n.column, [n])
+  }
+
+  const rank = (n: FlowNode) => (opts.keep?.has(n.id) ? 3 : n.named ? 2 : n.label ? 1 : 0)
+  const weight = (n: FlowNode) => (n.funder ? n.sent : n.received)
+  const nodes: FlowNode[] = []
+  const standsFor = new Map<string, string>()
+  const folded: FoldedView['folded'] = []
+
+  for (const column of [...columns.keys()].sort((a, b) => a - b)) {
+    const all = columns.get(column)!.sort((a, b) => a.row - b.row)
+    const rest = all.filter((n) => !n.onPath && n.column !== 0)
+    const limit = Math.max(opts.shown?.get(column) ?? opts.perColumn, rest.filter((n) => rank(n) === 3).length)
+    for (const n of all) if (n.onPath || n.column === 0) nodes.push(n), standsFor.set(n.id, n.id)
+    if (rest.length <= limit) {
+      for (const n of rest) nodes.push(n), standsFor.set(n.id, n.id)
+      continue
+    }
+    const drawn = new Set([...rest].sort((a, b) => rank(b) - rank(a) || weight(b) - weight(a) || a.id.localeCompare(b.id)).slice(0, limit))
+    const firstRow = rest[0].row
+    const hidden = rest.filter((n) => !drawn.has(n))
+    rest.filter((n) => drawn.has(n)).forEach((n, i) => {
+      nodes.push({ ...n, row: firstRow + i })
+      standsFor.set(n.id, n.id)
+    })
+    const id = `more:${column}`
+    for (const n of hidden) standsFor.set(n.id, id)
+    nodes.push({
+      id,
+      kind: 'more',
+      role: 'unknown',
+      column,
+      row: firstRow + drawn.size,
+      onPath: false,
+      funder: column < 0,
+      label: null,
+      entity: null,
+      tier: null,
+      named: false,
+      members: hidden.flatMap((n) => n.members),
+      received: hidden.reduce((sum, n) => sum + n.received, 0),
+      sent: hidden.reduce((sum, n) => sum + n.sent, 0),
+    })
+    folded.push({ column, wallets: hidden.reduce((sum, n) => sum + n.members.length, 0) })
+  }
+
+  const edges = new Map<string, FlowEdge>()
+  for (const e of view.edges) {
+    const source = standsFor.get(e.source)
+    const target = standsFor.get(e.target)
+    if (!source || !target) continue // one end is past the hop limit
+    if (source === e.source && target === e.target) {
+      edges.set(e.id, e)
+      continue
+    }
+    const id = `${source}>${target}`
+    const sum = edges.get(id)
+    if (sum) {
+      sum.amount += e.amount
+      sum.transfers.push(...e.transfers)
+    } else edges.set(id, { ...e, id, source, target, onPath: false, transfers: [...e.transfers] })
+  }
+
+  const drawnEdges = [...edges.values()]
+  const hops = view.nodes.reduce((max, n) => Math.max(max, Math.abs(n.column)), 0)
+  return {
+    nodes,
+    edges: drawnEdges,
+    maxAmount: drawnEdges.reduce((max, e) => Math.max(max, e.amount), 0),
+    asset: view.asset,
+    folded,
+    beyond: beyond > 0 && opts.maxHop != null && opts.maxHop < hops ? { hop: opts.maxHop + 1, wallets: beyond } : null,
+  }
 }
 
 /** What stays in view when one wallet is looked at: the path to it. Everything else steps back.

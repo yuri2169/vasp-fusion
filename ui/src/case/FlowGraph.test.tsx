@@ -4,6 +4,7 @@ import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CaseDetail } from '../api/models'
 import { readCase, readMock } from '../test/files'
+import { bigCase } from '../../scripts/big-graph.mjs'
 import { FlowGraph } from './FlowGraph'
 
 /** jsdom has no canvas, so Cytoscape itself is stood in for here: the test checks what the
@@ -170,5 +171,46 @@ describe('FlowGraph', () => {
     expect(within(legend).getByText(/CoinDCX, the exchange this case names/)).toBeInTheDocument()
     // not in this case, so not in its legend
     expect(within(legend).queryByText('Mixer')).not.toBeInTheDocument()
+  })
+})
+
+describe('FlowGraph on a large graph (2,000 wallets, a synthetic shape)', () => {
+  const big = bigCase(2000)
+  const walletsDrawn = () => fake.state.added.at(-1)!.filter((e) => !e.data.id.startsWith('caption:') && !e.data.id.includes('>') && !e.data.id.startsWith('more:'))
+
+  it('draws a bounded part, says how much, and where the rest is', () => {
+    render(<FlowGraph c={big} selected={null} onSelect={() => {}} />)
+    expect(fake.state.added.at(-1)!.length).toBeLessThan(400)
+    const note = screen.getByRole('group', { name: 'Parts of the graph not drawn' })
+    expect(note).toHaveTextContent(new RegExp(`Drawing ${walletsDrawn().length} wallets of 2,000`))
+    expect(note).toHaveTextContent('Every wallet is in the Wallets tab')
+    expect(screen.getByRole('img', { name: /of 2000 wallets drawn.*Wallets tab/ })).toBeInTheDocument()
+  })
+
+  it('draws the next hop, and more of one hop, when asked by button or by a click on the fold', async () => {
+    const onSelect = vi.fn()
+    render(<FlowGraph c={big} selected={null} onSelect={onSelect} />)
+    const before = walletsDrawn().length
+    await userEvent.click(screen.getByRole('button', { name: /^Draw 50 more of hop 2/ }))
+    expect(walletsDrawn().length).toBe(before + 50)
+    fire('tap', 'node', element('more:2'))
+    expect(walletsDrawn().length).toBe(before + 100)
+    expect(onSelect).not.toHaveBeenCalled()
+    await userEvent.click(screen.getByRole('button', { name: /^Draw hop 3/ }))
+    expect(fake.state.added.at(-1)!.some((e) => e.data.id === 'more:3')).toBe(true)
+    expect(screen.getByRole('button', { name: /^Draw hop 4/ })).toBeInTheDocument()
+  })
+
+  it('draws a wallet that is selected from the Wallets tab, however small', () => {
+    const last = big.graph.nodes.filter((n) => n.hop === 2).at(-1)!.id
+    const { rerender } = render(<FlowGraph c={big} selected={null} onSelect={() => {}} />)
+    expect(walletsDrawn().some((e) => e.data.id === last)).toBe(false)
+    rerender(<FlowGraph c={big} selected={last} onSelect={() => {}} />)
+    expect(walletsDrawn().some((e) => e.data.id === last)).toBe(true)
+  })
+
+  it('leaves a small case exactly as it was: no note, every wallet drawn', () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    expect(screen.queryByRole('group', { name: 'Parts of the graph not drawn' })).not.toBeInTheDocument()
   })
 })

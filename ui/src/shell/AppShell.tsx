@@ -1,13 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { FlaskConical } from 'lucide-react'
 import { useEffect } from 'react'
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { ApiError, onUnauthorized } from '../api/client'
 import { keys, useDataSource, useMe } from '../api/queries'
 import { ErrorState } from '../components/ErrorState'
 import { SignInPage } from '../pages/SignInPage'
 import { GlobalSearch } from './GlobalSearch'
 import { NavRail } from './NavRail'
+import { PageBoundary } from './PageBoundary'
 
 /** Says so whenever what is on screen is not live data (the API's X-Data-Source header). */
 function DataSourceTag() {
@@ -33,6 +34,7 @@ function DataSourceTag() {
 export function AppShell() {
   const me = useMe()
   const client = useQueryClient()
+  const { pathname } = useLocation()
 
   // Any route answering 401 "Sign in to continue." means the session ended: ask who is signed in again.
   useEffect(() => onUnauthorized(() => void client.invalidateQueries({ queryKey: keys.me })), [client])
@@ -65,7 +67,9 @@ export function AppShell() {
           <DataSourceTag />
         </header>
         <main id="content" tabIndex={-1} className="mx-auto w-full max-w-content flex-1 px-5 py-7 outline-none lg:px-8 print:max-w-none print:p-0">
-          <Outlet />
+          <PageBoundary resetKey={pathname}>
+            <Outlet />
+          </PageBoundary>
         </main>
       </div>
     </div>

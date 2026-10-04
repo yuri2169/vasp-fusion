@@ -1,4 +1,5 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { api } from '../../api/api'
 import { ApiError } from '../../api/client'
@@ -200,5 +201,17 @@ describe('AuditTab', () => {
     expect((await within(log).findAllByText('demo.officer')).length).toBe(3)
     expect(within(log).getByText('Exported the case file')).toBeInTheDocument()
     await waitFor(() => expect(within(log).getAllByRole('row')).toHaveLength(4))
+  })
+})
+
+describe('the timeline of a large case', () => {
+  it('shows the first 150 transfers, says how many there are, and shows more on request', async () => {
+    const { bigCase } = await import('../../../scripts/big-graph.mjs')
+    const big = bigCase(400)
+    render(<TimelineTab c={big} onSelect={() => {}} />)
+    const total = big.graph.edges.length
+    expect(screen.getByText(`Showing the first 150 of ${total.toLocaleString('en-US')} transfers`)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Show 150 more' }))
+    expect(screen.getByText(`Showing the first 300 of ${total.toLocaleString('en-US')} transfers`)).toBeInTheDocument()
   })
 })

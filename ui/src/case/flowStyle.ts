@@ -97,7 +97,12 @@ export function toElements(view: FlowView): ElementDefinition[] {
         tier: n.tier ?? 'none',
         named: n.named ? 1 : 0,
         onPath: n.onPath ? 1 : 0,
-        label: n.kind === 'cluster' ? `${n.members.length} wallets` : truncateMiddle(n.id, 4, 4),
+        label:
+          n.kind === 'more'
+            ? `+${n.members.length.toLocaleString('en-US')} wallets`
+            : n.kind === 'cluster'
+              ? `${n.members.length} wallets`
+              : truncateMiddle(n.id, 4, 4),
       },
       position,
     })
@@ -197,6 +202,22 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     {
       selector: 'node[kind = "cluster"]',
       style: { width: 58, height: 34, ghost: 'yes', 'ghost-offset-x': 4, 'ghost-offset-y': -4, 'ghost-opacity': 0.45 },
+    },
+
+    // --- the rest of a hop in a large graph: one quiet node, not a wallet -----
+    {
+      selector: 'node[kind = "more"]',
+      style: {
+        shape: 'round-rectangle',
+        width: 58,
+        height: 26,
+        'background-color': t.sunk,
+        'border-style': 'dashed',
+        'border-width': 1.5,
+        'border-color': t.muted,
+        'font-family': '"IBM Plex Sans", system-ui, sans-serif',
+        color: t.fg,
+      },
     },
 
     // --- the owner's name over a node -------------------------------------
