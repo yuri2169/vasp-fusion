@@ -44,13 +44,28 @@ export const useCases = (query?: CasesQuery) => useQuery({ queryKey: keys.cases(
 
 const tracing = (c?: CaseDetail) => c?.status === 'queued' || c?.status === 'running'
 
+/** A case's result changes what the list, the dashboard, the desk, an exchange's page and a
+ *  wallet's page say: they are read again, not left up to 15 seconds behind. */
+function invalidateCaseViews(client: QueryClient) {
+  for (const queryKey of [['cases'], keys.dashboard, keys.desk, keys.requests, ['vasp'], ['wallet']])
+    void client.invalidateQueries({ queryKey })
+}
+
 /** One case. While it is queued or running it is asked for again twice a second, to show its progress. */
-export const useCase = (id: string) =>
-  useQuery({
+export function useCase(id: string) {
+  const client = useQueryClient()
+  return useQuery({
     queryKey: keys.case(id),
-    queryFn: () => api.case(id),
+    queryFn: async () => {
+      const before = client.getQueryData<CaseDetail>(keys.case(id))
+      const now = await api.case(id)
+      // The trace ended while this page was asking: the other pages' figures are now old.
+      if (tracing(before) && !tracing(now)) invalidateCaseViews(client)
+      return now
+    },
     refetchInterval: (q) => (tracing(q.state.data) ? 500 : false),
   })
+}
 
 export const useLabelSearch = (query: LabelQuery, enabled = true) =>
   useQuery({ queryKey: keys.labels(query), queryFn: () => api.labelSearch(query), enabled })
@@ -61,7 +76,7 @@ export function useOpenCase() {
   return useMutation({
     mutationFn: ({ refresh, ...body }: CaseOpen & { refresh?: boolean }) => api.openCase(body, refresh),
     onSuccess: (opened) => {
-      void client.invalidateQueries({ queryKey: ['cases'] })
+      invalidateCaseViews(client)
       // A wallet that already had a case is traced again: drop what was read of it before.
       void client.invalidateQueries({ queryKey: keys.case(opened.id) })
     },

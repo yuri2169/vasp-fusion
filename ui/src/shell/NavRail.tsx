@@ -1,3 +1,4 @@
+import { API_MODE } from '../api/api'
 import { Component, Eye, FolderOpen, Gauge, LayoutDashboard, LogOut, Send, Tags, type LucideIcon } from 'lucide-react'
 import { Link, NavLink, useLocation } from 'react-router'
 import { ApiError } from '../api/client'
@@ -112,14 +113,17 @@ export function NavRail() {
         })}
       </nav>
       <div className="flex flex-col gap-0.5 px-2.5 pb-2">
-        <NavLink
-          to="/kit"
-          title="Component kit"
-          className={({ isActive }) => cx(row, isActive ? 'bg-rail-active text-rail-fg' : 'text-rail-muted hover:bg-rail-active hover:text-rail-fg')}
-        >
-          <Component size={16} aria-hidden className="shrink-0" />
-          <span className={label}>Component kit</span>
-        </NavLink>
+        {/* The kit runs on the demo fixtures, so it is offered only where they are (App.tsx). */}
+        {API_MODE !== 'live' && (
+          <NavLink
+            to="/kit"
+            title="Component kit"
+            className={({ isActive }) => cx(row, isActive ? 'bg-rail-active text-rail-fg' : 'text-rail-muted hover:bg-rail-active hover:text-rail-fg')}
+          >
+            <Component size={16} aria-hidden className="shrink-0" />
+            <span className={label}>Component kit</span>
+          </NavLink>
+        )}
         <ThemeToggle className={cx(row, 'text-rail-muted hover:bg-rail-active hover:text-rail-fg [&>span]:max-lg:sr-only')} />
       </div>
       <div className="border-t border-rail-rule px-2.5 py-3">

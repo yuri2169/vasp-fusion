@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { API_MODE, api } from '../api/api'
 import { ApiError } from '../api/client'
@@ -6,7 +6,6 @@ import type { CaseDetail, Tier } from '../api/models'
 import { useCase, useOpenCase } from '../api/queries'
 import { AbstainPanel } from '../case/AbstainPanel'
 import { AnswerPanel } from '../case/AnswerPanel'
-import { FlowGraph } from '../case/FlowGraph'
 import { DEFAULT_HOPS } from '../case/rules'
 import { TraceAgain } from '../case/TraceAgain'
 import { TraceProgress } from '../case/TraceProgress'
@@ -29,6 +28,10 @@ import { Tabs, type TabItem } from '../components/Tabs'
 import { useToast } from '../components/Toast'
 import { buildFlow, pathTo } from '../lib/caseGraph'
 import { formatDate, formatInr } from '../lib/format'
+
+// The graph library is half of the interface's code. It is fetched when a case is opened, so the
+// list of cases, the sign-in page and the desk paint without it.
+const FlowGraph = lazy(() => import('../case/FlowGraph').then((m) => ({ default: m.FlowGraph })))
 
 /** Owners of the labelled wallets in a case, by address, for the Hop Rail's chips. */
 function labelsOf(c: CaseDetail): Record<string, { entity: string; tier: Tier }> {
@@ -262,7 +265,15 @@ export function CasePage() {
       )}
 
       <div ref={top} className="mt-4 grid scroll-mt-20 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_440px]">
-        <FlowGraph c={c} selected={selected} onSelect={select} className="lg:sticky lg:top-[76px]" />
+        <Suspense
+          fallback={
+            <div aria-busy="true" aria-label="Fund-flow graph, loading" className="min-h-[416px] rounded-md border border-rule bg-surface p-4">
+              <Skeleton width="30%" />
+            </div>
+          }
+        >
+          <FlowGraph c={c} selected={selected} onSelect={select} className="lg:sticky lg:top-[76px]" />
+        </Suspense>
         {selected ? (
           <WalletPanel c={c} id={selected} onSelect={select} onClose={() => select(null)} />
         ) : c.outcome === 'INSUFFICIENT_EVIDENCE' ? (

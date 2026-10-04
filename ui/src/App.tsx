@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router'
 import { Skeleton } from './components/Skeleton'
 import { CasePage } from './pages/CasePage'
 import { CasesPage } from './pages/CasesPage'
-import { KitPage } from './pages/KitPage'
 import { NewCasePage } from './pages/NewCasePage'
 import { NotFoundPage } from './pages/PlaceholderPage'
 import { AppShell } from './shell/AppShell'
@@ -20,6 +19,11 @@ const WalletPage = lazy(() => import('./pages/WalletPage').then((m) => ({ defaul
 const LabelsPage = lazy(() => import('./pages/LabelsPage').then((m) => ({ default: m.LabelsPage })))
 const ModelPage = lazy(() => import('./pages/ModelPage').then((m) => ({ default: m.ModelPage })))
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage })))
+
+// The component kit shows every component on the demo fixtures, so it exists only where the
+// fixtures do (`npm run dev`, a VITE_API=mock build). A live build has no /kit and none of its code.
+const KitPage =
+  import.meta.env.VITE_API === 'live' ? null : lazy(() => import('./pages/KitPage').then((m) => ({ default: m.KitPage })))
 
 const later = (page: ReactNode) => (
   <Suspense
@@ -52,7 +56,7 @@ export function AppRoutes() {
         <Route path="labels" element={later(<LabelsPage />)} />
         <Route path="model" element={later(<ModelPage />)} />
         <Route path="watchlist" element={later(<WatchlistPage />)} />
-        <Route path="kit" element={<KitPage />} />
+        {KitPage && <Route path="kit" element={later(<KitPage />)} />}
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
