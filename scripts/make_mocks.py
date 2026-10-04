@@ -27,7 +27,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from vaspfusion.api import schemas as S  # noqa: E402
-from vaspfusion.api.main import MOCKS, mock_model_for  # noqa: E402
+from vaspfusion import coverage as ps_coverage  # noqa: E402
+from vaspfusion import risk as R  # noqa: E402
+from vaspfusion.api.main import MOCKS, TRACEABLE, mock_model_for  # noqa: E402
+from vaspfusion.desk import intake  # noqa: E402
 from vaspfusion.labels.lookup import DEFAULT_DB, LabelStore  # noqa: E402
 from vaspfusion.labels.threats import tag_of  # noqa: E402
 from vaspfusion.screening import case_threats, screen  # noqa: E402
@@ -347,8 +350,37 @@ def audit_mock(c1: dict, c3: dict, req: dict) -> dict:
 
 def summary(case: dict) -> dict:
     keys = ("id", "address", "chain", "status", "outcome", "top_vasp", "confidence",
-            "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo")
+            "case_ref", "complaint_no", "amount_lost_inr", "created_at", "demo",
+            "risk_class", "risk_score")
     return {k: case[k] for k in keys}
+
+
+def with_risk(case: dict) -> dict:
+    """The risk block the API adds when a case is read (risk.py, on the fixture as it is)."""
+    risk = R.case_risk(S.CaseDetail.model_validate(case).model_dump(mode="json"))
+    return {**case, "risk": risk, "risk_class": risk["risk_class"], "risk_score": risk["score"]}
+
+
+def sim_mock(c1: dict, req: dict) -> dict:
+    """The simulator screen with one complaint (the attributed fixture case) and the
+    fixture request as the portal's side would see it."""
+    entry = {"address": c1["address"], "chain": c1["chain"], "accepted": True,
+             "case_id": c1["id"], "result_sent_at": at(2)}
+    wallet = intake.wallet_view(entry, c1, [req], c1)
+    complaint = {"complaint_ref": "DEMO-NCRP-0001", "agency": "Cyber Crime PS (demonstration)",
+                 "officer": "Insp. D. Officer", "category": "investment_fraud",
+                 "note": "Demo fixture, not a real complaint.", "amount_lost_inr": 4_000_000.0,
+                 "incident_date": None, "callback_url": None, "received_at": at(0)}
+    return {"enabled": True, "notice": intake.NOTICE, "why_disabled": None,
+            "categories": list(S.FraudCategory.__args__),
+            "complaints": [intake.complaint_view(complaint, [wallet])],
+            "requests": [{"id": req["id"], "reference": req["reference"], "vasp": req["vasp"],
+                          "status": req["status"], "asks": req["letter"]["asks"],
+                          "wallets": len(req["letter"]["wallets"]),
+                          "sent_at": req["status_history"][-1]["at"],
+                          "allowed_replies": [s for s in req["allowed_next"]
+                                              if s in intake.REPLIES],
+                          "last_note": req["status_history"][-1].get("note")}]}
 
 
 # ------------------------------------------------------------------ desk + requests
@@ -461,7 +493,9 @@ def main() -> None:
         for c in (c1, c2, c3):  # the suspect wallets are synthetic: no tag of their own
             c["screening"] = screen(None)
             c["threats"] = case_threats(None, c["typology_flags"])
-        cases = [with_receipt(c) for c in (c1, c2, c3)]
+        cases = [with_risk(with_receipt(c)) for c in (c1, c2, c3)]
+        c1, c2, c3 = cases
+        as_json = [S.CaseDetail.model_validate(c).model_dump(mode="json") for c in cases]
         req = request_okx(c1)
         req_summary = {k: req[k] for k in ("id", "reference", "vasp", "status", "case_ids",
                                            "created_at", "due")}
@@ -469,12 +503,15 @@ def main() -> None:
         st = store.stats()
         coverage = {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain",
                                        "by_source")}
+        coverage["traceable_chains"] = list(TRACEABLE)
+        coverage["traceable_total"] = sum(n for c, n in st["by_chain"].items()
+                                          if c in TRACEABLE)
         files = {
             "cases": {"total": 3, "items": [summary(c) for c in cases]},
             **{f"cases/{c['id']}": c for c in cases},
             f"wallets/tron/{c1['address']}": {
                 "address": c1["address"], "chain": "tron", "labels": [],
-                "risk": {"score": None, "reasons": [f["text"] for f in c1["typology_flags"]]},
+                "risk": R.wallet_risk(c1["address"], None, as_json[:1]),
                 "cases": [{"case_id": c1["id"], "role": "suspect", "hop": 0}],
                 "inbound": {"tx_count": 3, "total_usd": 48_500.0, "first_seen": at(-120),
                             "last_seen": at(-5), "top_counterparties": []},
@@ -483,7 +520,7 @@ def main() -> None:
                                                                         ["to_address"]]}},
             f"wallets/tron/{derived['address']}": {
                 "address": derived["address"], "chain": "tron", "labels": [derived],
-                "risk": {"score": None, "reasons": []},
+                "risk": R.wallet_risk(derived["address"], derived, as_json[:1]),
                 "cases": [{"case_id": c1["id"], "role": "exchange_deposit", "hop": 3}]},
             "labels/search": {"query": "coindcx", "total": total, "limit": 10, "offset": 0,
                               "items": [f.as_dict() for f in found]},
@@ -512,8 +549,12 @@ def main() -> None:
                                    "threat": c3["typology_flags"][0]["threat"],
                                    "text": "Case DEMO/2026/003 reached an OFAC-sanctioned "
                                            "address"}],
-                "label_coverage": coverage},
+                "label_coverage": coverage,
+                "risk_classes": {k: sum(1 for c in cases if c["risk_class"] == k)
+                                 for k in R.CLASSES}},
             "labels/coverage": coverage,
+            "coverage": ps_coverage.build(TRACEABLE),
+            "sahyog-sim": sim_mock(c1, req),
             "watchlist": {"items": []},
             "fx": fx_mock(),
             "model": model_mock(),

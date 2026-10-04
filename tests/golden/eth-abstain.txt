@@ -83,6 +83,18 @@ MAIN PATH OF THE FUNDS
   1 | W0 -> W1 | 12,214.70 USDT (Rs 11,70,046) | 23 Sep 2024, 22:14:47 UTC | - | 0x21375a33aa3cb670baa052db6f35d327ad1b0bdee99edb7dbfcc5c76441467e8
   2 | W1 -> W3 | 12,214.70 USDT (Rs 11,70,046) | 23 Apr 2025, 14:06:59 UTC | 212 days | 0xb937ffc7e8c0985122208d4aa101f2baec9708b8f21d7616cf82f491af54dfe0
 
+RISK INDICATORS
+---------------
+Risk class: Low (score 0 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+No indicator is present in the traced funds.
+
+Transaction flows: All 7 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

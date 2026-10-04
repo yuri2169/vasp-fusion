@@ -110,3 +110,13 @@ def test_watch_alerts_are_merged_newest_first(cases):
              "case_id": "tron-coindcx", "text": "Watched wallet: 2 new transfers"}
     d = build_dashboard(cases, desk, [], [alert], watched=3)
     assert d["recent_alerts"][0] == alert and d["counts"]["watched"] == 3
+
+
+def test_finished_cases_are_counted_by_risk_class(cases):
+    from vaspfusion import risk
+    dash = build_dashboard(cases, {"rows": []}, [])
+    done = [c for c in cases if c.get("status") == "done"]
+    assert sum(dash["risk_classes"].values()) == len(done)
+    assert list(dash["risk_classes"]) == list(risk.CLASSES)
+    ofac = next(c for c in cases if c["id"] == "tron-ofac")
+    assert risk.case_risk(ofac)["risk_class"] == "severe" and dash["risk_classes"]["severe"] >= 1

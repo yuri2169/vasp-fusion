@@ -30,6 +30,8 @@ data/abstain_cache.duckdb
 data/desk.duckdb
 data/watch.duckdb
 data/sahyog_outbox/
+# The SAHYOG intake's API key, written by the demo set-up (`make demo`). Never commit.
+data/sahyog_api_key
 # Login and audit (B9): officer accounts (password hashes), the token secret, the audit log.
 data/officers.json
 data/officers.json.tmp

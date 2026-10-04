@@ -142,6 +142,18 @@ does not change the result.
     finding: the model was measured on exchange customers and deposit addresses only.
         tx f2c8d4336de880bdf3e1fc9b1f69837edf7a4a2d6cf3193fc55d5afc9822a128
 
+RISK INDICATORS
+---------------
+Risk class: Low (score 0 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+No indicator is present in the traced funds.
+
+Transaction flows: All 8 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

@@ -8,6 +8,7 @@ difference between two stored traces.
 """
 from __future__ import annotations
 
+from . import risk as R
 from .desk.routing import day
 
 HIGH = "high"
@@ -33,6 +34,7 @@ def snapshot(case: dict) -> dict:
         "threat_links": sorted({_link(f) for f in case.get("typology_flags", [])
                                 if f.get("threat")}),
         "outcome": case.get("outcome"),
+        "risk_class": R.summary(case)["risk_class"],
     }
 
 
@@ -67,6 +69,15 @@ def changes(baseline: dict | None, case: dict) -> list[dict]:
                         if f["code"] == code and f["severity"] == HIGH)
             out.append({"kind": "new_alert", "severity": "high", "at": at,
                         "text": f"New alert: {flag['text']}"})
+    was, is_now = baseline.get("risk_class"), now["risk_class"]
+    # a baseline taken before risk classes existed has none: that is not a rise
+    if was and is_now and R.RANK[is_now] > R.RANK[was]:
+        top = R.case_risk(case)["indicators"]
+        why = f": {top[0]['name'].lower()}" if top else ""
+        out.append({"kind": "risk_raised", "at": at,
+                    "severity": "high" if is_now in ("high", "severe") else "warn",
+                    "text": f"Risk class rose from {was.capitalize()} to "
+                            f"{is_now.capitalize()}{why}"})
     for vasp in now["exchanges"]:
         if vasp in baseline["exchanges"]:
             continue
@@ -112,6 +123,7 @@ def watch_item(entry: dict, case: dict | None, tracing: bool = False,
         "changes": found,
         "error": case.get("error") if case else None,
         "label": label,
+        "risk_class": R.summary(case)["risk_class"] if done else None,
     }
 
 

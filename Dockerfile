@@ -42,6 +42,7 @@ COPY docs/ ./docs/
 COPY scripts/docker_smoke.py ./scripts/docker_smoke.py
 COPY tests/golden/fingerprints.json ./tests/golden/fingerprints.json
 COPY data/vasp_directory.yaml ./data/vasp_directory.yaml
+COPY data/ps_coverage.yaml ./data/ps_coverage.yaml
 ARG GIT_COMMIT=unknown
 # OFFLINE=1: a chain request that is not in the cache is refused, never fetched.
 # ETHERSCAN_API_KEY: any value selects the backend the cached pages were recorded from;

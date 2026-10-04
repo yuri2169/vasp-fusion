@@ -159,6 +159,21 @@ does not change the result.
         tx 9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081
         tx a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d
 
+RISK INDICATORS
+---------------
+Risk class: Low (score 5 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+    [Mostly round amounts (+5)] 3 of the wallet's 3 USDT payments are whole multiples of 100
+    (13,000 USDT in all)
+        tx 0b858be87c88eb926f7c23d45156b77870c85a506f6e8342c19596d49e068a36
+        tx a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae
+        tx a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d
+Transaction flows: All 7 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

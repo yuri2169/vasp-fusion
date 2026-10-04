@@ -49,31 +49,34 @@ def test_a_transfer_read_by_two_cases_counts_once(hero):
 
 def test_a_wallet_in_no_case_and_unlabelled_is_not_assessed():
     v = wallet_view("TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", "tron", [], None)
-    assert v["risk"] == {"score": None, "level": None, "reasons": []}
+    assert (v["risk"]["score"], v["risk"]["risk_class"], v["risk"]["reasons"]) == (None, None, [])
     assert v["inbound"] is None and v["outbound"] is None
 
 
 def test_a_sanctioned_address_is_high_with_its_label_and_the_flag(ofac):
     node = next(n for n in ofac["graph"]["nodes"] if n["role"] == "sanctioned")
     v = wallet_view(node["id"], "tron", [ofac], node["label"])
-    assert v["risk"]["level"] == "high" and v["risk"]["score"] is None
+    assert v["risk"]["risk_class"] == "severe" and v["risk"]["score"] == 100
     assert "sanctions list" in v["risk"]["reasons"][0] and "ofac-sdn" in v["risk"]["reasons"][0]
-    flag = next(f for f in ofac["typology_flags"] if f["wallet"] == node["id"])
-    assert any(r.endswith(flag["text"]) for r in v["risk"]["reasons"])
     assert v["inbound"]["tx_count"] >= 1 and v["outbound"] is None
 
 
-def test_the_wallet_that_paid_a_sanctioned_address_is_elevated(ofac):
+def test_the_wallet_that_paid_a_sanctioned_address_is_severe(ofac):
     v = wallet_view(ofac["address"], "tron", [ofac], None)
-    assert v["risk"]["level"] in ("elevated", "high")
-    assert any("sanctioned or mixer" in r or "sanctioned" in r for r in v["risk"]["reasons"])
+    assert v["risk"]["risk_class"] == "severe"
+    assert "reached a sanctioned address" in v["risk"]["reasons"][0]
+    flag = next(f for f in ofac["typology_flags"] if f["code"] == "sanctioned_contact")
+    assert v["risk"]["reasons"][0].endswith(flag["text"])
 
 
 def test_a_clean_traced_wallet_has_nothing_on_record(hero):
     quiet = {**hero, "typology_flags": [f for f in hero["typology_flags"]
                                         if f["wallet"] != hero["address"]]}
     v = wallet_view(hero["address"], "tron", [quiet], None)
-    assert v["risk"]["level"] == "none" and v["risk"]["reasons"] == []
+    quiet["where_funds_went"] = [s for s in quiet["where_funds_went"] if s["kind"] != "hub"]
+    quiet["typology_flags"] = []
+    v = wallet_view(hero["address"], "tron", [quiet], None)
+    assert (v["risk"]["risk_class"], v["risk"]["score"], v["risk"]["reasons"]) == ("low", 0, [])
 
 
 # ------------------------------------------------------------------ watchlist
@@ -115,6 +118,15 @@ def test_a_new_exchange_and_a_new_alert_are_named(ofac, hero):
     assert alert["severity"] == "high" and "sanctioned" in alert["text"]
     item = watch_item(_entry(ofac, snapshot(quiet)), ofac)
     assert alerts_of(item)[0]["text"].startswith("Watched wallet: New alert:")
+    rise = next(c for c in found if c["kind"] == "risk_raised")
+    assert rise["severity"] == "high"
+    assert rise["text"] == ("Risk class rose from Low to Severe: funds reached a sanctioned "
+                            "address")
+    assert item["risk_class"] == "severe"
+    # a baseline taken before risk classes existed is not a rise, and a fall is not news
+    old = {k: v for k, v in snapshot(quiet).items() if k != "risk_class"}
+    assert not [c for c in changes(old, ofac) if c["kind"] == "risk_raised"]
+    assert not [c for c in changes(snapshot(ofac), quiet) if c["kind"] == "risk_raised"]
     assert alerts_of(item)[0]["case_id"] == "tron-ofac"
 
 
@@ -153,7 +165,7 @@ def test_a_tagged_address_is_high_risk_with_the_source_s_words():
              "threat": "ransomware", "threat_entity": "Conti", "threat_source": "ransomwhere",
              "threat_url": None, "threat_evidence": TAG["evidence"]}
     risk = wallet_view("RW", "tron", [], label)["risk"]
-    assert risk["level"] == "high"
+    assert (risk["risk_class"], risk["indicators"][0]["code"]) == ("severe", "threat_self")
     assert risk["reasons"] == ["This address is tagged ransomware (Conti, Ransomwhere). "
                                "Ransomwhere: ransomware payment address, family Conti."]
 
@@ -172,11 +184,15 @@ def test_a_recheck_that_finds_a_new_link_to_a_tagged_address_is_a_high_change():
     before = snapshot(_case_with([]))
     assert before["threat_links"] == []
     found = changes(before, _case_with([flag]))
-    assert [c["kind"] for c in found] == ["new_threat_link"]       # not also a "new alert"
+    # not also a "new alert"; the rise in risk class the link caused is said once, after it
+    assert [c["kind"] for c in found] == ["new_threat_link", "risk_raised"]
+    assert found[1]["text"] == ("Risk class rose from Low to Severe: funds reached a "
+                                "threat-tagged address")
     assert found[0]["severity"] == "high" and found[0]["threat"] == TAG
     assert found[0]["text"].startswith("New link to a tagged address: Linked to ransomware")
     assert changes(snapshot(_case_with([flag])), _case_with([flag])) == []
-    alert, = alerts_of({"address": "S", "chain": "tron", "case_id": "c-1", "changes": found})
+    alert, _rise = alerts_of({"address": "S", "chain": "tron", "case_id": "c-1",
+                              "changes": found})
     assert alert["threat"] == TAG and alert["severity"] == "high"
 
 

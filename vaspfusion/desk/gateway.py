@@ -1,10 +1,12 @@
-"""Where an approved request goes: the `SahyogGateway` interface.
+"""What crosses between this tool and SAHYOG: the `SahyogGateway` interface.
 
 SAHYOG is the I4C portal through which notices reach intermediaries. Its interface
-is not public, so this is our side of the contract (docs/sahyog_contract.md): a
-gateway is handed the payload and the letter PDF and returns a receipt. The one
-implementation, `MockSahyogGateway`, writes both to a local outbox folder. Nothing
-leaves the machine, and a real gateway can replace it without touching the desk.
+is not public, so this is our side of the contract (docs/sahyog_contract.md). Three
+things pass through a gateway: an approved request goes out (`submit`), the result of
+a complaint's trace goes back (`notify_result`), and an exchange's reply comes in
+(`record_reply`). The one implementation, `MockSahyogGateway`, writes each to a local
+outbox folder. Nothing leaves the machine, and a real gateway can replace it without
+touching the desk or the intake.
 """
 from __future__ import annotations
 
@@ -19,6 +21,7 @@ from typing import Protocol
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTBOX = ROOT / "data" / "sahyog_outbox"
 _ID = re.compile(r"^req-\d{4}-\d{4,}$")
+_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$")
 
 
 class GatewayError(RuntimeError):
@@ -38,6 +41,17 @@ class SahyogGateway(Protocol):
 
     def sent_pdf(self, request_id: str) -> bytes | None:
         """The letter exactly as it was submitted, or None if the gateway keeps none."""
+        ...
+
+    def notify_result(self, payload: dict, *, now: datetime) -> dict:
+        """Hand back the result of one wallet of a complaint (`vaspfusion-sahyog-result/1`).
+        Returns a receipt: gateway, receipt_id, submitted_at, location, payload_sha256.
+        Handing over the same wallet again replaces what was handed over before."""
+        ...
+
+    def record_reply(self, request_id: str, reply: dict, *, now: datetime) -> dict:
+        """Keep an exchange's reply to a sent request as it arrived
+        (`vaspfusion-sahyog-reply/1`). Returns a receipt as above."""
         ...
 
 
@@ -78,3 +92,28 @@ class MockSahyogGateway:
     def sent_pdf(self, request_id: str) -> bytes | None:
         letter = self.outbox / f"{request_id}.pdf"
         return letter.read_bytes() if _ID.match(request_id) and letter.exists() else None
+
+    def _keep(self, folder: str, name: str, payload: dict, now: datetime) -> dict:
+        if not _NAME.match(name):
+            raise GatewayError(f"{name!r} cannot be a file name")
+        target = self.outbox / folder / f"{name}.json"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        body = canonical(payload)
+        target.write_bytes(body)
+        digest = hashlib.sha256(body).hexdigest()
+        return {"gateway": self.name, "receipt_id": f"outbox-{digest[:12]}",
+                "submitted_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "location": f"{self.outbox.name}/{folder}/{target.name}",
+                "payload_sha256": digest}
+
+    def notify_result(self, payload: dict, *, now: datetime) -> dict:
+        """Writes `results/<complaint_ref>__<case_id>.json`. The callback URL in the
+        payload is never called: nothing leaves the machine."""
+        name = f"{payload.get('complaint_ref')}__{(payload.get('wallet') or {}).get('case_id')}"
+        return self._keep("results", name, payload, now)
+
+    def record_reply(self, request_id: str, reply: dict, *, now: datetime) -> dict:
+        """Writes `replies/<request_id>.<status>.json`."""
+        if not _ID.match(request_id) or not (self.outbox / f"{request_id}.json").exists():
+            raise GatewayError(f"{request_id} was never submitted through this gateway")
+        return self._keep("replies", f"{request_id}.{reply.get('status')}", reply, now)

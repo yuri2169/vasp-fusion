@@ -295,5 +295,46 @@
     "tag": null,
     "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store."
   },
-  "threats": []
+  "threats": [],
+  "risk": {
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+      {
+        "code": "peel_chain",
+        "name": "Peel chain",
+        "points": 20,
+        "text": "Peel chain of 3 wallets: each sent most of the money on to one wallet and peeled the rest off to others",
+        "fatf_category": "Transaction patterns",
+        "wallet": "0x698d4adfc44219ad254c61389e23232f2ebd70d9",
+        "case_id": null,
+        "tx_hashes": [
+          "0x2bfa7e8054cbfa621b2d1956365db906ea9aa4196d60f250805956a520fd6891",
+          "0x362e1afaad7322d47cd16000b461db5506465448577b38817d32286a6f4957b5"
+        ]
+      },
+      {
+        "code": "swap_service",
+        "name": "Funds went into a swap service",
+        "points": 15,
+        "text": "Funds went into a swap service, 0x975d…8cd94b (ChangeNOW: Hot Wallet 1)",
+        "fatf_category": "Transaction patterns",
+        "wallet": "0x975d9bd9928f398c7e01f6ba236816fa558cd94b",
+        "case_id": null,
+        "tx_hashes": [
+          "0xef4b56e70eeb11404c2062831484b2fae735edf0ea10850d64c807fbe04d1b6b"
+        ]
+      }
+    ],
+    "reasons": [
+      "Peel chain of 3 wallets: each sent most of the money on to one wallet and peeled the rest off to others",
+      "Funds went into a swap service, 0x975d…8cd94b (ChangeNOW: Hot Wallet 1)"
+    ],
+    "flows": [],
+    "path_class": "medium",
+    "basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+    "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
+  },
+  "risk_class": "medium",
+  "risk_score": 35
 }

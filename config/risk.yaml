@@ -1,0 +1,131 @@
+# The wallet and flow risk score: named indicators, each with points.
+#
+# WHAT THIS IS. An indicator score from published red-flag rules. Not a probability, and
+# not measured against known outcomes: there is no labelled set of "risky" wallets to
+# check it against, so the points below are a stated judgement, not a fitted model.
+#
+# RULES (held by tests/test_risk.py):
+#   * score = the sum of the points of the indicators present, capped at 100;
+#   * an indicator counts once, however many times it is seen (the largest instance);
+#   * adding an indicator never lowers the score; the same case gives the same score.
+#
+# SOURCE of the indicator list. The report below groups its red flags into six
+# categories; `fatf_category` files each of our indicators under one of them. The filing
+# and the points are this project's, not the report's, and no sentence of the report is
+# quoted. Checked on 5 Oct 2026: the title and date on the Monetary Authority of
+# Singapore's publication page for the report, the six categories in a published summary
+# of it. The FATF site itself refused the request from this machine, so the report's own
+# pages were not read; say so if the indicators are ever cited in a paper.
+source:
+  title: "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing"
+  publisher: "Financial Action Task Force (FATF)"
+  published: "September 2020"
+  url: "https://www.fatf-gafi.org/content/dam/fatf-gafi/reports/Virtual-Assets-Red-Flag-Indicators.pdf"
+  confirmed_at: "https://www.mas.gov.sg/regulation/external-publications/fatf-report-on-virtual-assets-red-flag-indicators"
+  accessed: 2026-10-05
+
+# The lowest score of each class.
+classes:
+  low: 0
+  medium: 25
+  high: 50
+  severe: 75
+
+# How much a contact counts by how far the money travelled to it: 1 hop, 2 hops, 3 or more.
+distance_weight: [1.0, 0.8, 0.6]
+
+# points:  what the indicator adds when present.
+# extra:   added on top, scaled by (share of the traced funds) x (distance weight), so a
+#          contact that took most of the money one hop away counts in full.
+indicators:
+  sanctioned_self:
+    name: "The address is on a sanctions list"
+    points: 100
+    fatf_category: "Source of funds or wealth"
+  sanctioned_contact:
+    name: "Funds reached a sanctioned address"
+    points: 75
+    extra: 25
+    fatf_category: "Source of funds or wealth"
+  sanctioned_funding:
+    name: "Funded by a sanctioned address"
+    points: 55
+    extra: 15
+    fatf_category: "Source of funds or wealth"
+  mixer_self:
+    name: "The address is labelled as a mixer"
+    points: 90
+    fatf_category: "Technological features that increase anonymity"
+  mixer_contact:
+    name: "Funds reached a mixer"
+    points: 75
+    extra: 15
+    fatf_category: "Technological features that increase anonymity"
+  mixer_funding:
+    name: "Funded by a mixer"
+    points: 50
+    extra: 15
+    fatf_category: "Technological features that increase anonymity"
+  coinjoin_shape:
+    name: "A transaction with the shape of a CoinJoin"
+    points: 40
+    fatf_category: "Technological features that increase anonymity"
+  # A threat tag from a cited source (config/threats.yaml): terrorism financing, ransomware,
+  # a darknet market, fraud. An address that is sanctioned or a mixer is counted above, once.
+  threat_self:
+    name: "The address carries a threat tag"
+    points: 95
+    fatf_category: "Source of funds or wealth"
+  threat_contact:
+    name: "Funds reached a threat-tagged address"
+    points: 75
+    extra: 20
+    fatf_category: "Source of funds or wealth"
+  threat_funding:
+    name: "Funded by a threat-tagged address"
+    points: 55
+    extra: 15
+    fatf_category: "Source of funds or wealth"
+  scam_self:
+    name: "The address is on a scam list"
+    points: 85
+    fatf_category: "Source of funds or wealth"
+  scam_contact:
+    name: "A wallet on the trail is on a scam list"
+    points: 60
+    fatf_category: "Source of funds or wealth"
+  bridge_hop:
+    name: "Funds went into a bridge"
+    points: 15
+    extra: 15
+    fatf_category: "Transaction patterns"
+  swap_service:
+    name: "Funds went into a swap service"
+    points: 15
+    fatf_category: "Transaction patterns"
+  peel_chain:
+    name: "Peel chain"
+    points: 20
+    fatf_category: "Transaction patterns"
+  rapid_forwarding:
+    name: "Forwarded within minutes"
+    points: 15
+    fatf_category: "Transaction patterns"
+  fan_out:
+    name: "Spread to many wallets in a short time"
+    points: 10
+    fatf_category: "Transaction patterns"
+  fan_in:
+    name: "Funded by many wallets, or split funds merged again"
+    points: 5
+    fatf_category: "Transaction patterns"
+  round_amounts:
+    name: "Mostly round amounts"
+    points: 5
+    fatf_category: "Transaction size"
+  unlabelled_hub:
+    name: "Most funds stopped at an unlabelled high-activity wallet"
+    points: 15
+    # counted when at least this share of the traced funds stopped at such wallets
+    min_share: 0.5
+    fatf_category: "Sender or recipient profiles"

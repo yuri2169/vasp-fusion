@@ -505,6 +505,156 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Coverage
+         * @description Every line of the problem statement with what the tool does about it
+         *     (data/ps_coverage.yaml). The chain rows are worked out from the chains that trace.
+         */
+        get: operations["get_coverage_api_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog/complaints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sahyog Complaint
+         * @description SAHYOG -> VASP-FUSION. A complaint with its wallets: one case is opened per wallet
+         *     and its trace starts at once. 202 with the case ids; poll the status route. Sending
+         *     the same complaint again returns the same cases. 401 without the API key, 503 when
+         *     no key is configured, 422 when no wallet can be accepted.
+         */
+        post: operations["sahyog_complaint_api_sahyog_complaints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog/complaints/{complaint_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sahyog Status
+         * @description The state of each wallet of a complaint and, once traced: the outcome, every
+         *     exchange reached with proximity and confidence apart, the risk class, the case file
+         *     and the requests drafted from it.
+         */
+        get: operations["sahyog_status_api_sahyog_complaints__complaint_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog/requests/{request_id}/replies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sahyog Reply
+         * @description SAHYOG -> VASP-FUSION. An exchange's reply to a request that was sent: acknowledged,
+         *     answered, freeze_confirmed or refused. The request desk shows it at once. 404 unknown
+         *     request, 409 a reply that cannot follow the request's present status.
+         */
+        post: operations["sahyog_reply_api_sahyog_requests__request_id__replies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog-sim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Sahyog Sim
+         * @description What the simulator screen shows: complaints filed, and the sent requests as the
+         *     portal would see them. A simulator for demonstration, not the SAHYOG portal.
+         */
+        get: operations["get_sahyog_sim_api_sahyog_sim_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog-sim/complaints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sim Complaint
+         * @description The simulator files a complaint: the same intake as POST /api/sahyog/complaints.
+         */
+        post: operations["sim_complaint_api_sahyog_sim_complaints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sahyog-sim/requests/{request_id}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sim Reply
+         * @description The simulator plays the exchange: the same reply leg as
+         *     POST /api/sahyog/requests/{id}/replies.
+         */
+        post: operations["sim_reply_api_sahyog_sim_requests__request_id__reply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -633,7 +783,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "auth.login" | "auth.logout" | "api.other";
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "auth.login" | "auth.logout" | "api.other";
             /**
              * Target
              * @description case id, `chain:address`, exchange name, request id, search text or user name, by action
@@ -843,6 +993,23 @@ export interface components {
              * @default []
              */
             threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
+            /**
+             * Risk Class
+             * @description Of a finished case (risk.py). Worked out when the case is read, never stored
+             */
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Risk Score
+             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             */
+            risk_score?: number | null;
+            /**
+             * Sahyog Complaint Ref
+             * @description Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference
+             */
+            sahyog_complaint_ref?: string | null;
+            /** @description Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests */
+            risk?: components["schemas"]["RiskInfo"] | null;
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
             progress?: components["schemas"]["CaseProgress"] | null;
             /**
@@ -1010,6 +1177,21 @@ export interface components {
              * @default []
              */
             threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
+            /**
+             * Risk Class
+             * @description Of a finished case (risk.py). Worked out when the case is read, never stored
+             */
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Risk Score
+             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             */
+            risk_score?: number | null;
+            /**
+             * Sahyog Complaint Ref
+             * @description Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference
+             */
+            sahyog_complaint_ref?: string | null;
         };
         /** ChainCheck */
         ChainCheck: {
@@ -1032,6 +1214,191 @@ export interface components {
             chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
             /** Cases */
             cases: number;
+        };
+        /**
+         * ComplaintCreate
+         * @description A complaint as the portal would send it (docs/sahyog_contract.md).
+         */
+        ComplaintCreate: {
+            /**
+             * Complaint Ref
+             * @description The NCRP / 1930 acknowledgement number. Letters, digits, dot, dash, underscore
+             */
+            complaint_ref: string;
+            /**
+             * Agency
+             * @description The reporting agency
+             */
+            agency: string;
+            /** Officer */
+            officer: string;
+            /** Wallets */
+            wallets: components["schemas"]["ComplaintWalletIn"][];
+            /** Amount Lost Inr */
+            amount_lost_inr?: number | null;
+            /** Incident Date */
+            incident_date?: string | null;
+            /**
+             * Category
+             * @description This project's own short list; the portal's categories would replace it
+             * @default other
+             * @enum {string}
+             */
+            category: "investment_fraud" | "job_fraud" | "impersonation" | "phishing" | "ransomware" | "extortion" | "loan_app" | "other";
+            /** Note */
+            note?: string | null;
+            /**
+             * Callback Url
+             * @description Where the portal wants the result sent. Recorded and passed to the gateway; the mock gateway never calls it
+             */
+            callback_url?: string | null;
+        };
+        /** ComplaintStatus */
+        ComplaintStatus: {
+            /** Complaint Ref */
+            complaint_ref: string;
+            /** Agency */
+            agency: string;
+            /** Officer */
+            officer: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "investment_fraud" | "job_fraud" | "impersonation" | "phishing" | "ransomware" | "extortion" | "loan_app" | "other";
+            /** Note */
+            note?: string | null;
+            /** Amount Lost Inr */
+            amount_lost_inr?: number | null;
+            /** Incident Date */
+            incident_date?: string | null;
+            /** Callback Url */
+            callback_url?: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /**
+             * Status
+             * @description received: nothing traced yet. tracing: at least one wallet is still queued or being traced. result: every accepted wallet has a result or has failed
+             * @enum {string}
+             */
+            status: "received" | "tracing" | "result";
+            /** Wallets */
+            wallets: components["schemas"]["ComplaintWallet"][];
+            /** Status Url */
+            status_url: string;
+        };
+        /** ComplaintWallet */
+        ComplaintWallet: {
+            /** Address */
+            address: string;
+            /** Chain */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /** Accepted */
+            accepted: boolean;
+            /**
+             * Error
+             * @description Why the address was refused, as a sentence
+             */
+            error?: string | null;
+            /** Case Id */
+            case_id?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "refused" | "received" | "tracing" | "result" | "failed";
+            /** Outcome */
+            outcome?: ("ATTRIBUTED" | "INSUFFICIENT_EVIDENCE" | "SANCTIONED_OR_MIXER_REACHED") | null;
+            /** Top Vasp */
+            top_vasp?: string | null;
+            /** Confidence */
+            confidence?: number | null;
+            /**
+             * Exchanges
+             * @description Every exchange the trace reached, nearest first, with proximity and confidence apart. Only `top_vasp` is named
+             * @default []
+             */
+            exchanges: components["schemas"]["ExchangeNamed"][];
+            /** Risk Class */
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Risk Score
+             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             */
+            risk_score?: number | null;
+            /**
+             * Report Pdf
+             * @description The case file, once there is a result
+             */
+            report_pdf?: string | null;
+            /**
+             * Request Ids
+             * @description Requests drafted from this case
+             * @default []
+             */
+            request_ids: string[];
+            /**
+             * Result Sent At
+             * @description When the result was handed to the gateway
+             */
+            result_sent_at?: string | null;
+            /** Case Error */
+            case_error?: string | null;
+        };
+        /** ComplaintWalletIn */
+        ComplaintWalletIn: {
+            /** Address */
+            address: string;
+            /**
+             * Chain
+             * @description Omit to have it read from the address
+             */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+        };
+        /** CoverageRow */
+        CoverageRow: {
+            /** Id */
+            id: string;
+            /** Section */
+            section: string;
+            /**
+             * Text
+             * @description The line of the problem statement, word for word
+             */
+            text: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "built" | "partly" | "planned";
+            /** What */
+            what: string;
+            /**
+             * Where
+             * @description A screen of the interface
+             */
+            where: string;
+            /**
+             * Evidence Kind
+             * @enum {string}
+             */
+            evidence_kind: "test" | "make";
+            /** Evidence */
+            evidence: string;
+            /**
+             * Gap
+             * @description What is missing; set unless status is built
+             */
+            gap?: string | null;
+            /**
+             * Computed
+             * @description Worked out from the chains that trace today
+             * @default false
+             */
+            computed: boolean;
         };
         /** Dashboard */
         Dashboard: {
@@ -1057,6 +1424,14 @@ export interface components {
             /** Recent Alerts */
             recent_alerts: components["schemas"]["Alert"][];
             label_coverage: components["schemas"]["LabelCoverage"];
+            /**
+             * Risk Classes
+             * @description Finished cases by risk class. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @default {}
+             */
+            risk_classes: {
+                [key: string]: number;
+            };
         };
         /** DashboardCounts */
         DashboardCounts: {
@@ -1217,12 +1592,46 @@ export interface components {
              */
             recall?: number | null;
         };
+        /** ExchangeNamed */
+        ExchangeNamed: {
+            /** Vasp */
+            vasp: string;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "outbound" | "inbound";
+            /** Proximity Rank */
+            proximity_rank: number;
+            /** Hops */
+            hops: number;
+            /** Confidence */
+            confidence: number;
+        };
         /** FeatureImportance */
         FeatureImportance: {
             /** Feature */
             feature: string;
             /** Importance */
             importance: number;
+        };
+        /**
+         * FlowRisk
+         * @description The class of one traced transfer (an edge of the case's graph), by the indicators
+         *     on it. Only transfers above Low are listed.
+         */
+        FlowRisk: {
+            /** Edge Id */
+            edge_id: string;
+            /** Tx Hash */
+            tx_hash: string;
+            /**
+             * Risk Class
+             * @enum {string}
+             */
+            risk_class: "low" | "medium" | "high" | "severe";
+            /** Reasons */
+            reasons: string[];
         };
         /** FlowSummary */
         FlowSummary: {
@@ -1513,6 +1922,16 @@ export interface components {
             by_threat: {
                 [key: string]: number;
             };
+            /**
+             * Traceable Total
+             * @description Labels on the chains a trace can run on today: the figure to show as a headline. `total` also counts labels on chains the tool cannot trace
+             */
+            traceable_total?: number | null;
+            /**
+             * Traceable Chains
+             * @default []
+             */
+            traceable_chains: string[];
         };
         /** LabelOut */
         LabelOut: {
@@ -1975,6 +2394,21 @@ export interface components {
              */
             git_dirty?: boolean | null;
         };
+        /** PsCoverage */
+        PsCoverage: {
+            /** Rows */
+            rows: components["schemas"]["CoverageRow"][];
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Total */
+            total: number;
+            /** Traceable Chains */
+            traceable_chains: string[];
+            /** Source */
+            source: string;
+        };
         /**
          * Receipt
          * @description What a case was computed from, as digests anyone can recompute. The same document
@@ -2067,6 +2501,44 @@ export interface components {
              * @description Mean predicted probability in the bin
              */
             predicted?: number | null;
+        };
+        /** ReplyAck */
+        ReplyAck: {
+            /** Request Id */
+            request_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Location
+             * @description Where the gateway kept the reply
+             */
+            location?: string | null;
+        };
+        /**
+         * ReplyIn
+         * @description An exchange's reply to a request, as it arrives through the gateway.
+         */
+        ReplyIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "acknowledged" | "answered" | "freeze_confirmed" | "refused";
+            /** Note */
+            note?: string | null;
+            /**
+             * Reply Ref
+             * @description The exchange's own reference
+             */
+            reply_ref?: string | null;
         };
         /** RequestCreate */
         RequestCreate: {
@@ -2268,23 +2740,82 @@ export interface components {
             /** Accuracy */
             accuracy: number;
         };
+        /**
+         * RiskIndicator
+         * @description One red-flag indicator that is present, with its points and what it rests on.
+         */
+        RiskIndicator: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Points */
+            points: number;
+            /**
+             * Text
+             * @description The sentence to show as it is
+             */
+            text: string;
+            /**
+             * Fatf Category
+             * @description The category of the FATF red-flag report this indicator is filed under (config/risk.yaml); the filing is this project's
+             */
+            fatf_category?: string | null;
+            /** Wallet */
+            wallet?: string | null;
+            /** Case Id */
+            case_id?: string | null;
+            /**
+             * Tx Hashes
+             * @default []
+             */
+            tx_hashes: string[];
+        };
         /** RiskInfo */
         RiskInfo: {
             /**
              * Score
-             * @description Always null: no wallet risk score is computed. `level` is a plain rule
+             * @description The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes. null: not assessed
              */
             score?: number | null;
             /**
-             * Level
-             * @description high: the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it. elevated: a pattern flag names it, or funds it sent reached a sanctioned or mixer address. none: nothing on record. null: not assessed (unlabelled and in no case)
+             * Risk Class
+             * @description low 0-24, medium 25-49, high 50-74, severe 75-100 (config/risk.yaml). null: not assessed (a wallet that is unlabelled and in no case; a case with no result)
              */
-            level?: ("high" | "elevated" | "none") | null;
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Indicators
+             * @description Largest first
+             * @default []
+             */
+            indicators: components["schemas"]["RiskIndicator"][];
             /**
              * Reasons
+             * @description The indicators' sentences, in the same order
              * @default []
              */
             reasons: string[];
+            /**
+             * Flows
+             * @description A case only: its transfers above Low
+             * @default []
+             */
+            flows: components["schemas"]["FlowRisk"][];
+            /**
+             * Path Class
+             * @description A case only: the class of the path the Hop Rail shows
+             */
+            path_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Basis
+             * @default An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             */
+            basis: string;
+            /**
+             * Source
+             * @description The published list the indicators follow
+             */
+            source?: string | null;
         };
         /**
          * RuleBaseline
@@ -2301,6 +2832,39 @@ export interface components {
             accuracy?: number | null;
         };
         /**
+         * SahyogSim
+         * @description Everything the simulator screen shows. A simulator for demonstration, not the
+         *     SAHYOG portal.
+         */
+        SahyogSim: {
+            /**
+             * Enabled
+             * @description false until an intake key exists (the demo set-up creates one)
+             */
+            enabled: boolean;
+            /** Notice */
+            notice: string;
+            /** Why Disabled */
+            why_disabled?: string | null;
+            /**
+             * Categories
+             * @default []
+             */
+            categories: string[];
+            /**
+             * Complaints
+             * @description Newest first
+             * @default []
+             */
+            complaints: components["schemas"]["ComplaintStatus"][];
+            /**
+             * Requests
+             * @description Newest first
+             * @default []
+             */
+            requests: components["schemas"]["SimRequest"][];
+        };
+        /**
          * Screening
          * @description The check of the case's own address against the threat tags, made when the case
          *     is opened and before the trace starts.
@@ -2314,6 +2878,33 @@ export interface components {
              */
             text: string;
             tag?: components["schemas"]["ThreatTag"] | null;
+        };
+        /**
+         * SimRequest
+         * @description A sent request as the portal's side would see it.
+         */
+        SimRequest: {
+            /** Id */
+            id: string;
+            /** Reference */
+            reference: string;
+            /** Vasp */
+            vasp: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
+            /** Asks */
+            asks: ("kyc" | "transactions" | "freeze" | "preservation")[];
+            /** Wallets */
+            wallets: number;
+            /** Sent At */
+            sent_at?: string | null;
+            /** Allowed Replies */
+            allowed_replies: ("acknowledged" | "answered" | "freeze_confirmed" | "refused")[];
+            /** Last Note */
+            last_note?: string | null;
         };
         /** StatusEvent */
         StatusEvent: {
@@ -2334,6 +2925,11 @@ export interface components {
              * @description User name of the signed-in officer who made this change; null when no login was in force
              */
             by?: string | null;
+            /**
+             * Via
+             * @description sahyog: the exchange's reply arrived through the SAHYOG gateway, not typed in
+             */
+            via?: "sahyog" | null;
         };
         /**
          * ThreatTag
@@ -2596,10 +3192,10 @@ export interface components {
         WatchChange: {
             /**
              * Kind
-             * @description new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have
+             * @description new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have. risk_raised: the wallet's risk class is higher than at the baseline
              * @enum {string}
              */
-            kind: "new_activity" | "new_exchange" | "new_alert" | "new_threat_link";
+            kind: "new_activity" | "new_exchange" | "new_alert" | "new_threat_link" | "risk_raised";
             /**
              * Severity
              * @enum {string}
@@ -2666,6 +3262,11 @@ export interface components {
             /** Error */
             error?: string | null;
             label?: components["schemas"]["LabelOut"] | null;
+            /**
+             * Risk Class
+             * @description Of the wallet's case as it is now
+             */
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
         };
         /** WatchList */
         WatchList: {
@@ -3514,6 +4115,213 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_coverage_api_coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PsCoverage"];
+                };
+            };
+        };
+    };
+    sahyog_complaint_api_sahyog_complaints_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComplaintCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplaintStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sahyog_status_api_sahyog_complaints__complaint_ref__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                complaint_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplaintStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sahyog_reply_api_sahyog_requests__request_id__replies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyAck"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_sahyog_sim_api_sahyog_sim_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SahyogSim"];
+                };
+            };
+        };
+    };
+    sim_complaint_api_sahyog_sim_complaints_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComplaintCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplaintStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sim_reply_api_sahyog_sim_requests__request_id__reply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyAck"];
                 };
             };
             /** @description Validation Error */

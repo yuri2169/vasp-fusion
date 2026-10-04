@@ -1,0 +1,16 @@
+{
+  "wallets": 8,
+  "seconds": 4.44,
+  "seconds_per_wallet": 0.55,
+  "transfers_in_the_results": 105,
+  "chain_responses_read": 114,
+  "results_handed_to_the_gateway": 8,
+  "outcomes": {
+    "ATTRIBUTED": 4,
+    "INSUFFICIENT_EVIDENCE": 3,
+    "SANCTIONED_OR_MIXER_REACHED": 1
+  },
+  "chain_data": "replayed from the recorded demo cache; no network",
+  "machine": "Darwin arm64, 10 cores, Python 3.12.14",
+  "measured_on": "2026-10-05"
+}

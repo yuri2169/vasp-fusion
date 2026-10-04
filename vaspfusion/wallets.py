@@ -2,22 +2,14 @@
 is on record against it.
 
 This is not the wallet's history. A case reads the transfers of the wallets its trace
-went through, so the figures here cover exactly those, and the page says so. No risk
-score is computed: `level` is a plain rule over labels and flags, and every reason is a
-sentence about a stored fact.
+went through, so the figures here cover exactly those, and the page says so. The risk
+block is risk.py's indicator score: every reason is a sentence about a stored fact.
 """
 from __future__ import annotations
 
-from .labels.threats import named as threat_words, tag_of
+from .risk import wallet_risk
 
-RISK_LABELS = {"sanctioned": "is on a sanctions list",
-               "mixer": "is labelled as a mixer",
-               "scam": "is labelled as a scam address"}
 TOP = 5
-
-
-def _ref(case: dict) -> str:
-    return case.get("case_ref") or case["id"]
 
 
 def _flow(edges: list[dict], other: str) -> dict | None:
@@ -62,33 +54,7 @@ def wallet_view(address: str, chain: str, cases: list[dict], label: dict | None)
             (outbound if e["source"] == address else inbound).append(e)
         used += hit
 
-    level, reasons = None, []
-    if label or cases:
-        level = "none"
-    tag = tag_of(label)
-    if tag is not None:
-        level = "high"
-        reasons.append(f"This address is tagged {threat_words(tag)}."
-                       + (f" {tag['evidence']}" if tag.get("evidence") else ""))
-    if label and label.get("category") in RISK_LABELS:
-        level = "high"
-        named = label.get("label") or label.get("entity")
-        reasons.append(f"This address {RISK_LABELS[label['category']]}: {named} "
-                       f"(source: {label['source']}).")
-    for case in cases:
-        for f in case.get("typology_flags", []):
-            if f["wallet"] != address or f["severity"] not in ("high", "warn"):
-                continue
-            if f["severity"] == "high":
-                level = "high"
-            elif level != "high":
-                level = "elevated"
-            reasons.append(f"Case {_ref(case)}: {f['text']}")
-        if (case.get("address") == address and level != "high"
-                and case.get("outcome") == "SANCTIONED_OR_MIXER_REACHED"):
-            level = "elevated"
-            reasons.append(f"Case {_ref(case)}: funds this wallet sent reached a sanctioned "
-                           "or mixer address.")
-    return {"risk": {"score": None, "level": level, "reasons": reasons},
+    mine = [c for c in cases if c.get("chain") == chain]
+    return {"risk": wallet_risk(address, label, mine),
             "inbound": _flow(inbound, "source"), "outbound": _flow(outbound, "target"),
             "flows_from_cases": used}

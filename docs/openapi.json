@@ -1304,6 +1304,262 @@
           }
         }
       }
+    },
+    "/api/coverage": {
+      "get": {
+        "summary": "Get Coverage",
+        "description": "Every line of the problem statement with what the tool does about it\n(data/ps_coverage.yaml). The chain rows are worked out from the chains that trace.",
+        "operationId": "get_coverage_api_coverage_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PsCoverage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog/complaints": {
+      "post": {
+        "summary": "Sahyog Complaint",
+        "description": "SAHYOG -> VASP-FUSION. A complaint with its wallets: one case is opened per wallet\nand its trace starts at once. 202 with the case ids; poll the status route. Sending\nthe same complaint again returns the same cases. 401 without the API key, 503 when\nno key is configured, 422 when no wallet can be accepted.",
+        "operationId": "sahyog_complaint_api_sahyog_complaints_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplaintCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplaintStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog/complaints/{complaint_ref}": {
+      "get": {
+        "summary": "Sahyog Status",
+        "description": "The state of each wallet of a complaint and, once traced: the outcome, every\nexchange reached with proximity and confidence apart, the risk class, the case file\nand the requests drafted from it.",
+        "operationId": "sahyog_status_api_sahyog_complaints__complaint_ref__get",
+        "parameters": [
+          {
+            "name": "complaint_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Ref"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplaintStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog/requests/{request_id}/replies": {
+      "post": {
+        "summary": "Sahyog Reply",
+        "description": "SAHYOG -> VASP-FUSION. An exchange's reply to a request that was sent: acknowledged,\nanswered, freeze_confirmed or refused. The request desk shows it at once. 404 unknown\nrequest, 409 a reply that cannot follow the request's present status.",
+        "operationId": "sahyog_reply_api_sahyog_requests__request_id__replies_post",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplyAck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog-sim": {
+      "get": {
+        "summary": "Get Sahyog Sim",
+        "description": "What the simulator screen shows: complaints filed, and the sent requests as the\nportal would see them. A simulator for demonstration, not the SAHYOG portal.",
+        "operationId": "get_sahyog_sim_api_sahyog_sim_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SahyogSim"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog-sim/complaints": {
+      "post": {
+        "summary": "Sim Complaint",
+        "description": "The simulator files a complaint: the same intake as POST /api/sahyog/complaints.",
+        "operationId": "sim_complaint_api_sahyog_sim_complaints_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplaintCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplaintStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sahyog-sim/requests/{request_id}/reply": {
+      "post": {
+        "summary": "Sim Reply",
+        "description": "The simulator plays the exchange: the same reply leg as\nPOST /api/sahyog/requests/{id}/replies.",
+        "operationId": "sim_reply_api_sahyog_sim_requests__request_id__reply_post",
+        "parameters": [
+          {
+            "name": "request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Request Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplyIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReplyAck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1576,6 +1832,13 @@
               "watch.seen",
               "watch.remove",
               "label.coverage",
+              "coverage.view",
+              "sahyog.complaint",
+              "sahyog.status",
+              "sahyog.reply",
+              "sim.view",
+              "sim.complaint",
+              "sim.reply",
               "auth.login",
               "auth.logout",
               "api.other"
@@ -2169,6 +2432,61 @@
             "description": "The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only",
             "default": []
           },
+          "risk_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Class",
+            "description": "Of a finished case (risk.py). Worked out when the case is read, never stored"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score",
+            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+          },
+          "sahyog_complaint_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sahyog Complaint Ref",
+            "description": "Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference"
+          },
+          "risk": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests"
+          },
           "progress": {
             "anyOf": [
               {
@@ -2609,6 +2927,50 @@
             "title": "Threats",
             "description": "The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only",
             "default": []
+          },
+          "risk_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Class",
+            "description": "Of a finished case (risk.py). Worked out when the case is read, never stored"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score",
+            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+          },
+          "sahyog_complaint_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sahyog Complaint Ref",
+            "description": "Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference"
           }
         },
         "additionalProperties": false,
@@ -2698,6 +3060,543 @@
         ],
         "title": "ChainCount"
       },
+      "ComplaintCreate": {
+        "properties": {
+          "complaint_ref": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$",
+            "title": "Complaint Ref",
+            "description": "The NCRP / 1930 acknowledgement number. Letters, digits, dot, dash, underscore"
+          },
+          "agency": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Agency",
+            "description": "The reporting agency"
+          },
+          "officer": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Officer"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/ComplaintWalletIn"
+            },
+            "type": "array",
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Wallets"
+          },
+          "amount_lost_inr": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Lost Inr"
+          },
+          "incident_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Date"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "investment_fraud",
+              "job_fraud",
+              "impersonation",
+              "phishing",
+              "ransomware",
+              "extortion",
+              "loan_app",
+              "other"
+            ],
+            "title": "Category",
+            "description": "This project's own short list; the portal's categories would replace it",
+            "default": "other"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "callback_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Url",
+            "description": "Where the portal wants the result sent. Recorded and passed to the gateway; the mock gateway never calls it"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_ref",
+          "agency",
+          "officer",
+          "wallets"
+        ],
+        "title": "ComplaintCreate",
+        "description": "A complaint as the portal would send it (docs/sahyog_contract.md)."
+      },
+      "ComplaintStatus": {
+        "properties": {
+          "complaint_ref": {
+            "type": "string",
+            "title": "Complaint Ref"
+          },
+          "agency": {
+            "type": "string",
+            "title": "Agency"
+          },
+          "officer": {
+            "type": "string",
+            "title": "Officer"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "investment_fraud",
+              "job_fraud",
+              "impersonation",
+              "phishing",
+              "ransomware",
+              "extortion",
+              "loan_app",
+              "other"
+            ],
+            "title": "Category"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "amount_lost_inr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Lost Inr"
+          },
+          "incident_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Incident Date"
+          },
+          "callback_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Callback Url"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received At"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "received",
+              "tracing",
+              "result"
+            ],
+            "title": "Status",
+            "description": "received: nothing traced yet. tracing: at least one wallet is still queued or being traced. result: every accepted wallet has a result or has failed"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/ComplaintWallet"
+            },
+            "type": "array",
+            "title": "Wallets"
+          },
+          "status_url": {
+            "type": "string",
+            "title": "Status Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_ref",
+          "agency",
+          "officer",
+          "category",
+          "received_at",
+          "status",
+          "wallets",
+          "status_url"
+        ],
+        "title": "ComplaintStatus"
+      },
+      "ComplaintWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain"
+          },
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Why the address was refused, as a sentence"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "refused",
+              "received",
+              "tracing",
+              "result",
+              "failed"
+            ],
+            "title": "Status"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ATTRIBUTED",
+                  "INSUFFICIENT_EVIDENCE",
+                  "SANCTIONED_OR_MIXER_REACHED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "top_vasp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Vasp"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "exchanges": {
+            "items": {
+              "$ref": "#/components/schemas/ExchangeNamed"
+            },
+            "type": "array",
+            "title": "Exchanges",
+            "description": "Every exchange the trace reached, nearest first, with proximity and confidence apart. Only `top_vasp` is named",
+            "default": []
+          },
+          "risk_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Class"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score",
+            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+          },
+          "report_pdf": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Pdf",
+            "description": "The case file, once there is a result"
+          },
+          "request_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Request Ids",
+            "description": "Requests drafted from this case",
+            "default": []
+          },
+          "result_sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Sent At",
+            "description": "When the result was handed to the gateway"
+          },
+          "case_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "accepted",
+          "status"
+        ],
+        "title": "ComplaintWallet"
+      },
+      "ComplaintWalletIn": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "Omit to have it read from the address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "title": "ComplaintWalletIn"
+      },
+      "CoverageRow": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "section": {
+            "type": "string",
+            "title": "Section"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The line of the problem statement, word for word"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "built",
+              "partly",
+              "planned"
+            ],
+            "title": "Status"
+          },
+          "what": {
+            "type": "string",
+            "title": "What"
+          },
+          "where": {
+            "type": "string",
+            "title": "Where",
+            "description": "A screen of the interface"
+          },
+          "evidence_kind": {
+            "type": "string",
+            "enum": [
+              "test",
+              "make"
+            ],
+            "title": "Evidence Kind"
+          },
+          "evidence": {
+            "type": "string",
+            "title": "Evidence"
+          },
+          "gap": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gap",
+            "description": "What is missing; set unless status is built"
+          },
+          "computed": {
+            "type": "boolean",
+            "title": "Computed",
+            "description": "Worked out from the chains that trace today",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "section",
+          "text",
+          "status",
+          "what",
+          "where",
+          "evidence_kind",
+          "evidence"
+        ],
+        "title": "CoverageRow"
+      },
       "Dashboard": {
         "properties": {
           "counts": {
@@ -2757,6 +3656,23 @@
           },
           "label_coverage": {
             "$ref": "#/components/schemas/LabelCoverage"
+          },
+          "risk_classes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "severe"
+              ]
+            },
+            "type": "object",
+            "title": "Risk Classes",
+            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+            "default": {}
           }
         },
         "additionalProperties": false,
@@ -3165,6 +4081,46 @@
         "title": "ExchangeFold",
         "description": "One row of the leave-one-exchange-out table: the model never saw this exchange."
       },
+      "ExchangeNamed": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "outbound",
+              "inbound"
+            ],
+            "title": "Direction"
+          },
+          "proximity_rank": {
+            "type": "integer",
+            "title": "Proximity Rank"
+          },
+          "hops": {
+            "type": "integer",
+            "title": "Hops"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "direction",
+          "proximity_rank",
+          "hops",
+          "confidence"
+        ],
+        "title": "ExchangeNamed"
+      },
       "FeatureImportance": {
         "properties": {
           "feature": {
@@ -3183,6 +4139,45 @@
           "importance"
         ],
         "title": "FeatureImportance"
+      },
+      "FlowRisk": {
+        "properties": {
+          "edge_id": {
+            "type": "string",
+            "title": "Edge Id"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash"
+          },
+          "risk_class": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "severe"
+            ],
+            "title": "Risk Class"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "edge_id",
+          "tx_hash",
+          "risk_class",
+          "reasons"
+        ],
+        "title": "FlowRisk",
+        "description": "The class of one traced transfer (an edge of the case's graph), by the indicators\non it. Only transfers above Low are listed."
       },
       "FlowSummary": {
         "properties": {
@@ -3842,6 +4837,26 @@
             "title": "By Threat",
             "description": "Tagged labels per threat",
             "default": {}
+          },
+          "traceable_total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traceable Total",
+            "description": "Labels on the chains a trace can run on today: the figure to show as a headline. `total` also counts labels on chains the tool cannot trace"
+          },
+          "traceable_chains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Traceable Chains",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -5110,6 +6125,56 @@
         ],
         "title": "Provenance"
       },
+      "PsCoverage": {
+        "properties": {
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/CoverageRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "built",
+                "partly",
+                "planned"
+              ]
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "traceable_chains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Traceable Chains"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rows",
+          "counts",
+          "total",
+          "traceable_chains",
+          "source"
+        ],
+        "title": "PsCoverage"
+      },
       "Receipt": {
         "properties": {
           "schema": {
@@ -5359,6 +6424,99 @@
           "count"
         ],
         "title": "ReliabilityBin"
+      },
+      "ReplyAck": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused",
+              "withdrawn"
+            ],
+            "title": "Status"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Where the gateway kept the reply"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "status",
+          "recorded_at"
+        ],
+        "title": "ReplyAck"
+      },
+      "ReplyIn": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused"
+            ],
+            "title": "Status"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reply_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply Ref",
+            "description": "The exchange's own reference"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ReplyIn",
+        "description": "An exchange's reply to a request, as it arrives through the gateway."
       },
       "RequestCreate": {
         "properties": {
@@ -5878,13 +7036,88 @@
         ],
         "title": "RiskCoveragePoint"
       },
+      "RiskIndicator": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "points": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Points"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The sentence to show as it is"
+          },
+          "fatf_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fatf Category",
+            "description": "The category of the FATF red-flag report this indicator is filed under (config/risk.yaml); the filing is this project's"
+          },
+          "wallet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallet"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "points",
+          "text"
+        ],
+        "title": "RiskIndicator",
+        "description": "One red-flag indicator that is present, with its points and what it rests on."
+      },
       "RiskInfo": {
         "properties": {
           "score": {
             "anyOf": [
               {
-                "type": "number",
-                "maximum": 1.0,
+                "type": "integer",
+                "maximum": 100.0,
                 "minimum": 0.0
               },
               {
@@ -5892,24 +7125,34 @@
               }
             ],
             "title": "Score",
-            "description": "Always null: no wallet risk score is computed. `level` is a plain rule"
+            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes. null: not assessed"
           },
-          "level": {
+          "risk_class": {
             "anyOf": [
               {
                 "type": "string",
                 "enum": [
+                  "low",
+                  "medium",
                   "high",
-                  "elevated",
-                  "none"
+                  "severe"
                 ]
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Level",
-            "description": "high: the address is itself labelled sanctioned, mixer or scam, or a high-severity flag of a case names it. elevated: a pattern flag names it, or funds it sent reached a sanctioned or mixer address. none: nothing on record. null: not assessed (unlabelled and in no case)"
+            "title": "Risk Class",
+            "description": "low 0-24, medium 25-49, high 50-74, severe 75-100 (config/risk.yaml). null: not assessed (a wallet that is unlabelled and in no case; a case with no result)"
+          },
+          "indicators": {
+            "items": {
+              "$ref": "#/components/schemas/RiskIndicator"
+            },
+            "type": "array",
+            "title": "Indicators",
+            "description": "Largest first",
+            "default": []
           },
           "reasons": {
             "items": {
@@ -5917,7 +7160,52 @@
             },
             "type": "array",
             "title": "Reasons",
+            "description": "The indicators' sentences, in the same order",
             "default": []
+          },
+          "flows": {
+            "items": {
+              "$ref": "#/components/schemas/FlowRisk"
+            },
+            "type": "array",
+            "title": "Flows",
+            "description": "A case only: its transfers above Low",
+            "default": []
+          },
+          "path_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Class",
+            "description": "A case only: the class of the path the Hop Rail shows"
+          },
+          "basis": {
+            "type": "string",
+            "title": "Basis",
+            "default": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "The published list the indicators follow"
           }
         },
         "additionalProperties": false,
@@ -5972,6 +7260,64 @@
         "title": "RuleBaseline",
         "description": "What one rule alone scores on the test addresses: the bar the model must clear."
       },
+      "SahyogSim": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "description": "false until an intake key exists (the demo set-up creates one)"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice"
+          },
+          "why_disabled": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Why Disabled"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories",
+            "default": []
+          },
+          "complaints": {
+            "items": {
+              "$ref": "#/components/schemas/ComplaintStatus"
+            },
+            "type": "array",
+            "title": "Complaints",
+            "description": "Newest first",
+            "default": []
+          },
+          "requests": {
+            "items": {
+              "$ref": "#/components/schemas/SimRequest"
+            },
+            "type": "array",
+            "title": "Requests",
+            "description": "Newest first",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "notice"
+        ],
+        "title": "SahyogSim",
+        "description": "Everything the simulator screen shows. A simulator for demonstration, not the\nSAHYOG portal."
+      },
       "Screening": {
         "properties": {
           "hit": {
@@ -6002,6 +7348,102 @@
         ],
         "title": "Screening",
         "description": "The check of the case's own address against the threat tags, made when the case\nis opened and before the trace starts."
+      },
+      "SimRequest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "drafted",
+              "approved",
+              "sent",
+              "acknowledged",
+              "answered",
+              "freeze_confirmed",
+              "refused",
+              "withdrawn"
+            ],
+            "title": "Status"
+          },
+          "asks": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "kyc",
+                "transactions",
+                "freeze",
+                "preservation"
+              ]
+            },
+            "type": "array",
+            "title": "Asks"
+          },
+          "wallets": {
+            "type": "integer",
+            "title": "Wallets"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "allowed_replies": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "acknowledged",
+                "answered",
+                "freeze_confirmed",
+                "refused"
+              ]
+            },
+            "type": "array",
+            "title": "Allowed Replies"
+          },
+          "last_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "vasp",
+          "status",
+          "asks",
+          "wallets",
+          "allowed_replies"
+        ],
+        "title": "SimRequest",
+        "description": "A sent request as the portal's side would see it."
       },
       "StatusEvent": {
         "properties": {
@@ -6046,6 +7488,19 @@
             ],
             "title": "By",
             "description": "User name of the signed-in officer who made this change; null when no login was in force"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "sahyog"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via",
+            "description": "sahyog: the exchange's reply arrived through the SAHYOG gateway, not typed in"
           }
         },
         "additionalProperties": false,
@@ -6712,10 +8167,11 @@
               "new_activity",
               "new_exchange",
               "new_alert",
-              "new_threat_link"
+              "new_threat_link",
+              "risk_raised"
             ],
             "title": "Kind",
-            "description": "new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have"
+            "description": "new_threat_link: a re-check found a link to a threat-tagged address that the baseline did not have. risk_raised: the wallet's risk class is higher than at the baseline"
           },
           "severity": {
             "type": "string",
@@ -6934,6 +8390,24 @@
                 "type": "null"
               }
             ]
+          },
+          "risk_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Class",
+            "description": "Of the wallet's case as it is now"
           }
         },
         "additionalProperties": false,

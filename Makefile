@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -115,6 +115,9 @@ final-shots:      ## docs/screenshots/final-*: every screen in both themes, from
 ui-shots:         ## screenshots of /kit and the shell into docs/screenshots/ (needs `make ui-dev` running; BASE_URL=..)
 	cd ui && npm run screenshots
 
+intake-timing:    ## time the SAHYOG intake end to end on the recorded wallets (no network; after `make demo-cache`)
+	$(PY) scripts/intake_timing.py --out artifacts/intake_timing.json
+
 offline-check:    ## fail if code outside vaspfusion/chains/ can reach the network
 	@! grep -rnE "https?://" --include=*.py --exclude-dir=chains vaspfusion/ \
 		| grep -vE "#|\"\"\"|docs|example\.com|source_url|SOURCE_URL|xmlns=" \
@@ -145,4 +148,4 @@ docker-smoke:     ## drive the whole demo inside a throwaway container that has 
 
 # The audit log (data/audit.duckdb) and the officer accounts are never removed here.
 clean:
-	rm -rf data/labels.duckdb data/case.duckdb data/desk.duckdb data/sahyog_outbox data/demo_cache.duckdb ui/dist
+	rm -rf data/labels.duckdb data/case.duckdb data/desk.duckdb data/sahyog_outbox data/sahyog_api_key data/demo_cache.duckdb ui/dist

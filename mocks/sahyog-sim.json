@@ -1,0 +1,91 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "enabled": true,
+  "notice": "A simulator for demonstration. Not the SAHYOG portal.",
+  "why_disabled": null,
+  "categories": [
+    "investment_fraud",
+    "job_fraud",
+    "impersonation",
+    "phishing",
+    "ransomware",
+    "extortion",
+    "loan_app",
+    "other"
+  ],
+  "complaints": [
+    {
+      "complaint_ref": "DEMO-NCRP-0001",
+      "agency": "Cyber Crime PS (demonstration)",
+      "officer": "Insp. D. Officer",
+      "category": "investment_fraud",
+      "note": "Demo fixture, not a real complaint.",
+      "amount_lost_inr": 4000000.0,
+      "incident_date": null,
+      "callback_url": null,
+      "received_at": "2026-09-14T10:02:11Z",
+      "status": "result",
+      "wallets": [
+        {
+          "address": "TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR",
+          "chain": "tron",
+          "accepted": true,
+          "case_id": "demo-tron-okx",
+          "status": "result",
+          "outcome": "ATTRIBUTED",
+          "top_vasp": "OKX",
+          "confidence": 0.91,
+          "exchanges": [
+            {
+              "vasp": "OKX",
+              "direction": "outbound",
+              "proximity_rank": 1,
+              "hops": 3,
+              "confidence": 0.91
+            },
+            {
+              "vasp": "HTX",
+              "direction": "outbound",
+              "proximity_rank": 2,
+              "hops": 4,
+              "confidence": 0.46
+            }
+          ],
+          "risk_class": "low",
+          "risk_score": 15,
+          "report_pdf": "/api/cases/demo-tron-okx/pdf",
+          "request_ids": [
+            "demo-req-okx-001"
+          ],
+          "result_sent_at": "2026-09-14T10:04:11Z",
+          "case_error": null
+        }
+      ],
+      "status_url": "/api/sahyog/complaints/DEMO-NCRP-0001"
+    }
+  ],
+  "requests": [
+    {
+      "id": "demo-req-okx-001",
+      "reference": "DEMO/I4C/REQ/2026/001",
+      "vasp": "OKX",
+      "status": "sent",
+      "asks": [
+        "kyc",
+        "transactions",
+        "freeze",
+        "preservation"
+      ],
+      "wallets": 1,
+      "sent_at": "2026-09-13T16:02:11Z",
+      "allowed_replies": [
+        "acknowledged",
+        "answered",
+        "freeze_confirmed",
+        "refused"
+      ],
+      "last_note": "Sent via SAHYOG (demo)"
+    }
+  ]
+}

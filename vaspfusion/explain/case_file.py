@@ -440,6 +440,34 @@ def _receipt(case: dict) -> list[dict]:
             {"t": "pages", "rows": [(p["sha256"], p["query"]) for p in r["responses"]]}]
 
 
+def _risk(case: dict) -> list[dict]:
+    """The risk indicators (risk.py). Worked out from this case's own flags, labels and
+    slices when the file is made; the score says what it is in the same paragraph."""
+    from ..risk import CLASSES, case_risk
+    risk = case_risk(case)
+    if risk is None:
+        return []
+    out: list[dict] = [
+        {"t": "h", "text": "Risk indicators"},
+        {"t": "p", "text": f"Risk class: {risk['risk_class'].capitalize()} "
+                           f"(score {risk['score']} of 100). {risk['basis']} The indicator "
+                           f"list follows {risk['source']}; the points are this tool's."}]
+    if not risk["indicators"]:
+        out.append({"t": "p", "text": "No indicator is present in the traced funds."})
+    for i in risk["indicators"]:
+        out.append({"t": "evidence", "kind": f"{i['name']} (+{i['points']})",
+                    "text": i["text"], "hashes": i["tx_hashes"]})
+    counts = {c: sum(1 for f in risk["flows"] if f["risk_class"] == c) for c in CLASSES}
+    above = [f"{counts[c]} {c.capitalize()}" for c in reversed(CLASSES) if counts[c]]
+    total = len(case["graph"]["edges"])
+    flows = (f"Of the {total} transfers read, {', '.join(above)}; the rest are Low."
+             if above else f"All {total} transfers read are Low.")
+    if risk["path_class"]:
+        flows += f" The path shown above is {risk['path_class'].capitalize()}."
+    out.append({"t": "p", "text": "Transaction flows: " + flows})
+    return out
+
+
 # ------------------------------------------------------------------ the document
 def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
               bar_check: dict | None = None) -> list[dict]:
@@ -457,6 +485,7 @@ def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
     blocks += _candidates(case, rules.attribute_min, number)
     blocks += _rail(case, number)
     blocks += _flags(case)
+    blocks += _risk(case)
     blocks += _confidence(case, rules, bar_check)
     blocks += _lists(case)
     blocks += [{"t": "h", "text": "Limitations"}, {"t": "list", "items": limitations(case)}]

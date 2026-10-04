@@ -150,9 +150,12 @@ def findings_sha256(case: dict) -> str:
 
 # What a stored case holds that is not the result of the trace: its identity and state
 # (`progress` is what a run had read at some moment), what the officer entered, and the
-# receipt itself.
+# receipt itself. The risk block and the SAHYOG reference are worked out when a case is read
+# (risk.py reads config/risk.yaml; the complaint store knows who reported the wallet), so
+# they are views of the result, not the result.
 NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "complaint_no",
-                         "amount_lost_inr", "demo", "provenance", "progress"})
+                         "amount_lost_inr", "demo", "provenance", "progress", "risk",
+                         "risk_class", "risk_score", "sahyog_complaint_ref"})
 
 
 def content_sha256(case: dict) -> str:

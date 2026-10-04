@@ -631,6 +631,11 @@ def cmd_demo(args) -> None:
     print(f"{ok}/{len(specs)} as expected | cases stored in {store.path}")
     if args.watchlist and Path(args.watchlist).exists():
         _seed_watchlist(args.watchlist, args.labels_db, store)
+    if not args.no_sahyog_key:
+        from .desk.intake import ensure_demo_key
+        key_file, made = ensure_demo_key()
+        print(f"SAHYOG simulator: intake key {'created' if made else 'already'} in {key_file} "
+              "(a demonstration key; the simulator is not the SAHYOG portal)")
     same = len(specs)
     if args.golden:
         same = _golden(args.golden, [store.get(spec["id"]) for spec in specs])
@@ -1111,6 +1116,8 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.add_argument("--golden", help="also require each case's findings fingerprint to equal "
                                     "the one in this file (tests/golden/fingerprints.json)")
+    s.add_argument("--no-sahyog-key", action="store_true",
+                   help="do not create the SAHYOG simulator's intake key")
     s.set_defaults(fn=cmd_demo)
 
     s = sub.add_parser("demo-cache", help="build the demo's chain cache from the recorded "

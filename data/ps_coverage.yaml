@@ -1,0 +1,218 @@
+# Every line of problem statement 26182 (docs/problem_statement.md), word for word, with
+# what the tool does about it. Read by vaspfusion/coverage.py and shown at /coverage.
+#
+# status: built | partly | planned. A row that is not `built` must say what is missing
+# (`gap`). `where` is a screen of the interface; `evidence` is a test (a file, or
+# file::function) or a `make` target that fails if the claim stops being true.
+# tests/test_coverage.py holds every row to the PS text and every `built` row to its
+# route and its evidence.
+#
+# A row with `computed: chains` gets its status and sentences from the chains the tool
+# can trace today (TRACEABLE in vaspfusion/api/main.py), not from this file.
+
+rows:
+  # ---------------------------------------------------------------- Description
+  - id: sahyog-intake
+    section: The system should
+    text: "Automatically analyze suspect cryptocurrency wallet addresses reported during investigations on the Sahyog Platform."
+    status: partly
+    what: "An intake API takes a complaint with its wallets, opens one case per wallet and traces each without anyone touching the tool; the result is handed back through the gateway."
+    where: /sahyog-sim
+    evidence: {test: "tests/api/test_sahyog_intake.py::test_a_complaint_is_traced_without_anyone_touching_the_tool"}
+    gap: "SAHYOG's real interface is not public. This is our side of a contract, demonstrated with a simulator; nothing has been connected to the portal."
+
+  - id: nearest-vasp-trace
+    section: The system should
+    text: "Automatically trace blockchain transaction paths to identify: nearest centralized exchange, custodial wallet service, or VASP receiving direct deposits from the suspect wallet."
+    status: built
+    what: "A wallet's money is followed hop by hop to the nearest labelled exchange, custodial wallet or swap service, in both directions. The exchange is named only when the label evidence holds; otherwise the case says the evidence is insufficient."
+    where: /cases
+    evidence: {test: "tests/test_demo_cases.py::test_each_demo_wallet_gives_the_expected_result"}
+
+  - id: multi-chain-mapping
+    section: The system should
+    text: "Map blockchain of deposit addresses and transaction flows across multiple blockchain networks such as: Bitcoin, Ethereum, Tron, BNB Chain, Solana, Polygon, and other major chains."
+    computed: chains
+    named_chains: [bitcoin, ethereum, tron, bsc, solana, polygon]
+    where: /cases/new
+    evidence: {test: "tests/api/test_cases_live.py::test_addresses_we_cannot_trace_are_a_readable_422"}
+
+  - id: entity-kinds
+    section: The system should
+    text: "Support identification of: exchange clusters, hot wallets, deposit wallets, mixers/tumblers, DeFi bridges, and cross-chain swap services."
+    status: built
+    what: "Labels carry the owner and the kind of wallet (hot, cold, deposit, reserve); Bitcoin addresses are clustered by co-spending; Tron deposit addresses are derived from sweeps and scored by a measured model; mixers, bridges and swap services are recognised from labels, and a CoinJoin from the shape of the transaction."
+    where: /labels
+    evidence: {test: "tests/test_cluster.py::test_an_address_spent_together_with_a_labelled_one_gets_that_owners_label"}
+
+  - id: sahyog-apis
+    section: The system should
+    text: "Integrate Sahyog with blockchain intelligence APIs and graph analytics engines."
+    status: partly
+    what: "The tracing and attribution engine is behind a documented HTTP API with a contract for both directions: complaints in, results and requests out, replies in."
+    where: /sahyog-sim
+    evidence: {test: "tests/api/test_sahyog_intake.py::test_the_result_is_handed_to_the_gateway"}
+    gap: "The contract is our proposal. The real portal has not been connected, because its interface is not public."
+
+  - id: tagging-confidence
+    section: The system should
+    text: "Provide automated tagging and confidence scoring for suspected VASPs."
+    status: built
+    what: "Each named exchange carries a calibrated confidence with an interval, kept apart from how near it is; the measurements behind it are on the model page."
+    where: /model
+    evidence: {make: abstain-eval}
+
+  - id: reports
+    section: The system should
+    text: "Generate investigation-ready reports for LEAs."
+    status: built
+    what: "Every finished case has an A4 case file (PDF): the result, where the funds went, the flow diagram, each exchange with its evidence and transaction hashes, the flags, the risk indicators, the limits, and a provenance receipt that can be verified."
+    where: /cases
+    evidence: {test: "tests/test_case_file.py::test_the_pdf_holds_the_findings_as_searchable_text"}
+
+  - id: request-routing
+    section: The system should
+    text: "Assist investigators in automatically routing lawful disclosure or freezing requests to the correct VASP through the SAHYOG Portal."
+    status: partly
+    what: "Wallets are grouped under the exchange they route to; one request per exchange is drafted with its legal basis, approved by the officer, handed to the gateway, and the exchange's reply is tracked to 'freeze confirmed'."
+    where: /desk
+    evidence: {test: "tests/test_desk_service.py::test_sending_writes_the_payload_and_the_letter_to_the_outbox_once"}
+    gap: "The gateway writes to a local outbox. Nothing is sent to the real portal or to an exchange."
+
+  # ---------------------------------------------------------------- May additionally support
+  - id: visualization
+    section: The system may additionally support
+    text: "visualization of fund movement"
+    status: built
+    what: "The Hop Rail, the fund-flow graph with a replay, the timeline and the 'where the funds went' bar on every case."
+    where: /cases
+    evidence: {test: "ui/src/case/FlowGraph.test.tsx"}
+
+  - id: cross-chain
+    section: The system may additionally support
+    text: "cross-chain transaction mapping"
+    status: partly
+    what: "A bridge or a swap service on the path is detected, flagged and counted in the risk score."
+    where: /cases
+    evidence: {test: "tests/test_typologies.py::test_label_flags_come_first_and_keep_their_figures"}
+    gap: "The trace stops at the bridge. The funds are not followed onto the other chain."
+
+  - id: risk-scoring
+    section: The system may additionally support
+    text: "risk scoring"
+    status: built
+    what: "A score from 0 to 100 built from named red-flag indicators, each with its points and the transactions behind it. It is an indicator score, not a probability, and it is not measured against known outcomes."
+    where: /cases
+    evidence: {test: "tests/test_risk.py::test_the_score_never_goes_down_when_an_indicator_is_added"}
+
+  - id: typologies
+    section: The system may additionally support
+    text: "identification of laundering typologies"
+    status: built
+    what: "Peel chains, fan-out, fan-in, forwarding within minutes, round amounts, bridge hops and CoinJoin shapes are flagged, each with the wallet, the figures and the transaction hashes."
+    where: /cases
+    evidence: {test: "tests/test_typologies.py::test_wallets_that_each_peel_a_little_and_pass_the_rest_on_are_a_peel_chain"}
+
+  - id: alerting
+    section: The system may additionally support
+    text: "alerting for high-risk wallets linked to ransomware, darknet, terrorism financing, or fraud ecosystems"
+    status: partly
+    what: "An alert is raised when traced money reaches a sanctioned or mixer address, and a watched wallet is flagged when it shows new activity, a new exchange, a new alert or a higher risk class."
+    where: /watchlist
+    evidence: {test: "tests/test_wallets_watch.py::test_a_new_exchange_and_a_new_alert_are_named"}
+    gap: "The labels carry sanctioned, scam and mixer only. There are no ransomware, darknet or terrorism-financing tags yet, so no alert names those."
+
+  # ---------------------------------------------------------------- Expected solution
+  - id: automated-identification
+    section: Expected solution
+    text: "Automated identification of nearest VASP/exchange linked to unknown wallets."
+    status: built
+    what: "Paste a wallet and the nearest exchange comes back with its proximity and its confidence, or 'insufficient evidence' with what would change that."
+    where: /cases/new
+    evidence: {make: demo}
+
+  - id: api-driven
+    section: Expected solution
+    text: "API-driven blockchain tracing and attribution support."
+    status: built
+    what: "Everything the interface does goes through the HTTP API (docs/api_contract.md, docs/openapi.json): open a case, read the result, the case file, the receipt."
+    where: /cases/new
+    evidence: {test: "tests/api/test_cases_live.py::test_post_runs_the_trace_and_get_returns_the_case"}
+
+  - id: multi-chain-visualization
+    section: Expected solution
+    text: "Multi-chain transaction analysis and visualization."
+    computed: chains
+    named_chains: [bitcoin, ethereum, tron, bsc, solana, polygon]
+    where: /cases
+    evidence: {test: "tests/api/test_cases_live.py::test_a_bitcoin_wallet_is_traced_and_named_by_the_cluster_of_the_address_it_paid"}
+
+  - id: real-time
+    section: Expected solution
+    text: "Real-time generation of investigative intelligence."
+    status: partly
+    what: "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 8 recorded wallets went from intake to 8 results in 4.4 seconds (artifacts/intake_timing.json)."
+    where: /cases/new
+    evidence: {test: "tests/api/test_cases_live.py::test_a_running_case_says_what_the_trace_has_read_so_far"}
+    gap: "That figure replays recorded chain responses with no network. A live trace also waits on the public chain APIs and their rate limits, which was not timed. Nothing watches a chain continuously: a watched wallet is checked when the officer asks."
+
+  - id: risk-classification
+    section: Expected solution
+    text: "Risk classification of wallets and transaction flows."
+    status: built
+    what: "Every wallet and every case has a class (Low, Medium, High, Severe) with its reasons, and every traced transfer is classified by the indicators on it."
+    where: /cases
+    evidence: {test: "tests/test_risk.py::test_the_ofac_case_is_severe_and_a_clean_attributed_case_is_not"}
+
+  - id: dashboard
+    section: Expected solution
+    text: "Dashboard for LEAs with case-based analytics and reporting."
+    status: built
+    what: "Counts of cases by outcome, by chain and by risk class, the exchanges reached, requests awaiting reply and recent alerts, each counted from stored records and linked to the list behind it."
+    where: /dashboard
+    evidence: {test: "tests/test_dashboard.py::test_outcomes_count_every_finished_case_once"}
+
+  - id: scale
+    section: Expected solution
+    text: "Scalable architecture capable of handling large-volume blockchain transaction analysis."
+    status: partly
+    what: "Chain responses are cached, traces run in the background and a complaint's wallets are worked through a queue."
+    where: /dashboard
+    evidence: {make: intake-timing}
+    gap: "Measured only at small volume: 8 recorded wallets, 105 transfers, 114 chain responses, 4.4 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built."
+
+  # ---------------------------------------------------------------- The solution should aim to
+  - id: aim-time
+    section: The solution should aim to
+    text: "reduce investigation time"
+    status: partly
+    what: "A wallet is traced, attributed and written up as a case file and a draft request without manual chain analysis."
+    where: /cases
+    evidence: {make: intake-timing}
+    gap: "The time the tool takes is measured. The time the same work takes by hand has not been measured, so no saving is claimed."
+
+  - id: aim-freezing
+    section: The solution should aim to
+    text: "improve asset freezing efficiency"
+    status: partly
+    what: "A freeze can be asked for in the request (section 106 BNSS is added to the legal basis) and the request is tracked until the exchange confirms the freeze."
+    where: /desk
+    evidence: {test: "tests/test_desk_service.py::test_the_legal_basis_names_the_notice_the_certificate_and_the_freeze_power"}
+    gap: "No request has gone to a real exchange, so no freeze has been made or timed."
+
+  - id: aim-attribution
+    section: The solution should aim to
+    text: "enhance attribution capabilities"
+    status: built
+    what: "Attribution is measured, not asserted: the share of wallets named wrongly at the bar in use, the calibration error of the deposit-address model and its coverage are on the model page."
+    where: /model
+    evidence: {make: reproduce}
+
+  - id: aim-cross-border
+    section: The solution should aim to
+    text: "strengthen cross-border cybercrime investigations involving VDAs"
+    status: partly
+    what: "Foreign exchanges are named and requests are routed to them with their legal name, jurisdiction and law-enforcement channel where a source for these was found."
+    where: /desk
+    evidence: {test: "tests/test_desk_directory.py"}
+    gap: "The jurisdiction map is not built: no cited jurisdiction was found for the exchanges the recorded cases reach."

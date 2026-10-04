@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from statistics import median
 
+from . import risk as R
 from .desk.routing import AWAITING
 
 OUTCOMES = ("ATTRIBUTED", "INSUFFICIENT_EVIDENCE", "SANCTIONED_OR_MIXER_REACHED")
@@ -63,6 +64,12 @@ def build_dashboard(cases: list[dict], desk: dict, requests: list[dict],
     for c in cases:
         chains[c["chain"]] = chains.get(c["chain"], 0) + 1
 
+    by_class = {c: 0 for c in R.CLASSES}
+    for c in done:
+        klass = R.summary(c)["risk_class"]
+        if klass:
+            by_class[klass] += 1
+
     times = [n["time_to_reach_s"] for n in map(_named, done)
              if n is not None and n.get("time_to_reach_s") is not None]
 
@@ -89,4 +96,5 @@ def build_dashboard(cases: list[dict], desk: dict, requests: list[dict],
         "median_time_to_attribution_s": float(median(times)) if times else None,
         "attribution_times_n": len(times),
         "recent_alerts": alerts[:MAX_ALERTS],
+        "risk_classes": by_class,
     }

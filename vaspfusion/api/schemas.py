@@ -43,6 +43,9 @@ RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered
 Ask = Literal["kyc", "transactions", "freeze", "preservation"]
 FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
 Direction = Literal["outbound", "inbound"]
+RiskClass = Literal["low", "medium", "high", "severe"]
+RISK_BASIS = ("An indicator score from published red-flag rules. Not a probability, and not "
+              "measured against known outcomes.")
 FundsKind = Literal["vasp", "sanctioned", "mixer", "bridge", "other_label", "hub",
                     "beyond_hop_limit", "not_moved", "not_followed", "returned",
                     "fee"]   # Bitcoin only: miner fees paid along the trail (B5)
@@ -169,6 +172,12 @@ class CaseSummary(_M):
     threats: list[Threat] = Field([], description=(
         "The distinct threats the case touches: its own address's tag and every flagged "
         "link. While the trace runs it holds the screening hit only"))
+    risk_class: RiskClass | None = Field(None, description=(
+        "Of a finished case (risk.py). Worked out when the case is read, never stored"))
+    risk_score: int | None = Field(None, ge=0, le=100, description=RISK_BASIS)
+    sahyog_complaint_ref: str | None = Field(None, description=(
+        "Set when the case was opened by a complaint filed through the SAHYOG intake API: "
+        "show 'Reported through SAHYOG' with this reference"))
 
 
 class CaseList(_M):
@@ -371,7 +380,50 @@ class CaseProgress(_M):
     message: str = Field(description="The same, as one sentence to show as it is")
 
 
+class RiskIndicator(_M):
+    """One red-flag indicator that is present, with its points and what it rests on."""
+    code: str
+    name: str
+    points: int = Field(ge=0, le=100)
+    text: str = Field(description="The sentence to show as it is")
+    fatf_category: str | None = Field(None, description=(
+        "The category of the FATF red-flag report this indicator is filed under "
+        "(config/risk.yaml); the filing is this project's"))
+    wallet: str | None = None
+    case_id: str | None = None
+    tx_hashes: list[str] = []
+
+
+class FlowRisk(_M):
+    """The class of one traced transfer (an edge of the case's graph), by the indicators
+    on it. Only transfers above Low are listed."""
+    edge_id: str
+    tx_hash: str
+    risk_class: RiskClass
+    reasons: list[str]
+
+
+class RiskInfo(_M):
+    score: int | None = Field(None, ge=0, le=100, description=(
+        "The sum of the points of the indicators present, capped at 100. " + RISK_BASIS
+        + " null: not assessed"))
+    risk_class: RiskClass | None = Field(None, description=(
+        "low 0-24, medium 25-49, high 50-74, severe 75-100 (config/risk.yaml). null: not "
+        "assessed (a wallet that is unlabelled and in no case; a case with no result)"))
+    indicators: list[RiskIndicator] = Field([], description="Largest first")
+    reasons: list[str] = Field([], description="The indicators' sentences, in the same order")
+    flows: list[FlowRisk] = Field([], description="A case only: its transfers above Low")
+    path_class: RiskClass | None = Field(None, description=(
+        "A case only: the class of the path the Hop Rail shows"))
+    basis: str = RISK_BASIS
+    source: str | None = Field(None, description="The published list the indicators follow")
+
+
 class CaseDetail(CaseSummary):
+    risk: RiskInfo | None = Field(None, description=(
+        "Wallet and flow risk of a finished case. Worked out when the case is read from "
+        "its stored flags, labels and transfers; never stored, so it is not part of the "
+        "case's digests"))
     progress: CaseProgress | None = Field(None, description=(
         "Set only while status is queued or running and this server is tracing the case: "
         "poll the case to watch it. Never stored; null on a finished case"))
@@ -403,17 +455,6 @@ class FlowSummary(_M):
                                                    "are in more than one asset")
     asset: str | None = None
     counterparties: int | None = None
-
-
-class RiskInfo(_M):
-    score: float | None = Field(None, ge=0, le=1, description=(
-        "Always null: no wallet risk score is computed. `level` is a plain rule"))
-    level: Literal["high", "elevated", "none"] | None = Field(None, description=(
-        "high: the address is itself labelled sanctioned, mixer or scam, or a high-severity "
-        "flag of a case names it. elevated: a pattern flag names it, or funds it sent "
-        "reached a sanctioned or mixer address. none: nothing on record. null: not "
-        "assessed (unlabelled and in no case)"))
-    reasons: list[str] = []
 
 
 class WalletCaseRef(_M):
@@ -511,6 +552,8 @@ class StatusEvent(_M):
     note: str | None = None
     by: str | None = Field(None, description="User name of the signed-in officer who made "
                                              "this change; null when no login was in force")
+    via: Literal["sahyog"] | None = Field(None, description=(
+        "sahyog: the exchange's reply arrived through the SAHYOG gateway, not typed in"))
 
 
 class RequestSummary(_M):
@@ -678,6 +721,10 @@ class LabelCoverage(_M):
     by_chain: dict[str, int]
     by_source: list[LabelSource] = []
     by_threat: dict[str, int] = Field({}, description="Tagged labels per threat")
+    traceable_total: int | None = Field(None, description=(
+        "Labels on the chains a trace can run on today: the figure to show as a headline. "
+        "`total` also counts labels on chains the tool cannot trace"))
+    traceable_chains: list[str] = []
 
 
 class Dashboard(_M):
@@ -691,6 +738,8 @@ class Dashboard(_M):
     attribution_times_n: int = 0
     recent_alerts: list[Alert]
     label_coverage: LabelCoverage
+    risk_classes: dict[RiskClass, int] = Field({}, description=(
+        "Finished cases by risk class. " + RISK_BASIS))
 
 
 # ------------------------------------------------------------------ watchlist (U4)
@@ -704,9 +753,11 @@ class WatchCreate(_M):
 
 
 class WatchChange(_M):
-    kind: Literal["new_activity", "new_exchange", "new_alert", "new_threat_link"] = Field(
+    kind: Literal["new_activity", "new_exchange", "new_alert", "new_threat_link",
+                  "risk_raised"] = Field(
         description="new_threat_link: a re-check found a link to a threat-tagged address "
-                    "that the baseline did not have")
+                    "that the baseline did not have. risk_raised: the wallet's risk class "
+                    "is higher than at the baseline")
     severity: Severity
     text: str
     at: datetime
@@ -729,6 +780,7 @@ class WatchItem(_M):
     changes: list[WatchChange] = []
     error: str | None = None
     label: LabelOut | None = None
+    risk_class: RiskClass | None = Field(None, description="Of the wallet's case as it is now")
 
 
 class WatchList(_M):
@@ -932,6 +984,8 @@ AuditAction = Literal[
     "wallet.view", "label.search", "desk.view", "vasp.view", "request.draft", "request.view",
     "request.status", "request.export", "dashboard.view", "model.view", "fx.view", "audit.view",
     "watch.list", "watch.add", "watch.check", "watch.seen", "watch.remove", "label.coverage",
+    "coverage.view", "sahyog.complaint", "sahyog.status", "sahyog.reply", "sim.view",
+    "sim.complaint", "sim.reply",
     "auth.login", "auth.logout", "api.other"]
 
 
@@ -997,3 +1051,143 @@ class Health(_M):
     auth_required: bool = False
     offline: bool = Field(False, description="OFFLINE=1: chain data comes from the cache only")
     git_commit: str | None = None
+
+
+# ------------------------------------------------------------------ SAHYOG, both directions (G2)
+COMPLAINT_REF = r"^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$"
+FraudCategory = Literal["investment_fraud", "job_fraud", "impersonation", "phishing",
+                        "ransomware", "extortion", "loan_app", "other"]
+ReplyStatus = Literal["acknowledged", "answered", "freeze_confirmed", "refused"]
+
+
+class ComplaintWalletIn(_M):
+    address: str = Field(min_length=1, max_length=128)
+    chain: TraceChain | None = Field(None, description="Omit to have it read from the address")
+
+
+class ComplaintCreate(_M):
+    """A complaint as the portal would send it (docs/sahyog_contract.md)."""
+    complaint_ref: str = Field(pattern=COMPLAINT_REF, description=(
+        "The NCRP / 1930 acknowledgement number. Letters, digits, dot, dash, underscore"))
+    agency: str = Field(min_length=1, max_length=200, description="The reporting agency")
+    officer: str = Field(min_length=1, max_length=200)
+    wallets: list[ComplaintWalletIn] = Field(min_length=1, max_length=50)
+    amount_lost_inr: float | None = Field(None, ge=0)
+    incident_date: date | None = None
+    category: FraudCategory = Field("other", description=(
+        "This project's own short list; the portal's categories would replace it"))
+    note: str | None = Field(None, max_length=2000)
+    callback_url: str | None = Field(None, max_length=500, description=(
+        "Where the portal wants the result sent. Recorded and passed to the gateway; the "
+        "mock gateway never calls it"))
+
+
+class ExchangeNamed(_M):
+    vasp: str
+    direction: Direction
+    proximity_rank: int
+    hops: int
+    confidence: float = Field(ge=0, le=1)
+
+
+class ComplaintWallet(_M):
+    address: str
+    chain: TraceChain | None = None
+    accepted: bool
+    error: str | None = Field(None, description="Why the address was refused, as a sentence")
+    case_id: str | None = None
+    status: Literal["refused", "received", "tracing", "result", "failed"]
+    outcome: Outcome | None = None
+    top_vasp: str | None = None
+    confidence: float | None = None
+    exchanges: list[ExchangeNamed] = Field([], description=(
+        "Every exchange the trace reached, nearest first, with proximity and confidence "
+        "apart. Only `top_vasp` is named"))
+    risk_class: RiskClass | None = None
+    risk_score: int | None = Field(None, description=RISK_BASIS)
+    report_pdf: str | None = Field(None, description="The case file, once there is a result")
+    request_ids: list[str] = Field([], description="Requests drafted from this case")
+    result_sent_at: datetime | None = Field(None, description=(
+        "When the result was handed to the gateway"))
+    case_error: str | None = None
+
+
+class ComplaintStatus(_M):
+    complaint_ref: str
+    agency: str
+    officer: str
+    category: FraudCategory
+    note: str | None = None
+    amount_lost_inr: float | None = None
+    incident_date: date | None = None
+    callback_url: str | None = None
+    received_at: datetime
+    status: Literal["received", "tracing", "result"] = Field(description=(
+        "received: nothing traced yet. tracing: at least one wallet is still queued or "
+        "being traced. result: every accepted wallet has a result or has failed"))
+    wallets: list[ComplaintWallet]
+    status_url: str
+
+
+class ReplyIn(_M):
+    """An exchange's reply to a request, as it arrives through the gateway."""
+    status: ReplyStatus
+    note: str | None = Field(None, max_length=500)
+    reply_ref: str | None = Field(None, max_length=100, description="The exchange's own reference")
+
+
+class ReplyAck(_M):
+    request_id: str
+    status: RequestStatus
+    recorded_at: datetime
+    location: str | None = Field(None, description="Where the gateway kept the reply")
+
+
+class SimRequest(_M):
+    """A sent request as the portal's side would see it."""
+    id: str
+    reference: str
+    vasp: str
+    status: RequestStatus
+    asks: list[Ask]
+    wallets: int
+    sent_at: datetime | None = None
+    allowed_replies: list[ReplyStatus]
+    last_note: str | None = None
+
+
+class SahyogSim(_M):
+    """Everything the simulator screen shows. A simulator for demonstration, not the
+    SAHYOG portal."""
+    enabled: bool = Field(description="false until an intake key exists (the demo set-up "
+                                      "creates one)")
+    notice: str
+    why_disabled: str | None = None
+    categories: list[str] = []
+    complaints: list[ComplaintStatus] = Field([], description="Newest first")
+    requests: list[SimRequest] = Field([], description="Newest first")
+
+
+# ------------------------------------------------------------------ problem-statement coverage (G2)
+CoverageStatus = Literal["built", "partly", "planned"]
+
+
+class CoverageRow(_M):
+    id: str
+    section: str
+    text: str = Field(description="The line of the problem statement, word for word")
+    status: CoverageStatus
+    what: str
+    where: str = Field(description="A screen of the interface")
+    evidence_kind: Literal["test", "make"]
+    evidence: str
+    gap: str | None = Field(None, description="What is missing; set unless status is built")
+    computed: bool = Field(False, description="Worked out from the chains that trace today")
+
+
+class PsCoverage(_M):
+    rows: list[CoverageRow]
+    counts: dict[CoverageStatus, int]
+    total: int
+    traceable_chains: list[str]
+    source: str

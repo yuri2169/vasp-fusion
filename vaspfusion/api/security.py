@@ -18,6 +18,8 @@ import time
 SESSION_COOKIE = "vf_session"
 # always answer: is the server up, who am I, let me in, let me out
 OPEN_PATHS = frozenset({"/api/health", "/api/auth/me", "/api/auth/login", "/api/auth/logout"})
+# Routes with an API key of their own instead of an officer's login (docs/sahyog_contract.md).
+OWN_KEY_PREFIX = "/api/sahyog/"
 NOT_LOGGED = frozenset({("GET", "/api/health"), ("GET", "/api/auth/me")})
 FOLD_S = 30.0
 
@@ -52,6 +54,15 @@ ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("GET", "/api/model"): ("model.view", None),
     ("GET", "/api/fx"): ("fx.view", None),
     ("GET", "/api/audit"): ("audit.view", None),
+    ("GET", "/api/coverage"): ("coverage.view", None),
+    # SAHYOG, system to system: its own API key, no officer (G2)
+    ("POST", "/api/sahyog/complaints"): ("sahyog.complaint", None),   # target set by the handler
+    ("GET", "/api/sahyog/complaints/{complaint_ref}"): ("sahyog.status", "complaint_ref"),
+    ("POST", "/api/sahyog/requests/{request_id}/replies"): ("sahyog.reply", "request_id"),
+    # the simulator screen, which plays the portal's side for the signed-in officer
+    ("GET", "/api/sahyog-sim"): ("sim.view", None),
+    ("POST", "/api/sahyog-sim/complaints"): ("sim.complaint", None),  # target set by the handler
+    ("POST", "/api/sahyog-sim/requests/{request_id}/reply"): ("sim.reply", "request_id"),
     ("POST", "/api/auth/login"): ("auth.login", None),          # target set by the handler
     ("POST", "/api/auth/logout"): ("auth.logout", None),
 }

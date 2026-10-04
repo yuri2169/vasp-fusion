@@ -196,6 +196,44 @@ does not change the result.
     finding: the model was measured on exchange customers and deposit addresses only.
         tx f1405d6658101c8f734bc8f12fd438cae6ba2d72231bfbe77a4901f06f21be9f
 
+RISK INDICATORS
+---------------
+Risk class: Medium (score 35 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+    [Forwarded within minutes (+15)] THbT14…bdZfWi passed on 100% of the 20 USDT that reached it
+    within 7 minutes of its arrival (and 4 more of this kind)
+        tx 41df004f1d76cadbe81f462f1671e9396918cab0a2574b13e2cdeeefd7b69da7
+        tx 94f83bc22a50728cc421d82f117f90d7117f63078fabe1d59d8a245a3dff96e4
+        tx 998e00d6106ae1008fe848514a9484489854352e26ce4f7ca37fcedf8530c5a4
+        tx a112fc81abc5f942d4508493828e0b97767a6499bb2c94a5d06cad2f6d20adf6
+        tx ab73419d07a9f4a210469bbc21cc46e12b6eb112c9880e17c4d5eb15526d97ff
+        tx db028e3b7aa41dfab2bc3615c39812e958d1322c3a28ef07b5a1ce3a2a8dda40
+        tx dc4a477ab22ff14a86fddd321e5ea72c82ea69107ee4620d8d248685c3e1c33f
+        tx df52b4090ee98826571e05e404ddb09176d32f1f7ddb501ffb586f39f268414a
+        tx f52000d4262de7ef891bdc77f9127191f03223946a2e58eba0335d026eb51a5b
+    [Most funds stopped at an unlabelled high-activity wallet (+15)] 74% of the funds stopped at
+    unlabelled wallets with a great many counterparties, where the trail cannot be followed
+    further
+        tx 25b27b4f46b4d6acf67ac83f7967c5430e818aab54dae9f92781dce50654d57b
+        tx 41df004f1d76cadbe81f462f1671e9396918cab0a2574b13e2cdeeefd7b69da7
+        tx 6c03cfe08829d7d1976621c81733d7a7008d00aa175864b66d94edc861946cbe
+        tx 9b5cbbe6a6f68fc446d5515baf8de7f0ac77a1abf24aced5eb3418325d33eb38
+        tx a112fc81abc5f942d4508493828e0b97767a6499bb2c94a5d06cad2f6d20adf6
+        tx ab73419d07a9f4a210469bbc21cc46e12b6eb112c9880e17c4d5eb15526d97ff
+        tx f566602740897e75930c0f787279e15515414de13c310cf2e4de93b1f1cd9dc4
+    [Funded by many wallets, or split funds merged again (+5)] 721 USDT of the wallet's money
+    came together again at TDqSqu…dkhSCf, from 3 wallets it had been split across
+        tx 25b27b4f46b4d6acf67ac83f7967c5430e818aab54dae9f92781dce50654d57b
+        tx 6c03cfe08829d7d1976621c81733d7a7008d00aa175864b66d94edc861946cbe
+        tx 9b5cbbe6a6f68fc446d5515baf8de7f0ac77a1abf24aced5eb3418325d33eb38
+        tx f566602740897e75930c0f787279e15515414de13c310cf2e4de93b1f1cd9dc4
+Transaction flows: Of the 23 transfers read, 3 Medium; the rest are Low. The path shown above is
+Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

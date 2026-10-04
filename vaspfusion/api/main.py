@@ -40,6 +40,7 @@ from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..screening import screen
 from ..store.audit import AuditLog
 from ..store.cases import SUMMARY_KEYS, CaseStore
+from .. import risk as R
 from ..trace import TraceConfig
 from . import schemas as S
 from . import security
@@ -58,6 +59,7 @@ OFFICERS: Path | None = None     # None = data/officers.json (or VASPFUSION_OFFI
 AUDIT_DB: Path | None = None     # None = data/audit.duckdb (or VASPFUSION_AUDIT_DB)
 AUTH_SECRET: Path | None = None  # None = data/auth_secret (or VASPFUSION_JWT_SECRET)
 AUTH: str | None = None          # None = VASPFUSION_AUTH, else "auto"; "off" | "required"
+SAHYOG_KEY: Path | None = None   # None = data/sahyog_api_key (or VASPFUSION_SAHYOG_KEY_FILE)
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
 # have no adapter yet (PROGRESS.md, B2). Bitcoin is traced since B5 (chains/btc.py: an
@@ -157,7 +159,8 @@ async def login_and_audit(request: Request, call_next):
     officer = _officer_of(request)
     request.state.officer = officer
     request.state.audit = {}
-    if auth_required() and officer is None and path not in security.OPEN_PATHS:
+    own_key = path.startswith(security.OWN_KEY_PREFIX)      # the route checks its API key
+    if auth_required() and officer is None and path not in security.OPEN_PATHS and not own_key:
         response = JSONResponse({"detail": "Sign in to continue."}, status_code=401,
                                 headers={"WWW-Authenticate": "Bearer"})
     else:
@@ -213,6 +216,8 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"audit", S.AuditPage),
     (r"auth/me", S.Me),
     (r"fx", S.FxRate),
+    (r"coverage", S.PsCoverage),
+    (r"sahyog-sim", S.SahyogSim),
 ]
 
 _SAFE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._&-]{0,99}$")
@@ -437,6 +442,7 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
                 demo=bool(queued.get("demo")),      # a demo wallet traced again is still one
                 on_progress=lambda snapshot: _note_progress(case_id, snapshot))
         store.save(detail)
+        _notify_sahyog(case_id)
     except Exception as e:  # noqa: BLE001 - whatever went wrong, the case must say so
         why = f"{type(e).__name__}: {e}"[:500]
         try:
@@ -466,13 +472,21 @@ def create_case(body: S.CaseCreate, request: Request, response: Response,
             return c
     chain, address = _resolve(body)
     _note(request, target=case_id_for(chain, address), address=address, chain=chain)
+    _source(response, "live")
+    summary = _start_case(chain, address, body, background, refresh)
+    _note(request, target=summary["id"], address=address, chain=chain)
+    return summary
+
+
+def _start_case(chain: str, address: str, body: S.CaseCreate, background: BackgroundTasks,
+                refresh: bool = False) -> dict:
+    """Open (or find) the case of a wallet and queue its trace. The officer's POST and
+    the SAHYOG intake both come through here, so a case is the same however it began."""
     if not Path(LABEL_DB).exists():
         raise HTTPException(503, "The label database is missing. Run `make labels` first.")
     store = _cases()
-    _source(response, "live")
     existing = store.find(chain, address)
     cid = existing["id"] if existing else case_id_for(chain, address)
-    _note(request, target=cid, address=address, chain=chain)
     with _ACTIVE_LOCK:
         tracing = cid in _ACTIVE
         finished = existing is not None and existing["status"] == "done"
@@ -522,7 +536,11 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
         found = c.get("threats") or []
         return threat is None or (bool(found) if threat == "any" else threat in found)
 
-    live = [c for c in _cases().list(outcome=outcome, status=status) if touches(c)]
+    store = _cases()
+    refs = _complaints().refs_by_case()
+    live = [{**c, **(R.summary(store.get(c["id"])) if c["status"] == "done" else {}),
+             "sahyog_complaint_ref": refs.get(c["id"])}
+            for c in store.list(outcome=outcome, status=status) if touches(c)]
     mock = [c for c in _demo_cases()
             if (outcome is None or c.get("outcome") == outcome)
             and (status is None or c["status"] == status) and touches(c)]
@@ -583,7 +601,7 @@ def get_case(case_id: str, response: Response):
             if snapshot is not None:
                 live["progress"] = {**snapshot,
                                     "message": progress_sentence(live["chain"], snapshot)}
-        return live
+        return _enrich(live)
     fixture = demo_fixture(f"cases/{case_id}", _no_case(case_id))
     _source(response, "mock")
     return fixture
@@ -648,7 +666,7 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
         kind = "mock"
     except HTTPException:
         wallet = {"address": address, "chain": chain, "labels": [],
-                  "risk": {"score": None, "reasons": []}, "cases": []}
+                  "risk": R.wallet_risk(address, None, []), "cases": []}
         kind = "live"
     store = _labels()
     if store:
@@ -671,10 +689,15 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
 
 
 def _coverage(store: LabelStore) -> dict:
+    """The label counts, with the figure a headline may show: labels on the chains a
+    trace can run on. The store also holds labels on chains the tool cannot trace."""
     with store:
         st = store.stats()
-    return {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain", "by_source",
-                               "by_threat")}
+    out = {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain", "by_source",
+                              "by_threat")}
+    out["traceable_chains"] = list(TRACEABLE)
+    out["traceable_total"] = sum(n for c, n in st["by_chain"].items() if c in TRACEABLE)
+    return out
 
 
 @app.get("/api/labels/coverage", response_model=S.LabelCoverage)
@@ -914,7 +937,8 @@ def get_dashboard(response: Response):
                                [a for w in watched for a in alerts_of(w)], len(watched))
         dash["label_coverage"] = (load_mock("dashboard")["label_coverage"] if demo_mode()
                                   else {"total": 0, "by_category": {}, "by_tier": {},
-                                        "by_chain": {}, "by_source": []})
+                                        "by_chain": {}, "by_source": [], "traceable_total": 0,
+                                        "traceable_chains": list(TRACEABLE)})
         _source(response, "live" if store or not demo_mode() else "mixed")
     else:
         dash = load_mock("dashboard")
@@ -1050,6 +1074,238 @@ def get_model(response: Response, chain: str = "tron"):
     validation = read_validation(ABSTAIN_DIR, chain)
     return {**model_info(metrics),
             "abstain": abstain_info(validation) if validation else None}
+
+
+# ------------------------------------------------------------------ problem-statement coverage (G2)
+@app.get("/api/coverage", response_model=S.PsCoverage)
+def get_coverage(response: Response):
+    """Every line of the problem statement with what the tool does about it
+    (data/ps_coverage.yaml). The chain rows are worked out from the chains that trace."""
+    from ..coverage import build
+    _source(response, "live")
+    return build(TRACEABLE)
+
+
+# ------------------------------------------------------------------ SAHYOG, both directions (G2)
+# SAHYOG's interface is not public. These routes are our side of a contract
+# (docs/sahyog_contract.md) and are exercised by the simulator screen. They carry their
+# own API key (X-SAHYOG-Key) instead of an officer's login.
+def _complaints():
+    from ..store.complaints import ComplaintStore
+    return ComplaintStore(DESK_DB)
+
+
+def _enrich(case: dict) -> dict:
+    """What a served case carries that a stored one does not: its risk (risk.py reads the
+    stored flags, labels and slices) and the complaint that reported it, if one did."""
+    risk = R.case_risk(case)
+    case["risk"] = risk
+    case["risk_class"] = risk["risk_class"] if risk else None
+    case["risk_score"] = risk["score"] if risk else None
+    case["sahyog_complaint_ref"] = _complaints().refs_by_case().get(case["id"])
+    return case
+
+
+def _sahyog_key(request: Request) -> None:
+    from ..desk.intake import KEY_HEADER, IntakeError, check_key
+    try:
+        check_key(request.headers.get(KEY_HEADER), SAHYOG_KEY)
+    except IntakeError as e:
+        raise HTTPException(e.status, str(e)) from None
+
+
+def _complaint_view(complaint: dict) -> dict:
+    from ..desk.intake import complaint_view, wallet_view
+    from ..store.requests import RequestStore
+    cases, requests = _cases(), RequestStore(DESK_DB).list()
+    wallets = []
+    for entry in complaint["wallets"]:
+        case = cases.get(entry["case_id"]) if entry.get("case_id") else None
+        wallets.append(wallet_view(entry, case, requests, R.summary(case)))
+    return complaint_view(complaint, wallets)
+
+
+def _notify_sahyog(case_id: str) -> None:
+    """A trace has finished: hand its result to the gateway for every complaint that
+    reported the wallet. A failure here is recorded nowhere but must not fail the case;
+    the portal can always read the result from the status route."""
+    from ..cases import CODE_VERSION
+    from ..desk.intake import iso, result_payload
+    try:
+        store = _complaints()
+        for complaint in store.list():
+            mine = [w for w in complaint["wallets"]
+                    if w.get("case_id") == case_id and not w.get("result_sent_at")]
+            if not mine:
+                continue
+            view = {w["case_id"]: w for w in _complaint_view(complaint)["wallets"]
+                    if w.get("case_id")}
+            if view[case_id]["status"] != "result":
+                continue
+            now = datetime.now(timezone.utc)
+            receipt = make_gateway().notify_result(
+                result_payload(complaint, view[case_id], code_version=CODE_VERSION, now=now),
+                now=now)
+            for w in mine:
+                w["result_sent_at"], w["result_receipt"] = iso(now), receipt
+            store.save(complaint)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _file_complaint(body: S.ComplaintCreate, background: BackgroundTasks) -> dict:
+    """Validate every address, open one case per wallet and queue its trace. Idempotent
+    on complaint_ref + address. A bad address is refused by name; the others go through."""
+    from ..desk.intake import MAX_HOPS, iso
+    store = _complaints()
+    now = datetime.now(timezone.utc)
+    complaint = store.get(body.complaint_ref) or {
+        "complaint_ref": body.complaint_ref, "agency": body.agency.strip(),
+        "officer": body.officer.strip(), "category": body.category,
+        "note": (body.note or "").strip() or None, "amount_lost_inr": body.amount_lost_inr,
+        "incident_date": body.incident_date.isoformat() if body.incident_date else None,
+        "callback_url": body.callback_url, "received_at": iso(now), "wallets": []}
+    known = {(w.get("chain"), w["address"]) for w in complaint["wallets"] if w["accepted"]}
+    refused = {w["address"] for w in complaint["wallets"] if not w["accepted"]}
+    for w in body.wallets:
+        given = w.address.strip()
+        spec = S.CaseCreate(address=given, chain=w.chain, complaint_no=body.complaint_ref,
+                            amount_lost_inr=body.amount_lost_inr,
+                            incident_date=body.incident_date, max_hops=MAX_HOPS)
+        try:
+            chain, address = _resolve(spec)
+        except HTTPException as e:
+            if given not in refused:
+                refused.add(given)
+                why = e.detail if given[:64] in e.detail else f"{given[:64]}: {e.detail}"
+                complaint["wallets"].append({"address": given, "chain": w.chain,
+                                             "accepted": False, "error": why})
+            continue
+        if (chain, address) in known:
+            continue
+        known.add((chain, address))
+        summary = _start_case(chain, address, spec, background)
+        complaint["wallets"].append({"address": address, "chain": chain, "accepted": True,
+                                     "case_id": summary["id"], "result_sent_at": None})
+    if not known:
+        raise HTTPException(422, "No wallet in this complaint could be accepted. "
+                            + " ".join(w["error"] for w in complaint["wallets"]))
+    store.save(complaint)
+    for w in complaint["wallets"]:      # a wallet that already had a finished case
+        if w["accepted"] and not w.get("result_sent_at"):
+            _notify_sahyog(w["case_id"])
+    return _complaint_view(store.get(body.complaint_ref))
+
+
+def _record_reply(request_id: str, body: S.ReplyIn) -> dict:
+    from ..desk.service import DeskError
+    try:
+        req, receipt = _desk().reply(request_id, body.status, body.note, body.reply_ref)
+    except DeskError as e:
+        raise _refused(e) from None
+    return {"request_id": req["id"], "status": req["status"],
+            "recorded_at": req["status_history"][-1]["at"],
+            "location": receipt["location"] if receipt else None}
+
+
+@app.post("/api/sahyog/complaints", response_model=S.ComplaintStatus, status_code=202)
+def sahyog_complaint(body: S.ComplaintCreate, request: Request, response: Response,
+                     background: BackgroundTasks):
+    """SAHYOG -> VASP-FUSION. A complaint with its wallets: one case is opened per wallet
+    and its trace starts at once. 202 with the case ids; poll the status route. Sending
+    the same complaint again returns the same cases. 401 without the API key, 503 when
+    no key is configured, 422 when no wallet can be accepted."""
+    _sahyog_key(request)
+    _note(request, target=body.complaint_ref, wallets=len(body.wallets))
+    _source(response, "live")
+    return _file_complaint(body, background)
+
+
+@app.get("/api/sahyog/complaints/{complaint_ref}", response_model=S.ComplaintStatus)
+def sahyog_status(complaint_ref: str, request: Request, response: Response):
+    """The state of each wallet of a complaint and, once traced: the outcome, every
+    exchange reached with proximity and confidence apart, the risk class, the case file
+    and the requests drafted from it."""
+    _sahyog_key(request)
+    complaint = _complaints().get(complaint_ref) if re.match(S.COMPLAINT_REF, complaint_ref) \
+        else None
+    if complaint is None:
+        raise HTTPException(404, f"No complaint {complaint_ref[:64]} has been received.")
+    _source(response, "live")
+    return _complaint_view(complaint)
+
+
+@app.post("/api/sahyog/requests/{request_id}/replies", response_model=S.ReplyAck)
+def sahyog_reply(request_id: str, body: S.ReplyIn, request: Request, response: Response):
+    """SAHYOG -> VASP-FUSION. An exchange's reply to a request that was sent: acknowledged,
+    answered, freeze_confirmed or refused. The request desk shows it at once. 404 unknown
+    request, 409 a reply that cannot follow the request's present status."""
+    _sahyog_key(request)
+    _note(request, status=body.status)
+    _source(response, "live")
+    return _record_reply(request_id, body)
+
+
+# ---- the simulator: the signed-in officer plays the portal's side. The server calls the
+# same functions the routes above do, so the browser never holds the API key.
+def _sim_enabled() -> bool:
+    from ..desk.intake import configured_key
+    return configured_key(SAHYOG_KEY) is not None
+
+
+def _sim_or_503() -> None:
+    if not _sim_enabled():
+        raise HTTPException(503, "The simulator is off: no SAHYOG API key is configured. "
+                                 "The demo set-up (`make demo`) creates one.")
+
+
+@app.get("/api/sahyog-sim", response_model=S.SahyogSim)
+def get_sahyog_sim(response: Response):
+    """What the simulator screen shows: complaints filed, and the sent requests as the
+    portal would see them. A simulator for demonstration, not the SAHYOG portal."""
+    from typing import get_args
+
+    from ..desk.intake import NOTICE, REPLIES
+    from ..desk.service import TRANSITIONS
+    _source(response, "live")
+    out = {"enabled": _sim_enabled(), "notice": NOTICE, "why_disabled": None,
+           "categories": list(get_args(S.FraudCategory)), "complaints": [], "requests": []}
+    if not out["enabled"]:
+        out["why_disabled"] = ("No SAHYOG API key is configured on this installation. The "
+                               "demo set-up (`make demo`) creates one.")
+        return out
+    out["complaints"] = [_complaint_view(c) for c in _complaints().list()]
+    for req in _desk().list():
+        if not req.get("receipt"):
+            continue
+        out["requests"].append({
+            "id": req["id"], "reference": req["reference"], "vasp": req["vasp"],
+            "status": req["status"], "asks": req["letter"]["asks"],
+            "wallets": len(req["letter"]["wallets"]),
+            "sent_at": req["receipt"]["submitted_at"],
+            "allowed_replies": [s for s in TRANSITIONS[req["status"]] if s in REPLIES],
+            "last_note": req["status_history"][-1].get("note")})
+    return out
+
+
+@app.post("/api/sahyog-sim/complaints", response_model=S.ComplaintStatus, status_code=202)
+def sim_complaint(body: S.ComplaintCreate, request: Request, response: Response,
+                  background: BackgroundTasks):
+    """The simulator files a complaint: the same intake as POST /api/sahyog/complaints."""
+    _sim_or_503()
+    _note(request, target=body.complaint_ref, wallets=len(body.wallets))
+    _source(response, "live")
+    return _file_complaint(body, background)
+
+
+@app.post("/api/sahyog-sim/requests/{request_id}/reply", response_model=S.ReplyAck)
+def sim_reply(request_id: str, body: S.ReplyIn, request: Request, response: Response):
+    """The simulator plays the exchange: the same reply leg as
+    POST /api/sahyog/requests/{id}/replies."""
+    _sim_or_503()
+    _note(request, status=body.status)
+    _source(response, "live")
+    return _record_reply(request_id, body)
 
 
 # ------------------------------------------------------------------ the interface (B9)

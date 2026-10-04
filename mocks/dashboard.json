@@ -233,6 +233,24 @@
           "curated": 88
         }
       }
-    ]
+    ],
+    "traceable_chains": [
+      "tron",
+      "ethereum",
+      "bsc",
+      "polygon",
+      "arbitrum",
+      "base",
+      "optimism",
+      "bitcoin",
+      "solana"
+    ],
+    "traceable_total": 462747
+  },
+  "risk_classes": {
+    "low": 1,
+    "medium": 1,
+    "high": 0,
+    "severe": 1
   }
 }

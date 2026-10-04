@@ -279,5 +279,41 @@
   },
   "threats": [
     "sanctioned_other"
-  ]
+  ],
+  "risk": {
+    "score": 98,
+    "risk_class": "severe",
+    "indicators": [
+      {
+        "code": "sanctioned_contact",
+        "name": "Funds reached a sanctioned address",
+        "points": 98,
+        "text": "92% of funds reached an address on the US OFAC SDN list",
+        "fatf_category": "Source of funds or wealth",
+        "wallet": "TA3941uFAvmVibSkQ6fMJXxmaSNovX86mz",
+        "case_id": null,
+        "tx_hashes": [
+          "e069f91613145d1a4c0121360ad2adaa01aac1db6891a4d4efe5718603f95b15"
+        ]
+      }
+    ],
+    "reasons": [
+      "92% of funds reached an address on the US OFAC SDN list"
+    ],
+    "flows": [
+      {
+        "edge_id": "e2",
+        "tx_hash": "e069f91613145d1a4c0121360ad2adaa01aac1db6891a4d4efe5718603f95b15",
+        "risk_class": "severe",
+        "reasons": [
+          "Funds reached a sanctioned address"
+        ]
+      }
+    ],
+    "path_class": "severe",
+    "basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+    "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
+  },
+  "risk_class": "severe",
+  "risk_score": 98
 }

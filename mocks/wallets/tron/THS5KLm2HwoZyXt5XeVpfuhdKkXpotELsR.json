@@ -17,8 +17,14 @@
     }
   ],
   "risk": {
-    "score": null,
-    "reasons": []
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "reasons": [],
+    "flows": [],
+    "path_class": null,
+    "basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+    "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
   },
   "cases": [
     {

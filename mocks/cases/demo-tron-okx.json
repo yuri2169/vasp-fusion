@@ -426,5 +426,34 @@
     "tag": null,
     "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store."
   },
-  "threats": []
+  "threats": [],
+  "risk": {
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+      {
+        "code": "rapid_forwarding",
+        "name": "Forwarded within minutes",
+        "points": 15,
+        "text": "TTYBTv…nqq62o passed on 100% of the 48,500 USDT that reached it within 9 minutes of its arrival",
+        "fatf_category": "Transaction patterns",
+        "wallet": "TTYBTvGc7m45x7j6Vr6YnTDgVfgjnqq62o",
+        "case_id": null,
+        "tx_hashes": [
+          "1716f2200c0a22cd286b9fe9ecb146ba5a04bf7ec78f105618694453268ff6f8",
+          "c09b2c24e2a4a6fd4308788cb7b6e9a9c340275ac162c4281ed549100c07287b",
+          "c19434d0d732110d21a5f2899c73112432abca8d88bdf6aa0ea26686f35d689f"
+        ]
+      }
+    ],
+    "reasons": [
+      "TTYBTv…nqq62o passed on 100% of the 48,500 USDT that reached it within 9 minutes of its arrival"
+    ],
+    "flows": [],
+    "path_class": "low",
+    "basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+    "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
+  },
+  "risk_class": "low",
+  "risk_score": 15
 }

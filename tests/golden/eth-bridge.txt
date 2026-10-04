@@ -163,6 +163,43 @@ Patterns in the traced funds. They describe how the money moved and never decide
         tx 0xba179d6cc1c889b3b064270561baccbcea48c1fe9770715704f5e327f0b77da4
         tx 0xbc1e8b6d52c89e89240894c4017cdc345d3d5ff8878201762636346b14ff7770
 
+RISK INDICATORS
+---------------
+Risk class: Medium (score 44 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+    [Funds went into a bridge (+24)] 60% of the funds (8,250 USDT) reached a bridge,
+    0x5c7b…ed35c5 (Across Protocol), 1 hop away (and 1 more of this kind)
+        tx 0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249
+        tx 0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f
+        tx 0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383
+    [Forwarded within minutes (+15)] 0x46c7…0f6357 passed on 100% of the 3,479.80 USDT that
+    reached it in the same block (and 2 more of this kind)
+        tx 0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901
+        tx 0x1ce6031c3268170ecd6e27bb55c28f9d923f2d328b5e0f99f9adfcfc824215e6
+        tx 0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636
+        tx 0x7a3491c4ee5fa1d369d79f76c68a693887a3b82f4cccbbbbb167f9092060dba4
+        tx 0xa4134fadcfa0e4414f15e820cfa3faf9ddcf1475a4e98159ca77994d0caf1fd1
+        tx 0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3
+        tx 0xc67952d57c782fb480ad2da5bfd294df1ee34bb30923a088d4c0c3be3ce6a441
+    [Funded by many wallets, or split funds merged again (+5)] 0x2102…f364b0 was funded by 5
+    wallets (13,705.05 USDT in all)
+        tx 0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901
+        tx 0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636
+        tx 0x276bf322ef6ec11157edac2e931414059b31cce6e49da78289b43e0c260ed092
+        tx 0x354f54f1dbfff50406b9d6e1260bc0f534cfccd1f1834c78aec2a9d463a25093
+        tx 0x3cf4d6232d4a7ffddf8cbc417c4643d53d3e9e77d3f01b22ecbb683649bf8f8e
+        tx 0x7d6e59bf7c4dd899bdc0e7da0d59665f9f93d49bf796975e8aff591d09bc145d
+        tx 0x9e627af44aea53dab503b39aac98447682810453c60b3e09ca8179f227b574ef
+        tx 0xa4aa8b509b0052c56090ede55df0b1e56379ff18fb788074f9f34aedfb0f33fa
+        tx 0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3
+        tx 0xba179d6cc1c889b3b064270561baccbcea48c1fe9770715704f5e327f0b77da4
+        tx 0xbc1e8b6d52c89e89240894c4017cdc345d3d5ff8878201762636346b14ff7770
+Transaction flows: All 36 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

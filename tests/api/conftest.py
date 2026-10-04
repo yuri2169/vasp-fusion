@@ -16,6 +16,8 @@ def own_desk(tmp_path, monkeypatch):
     monkeypatch.setattr(main, "AUDIT_DB", tmp_path / "audit.duckdb")
     monkeypatch.setattr(main, "AUTH_SECRET", tmp_path / "auth_secret")
     monkeypatch.setattr(main, "AUTH", None)
+    monkeypatch.setattr(main, "SAHYOG_KEY", tmp_path / "sahyog_api_key")
+    monkeypatch.delenv("SAHYOG_API_KEY", raising=False)
     # These files test the routes with the B1 fixtures standing in for empty stores.
     # test_demo_mode.py turns it off again, which is what a server runs with.
     monkeypatch.setenv("VASPFUSION_DEMO_MODE", "1")

@@ -70,9 +70,13 @@ def _clean(text: str, limit: int) -> str:
     return " ".join("".join(ch if ch.isprintable() else " " for ch in text).split())[:limit]
 
 
-def _event(status: str, at: datetime, note: str | None, by: str | None) -> dict:
-    """A status-history entry. `by` is there only when a signed-in officer made it."""
+def _event(status: str, at: datetime, note: str | None, by: str | None,
+           via: str | None = None) -> dict:
+    """A status-history entry. `by` is there only when a signed-in officer made it, `via`
+    only when it arrived through the gateway."""
     event = {"status": status, "at": _iso(at), "note": note}
+    if via:
+        event["via"] = via
     return {**event, "by": by} if by else event
 
 
@@ -239,8 +243,46 @@ class DeskService:
         with _LOCK:
             return self._view(self._patch(request_id, status, note, by))
 
+    def reply(self, request_id: str, status: str, note: str | None = None,
+              reply_ref: str | None = None) -> tuple[dict, dict | None]:
+        """An exchange's reply arriving through the gateway: (the request, the gateway's
+        receipt for the reply). The same status machine as a reply typed in by hand. A
+        reply that repeats the request's present status changes nothing."""
+        from .intake import REPLIES, REPLY_SCHEMA
+        with _LOCK:
+            req = self.requests.get(request_id)
+            if req is None:
+                raise DeskError(404, f"No request {request_id}.")
+            if status not in REPLIES:
+                raise DeskError(422, f"{status} is not a reply. A reply is one of "
+                                     f"{', '.join(REPLIES)}.")
+            if not req.get("receipt"):
+                raise DeskError(409, f"Request {request_id} has not been sent, so there is "
+                                     "nothing to reply to.")
+            if req["status"] == status:
+                return self._view(req), None
+            allowed = TRANSITIONS[req["status"]]
+            if status not in allowed:       # refuse before anything is kept
+                raise DeskError(409, f"A request that is {req['status']} cannot become "
+                                + f"{status}. "
+                                + (f"Next: {' or '.join(allowed)}." if allowed
+                                   else "It is closed."))
+            now = self.now()
+            note = _clean(note, 500) if note else None
+            ref = _clean(reply_ref, 100) if reply_ref else None
+            try:
+                receipt = self.gateway.record_reply(request_id, {
+                    "schema": REPLY_SCHEMA, "request_id": request_id, "status": status,
+                    "note": note, "reply_ref": ref, "received_at": _iso(now)}, now=now)
+            except GatewayError as e:
+                raise DeskError(502, f"The reply was not recorded: {e}.") from e
+            how = f"Reply received through SAHYOG ({self.gateway.name})" \
+                + (f", the exchange's reference {ref}" if ref else "")
+            said = f"{how}. {note}" if note else how
+            return self._view(self._patch(request_id, status, said, via="sahyog")), receipt
+
     def _patch(self, request_id: str, status: str, note: str | None,
-               by: str | None = None) -> dict:
+               by: str | None = None, via: str | None = None) -> dict:
         req = self.requests.get(request_id)
         if req is None:
             raise DeskError(404, f"No request {request_id}.")
@@ -271,6 +313,6 @@ class DeskService:
                 + f", receipt {req['receipt']['receipt_id']}"
             note = f"{note}. {sent}" if note else sent
         req["status"] = status
-        req["status_history"].append(_event(status, now, note, by))
+        req["status_history"].append(_event(status, now, note, by, via))
         self.requests.save(req)
         return req

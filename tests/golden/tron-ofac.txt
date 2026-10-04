@@ -96,6 +96,26 @@ Patterns in the traced funds. They describe how the money moved and never decide
         tx 8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7
         tx ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240
 
+RISK INDICATORS
+---------------
+Risk class: Severe (score 100 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+    [Funds reached a sanctioned address (+100)] 99% of the funds (100,008 USDT) reached a
+    sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away
+        tx 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
+        tx 7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07
+        tx cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9
+    [Forwarded within minutes (+15)] TQ7Ujg…drwJrS passed on 100% of the 1,052 USDT that reached
+    it within 36 seconds of its arrival
+        tx 8740ed25feb5aa3f17d8644aa3b1ca07292393f4810beb7bb03de507fc9649c7
+        tx ef40e78ad94f45ea8788d648c85f68294f0b210208d9258a8d336632ce6d2240
+Transaction flows: Of the 15 transfers read, 3 Severe; the rest are Low. The path shown above is
+Severe.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

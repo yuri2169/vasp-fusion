@@ -15,7 +15,9 @@
       "complaint_no": "31509260001234",
       "amount_lost_inr": 4050000.0,
       "created_at": "2026-09-13T10:02:11Z",
-      "demo": true
+      "demo": true,
+      "risk_class": "low",
+      "risk_score": 15
     },
     {
       "id": "demo-eth-abstain",
@@ -29,7 +31,9 @@
       "complaint_no": null,
       "amount_lost_inr": 2150000.0,
       "created_at": "2026-09-14T05:02:11Z",
-      "demo": true
+      "demo": true,
+      "risk_class": "medium",
+      "risk_score": 35
     },
     {
       "id": "demo-tron-sanctioned",
@@ -43,7 +47,9 @@
       "complaint_no": "31509260004321",
       "amount_lost_inr": 1000000.0,
       "created_at": "2026-09-14T09:32:11Z",
-      "demo": true
+      "demo": true,
+      "risk_class": "severe",
+      "risk_score": 98
     }
   ]
 }

@@ -82,18 +82,21 @@ def test_the_wallet_page_reads_the_cases_the_wallet_is_in(client):
     w = S.WalletDetail.model_validate(client.get(f"/api/wallets/tron/{addr}").json())
     assert w.cases and w.flows_from_cases == 1 and w.watched is False
     assert w.outbound and w.outbound.tx_count >= 1 and w.outbound.asset == "USDT"
-    assert w.risk.score is None and w.risk.level == "elevated" and w.risk.reasons
+    assert w.risk.score == 100 and w.risk.risk_class == "severe" and w.risk.reasons
+    assert w.risk.indicators[0].code == "sanctioned_contact" and "Not a probability" in w.risk.basis
     case = client.get(f"/api/cases/{cid}").json()
     hit = next(n["id"] for n in case["graph"]["nodes"] if n["role"] == "sanctioned")
     s = client.get(f"/api/wallets/tron/{hit}").json()
-    assert s["risk"]["level"] == "high" and s["labels"][0]["category"] == "sanctioned"
+    assert s["risk"]["risk_class"] == "severe" and s["labels"][0]["category"] == "sanctioned"
+    assert s["risk"]["indicators"][0]["code"] == "sanctioned_self"
     assert s["inbound"]["tx_count"] >= 1
 
 
 def test_an_unknown_wallet_is_not_assessed(client):
     w = client.get("/api/wallets/tron/TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw")
     assert w.status_code == 200
-    assert w.json()["risk"]["level"] in (None, "none") and w.json()["inbound"] is None
+    assert w.json()["risk"]["risk_class"] is None and w.json()["risk"]["score"] is None
+    assert w.json()["inbound"] is None
 
 
 # ------------------------------------------------------------------ label sources
@@ -225,7 +228,7 @@ def test_opening_a_case_on_a_listed_address_is_a_direct_hit_at_once(client):
                                            "financing (ISIL KHORASAN, OFAC SDN list).")
     # the wallet page says the same, with the list entry's own words
     w = client.get(f"/api/wallets/tron/{listed}").json()
-    assert w["risk"]["level"] == "high" and "uid 18647" in w["risk"]["reasons"][0]
+    assert w["risk"]["risk_class"] == "severe" and "uid 18647" in w["risk"]["reasons"][0]
     assert w["labels"][0]["threat"] == "terrorism_financing"
 
 
