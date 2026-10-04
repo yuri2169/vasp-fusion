@@ -146,7 +146,10 @@ def main() -> None:
     SCRATCH.mkdir(parents=True, exist_ok=True)
     cache, cases = SCRATCH / "chain_cache.duckdb", SCRATCH / "case.duckdb"
     cases.unlink(missing_ok=True)
-    demo_env = {"VASPFUSION_CHAIN_CACHE": str(cache), "VASPFUSION_CASE_DB": str(cases)}
+    watch = SCRATCH / "watch.duckdb"
+    watch.unlink(missing_ok=True)
+    demo_env = {"VASPFUSION_CHAIN_CACHE": str(cache), "VASPFUSION_CASE_DB": str(cases),
+                "VASPFUSION_WATCH_DB": str(watch)}   # the demo seeds a watchlist: not this machine's
     dirty_before, _, new_before = tracked_changes()
     if dirty_before:
         print("These artifacts already differ from git before anything ran; commit or "

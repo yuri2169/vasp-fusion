@@ -75,8 +75,10 @@ def test_verify_all_passes_on_the_stored_demo_cases(machine, capsys):
     capsys.readouterr()
     cli.main(["verify", "--all", *machine])
     out = capsys.readouterr().out
-    assert out.count("VERIFIED") == len(SPECS) and "NOT VERIFIED" not in out
-    assert f"{len(SPECS)}/{len(SPECS)} verified" in out
+    # the eight demo cases, and the two wallets traced for the demonstration watchlist
+    stored = len(SPECS) + len(cli.watch_traces(Path(__file__).resolve().parents[1] / "demo" / "watchlist.json"))
+    assert out.count("VERIFIED") == stored and "NOT VERIFIED" not in out
+    assert f"{stored}/{stored} verified" in out
 
 
 def test_verify_one_case_prints_each_check(machine, capsys):

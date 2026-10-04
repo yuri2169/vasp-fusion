@@ -74,3 +74,14 @@ def test_demo_fails_loudly_when_a_wallet_no_longer_attributes_as_expected(offlin
         cli.main(["demo", "--file", str(wrong), *offline])
     assert e.value.code == 1
     assert "expected ATTRIBUTED / OKX" in capsys.readouterr().out
+
+
+def test_demo_still_seeds_the_watchlist_when_a_watched_wallet_cannot_be_traced(offline, capsys):
+    """This cache holds the demo cases' pages only: the two wallets traced for the watchlist
+    are not in it. They are watched all the same, with no first check."""
+    from vaspfusion.store.watch import WatchStore
+    cli.main(["demo", *offline])
+    out = capsys.readouterr().out
+    assert "could not be traced for its first check" in out and "5 wallets on the watchlist" in out
+    untraced = [e for e in WatchStore().list() if e["baseline"] is None]
+    assert len(untraced) == 2

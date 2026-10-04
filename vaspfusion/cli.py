@@ -605,6 +605,7 @@ def _seed_watchlist(path: str, labels_db: str, cases) -> None:
     ordinary case, so that its first check is a real one."""
     from datetime import datetime, timezone
 
+    from . import chains
     from .store.watch import WatchStore, watch_id
     from .watch import snapshot
     watch, added = WatchStore(), 0
@@ -614,9 +615,13 @@ def _seed_watchlist(path: str, labels_db: str, cases) -> None:
             continue
         case = cases.find(w["chain"], w["address"])
         if case is None and w.get("trace"):
-            case, _ = _run_case(w["address"], w["chain"], w["trace"].get("max_hops", 1),
-                                labels_db, case_id=w["trace"]["id"])
-            cases.save(case)
+            try:
+                case, _ = _run_case(w["address"], w["chain"], w["trace"].get("max_hops", 1),
+                                    labels_db, case_id=w["trace"]["id"])
+                cases.save(case)
+            except (chains.InvalidAddress, chains.ProviderError, FileNotFoundError) as e:
+                # watched all the same: it reads "not traced yet" until a check succeeds
+                print(f"  {w['trace']['id']}: could not be traced for its first check: {e}")
         done = case is not None and case.get("status") == "done" and "candidates" in case
         watch.save({"id": wid, "chain": w["chain"], "address": w["address"], "note": w["note"],
                     "added_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
