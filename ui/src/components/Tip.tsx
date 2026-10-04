@@ -49,7 +49,7 @@ export function Tip({ id, anchor, children }: { id: string; anchor: DOMRect | nu
         maxWidth: `min(${WIDTH}px, calc(100vw - 16px))`,
         ...(above ? { bottom: window.innerHeight - anchor.top + 6 } : { top: anchor.bottom + 6 }),
       }}
-      className="pointer-events-none z-50 rounded border border-rule-strong bg-surface px-2.5 py-2 text-xs text-fg shadow-md"
+      className="pointer-events-none z-50 border border-ink bg-surface px-2.5 py-2 text-sm text-ink"
     >
       {children}
     </div>,

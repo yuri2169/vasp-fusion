@@ -63,7 +63,7 @@ export function VaspPage() {
               <AddressChip address={w.address} chain={w.chain} />
             </>
           ) : (
-            <span className="font-mono text-xs">{w.address}</span>
+            <span className="font-mono text-sm">{w.address}</span>
           )}
         </span>
       ),
@@ -74,7 +74,7 @@ export function VaspPage() {
       sortValue: (w) => (w.case_id ? refOf(w.case_id) : null),
       cell: (w) =>
         w.case_id ? (
-          <Link to={`/cases/${encodeURIComponent(w.case_id)}`} className="whitespace-nowrap text-sm underline decoration-rule-strong underline-offset-2 hover:decoration-current">
+          <Link to={`/cases/${encodeURIComponent(w.case_id)}`} className="whitespace-nowrap text-base underline decoration-rule-strong underline-offset-2 hover:decoration-current">
             {refOf(w.case_id)}
           </Link>
         ) : (
@@ -84,7 +84,7 @@ export function VaspPage() {
     {
       key: 'direction',
       header: 'Direction',
-      cell: (w) => <span className="text-sm">{w.direction === 'inbound' ? 'It funded the wallet' : 'The funds went there'}</span>,
+      cell: (w) => <span className="text-base">{w.direction === 'inbound' ? 'It funded the wallet' : 'The funds went there'}</span>,
     },
     {
       key: 'usd',
@@ -92,7 +92,7 @@ export function VaspPage() {
       align: 'right',
       sortValue: (w) => w.amount_usd ?? null,
       cell: (w) =>
-        w.amount_usd != null ? <span className="tabular font-mono text-sm font-medium">{formatUsd(w.amount_usd)}</span> : <span className="text-muted">not in USD</span>,
+        w.amount_usd != null ? <span className="tabular font-mono text-base font-medium">{formatUsd(w.amount_usd)}</span> : <span className="text-muted">not in USD</span>,
     },
     { key: 'tier', header: 'Evidence tier', cell: (w) => <TierTag tier={w.tier} size="sm" /> },
     {
@@ -100,7 +100,7 @@ export function VaspPage() {
       header: 'Confidence',
       align: 'right',
       sortValue: (w) => w.confidence ?? null,
-      cell: (w) => (w.confidence != null ? <span className="tabular font-mono text-sm">{formatConfidence(w.confidence)}</span> : <span className="text-muted">none</span>),
+      cell: (w) => (w.confidence != null ? <span className="tabular font-mono text-base">{formatConfidence(w.confidence)}</span> : <span className="text-muted">none</span>),
     },
     {
       key: 'request',
@@ -109,26 +109,26 @@ export function VaspPage() {
         w.routable === false ? (
           <span
             title="Under the 0.60 naming bar, the exchange's own wallet, or the exchange funded the wallet. No request can be drafted on it."
-            className="inline-flex h-6 items-center rounded-sm border border-dashed border-rule-strong px-1.5 text-xs text-muted"
+            className="inline-flex h-6 items-center rounded-sm border border-dashed border-rule-strong px-1.5 text-sm text-muted"
           >
             Context only
           </span>
         ) : (
-          <span className="text-sm">Can be requested</span>
+          <span className="text-base">Can be requested</span>
         ),
     },
   ]
 
   const requestColumns: Column<RequestSummary>[] = [
-    { key: 'ref', header: 'Reference', sortValue: (r) => r.reference, cell: (r) => <span className="font-mono text-sm font-medium">{r.reference}</span> },
+    { key: 'ref', header: 'Reference', sortValue: (r) => r.reference, cell: (r) => <span className="font-mono text-base font-medium">{r.reference}</span> },
     { key: 'status', header: 'Status', cell: (r) => <StatusTag status={r.status} /> },
-    { key: 'cases', header: 'Cases', cell: (r) => <span className="text-sm">{r.case_ids.map(refOf).join(', ')}</span> },
+    { key: 'cases', header: 'Cases', cell: (r) => <span className="text-base">{r.case_ids.map(refOf).join(', ')}</span> },
     {
       key: 'drafted',
       header: 'Drafted',
       align: 'right',
       sortValue: (r) => r.created_at,
-      cell: (r) => <span className="tabular whitespace-nowrap text-sm text-muted">{formatDate(r.created_at)}</span>,
+      cell: (r) => <span className="tabular whitespace-nowrap text-base text-muted">{formatDate(r.created_at)}</span>,
     },
     {
       key: 'due',
@@ -137,7 +137,7 @@ export function VaspPage() {
       sortValue: (r) => r.due ?? null,
       cell: (r) =>
         r.due ? (
-          <span className={isOverdue(r) ? 'tabular whitespace-nowrap text-sm font-medium text-seal-text' : 'tabular whitespace-nowrap text-sm text-muted'}>
+          <span className={isOverdue(r) ? 'tabular whitespace-nowrap text-base font-medium text-seal-text' : 'tabular whitespace-nowrap text-base text-muted'}>
             {formatDate(r.due)}
             {isOverdue(r) && ', overdue'}
           </span>
@@ -180,7 +180,7 @@ export function VaspPage() {
             </h2>
             <DirectoryFacts directory={directory} />
             {counts.length > 0 && (
-              <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+              <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
                 <span>Labelled addresses in the label store:</span>
                 {counts.map(([chain, n]) => (
                   <span key={chain} className="tabular whitespace-nowrap font-mono">

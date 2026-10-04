@@ -14,7 +14,7 @@ export function TxHash({ hash, chain, full, className }: { hash: string; chain: 
       role="group"
       aria-label={`Transaction ${hash}`}
       {...tip.bind}
-      className={cx('inline-flex max-w-full items-center gap-0.5 align-middle text-xs', className)}
+      className={cx('inline-flex max-w-full items-center gap-0.5 align-middle text-sm', className)}
     >
       <span className={cx('font-mono text-fg', full && 'break-all')}>{full ? hash : truncateMiddle(hash)}</span>
       <span className="flex shrink-0 items-center">
@@ -25,7 +25,7 @@ export function TxHash({ hash, chain, full, className }: { hash: string; chain: 
           rel="noopener noreferrer"
           aria-label={`Open on ${explorerName(chain)} (new tab)`}
           title={`Open on ${explorerName(chain)}`}
-          className="inline-flex h-6 w-6 items-center justify-center rounded-sm text-muted hover:bg-sunk hover:text-fg"
+          className="inline-flex h-5 w-5 items-center justify-center text-ink-dim hover:bg-surface-3 hover:text-ink"
         >
           <ExternalLink size={13} aria-hidden />
         </a>

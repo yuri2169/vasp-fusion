@@ -47,10 +47,10 @@ export function Dialog({
         onClose()
       }}
       onClick={onBackdrop}
-      className="w-[480px] max-w-[calc(100vw-32px)] rounded-md border border-rule-strong bg-surface p-0 text-fg shadow-lg"
+      className="w-[480px] max-w-[calc(100vw-32px)] border border-ink bg-surface p-0 text-ink"
     >
       <div className="flex items-start justify-between gap-4 px-5 pt-4">
-        <h2 id={titleId} className="text-base font-semibold">
+        <h2 id={titleId} className="title text-lg">
           {title}
         </h2>
         <button
@@ -62,7 +62,7 @@ export function Dialog({
           <X size={16} aria-hidden />
         </button>
       </div>
-      <div className="px-5 pb-5 pt-2 text-sm text-fg">{children}</div>
+      <div className="px-5 pb-5 pt-2 text-base text-fg">{children}</div>
       {footer && <div className="flex justify-end gap-2 border-t border-rule bg-sunk px-5 py-3">{footer}</div>}
     </dialog>
   )

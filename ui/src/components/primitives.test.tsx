@@ -18,7 +18,7 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: 'Trace wallet' })).toHaveAttribute('type', 'button')
   })
 
-  it('only the primary action is saffron', () => {
+  it('only the primary action is filled, in the officer-action colour', () => {
     render(
       <>
         <Button variant="primary">Draft request to OKX</Button>
@@ -26,9 +26,9 @@ describe('Button', () => {
         <Button variant="danger">Withdraw request</Button>
       </>,
     )
-    expect(screen.getByRole('button', { name: 'Draft request to OKX' })).toHaveClass('bg-saffron', 'text-saffron-on')
-    expect(screen.getByRole('button', { name: 'Open case file' })).not.toHaveClass('bg-saffron')
-    expect(screen.getByRole('button', { name: 'Withdraw request' })).toHaveClass('bg-seal')
+    expect(screen.getByRole('button', { name: 'Draft request to OKX' })).toHaveClass('bg-confirm', 'text-surface')
+    expect(screen.getByRole('button', { name: 'Open case file' })).not.toHaveClass('bg-confirm')
+    expect(screen.getByRole('button', { name: 'Withdraw request' })).toHaveClass('border-danger', 'text-danger')
   })
 
   it('does nothing when disabled', async () => {

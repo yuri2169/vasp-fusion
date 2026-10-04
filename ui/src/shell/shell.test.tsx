@@ -121,9 +121,79 @@ describe('the app shell', () => {
     expect(within(nav).getByRole('link', { name: 'Cases' })).not.toHaveAttribute('aria-current')
   })
 
-  it('starts at the cases', async () => {
+  it('keeps the places in the header, not in a rail at the side', async () => {
+    renderApp(<AppRoutes />, { route: '/cases' })
+    const nav = await screen.findByRole('navigation', { name: 'Main' })
+    expect(nav.closest('header')).not.toBeNull()
+    expect(document.querySelector('aside')).toBeNull()
+    expect(screen.getByRole('link', { name: 'VASP-Fusion: back to start' })).toHaveAttribute('href', '/')
+  })
+
+  it('starts at the landing: the paste box, the recorded wallets, the nine stages', async () => {
     renderApp(<AppRoutes />, { route: '/' })
-    await waitFor(() => expect(location()).toBe('/cases'))
+    expect(await screen.findByRole('heading', { level: 1, name: /Wallet → exchange\s*attribution/ })).toBeInTheDocument()
+    expect(location()).toBe('/')
+    // One paste box: the landing's own. The header does not carry a second.
+    expect(screen.getAllByRole('searchbox', { name: 'Wallet address' })).toHaveLength(1)
+    const recorded = await screen.findByRole('list', { name: 'Recorded wallets' })
+    expect(within(recorded).getByRole('link', { name: /DEMO\/2026\/001/ })).toHaveAttribute('href', '/cases/demo-tron-okx')
+    const stages = within(screen.getByRole('list', { name: 'The nine stages' })).getAllByRole('button')
+    expect(stages.map((b) => b.querySelector('span span')!.textContent)).toEqual(['intake', 'fetch', 'label', 'trace', 'discover', 'attribute', 'decide', 'explain', 'deliver'])
+  })
+
+  it('traces a wallet pasted on the landing', async () => {
+    const openCase = vi.spyOn(api, 'openCase')
+    const { user } = renderApp(<AppRoutes />, { route: '/' })
+    await user.type(await screen.findByRole('searchbox', { name: 'Wallet address' }), `${DEMO_TRON}{Enter}`)
+    await waitFor(() => expect(location()).toBe('/cases/demo-tron-okx'))
+    expect(openCase).toHaveBeenCalledWith({ address: DEMO_TRON, chain: 'tron' }, undefined)
+  })
+
+  it('the landing quotes only figures the tool measured, as it reads them', async () => {
+    const [model, dashboard] = await Promise.all([api.model('tron'), api.dashboard()])
+    renderApp(<AppRoutes />, { route: '/' })
+    expect(await screen.findByLabelText(String(dashboard.label_coverage.total))).toBeInTheDocument()
+    expect(await screen.findByText(model.metrics.ece!.toFixed(4))).toBeInTheDocument()
+  })
+
+  it('says "not yet measured" where there is no measurement, never a number', async () => {
+    const model = await api.model('tron')
+    vi.spyOn(api, 'model').mockResolvedValue({ ...model, status: 'not_measured', abstain: null })
+    renderApp(<AppRoutes />, { route: '/' })
+    await waitFor(() => expect(screen.getAllByText('not yet measured')).toHaveLength(3))
+  })
+
+  it('explains a stage when it is picked', async () => {
+    const { user } = renderApp(<AppRoutes />, { route: '/' })
+    const stages = await screen.findByRole('list', { name: 'The nine stages' })
+    await user.click(within(stages).getByRole('button', { name: /decide/i }))
+    expect(within(stages).getByRole('button', { name: /decide/i })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(/Stage 7 of 9/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'Naming, or declining to' })).toBeInTheDocument()
+  })
+
+  it('has a status bar with the programme and the colour key, in this problem’s words', async () => {
+    renderApp(<AppRoutes />, { route: '/cases' })
+    const bar = await screen.findByRole('contentinfo')
+    expect(bar).toHaveTextContent('SIH 2026 · PS 26182 · MHA / I4C')
+    const key = within(bar).getByRole('list', { name: 'Colour key' })
+    expect(within(key).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'on-chain fact',
+      'label evidence',
+      'attribution answer',
+      'officer action',
+      'sanctioned or mixer',
+    ])
+  })
+
+  it('offers three themes, and says which is on', async () => {
+    const { user } = renderApp(<AppRoutes />, { route: '/cases' })
+    const themes = await screen.findByRole('radiogroup', { name: 'Colour theme' })
+    expect(within(themes).getByRole('radio', { name: 'Device theme' })).toBeChecked()
+    await user.click(within(themes).getByRole('radio', { name: 'Dark theme' }))
+    expect(within(themes).getByRole('radio', { name: 'Dark theme' })).toBeChecked()
+    expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    expect(localStorage.getItem('vaspfusion.theme')).toBe('dark')
   })
 
   it('lets a keyboard user skip to the content', async () => {

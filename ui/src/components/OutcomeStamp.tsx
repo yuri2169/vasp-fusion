@@ -22,7 +22,8 @@ export interface OutcomeStampProps {
 type Look = 'attributed' | 'insufficient' | 'sanctioned' | 'pending' | 'failed'
 
 /** The three outcomes, each told apart by words, border and fill, not by colour alone:
- *  ATTRIBUTED solid saffron · INSUFFICIENT EVIDENCE slate, dashed · SANCTIONED / MIXER seal red. */
+ *  ATTRIBUTED a solid plate in the fusion colour (the answer) · INSUFFICIENT EVIDENCE neutral, dashed ·
+ *  SANCTIONED / MIXER a solid plate in the danger colour. */
 const LOOK: Record<Look, { word: string; box: string }> = {
   attributed: { word: 'Attributed', box: 'bg-saffron text-saffron-on' },
   insufficient: { word: 'Insufficient evidence', box: 'stamp-dashed bg-transparent text-muted' },
@@ -41,7 +42,7 @@ function lookOf(outcome: Outcome | null, status?: CaseStatus): Look {
 function ConfidenceLines({ confidence, interval }: { confidence: number; interval?: number[] | null }) {
   const range = interval && interval.length === 2
   return (
-    <span className="tabular flex flex-col font-mono text-xs leading-4">
+    <span className="tabular flex flex-col font-mono text-sm">
       <span>
         {range ? 'confidence' : 'rule confidence'} {formatConfidence(confidence)}
       </span>
@@ -61,14 +62,14 @@ export function OutcomeStamp({ outcome, status, vasp, confidence, interval, what
         data-testid="outcome-stamp"
         data-outcome={outcome ?? status ?? 'pending'}
         className={cx(
-          'inline-flex h-6 max-w-full items-center gap-1.5 whitespace-nowrap rounded-sm border-2 border-current px-1.5 text-xs font-semibold',
-          look === 'insufficient' || look === 'pending' ? 'border-dashed' : '',
+          'inline-flex h-5 max-w-full items-center gap-1.5 whitespace-nowrap border px-1.5 text-2xs font-semibold',
+          look === 'insufficient' || look === 'pending' ? 'border-dashed border-current' : look === 'failed' ? 'border-current' : 'border-transparent',
           box,
           className,
         )}
       >
         <span className="uppercase tracking-wide">{word}</span>
-        {look === 'attributed' && vasp && <span className="display truncate text-sm">{vasp}</span>}
+        {look === 'attributed' && vasp && <span className="truncate font-cond text-sm font-bold normal-case">{vasp}</span>}
       </span>
     )
 
@@ -77,18 +78,18 @@ export function OutcomeStamp({ outcome, status, vasp, confidence, interval, what
       <div
         data-testid="outcome-stamp"
         data-outcome={outcome ?? status ?? 'pending'}
-        className={cx('stamp inline-flex min-w-[168px] max-w-full flex-col gap-0.5 px-3.5 py-2.5', box, tilt && 'stamp-tilt')}
+        className={cx('stamp inline-flex min-w-[168px] max-w-full flex-col gap-1 px-3 py-2', box, tilt && 'stamp-tilt')}
       >
-        <span className="text-xs font-semibold uppercase tracking-[0.08em]">{word}</span>
-        {look === 'attributed' && <span className="display text-xl leading-8">{vasp ?? 'Unnamed exchange'}</span>}
-        {look === 'insufficient' && <span className="display text-lg">No exchange named</span>}
-        {look === 'sanctioned' && vasp && <span className="text-sm font-medium">Nearest exchange: {vasp}</span>}
+        <span className="text-2xs font-semibold uppercase tracking-[0.075em]">{word}</span>
+        {look === 'attributed' && <span className="title text-2xl">{vasp ?? 'Unnamed exchange'}</span>}
+        {look === 'insufficient' && <span className="title text-lg">No exchange named</span>}
+        {look === 'sanctioned' && vasp && <span className="text-base font-medium">Nearest exchange: {vasp}</span>}
         {(look === 'attributed' || (look === 'sanctioned' && vasp)) && confidence != null && (
           <ConfidenceLines confidence={confidence} interval={interval} />
         )}
       </div>
       {look === 'insufficient' && whatWouldChange && (
-        <p className="max-w-[320px] text-xs text-muted">
+        <p className="max-w-[320px] text-sm text-muted">
           <span className="font-semibold text-fg">What would change this:</span> {whatWouldChange}
         </p>
       )}

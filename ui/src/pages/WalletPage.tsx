@@ -56,12 +56,12 @@ const LEVELS: Record<Level, { words: string; Icon: LucideIcon; look: string; say
 function Flow({ title, flow, chain, empty }: { title: string; flow: FlowSummary | null | undefined; chain: Chain; empty: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-fg">{title}</h3>
+      <h3 className="text-base font-semibold text-fg">{title}</h3>
       {!flow ? (
-        <p className="text-sm text-muted">{empty}</p>
+        <p className="text-base text-muted">{empty}</p>
       ) : (
         <>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-base">
             <dt className="text-muted">Transfers</dt>
             <dd className="tabular font-mono text-fg">{flow.tx_count.toLocaleString('en-US')}</dd>
             <dt className="text-muted">Total</dt>
@@ -172,14 +172,14 @@ export function WalletPage() {
     {
       key: 'role',
       header: 'Its part in the case',
-      cell: (c) => <span className="text-sm">{ROLE_NAMES[c.role]}</span>,
+      cell: (c) => <span className="text-base">{ROLE_NAMES[c.role]}</span>,
     },
     {
       key: 'hop',
       header: 'Hops from the traced wallet',
       align: 'right',
       sortValue: (c) => c.hop,
-      cell: (c) => <span className="tabular font-mono text-sm">{c.hop === 0 ? 'the traced wallet' : c.hop}</span>,
+      cell: (c) => <span className="tabular font-mono text-base">{c.hop === 0 ? 'the traced wallet' : c.hop}</span>,
     },
   ]
 
@@ -190,7 +190,7 @@ export function WalletPage() {
         title={
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <ChainBadge chain={chain} />
-            <span className="font-mono text-lg font-medium [overflow-wrap:anywhere]">{address}</span>
+            <span className="font-mono text-lg font-medium normal-case tracking-normal [overflow-wrap:anywhere]">{address}</span>
             <CopyButton value={address} label="Copy the address" />
           </span>
         }
@@ -231,14 +231,14 @@ export function WalletPage() {
       ) : (
         <div className="grid items-start gap-4 lg:grid-cols-12">
           <div className="flex flex-col gap-4 lg:col-span-5">
-            <div className="rounded-md border border-rule bg-surface p-4">
+            <div className="panel p-4">
               {label ? (
                 <>
                   <LabelBlock label={label} chain={chain} />
                   {label.category !== 'sanctioned' && label.entity !== 'Unidentified exchange' && (
                     <Link
                       to={`/vasps/${encodeURIComponent(label.entity)}`}
-                      className="mt-3 inline-block text-xs text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
+                      className="mt-3 inline-block text-sm text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
                     >
                       Everything on file about {label.entity}
                     </Link>
@@ -247,18 +247,18 @@ export function WalletPage() {
               ) : (
                 <section aria-label="Label" className="flex flex-col gap-2">
                   <h2 className="eyebrow">Label</h2>
-                  <p className="text-sm text-fg">No label. None of the label sources names the owner of this address.</p>
+                  <p className="text-base text-fg">No label. None of the label sources names the owner of this address.</p>
                 </section>
               )}
             </div>
 
             <Panel title="On record against this address">
-              <p className={cx('inline-flex w-fit items-center gap-1.5 rounded-sm border px-2 py-1 text-sm font-semibold', look.look)}>
+              <p className={cx('inline-flex w-fit items-center gap-1.5 rounded-sm border px-2 py-1 text-base font-semibold', look.look)}>
                 <look.Icon size={15} aria-hidden />
                 {look.words}
               </p>
-              {w.risk.reasons.length > 0 ? <Sentences items={w.risk.reasons} /> : <p className="text-sm text-fg">{look.says}</p>}
-              <p className="border-t border-rule pt-2 text-xs text-muted">
+              {w.risk.reasons.length > 0 ? <Sentences items={w.risk.reasons} /> : <p className="text-base text-fg">{look.says}</p>}
+              <p className="border-t border-rule pt-2 text-sm text-muted">
                 No risk score is computed. The level is a plain rule over this address's label and the patterns of the stored cases; the sentences above are what it rests on.
               </p>
             </Panel>

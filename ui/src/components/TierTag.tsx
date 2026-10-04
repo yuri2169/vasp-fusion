@@ -2,7 +2,8 @@ import { BadgeCheck, CircleDashed, FlaskConical, ListChecks, Tag, type LucideIco
 import type { Tier } from '../api/models'
 import { cx } from '../lib/cx'
 
-/** How strong a label is. Always icon + words + colour: never colour alone. */
+/** How strong a label is. Always icon + words + colour: never colour alone. Label evidence is
+ *  the network colour; a filled tag has no border of its own (a border on a fill says the same thing twice). */
 export const TIERS: Record<Tier | 'none', { name: string; Icon: LucideIcon; tag: string; icon: string }> = {
   published_por: {
     name: 'Published by exchange',
@@ -25,13 +26,13 @@ export const TIERS: Record<Tier | 'none', { name: string; Icon: LucideIcon; tag:
   derived: {
     name: 'Derived by VASP-FUSION',
     Icon: FlaskConical,
-    tag: 'border-rule-strong bg-slate-wash text-muted',
+    tag: 'border-transparent bg-slate-wash text-slate',
     icon: 'text-muted',
   },
   none: {
     name: 'Unlabelled',
     Icon: CircleDashed,
-    tag: 'border-dashed border-rule-strong text-muted',
+    tag: 'border-dashed border-rule text-ink-dim',
     icon: 'text-muted',
   },
 }
@@ -42,12 +43,12 @@ export function TierTag({ tier, size = 'md' }: { tier: Tier | null; size?: 'sm' 
     <span
       data-tier={tier ?? 'none'}
       className={cx(
-        'inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-sm border text-xs font-medium',
-        size === 'sm' ? 'h-5 px-1.5' : 'h-6 px-2',
+        'inline-flex shrink-0 items-center gap-1 whitespace-nowrap border text-2xs font-medium',
+        size === 'sm' ? 'h-[18px] px-1.5' : 'h-5 px-2',
         tag,
       )}
     >
-      <Icon size={13} aria-hidden />
+      <Icon size={12} aria-hidden />
       {name}
     </span>
   )

@@ -71,8 +71,8 @@ export function RequestsPage() {
       sortValue: (r) => r.created_at + r.reference,
       cell: (r) => (
         <span className="flex flex-col">
-          <span className="whitespace-nowrap font-mono text-sm font-medium">{r.reference}</span>
-          <span className="tabular whitespace-nowrap text-xs text-muted">drafted {formatDate(r.created_at)}</span>
+          <span className="whitespace-nowrap font-mono text-base font-medium">{r.reference}</span>
+          <span className="tabular whitespace-nowrap text-sm text-muted">drafted {formatDate(r.created_at)}</span>
         </span>
       ),
     },
@@ -81,7 +81,7 @@ export function RequestsPage() {
       header: 'Exchange',
       sortValue: (r) => r.vasp.toLowerCase(),
       cell: (r) => (
-        <Link to={`/vasps/${encodeURIComponent(r.vasp)}`} className="display text-base text-fg underline-offset-2 hover:underline">
+        <Link to={`/vasps/${encodeURIComponent(r.vasp)}`} className="title text-md text-fg underline-offset-2 hover:underline">
           {r.vasp}
         </Link>
       ),
@@ -91,8 +91,8 @@ export function RequestsPage() {
       header: 'Cases and asks',
       cell: (r) => (
         <span className="flex flex-col">
-          <span className="text-sm">{r.case_ids.map(refOf).join(', ')}</span>
-          <span className="text-xs text-muted">
+          <span className="text-base">{r.case_ids.map(refOf).join(', ')}</span>
+          <span className="text-sm text-muted">
             {r.letter.wallets.length} {r.letter.wallets.length === 1 ? 'wallet' : 'wallets'} · {r.letter.asks.map((a) => ASK_WORDS[a].toLowerCase().replace('kyc', 'KYC')).join(', ')}
           </span>
         </span>
@@ -107,12 +107,12 @@ export function RequestsPage() {
       sortValue: (r) => r.due ?? null,
       cell: (r) =>
         r.due ? (
-          <span className={cx('tabular whitespace-nowrap text-sm', isOverdue(r) ? 'font-medium text-seal-text' : 'text-muted')}>
+          <span className={cx('tabular whitespace-nowrap text-base', isOverdue(r) ? 'font-medium text-seal-text' : 'text-muted')}>
             {formatDate(r.due)}
-            {isOverdue(r) && <span className="block text-xs">overdue</span>}
+            {isOverdue(r) && <span className="block text-sm">overdue</span>}
           </span>
         ) : (
-          <span className="whitespace-nowrap text-sm text-muted">not sent</span>
+          <span className="whitespace-nowrap text-base text-muted">not sent</span>
         ),
     },
   ]
@@ -153,7 +153,7 @@ export function RequestsPage() {
                     aria-pressed={on}
                     onClick={() => set('status', f)}
                     className={cx(
-                      'inline-flex h-7 items-center gap-1.5 rounded border px-2.5 text-xs',
+                      'inline-flex h-7 items-center gap-1.5 rounded border px-2.5 text-sm',
                       on ? 'border-fg bg-fg font-semibold text-page' : 'border-rule-strong bg-surface text-fg hover:bg-sunk',
                     )}
                   >
@@ -163,12 +163,12 @@ export function RequestsPage() {
                 )
               })}
             </div>
-            <label className="flex items-center gap-2 text-xs text-muted">
+            <label className="flex items-center gap-2 text-sm text-muted">
               Exchange
               <select
                 value={vasp}
                 onChange={(e) => set('vasp', e.target.value)}
-                className="h-7 rounded border border-rule-strong bg-surface px-1.5 text-xs text-fg"
+                className="h-7 rounded border border-rule-strong bg-surface px-1.5 text-sm text-fg"
               >
                 <option value="">All exchanges</option>
                 {vasps.map((v) => (
@@ -186,7 +186,7 @@ export function RequestsPage() {
                 value={q}
                 onChange={(e) => set('q', e.target.value)}
                 placeholder="Reference, case, wallet"
-                className="h-7 w-56 rounded border border-rule-strong bg-surface pl-7 pr-2 text-xs text-fg placeholder:text-muted"
+                className="h-7 w-56 rounded border border-rule-strong bg-surface pl-7 pr-2 text-sm text-fg placeholder:text-muted"
               />
             </label>
           </div>

@@ -27,7 +27,7 @@ function FlagRow({ c, flag, onSelect }: { c: CaseDetail; flag: Flag; onSelect: (
         {flag.tx_hashes.slice(0, LISTED).map((hash) => (
           <TxHash key={hash} hash={hash} chain={c.chain} />
         ))}
-        {flag.tx_hashes.length > LISTED && <span className="text-xs text-muted">and {flag.tx_hashes.length - LISTED} more</span>}
+        {flag.tx_hashes.length > LISTED && <span className="text-sm text-muted">and {flag.tx_hashes.length - LISTED} more</span>}
       </div>
     </li>
   )
@@ -60,7 +60,7 @@ export function PatternsTab({ c, onSelect }: { c: CaseDetail; onSelect: (address
       {leads.length > 0 && (
         <section aria-label="Leads to check, in full" className="flex flex-col gap-3">
           <h3 className="eyebrow">Leads to check</h3>
-          <p className="max-w-prose text-sm text-muted">
+          <p className="max-w-prose text-base text-muted">
             A lead is an unlabelled wallet that behaves like an exchange deposit address. It never changes the answer of the case.
           </p>
           <ul className="flex max-w-[860px] flex-col gap-4">

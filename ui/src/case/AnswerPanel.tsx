@@ -22,14 +22,14 @@ function Funder({ c, candidate, onSelect }: { c: CaseDetail; candidate: Candidat
   return (
     <li className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold text-fg">{candidate.vasp}</span>
+        <span className="text-base font-semibold text-fg">{candidate.vasp}</span>
         <TierTag tier={candidate.label_tier} size="sm" />
         <AddressChip address={candidate.deposit_address} chain={c.chain} onSelect={() => onSelect(candidate.deposit_address)} />
       </div>
       {candidate.evidence
         .filter((e) => e.kind === 'path')
         .map((e, i) => (
-          <p key={i} className="text-sm text-fg">
+          <p key={i} className="text-base text-fg">
             {e.text}
           </p>
         ))}
@@ -51,10 +51,10 @@ export function AnswerPanel({ c, onSelect, className }: { c: CaseDetail; onSelec
   return (
     <section
       aria-labelledby="answer-title"
-      className={cx('flex flex-col gap-6 rounded-md border bg-surface p-5', sealed ? 'border-seal-text' : 'border-rule', className)}
+      className={cx('flex flex-col gap-6 border bg-surface p-4', sealed ? 'border-danger' : 'border-ink', className)}
     >
       <div className="flex flex-col gap-4">
-        <h2 id="answer-title" className="display text-lg text-fg">
+        <h2 id="answer-title" className="title text-lg text-fg">
           {sealed ? sealHeading(c) : `Why ${c.top_vasp ?? 'this exchange'}?`}
         </h2>
         {sealed && alerts.length > 0 && (
@@ -68,7 +68,7 @@ export function AnswerPanel({ c, onSelect, className }: { c: CaseDetail; onSelec
         )}
         {sealed && top && <h3 className="eyebrow">Nearest exchange</h3>}
         {top && <CandidateCard c={c} candidate={top} action="primary" onSelect={onSelect} />}
-        {sealed && !top && <p className="text-sm text-fg">No labelled exchange was reached, so there is no exchange to write to.</p>}
+        {sealed && !top && <p className="text-base text-fg">No labelled exchange was reached, so there is no exchange to write to.</p>}
       </div>
 
       {others.length > 0 && (
@@ -103,7 +103,7 @@ export function AnswerPanel({ c, onSelect, className }: { c: CaseDetail; onSelec
 
       {c.narrative && (
         <Section title="Summary">
-          <p className="text-base text-fg [overflow-wrap:anywhere]">{c.narrative}</p>
+          <p className="text-md text-fg [overflow-wrap:anywhere]">{c.narrative}</p>
         </Section>
       )}
     </section>

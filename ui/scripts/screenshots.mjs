@@ -275,7 +275,7 @@ try {
       () =>
         page.evaluate(`document.fonts.ready.then(() =>
           location.pathname + location.search === ${JSON.stringify(path)} &&
-          document.fonts.check('16px "IBM Plex Sans"') &&
+          document.fonts.check('13px "Public Sans"') &&
           (${opts.ready ?? STAMP}))`),
       `${path} to render`,
     )
@@ -303,7 +303,7 @@ try {
     const made = await (await fetch(`http://127.0.0.1:${PORT}/json/new?${encodeURIComponent(url)}`, { method: 'PUT' })).json()
     const tab = session(made.webSocketDebuggerUrl)
     await waitFor(
-      () => tab.evaluate(`document.fonts.ready.then(() => document.fonts.check('16px "IBM Plex Sans"') && (${opts.ready ?? STAMP}))`),
+      () => tab.evaluate(`document.fonts.ready.then(() => document.fonts.check('13px "Public Sans"') && (${opts.ready ?? STAMP}))`),
       `${path} to render`,
     )
     await sleep(500)

@@ -63,9 +63,9 @@ export function ShareBar({ parts, caption, unit }: { parts: SharePart[]; caption
           const body = (
             <>
               <span aria-hidden className={cx('h-2.5 w-2.5 shrink-0 rounded-sm', FILL[p.fill])} />
-              <span className="min-w-0 flex-1 truncate text-sm text-fg">{p.name}</span>
-              <span className="tabular font-mono text-sm text-fg">{p.value.toLocaleString('en-US')}</span>
-              <span className="tabular w-16 text-right font-mono text-xs text-muted">{total > 0 ? formatPercent(p.value / total) : ''}</span>
+              <span className="min-w-0 flex-1 truncate text-base text-fg">{p.name}</span>
+              <span className="tabular font-mono text-base text-fg">{p.value.toLocaleString('en-US')}</span>
+              <span className="tabular w-16 text-right font-mono text-sm text-muted">{total > 0 ? formatPercent(p.value / total) : ''}</span>
             </>
           )
           const row = 'flex items-center gap-2.5 rounded-sm px-1.5 py-1.5'

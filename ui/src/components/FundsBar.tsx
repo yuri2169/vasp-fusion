@@ -6,9 +6,9 @@ import { Tip, useTip } from './Tip'
 
 const FILL: Record<FundsFill, string> = {
   named: 'bg-saffron',
-  party: 'bg-fg',
+  party: 'bg-chain',
   seal: 'bg-seal',
-  open: 'hatch border border-rule-strong bg-sunk',
+  open: 'hatch bg-surface-3',
 }
 
 function Segment({ slice, fill, asset }: { slice: FundsSlice; fill: FundsFill; asset: string }) {
@@ -20,7 +20,7 @@ function Segment({ slice, fill, asset }: { slice: FundsSlice; fill: FundsFill; a
       onMouseEnter={tip.bind.onMouseEnter}
       onMouseLeave={tip.bind.onMouseLeave}
       style={{ flexBasis: `${(slice.share * 100).toFixed(1)}%` }}
-      className={cx('h-full min-w-[4px] shrink grow-0 rounded-sm', FILL[fill])}
+      className={cx('anim-bar h-full min-w-[4px] shrink grow-0', FILL[fill])}
     >
       <Tip id={tip.id} anchor={tip.anchor}>
         <span className="block font-medium">{fundsName(slice)}</span>
@@ -54,15 +54,15 @@ export function FundsBar({
   return (
     <div className={cx('flex flex-col gap-2', className)}>
       <p className="eyebrow">{total != null ? `Where the ${formatAmount(total, asset)} went` : 'Where the funds went'}</p>
-      <div role="img" aria-label={summary} className="flex h-3 w-full gap-0.5">
+      <div role="img" aria-label={summary} className="flex h-2.5 w-full gap-px">
         {slices.map((slice, i) => (
           <Segment key={slice.kind + (slice.name ?? '') + i} slice={slice} fill={fundsFill(slice, named)} asset={asset} />
         ))}
       </div>
       <ul aria-label="Where the funds went" className="flex flex-wrap gap-x-5 gap-y-1">
         {slices.map((slice, i) => (
-          <li key={slice.kind + (slice.name ?? '') + i} className="flex items-center gap-1.5 text-xs">
-            <span aria-hidden className={cx('h-2.5 w-2.5 shrink-0 rounded-sm', FILL[fundsFill(slice, named)])} />
+          <li key={slice.kind + (slice.name ?? '') + i} className="flex items-center gap-1.5 text-sm">
+            <span aria-hidden className={cx('h-2 w-2 shrink-0', FILL[fundsFill(slice, named)])} />
             <span className="font-medium text-fg">{fundsName(slice)}</span>
             <span className="tabular font-mono text-fg">{formatPercent(slice.share)}</span>
             <span className="tabular font-mono text-muted">{formatAmount(slice.amount, asset)}</span>

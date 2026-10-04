@@ -65,13 +65,13 @@ export function AddressChip({
       data-selected={selected || undefined}
       data-marked={marked || undefined}
       className={cx(
-        'inline-flex h-7 max-w-full items-center gap-1.5 rounded border bg-surface pl-2 pr-0.5 align-middle text-xs',
-        selected ? 'border-fg bg-sunk ring-1 ring-fg' : marked ? 'border-fg' : 'border-rule',
+        'inline-flex h-6 max-w-full items-center gap-1.5 border bg-surface pl-2 pr-0.5 align-middle text-sm',
+        selected ? 'border-ink bg-active-wash' : marked ? 'border-ink' : 'border-rule',
         className,
       )}
     >
       {role === 'suspect' && (
-        <span className="-ml-2 inline-flex self-stretch items-center rounded-l-sm bg-fg px-1.5 font-medium uppercase tracking-wide text-page">
+        <span className="-ml-2 inline-flex self-stretch items-center bg-chain px-1.5 text-2xs font-semibold uppercase tracking-[0.06em] text-surface">
           Suspect
         </span>
       )}
@@ -109,7 +109,7 @@ export function AddressChip({
           rel="noopener noreferrer"
           aria-label={`Open on ${explorerName(chain)} (new tab)`}
           title={`Open on ${explorerName(chain)}`}
-          className="inline-flex h-6 w-6 items-center justify-center rounded-sm text-muted hover:bg-sunk hover:text-fg"
+          className="inline-flex h-5 w-5 items-center justify-center text-ink-dim hover:bg-surface-3 hover:text-ink"
         >
           <ExternalLink size={13} aria-hidden />
         </a>}

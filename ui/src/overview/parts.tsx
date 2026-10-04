@@ -18,16 +18,16 @@ export function Panel({
   className?: string
 }) {
   return (
-    <section aria-label={title} className={cx('flex flex-col gap-3 rounded-md border border-rule bg-surface p-4', className)}>
+    <section aria-label={title} className={cx('flex flex-col gap-3 panel p-4', className)}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="eyebrow">{title}</h2>
         {more && (
-          <Link to={more.to} className="text-xs text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg">
+          <Link to={more.to} className="text-sm text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg">
             {more.text}
           </Link>
         )}
       </div>
-      {note && <p className="-mt-1.5 max-w-prose text-xs text-muted">{note}</p>}
+      {note && <p className="-mt-1.5 max-w-prose text-sm text-muted">{note}</p>}
       {children}
     </section>
   )
@@ -54,7 +54,7 @@ export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntr
     <ul
       aria-label={label}
       className={cx(
-        'grid grid-cols-2 overflow-hidden rounded-md border border-rule bg-surface sm:grid-cols-3',
+        'grid grid-cols-2 overflow-hidden panel sm:grid-cols-3',
         perRow === 'all' && 'lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none',
       )}
     >
@@ -62,8 +62,8 @@ export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntr
         const body = (
           <>
             <span className="eyebrow">{e.name}</span>
-            <span className={cx('tabular mt-1 whitespace-nowrap font-mono text-xl', e.alert ? 'text-seal-text' : 'text-fg')}>{e.value}</span>
-            {e.note && <span className="mt-1 text-xs text-muted">{e.note}</span>}
+            <span className={cx('tabular mt-1 whitespace-nowrap font-mono text-2xl', e.alert ? 'text-seal-text' : 'text-fg')}>{e.value}</span>
+            {e.note && <span className="mt-1 text-sm text-muted">{e.note}</span>}
           </>
         )
         const cell = 'flex h-full flex-col px-4 py-3'

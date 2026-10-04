@@ -71,7 +71,7 @@ function Meta({ c }: { c: CaseDetail }) {
         </span>
       ))}
       {c.demo && (
-        <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">
+        <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="ml-1 inline-block rounded-sm border border-dashed border-rule-strong px-1 text-sm text-muted">
           Recorded
         </span>
       )}
@@ -159,7 +159,7 @@ export function CasePage() {
       title={
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <ChainBadge chain={c.chain} />
-          <span className="break-all font-mono text-lg font-medium">{c.address}</span>
+          <span className="break-all font-mono text-lg font-medium normal-case tracking-normal">{c.address}</span>
           <CopyButton value={c.address} label="address" />
         </span>
       }
@@ -196,7 +196,7 @@ export function CasePage() {
             {retry.isPending ? 'Starting…' : 'Trace again'}
           </Button>
           {retry.isError && (
-            <p role="alert" className="text-sm text-seal-text">
+            <p role="alert" className="text-base text-seal-text">
               {retry.error instanceof ApiError ? retry.error.detail : 'The trace could not be started. Try again.'}
             </p>
           )}
@@ -253,7 +253,7 @@ export function CasePage() {
       {header}
 
       {tracing && (
-        <p role="status" className="mb-3 rounded border border-dashed border-rule-strong px-3 py-2 text-sm text-fg">
+        <p role="status" className="mb-3 rounded border border-dashed border-rule-strong px-3 py-2 text-base text-fg">
           Tracing again. This is the previous result; the new one replaces it when it is ready.
           {c.progress && <span className="mt-1 block text-muted">{c.progress.message}</span>}
         </p>
@@ -262,7 +262,7 @@ export function CasePage() {
       {rail}
 
       {finished && (
-        <p role="status" className="mt-2 text-xs text-muted">
+        <p role="status" className="mt-2 text-sm text-muted">
           Trace finished. It read {c.provenance.pages != null ? `${c.provenance.pages} responses` : 'the chain'} and found {c.graph.nodes.length} wallets and{' '}
           {c.graph.edges.length} transfers.
         </p>
@@ -271,7 +271,7 @@ export function CasePage() {
       <div ref={top} className="mt-4 grid scroll-mt-20 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_440px]">
         <Suspense
           fallback={
-            <div aria-busy="true" aria-label="Fund-flow graph, loading" className="min-h-[416px] rounded-md border border-rule bg-surface p-4">
+            <div aria-busy="true" aria-label="Fund-flow graph, loading" className="min-h-[416px] panel p-4">
               <Skeleton width="30%" />
             </div>
           }

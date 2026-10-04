@@ -37,21 +37,21 @@ export function BarList({
   empty?: ReactNode
   className?: string
 }) {
-  if (rows.length === 0) return <p className="text-sm text-muted">{empty ?? 'Nothing to count yet.'}</p>
+  if (rows.length === 0) return <p className="text-base text-muted">{empty ?? 'Nothing to count yet.'}</p>
   const top = max ?? Math.max(...rows.map((r) => r.value))
   return (
     <ul aria-label={caption} className={cx('flex flex-col', className)}>
       {rows.map((r) => {
         const body = (
           <>
-            <span className="min-w-0 truncate text-sm text-fg" style={{ width: labelWidth, flex: `0 0 ${labelWidth}` }}>
+            <span className="min-w-0 truncate text-base text-fg" style={{ width: labelWidth, flex: `0 0 ${labelWidth}` }}>
               {r.label}
             </span>
             <span aria-hidden className="flex h-2 min-w-0 flex-1 items-center">
               <span data-testid="bar" className="block h-2 rounded-r bg-fg" style={{ width: `${barPercent(r.value, top)}%` }} />
             </span>
-            <span className="tabular shrink-0 whitespace-nowrap text-right font-mono text-sm text-fg">{r.valueText}</span>
-            {r.note !== undefined && <span className="tabular w-20 shrink-0 whitespace-nowrap text-right text-xs text-muted">{r.note}</span>}
+            <span className="tabular shrink-0 whitespace-nowrap text-right font-mono text-base text-fg">{r.valueText}</span>
+            {r.note !== undefined && <span className="tabular w-20 shrink-0 whitespace-nowrap text-right text-sm text-muted">{r.note}</span>}
           </>
         )
         const row = 'flex items-center gap-3 rounded-sm px-1.5 py-1.5'

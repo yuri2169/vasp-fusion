@@ -1,10 +1,12 @@
 /** A FlowView as Cytoscape elements, and the stylesheet that draws them.
  *
  *  What the picture encodes (ui/DESIGN.md, "The fund-flow graph"):
- *    shape        the wallet's role
- *    border       the tier of its label (the same vocabulary as TierTag)
- *    saffron      a wallet of the exchange the case names, and nothing else
- *    edge width   the amount; ink on the main path, dashed for money coming in */
+ *    shape        the wallet's role (square-cornered: nothing in this language is a rounded token)
+ *    border       the tier of its label, in the label colour (the same vocabulary as TierTag)
+ *    chain colour the suspect wallet, unlabelled hops and the main path: on-chain facts
+ *    fusion fill  a wallet of the exchange the case names, and nothing else
+ *    danger fill  a sanctioned address or a mixer
+ *    edge width   the amount; hairlines, dashed for money coming in */
 import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
 import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { formatAmount, truncateMiddle } from '../lib/format'
@@ -17,6 +19,7 @@ export interface ThemeColors {
   sunk: string
   ruleStrong: string
   saffron: string
+  chain: string
   verifiedText: string
   verifiedWash: string
   seal: string
@@ -25,15 +28,16 @@ export interface ThemeColors {
 
 /** The light theme, for when the page's tokens cannot be read (tests, a canvas made off-page). */
 export const FALLBACK_THEME: ThemeColors = {
-  fg: '#2B1622',
-  muted: '#5B5566',
+  fg: '#0E1C27',
+  muted: '#4A5B69',
   surface: '#FFFFFF',
-  sunk: '#ECE9F1',
-  ruleStrong: '#8A8296',
-  saffron: '#E8772E',
-  verifiedText: '#196A65',
-  verifiedWash: '#E1F0EE',
-  seal: '#B3261E',
+  sunk: '#F3F5F7',
+  ruleStrong: '#56646F',
+  saffron: '#8C5B0E',
+  chain: '#2D6A9F',
+  verifiedText: '#7B4B94',
+  verifiedWash: '#F4EEF7',
+  seal: '#A2453B',
   onSeal: '#FFFFFF',
 }
 
@@ -44,6 +48,7 @@ const TOKENS: Record<keyof ThemeColors, string> = {
   sunk: '--surface-sunk',
   ruleStrong: '--rule-strong',
   saffron: '--saffron',
+  chain: '--chain',
   verifiedText: '--verified-text',
   verifiedWash: '--verified-wash',
   seal: '--seal',
@@ -62,13 +67,13 @@ export function readTheme(el: Element = document.documentElement): ThemeColors {
 
 /** Shape and size per role. Every kind of labelled party has a shape of its own. */
 export const ROLE_SHAPES: Record<Role, { shape: string; width: number; height: number }> = {
-  suspect: { shape: 'ellipse', width: 34, height: 34 },
-  intermediary: { shape: 'ellipse', width: 24, height: 24 },
-  unknown: { shape: 'ellipse', width: 16, height: 16 },
+  suspect: { shape: 'rectangle', width: 30, height: 30 },
+  intermediary: { shape: 'rectangle', width: 20, height: 20 },
+  unknown: { shape: 'rectangle', width: 13, height: 13 },
   hub: { shape: 'hexagon', width: 34, height: 30 },
-  exchange: { shape: 'round-rectangle', width: 46, height: 28 },
-  exchange_hot: { shape: 'round-rectangle', width: 46, height: 28 },
-  exchange_deposit: { shape: 'round-tag', width: 46, height: 28 },
+  exchange: { shape: 'cut-rectangle', width: 46, height: 28 },
+  exchange_hot: { shape: 'cut-rectangle', width: 46, height: 28 },
+  exchange_deposit: { shape: 'tag', width: 46, height: 28 },
   custodial_wallet: { shape: 'barrel', width: 42, height: 28 },
   swap_service: { shape: 'rhomboid', width: 46, height: 26 },
   bridge: { shape: 'diamond', width: 38, height: 38 },
@@ -157,13 +162,13 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
       selector: 'node',
       style: {
         'background-color': t.surface,
-        'border-width': 1.5,
+        'border-width': 1,
         'border-style': 'dashed',
-        'border-color': t.ruleStrong,
+        'border-color': t.chain,
         label: 'data(label)',
-        'font-family': '"IBM Plex Mono", ui-monospace, monospace',
+        'font-family': '"Spline Sans Mono", ui-monospace, monospace',
         // 14 on the canvas, so that a graph drawn at three-quarter size still reads at 10 or more.
-        'font-size': 14,
+        'font-size': 13,
         color: t.muted,
         'text-valign': 'bottom',
         'text-margin-y': 5,
@@ -172,17 +177,17 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     },
 
     // --- border: the tier of the label ------------------------------------
-    { selector: 'node[tier = "none"]', style: { 'border-style': 'dashed', 'border-width': 1.5, 'border-color': t.ruleStrong } },
-    { selector: 'node[tier = "derived"]', style: { 'border-style': 'solid', 'border-width': 2, 'border-color': t.muted } },
-    { selector: 'node[tier = "explorer_tag"]', style: { 'border-style': 'dotted', 'border-width': 2.5, 'border-color': t.verifiedText } },
+    { selector: 'node[tier = "none"]', style: { 'border-style': 'dashed', 'border-width': 1, 'border-color': t.chain } },
+    { selector: 'node[tier = "derived"]', style: { 'border-style': 'solid', 'border-width': 1.5, 'border-color': t.muted } },
+    { selector: 'node[tier = "explorer_tag"]', style: { 'border-style': 'dotted', 'border-width': 2, 'border-color': t.verifiedText } },
     {
       selector: 'node[tier = "curated"]',
-      style: { 'border-style': 'solid', 'border-width': 2.5, 'border-color': t.verifiedText, 'background-color': t.verifiedWash },
+      style: { 'border-style': 'solid', 'border-width': 2, 'border-color': t.verifiedText, 'background-color': t.verifiedWash },
     },
-    { selector: 'node[tier = "published_por"]', style: { 'border-style': 'double', 'border-width': 5, 'border-color': t.verifiedText } },
+    { selector: 'node[tier = "published_por"]', style: { 'border-style': 'double', 'border-width': 4, 'border-color': t.verifiedText } },
 
     // --- shape: the role --------------------------------------------------
-    { selector: 'node[role = "suspect"]', style: { ...size('suspect'), 'background-color': t.fg, 'border-style': 'solid', 'border-width': 2, 'border-color': t.fg } },
+    { selector: 'node[role = "suspect"]', style: { ...size('suspect'), 'background-color': t.chain, 'border-style': 'solid', 'border-width': 1, 'border-color': t.chain } },
     { selector: 'node[role = "intermediary"]', style: size('intermediary') },
     { selector: 'node[role = "unknown"]', style: size('unknown') },
     { selector: 'node[role = "hub"]', style: { ...size('hub'), 'background-color': t.sunk } },
@@ -195,7 +200,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     { selector: 'node[role = "mixer"]', style: { ...size('mixer'), 'background-color': t.seal, 'border-color': t.fg, ...withGlyph(glyph.mixer) } },
     { selector: 'node[role = "sanctioned"]', style: { ...size('sanctioned'), 'background-color': t.seal, 'border-color': t.fg, ...withGlyph(glyph.sanctioned) } },
 
-    // --- the exchange the case names: the one saffron thing ---------------
+    // --- the exchange the case names: the one thing filled in the fusion colour ---
     { selector: 'node[named = 1]', style: { 'background-color': t.saffron } },
 
     // --- a group of one exchange's wallets: drawn as a stack --------------
@@ -208,14 +213,14 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     {
       selector: 'node[kind = "more"]',
       style: {
-        shape: 'round-rectangle',
+        shape: 'rectangle',
         width: 58,
         height: 26,
         'background-color': t.sunk,
         'border-style': 'dashed',
-        'border-width': 1.5,
+        'border-width': 1,
         'border-color': t.muted,
-        'font-family': '"IBM Plex Sans", system-ui, sans-serif',
+        'font-family': '"Public Sans", system-ui, sans-serif',
         color: t.fg,
       },
     },
@@ -229,8 +234,8 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         'background-opacity': 0,
         'border-width': 0,
         events: 'no',
-        'font-family': '"IBM Plex Sans", system-ui, sans-serif',
-        'font-weight': 600,
+        'font-family': 'Archivo, system-ui, sans-serif',
+        'font-weight': 700,
         'font-size': 14,
         color: t.fg,
         'text-valign': 'top',
@@ -253,24 +258,24 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         'line-color': t.ruleStrong,
         'target-arrow-color': t.ruleStrong,
         'target-arrow-shape': 'triangle',
-        'arrow-scale': 0.9,
+        'arrow-scale': 0.8,
         label: 'data(label)',
-        'font-family': '"IBM Plex Mono", ui-monospace, monospace',
-        'font-size': 13,
+        'font-family': '"Spline Sans Mono", ui-monospace, monospace',
+        'font-size': 12,
         color: t.fg,
         'text-background-color': t.surface,
         'text-background-opacity': 1,
         'text-background-padding': '3px',
-        'text-background-shape': 'roundrectangle',
+        'text-background-shape': 'rectangle',
         'min-zoomed-font-size': 7,
       },
     },
-    { selector: 'edge[onPath = 1]', style: { 'line-color': t.fg, 'target-arrow-color': t.fg } },
+    { selector: 'edge[onPath = 1]', style: { 'line-color': t.chain, 'target-arrow-color': t.chain } },
     { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], 'line-opacity': 0.7 } },
 
     // --- looking at one wallet: its path stays, the rest steps back --------
     { selector: '.dim', style: { opacity: 0.2 } },
-    { selector: 'node.sel', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.14, 'underlay-padding': 9, 'underlay-shape': 'ellipse' } },
-    { selector: 'node.hover', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.08, 'underlay-padding': 7, 'underlay-shape': 'ellipse' } },
+    { selector: 'node.sel', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.14, 'underlay-padding': 8, 'underlay-shape': 'rectangle' } },
+    { selector: 'node.hover', style: { 'underlay-color': t.fg, 'underlay-opacity': 0.08, 'underlay-padding': 6, 'underlay-shape': 'rectangle' } },
   ] as StylesheetJsonBlock[]
 }

@@ -9,9 +9,9 @@ export function ChainBadge({ chain, tentative = false, size = 'md' }: { chain: C
     <span
       title={tentative ? `Looks like ${name}` : name}
       className={cx(
-        'inline-flex shrink-0 items-center rounded-sm border font-mono text-xs font-medium tracking-wide',
-        size === 'sm' ? 'h-5 px-1' : 'h-6 px-1.5',
-        tentative ? 'border-dashed border-rule-strong text-muted' : 'border-rule-strong bg-surface text-fg',
+        'inline-flex shrink-0 items-center border font-mono text-2xs font-medium tracking-wide',
+        size === 'sm' ? 'h-[18px] px-1' : 'h-5 px-1.5',
+        tentative ? 'border-dashed border-rule text-ink-dim' : 'border-rule bg-surface text-chain',
       )}
     >
       {code}

@@ -30,14 +30,14 @@ export function WalletsTab({ c, selected, onSelect }: { c: CaseDetail; selected:
         />
       ),
     },
-    { key: 'role', header: 'Role', sortValue: (n) => ROLE_NAMES[n.role], cell: (n) => <span className="text-sm">{ROLE_NAMES[n.role]}</span> },
+    { key: 'role', header: 'Role', sortValue: (n) => ROLE_NAMES[n.role], cell: (n) => <span className="text-base">{ROLE_NAMES[n.role]}</span> },
     { key: 'tier', header: 'Label', sortValue: (n) => n.label?.tier ?? null, cell: (n) => <TierTag tier={n.label?.tier ?? null} size="sm" /> },
     {
       key: 'hop',
       header: 'Hops',
       align: 'right',
       sortValue: (n) => (isFunder(n) ? -n.hop : n.hop),
-      cell: (n) => <span className="tabular font-mono text-sm">{n.id === c.address ? '0' : isFunder(n) ? `${n.hop} back` : n.hop}</span>,
+      cell: (n) => <span className="tabular font-mono text-base">{n.id === c.address ? '0' : isFunder(n) ? `${n.hop} back` : n.hop}</span>,
     },
     { key: 'in', header: 'Received', align: 'right', sortValue: (n) => funds.get(n.id)!.received, cell: (n) => money(funds.get(n.id)!.received) },
     { key: 'out', header: 'Sent on', align: 'right', sortValue: (n) => funds.get(n.id)!.sent, cell: (n) => money(funds.get(n.id)!.sent) },

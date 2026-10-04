@@ -27,8 +27,8 @@ function Counterfactual({ candidate }: { candidate: Candidate }) {
     <div className="flex gap-2 rounded border border-rule bg-sunk px-3 py-2.5">
       <Icon size={15} aria-hidden className={cx('mt-0.5 shrink-0', tone)} />
       <div className="min-w-0">
-        <p className={cx('text-xs font-semibold', tone)}>{words}</p>
-        <p className="mt-0.5 text-sm text-fg [overflow-wrap:anywhere]">{candidate.counterfactual}</p>
+        <p className={cx('text-sm font-semibold', tone)}>{words}</p>
+        <p className="mt-0.5 text-base text-fg [overflow-wrap:anywhere]">{candidate.counterfactual}</p>
       </div>
     </div>
   )
@@ -44,7 +44,7 @@ function BarChecked({ chain }: { chain: string }) {
   if (!a || !bar || bar.wallets_named === 0) return null
   const pct = (v?: number | null) => (v == null ? "not measured" : `${(v * 100).toFixed(1)}%`)
   return (
-    <p className="text-xs text-muted">
+    <p className="text-sm text-muted">
       How the {a.current_threshold.toFixed(2)} bar was checked: {a.wallets} wallets on this chain were traced with the tool's own derived labels hidden.{' '}
       <span className="font-medium text-fg">
         {bar.wallets_named} were named an exchange, {bar.wallets_wrong} of them wrongly ({pct(bar.risk)}; upper bound {pct(bar.risk_upper_bound)}).
@@ -89,7 +89,7 @@ export function CandidateCard({
   return (
     <article aria-label={candidate.vasp} className={cx('flex flex-col gap-3', className)}>
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-        <span className="display text-lg text-fg">{candidate.vasp}</span>
+        <span className="title text-lg text-fg">{candidate.vasp}</span>
         <TierTag tier={candidate.label_tier} size="sm" />
         {candidate.amount != null && c.asset && <Amount value={candidate.amount} asset={c.asset} className="ml-auto" />}
       </div>
@@ -109,7 +109,7 @@ export function CandidateCard({
         interval={candidate.confidence_interval}
         bar={NAMING_BAR}
       />
-      <p className="text-xs text-muted">
+      <p className="text-sm text-muted">
         {scored
           ? 'The range is the deposit-address model’s. The weight of the exchange’s label, the hop decay and the share factor are rule-set.'
           : 'Rule-based, not calibrated: label weight × hop decay × share factor.'}
@@ -118,14 +118,14 @@ export function CandidateCard({
 
       {action === 'primary' && named && <BarChecked chain={c.chain} />}
 
-      {canRequest && tracing && <p className="text-sm text-muted">A request to {candidate.vasp} can be drafted once the new trace is in.</p>}
+      {canRequest && tracing && <p className="text-base text-muted">A request to {candidate.vasp} can be drafted once the new trace is in.</p>}
       {canRequest && !tracing && existing && (
         <div className="flex flex-wrap items-center gap-2.5">
           <Link to={`/requests/${encodeURIComponent(existing.id)}`} className={buttonClass('secondary', 'md')}>
             Open request to {candidate.vasp}
           </Link>
           <StatusTag status={existing.status} />
-          <span className="font-mono text-xs text-muted">{existing.reference}</span>
+          <span className="font-mono text-sm text-muted">{existing.reference}</span>
         </div>
       )}
       {canRequest && !tracing && !existing && (
@@ -141,7 +141,7 @@ export function CandidateCard({
         ) : (
           listed > 0 && (
             <details className="group">
-              <summary className="cursor-pointer select-none text-sm font-medium text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
+              <summary className="cursor-pointer select-none text-base font-medium text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
                 Evidence ({listed})
               </summary>
               <EvidenceList items={candidate.evidence} chain={c.chain} className="mt-3" />

@@ -1,85 +1,91 @@
 /* VASP-FUSION design tokens. See ui/DESIGN.md.
  *
- * Two layers:
- *   brand  six colours from the brief. They never change, in either theme.
- *   role   what a component asks for (--bg, --fg, --verified-text ...). These switch per theme.
- * Components use role tokens (through Tailwind), so no component hard-codes a colour.
+ * The palette is BTC-FUSION's, hex for hex, so the two submissions read as one family
+ * (its ui/src/index.css is the source). A colour here is a claim about where a fact comes
+ * from, never a mood:
  *
- * src/styles/tokens.test.ts reads this file: it pins the brand hexes and checks every
- * text/background pair below for WCAG AA in both themes. The comment markers are its anchors.
+ *   chain    on-chain facts: addresses, transfers, amounts, hops
+ *   network  label evidence: who an address belongs to (exchange labels and their tier)
+ *   fusion   the attribution answer: the named exchange, proximity and confidence
+ *   confirm  officer actions: approve, mark as sent, record a reply
+ *   danger   sanctioned or mixer contact, failures
+ *   data     unlabelled, insufficient evidence
+ *   active   interaction only (hover, focus, selected). Never provenance.
+ *
+ * Two layers:
+ *   palette  the BTC-FUSION tokens, re-picked for dark (dark is not an inversion).
+ *   aliases  the role names U1 to U5 components ask for (--fg, --saffron ...). Each points at
+ *            a palette token, so it follows the theme by itself.
+ *
+ * src/styles/tokens.test.ts reads this file: it pins the hexes and checks the text and
+ * background pairs for WCAG AA in both themes. The comment markers are its anchors.
+ * Contrast floors are load-bearing: do not lighten --ink-dim or the layer colours.
  */
-
-/* brand */
-:root {
-  --ink: #2B1622;       /* deep plum: nav rail, headings */
-  --paper: #F5F4F8;     /* cool lavender-grey page */
-  --saffron: #E8772E;   /* the attributed exchange, and the primary action. Nothing else. */
-  --verified: #1F7A74;  /* evidence published by an exchange or tagged by an explorer */
-  --seal: #B3261E;      /* sanctioned, mixer, freeze */
-  --slate: #5B5566;     /* secondary text, derived-tier evidence */
-}
 
 /* light */
 :root {
   color-scheme: light;
 
-  --bg: var(--paper);
+  --paper: #E4E8EC;
   --surface: #FFFFFF;
-  --surface-sunk: #ECE9F1;
-  --rule: #DAD6E1;
-  --rule-strong: #8A8296;
+  --surface-2: #F3F5F7;
+  --surface-3: #EDF0F3;
+  --ink: #0E1C27;
+  --ink-soft: #4A5B69;
+  --ink-dim: #56646F;
+  --rule: #C3CCD4;
+  --rule-soft: #DBE1E6;
 
-  --fg: var(--ink);
-  --fg-muted: var(--slate);
-  --focus: var(--ink);
+  --chain: #2D6A9F;
+  --network: #7B4B94;
+  --fusion: #8C5B0E;
+  --confirm: #2E7D5B;
+  --data: #5C6B78;
+  --danger: #A2453B;
 
-  --rail-bg: var(--ink);
-  --rail-fg: #F5F4F8;
-  --rail-fg-muted: #C9BDC6;
-  --rail-rule: #4A2E3D;
-  --rail-active: #4A2E3D;
-  --rail-focus: #F5F4F8;
+  --chain-wash: #EAF1F7;
+  --network-wash: #F4EEF7;
+  --fusion-wash: #FBF6ED;
+  --confirm-wash: #F0F7F3;
+  --danger-wash: #FBF0EE;
 
-  --on-saffron: #2B1622;
-  --on-verified: #FFFFFF;
-  --on-seal: #FFFFFF;
+  --active: #0E1C27;
+  --active-wash: #DCE3EA;
 
-  --saffron-text: #A5460E;
-  --verified-text: #196A65;
-  --seal-text: #B3261E;
-
-  --saffron-wash: #FCEBDD;
-  --verified-wash: #E1F0EE;
-  --seal-wash: #FBE9E7;
-  --slate-wash: #E9E7EE;
+  --chrome: #0E1C27;
 }
 
 /* dark */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #1A0F16;
-  --surface: #24161F;
-  --surface-sunk: #140B11;
-  --rule: #3E2A37;
-  --rule-strong: #8A7584;
+  --paper: #0A0E12;
+  --surface: #1A2229;
+  --surface-2: #212A33;
+  --surface-3: #28323C;
+  --ink: #E3E9EF;
+  --ink-soft: #A9B6C2;
+  --ink-dim: #8B99A6;
+  --rule: #323E4A;
+  --rule-soft: #26303A;
 
-  --fg: #EDE9F0;
-  --fg-muted: #B9AEBB;
-  --focus: #EDE9F0;
+  --chain: #6BAEE8;
+  --network: #C199DA;
+  --fusion: #E0A63F;
+  --confirm: #54C793;
+  --data: #9AA8B6;
+  --danger: #EE8279;
 
-  --rail-bg: #120A0F;
-  --rail-rule: #3E2A37;
-  --rail-active: #2E1C27;
+  --chain-wash: #16283A;
+  --network-wash: #2A1F35;
+  --fusion-wash: #33270F;
+  --confirm-wash: #14301F;
+  --danger-wash: #351B18;
 
-  --saffron-text: #E8772E;
-  --verified-text: #57BDB4;
-  --seal-text: #F08A82;
+  --active: #E3E9EF;
+  --active-wash: #2B3641;
 
-  --saffron-wash: #3A2216;
-  --verified-wash: #14302E;
-  --seal-wash: #3A1614;
-  --slate-wash: #2E2230;
+  --chrome: #05080B;
 }
 
 /* dark-system: the same declarations, for a dark device when the officer has made no choice */
@@ -87,27 +93,66 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --bg: #1A0F16;
-    --surface: #24161F;
-    --surface-sunk: #140B11;
-    --rule: #3E2A37;
-    --rule-strong: #8A7584;
+    --paper: #0A0E12;
+    --surface: #1A2229;
+    --surface-2: #212A33;
+    --surface-3: #28323C;
+    --ink: #E3E9EF;
+    --ink-soft: #A9B6C2;
+    --ink-dim: #8B99A6;
+    --rule: #323E4A;
+    --rule-soft: #26303A;
 
-    --fg: #EDE9F0;
-    --fg-muted: #B9AEBB;
-    --focus: #EDE9F0;
+    --chain: #6BAEE8;
+    --network: #C199DA;
+    --fusion: #E0A63F;
+    --confirm: #54C793;
+    --data: #9AA8B6;
+    --danger: #EE8279;
 
-    --rail-bg: #120A0F;
-    --rail-rule: #3E2A37;
-    --rail-active: #2E1C27;
+    --chain-wash: #16283A;
+    --network-wash: #2A1F35;
+    --fusion-wash: #33270F;
+    --confirm-wash: #14301F;
+    --danger-wash: #351B18;
 
-    --saffron-text: #E8772E;
-    --verified-text: #57BDB4;
-    --seal-text: #F08A82;
+    --active: #E3E9EF;
+    --active-wash: #2B3641;
 
-    --saffron-wash: #3A2216;
-    --verified-wash: #14302E;
-    --seal-wash: #3A1614;
-    --slate-wash: #2E2230;
+    --chrome: #05080B;
   }
+}
+
+/* aliases */
+:root {
+  --bg: var(--paper);
+  --surface-sunk: var(--surface-2);
+  --rule-strong: var(--ink-dim);
+  --fg: var(--ink);
+  --fg-muted: var(--ink-soft);
+  --focus: var(--chain);
+
+  /* the attribution answer */
+  --saffron: var(--fusion);
+  --saffron-text: var(--fusion);
+  --saffron-wash: var(--fusion-wash);
+  --on-saffron: var(--surface);
+
+  /* label evidence */
+  --verified: var(--network);
+  --verified-text: var(--network);
+  --verified-wash: var(--network-wash);
+  --on-verified: var(--surface);
+
+  /* sanctioned, mixer, failures */
+  --seal: var(--danger);
+  --seal-text: var(--danger);
+  --seal-wash: var(--danger-wash);
+  --on-seal: var(--surface);
+
+  /* unlabelled, insufficient */
+  --slate: var(--data);
+  --slate-wash: var(--surface-2);
+
+  --on-confirm: var(--surface);
 }

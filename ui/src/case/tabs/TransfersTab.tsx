@@ -26,9 +26,9 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
       key: 'time',
       header: 'Time',
       sortValue: (e) => e.block_time,
-      cell: (e) => <span className="tabular whitespace-nowrap font-mono text-xs text-fg">{formatDateTime(e.block_time)}</span>,
+      cell: (e) => <span className="tabular whitespace-nowrap font-mono text-sm text-fg">{formatDateTime(e.block_time)}</span>,
     },
-    { key: 'dir', header: 'Way', sortValue: (e) => e.direction, cell: (e) => <span className="text-sm">{e.direction === 'inbound' ? 'In' : 'Out'}</span> },
+    { key: 'dir', header: 'Way', sortValue: (e) => e.direction, cell: (e) => <span className="text-base">{e.direction === 'inbound' ? 'In' : 'Out'}</span> },
     { key: 'from', header: 'From', cell: (e) => chip(e.source) },
     { key: 'to', header: 'To', cell: (e) => chip(e.target) },
     {
@@ -39,7 +39,7 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
       cell: (e) => (
         <span className="flex flex-col items-end">
           <Amount value={traced(e)} asset={e.asset} usd={e.amount_usd != null && traced(e) === e.amount ? e.amount_usd : null} />
-          {traced(e) !== e.amount && <span className="tabular font-mono text-xs text-muted">of {formatAmount(e.amount, e.asset)}</span>}
+          {traced(e) !== e.amount && <span className="tabular font-mono text-sm text-muted">of {formatAmount(e.amount, e.asset)}</span>}
         </span>
       ),
     },

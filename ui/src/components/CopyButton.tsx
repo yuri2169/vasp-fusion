@@ -33,11 +33,11 @@ export function CopyButton({ value, label, className }: { value: string; label: 
         title={copied ? 'Copied' : `Copy ${label}`}
         onClick={() => copy(value).then(() => setCopied(true), () => setCopied(false))}
         className={cx(
-          'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted hover:bg-sunk hover:text-fg',
+          'inline-flex h-5 w-5 shrink-0 items-center justify-center text-ink-dim hover:bg-surface-3 hover:text-ink',
           className,
         )}
       >
-        {copied ? <Check size={14} aria-hidden className="text-verified-text" /> : <Copy size={14} aria-hidden />}
+        {copied ? <Check size={13} aria-hidden className="text-confirm" /> : <Copy size={13} aria-hidden />}
       </button>
       <span role="status" className="sr-only">
         {copied ? 'Copied' : ''}

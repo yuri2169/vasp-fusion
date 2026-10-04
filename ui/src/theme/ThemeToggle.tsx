@@ -1,32 +1,44 @@
-import { Monitor, Moon, Sun } from 'lucide-react'
+import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
+import { cx } from '../lib/cx'
 import { getThemePref, setThemePref, type ThemePref } from './theme'
 
-const ORDER: ThemePref[] = ['system', 'light', 'dark']
-const LOOK = {
-  system: { Icon: Monitor, name: 'Device theme' },
-  light: { Icon: Sun, name: 'Light theme' },
-  dark: { Icon: Moon, name: 'Dark theme' },
-}
+const OPTIONS: { key: ThemePref; name: string; Icon: LucideIcon }[] = [
+  { key: 'light', name: 'Light theme', Icon: Sun },
+  { key: 'system', name: 'Device theme', Icon: Monitor },
+  { key: 'dark', name: 'Dark theme', Icon: Moon },
+]
 
-/** One button that steps through device → light → dark. It says which is on, and what a click does. */
-export function ThemeToggle({ className, showLabel = true }: { className?: string; showLabel?: boolean }) {
+/** Three states, not two. "Device" is a real state, so an officer who has overridden the
+ *  device's theme can go back to following it. The choice is kept by theme.ts and applied
+ *  before first paint by index.html. */
+export function ThemeToggle({ className }: { className?: string }) {
   const [pref, setPref] = useState<ThemePref>(getThemePref)
-  const next = ORDER[(ORDER.indexOf(pref) + 1) % ORDER.length]
-  const { Icon, name } = LOOK[pref]
   return (
-    <button
-      type="button"
-      title={`${name}. Switch to ${LOOK[next].name.toLowerCase()}`}
-      aria-label={`${name}. Switch to ${LOOK[next].name.toLowerCase()}`}
-      onClick={() => {
-        setThemePref(next)
-        setPref(next)
-      }}
-      className={className}
-    >
-      <Icon size={16} aria-hidden className="shrink-0" />
-      {showLabel && <span className="truncate">{name}</span>}
-    </button>
+    <div role="radiogroup" aria-label="Colour theme" className={cx('flex shrink-0 items-center border border-rule', className)}>
+      {OPTIONS.map(({ key, name, Icon }) => {
+        const on = pref === key
+        return (
+          <button
+            key={key}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            aria-label={name}
+            title={name}
+            onClick={() => {
+              setThemePref(key)
+              setPref(key)
+            }}
+            className={cx(
+              'inline-flex h-7 w-7 items-center justify-center transition-colors duration-150',
+              on ? 'bg-surface-3 text-ink' : 'text-ink-dim hover:text-ink-soft',
+            )}
+          >
+            <Icon size={14} strokeWidth={1.6} aria-hidden />
+          </button>
+        )
+      })}
+    </div>
   )
 }

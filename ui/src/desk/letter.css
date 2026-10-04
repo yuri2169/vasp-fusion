@@ -1,7 +1,7 @@
 /* The request letter: an A4 sheet on screen, and a clean PDF from the browser's print.
  *
  * Paper is paper: the sheet is white with ink text in both themes. It sets the role
- * tokens back to their light values (src/styles/tokens.css, the light block), so
+ * tokens to the light palette's values (src/styles/tokens.css, the light block), so
  * everything drawn on it follows.
  *
  * The page footer (reference, page n of N) and the draft banner are @page margin boxes;
@@ -10,14 +10,15 @@
 .sheet {
   color-scheme: light;
   --surface: #ffffff;
-  --surface-sunk: #ece9f1;
-  --rule: #dad6e1;
-  --rule-strong: #8a8296;
-  --fg: var(--ink);
-  --fg-muted: var(--slate);
-  --focus: var(--ink);
-  --seal-text: #b3261e;
-  --seal-wash: #fbe9e7;
+  --surface-sunk: #f3f5f7;
+  --rule: #c3ccd4;
+  --rule-strong: #56646f;
+  --fg: #0e1c27;
+  --fg-muted: #4a5b69;
+  --focus: #0e1c27;
+  --seal: #a2453b;
+  --seal-text: #a2453b;
+  --seal-wash: #fbf0ee;
 
   position: relative;
   width: 100%;

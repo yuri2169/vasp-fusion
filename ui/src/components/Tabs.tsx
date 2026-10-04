@@ -8,8 +8,9 @@ export interface TabItem {
   count?: number
 }
 
-/** The index tabs of a file: one tab stop, arrow keys move along them (and open the tab
- *  they land on), Home and End jump to the ends. The open tab joins the sheet under it. */
+/** The records of a file: one tab stop, arrow keys move along them (and open the tab
+ *  they land on), Home and End jump to the ends. The open tab is underlined in ink, as the
+ *  header's current place is. */
 export function Tabs({
   label,
   tabs,
@@ -45,7 +46,7 @@ export function Tabs({
   const open = tabs[index]
   return (
     <div>
-      <div ref={list} role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto px-px pt-px">
+      <div ref={list} role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex gap-0.5 overflow-x-auto border-b border-rule">
         {tabs.map((tab) => {
           const selected = tab.id === open.id
           return (
@@ -59,14 +60,14 @@ export function Tabs({
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(tab.id)}
               className={cx(
-                'relative -mb-px inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-t border border-b-0 px-3.5 text-sm font-medium',
-                selected ? 'z-[1] border-rule bg-surface text-fg' : 'border-transparent text-muted hover:bg-sunk hover:text-fg',
+                '-mb-px inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-base transition-colors duration-150',
+                selected ? 'border-ink font-semibold text-ink' : 'border-transparent text-ink-dim hover:text-ink-soft',
               )}
             >
               {tab.label}
               {tab.count != null && ' '}
               {tab.count != null && (
-                <span className={cx('tabular rounded-sm px-1 font-mono text-xs', selected ? 'bg-sunk text-fg' : 'text-muted')}>{tab.count}</span>
+                <span className={cx('tabular font-mono text-2xs', selected ? 'text-ink-soft' : 'text-ink-dim')}>{tab.count}</span>
               )}
             </button>
           )
@@ -77,7 +78,7 @@ export function Tabs({
         id={`${base}-panel-${open.id}`}
         aria-labelledby={`${base}-tab-${open.id}`}
         tabIndex={0}
-        className={cx('rounded-md border border-rule bg-surface p-5', index === 0 && 'rounded-tl-none')}
+        className="panel border-t-0 p-4"
       >
         {children}
       </div>

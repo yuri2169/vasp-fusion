@@ -20,11 +20,11 @@ type Kind = 'alert' | 'pattern' | 'note' | 'lead'
 
 /** Severity in a word, an icon and a colour: never colour alone. */
 const KINDS: Record<Kind, { word: string; Icon: LucideIcon; box: string; accent: string }> = {
-  alert: { word: 'Alert', Icon: ShieldAlert, box: 'border-seal-text bg-seal-wash', accent: 'text-seal-text' },
-  pattern: { word: 'Pattern', Icon: TriangleAlert, box: 'border-rule-strong bg-surface', accent: 'text-fg' },
-  note: { word: 'Note', Icon: Info, box: 'border-rule bg-surface', accent: 'text-muted' },
+  alert: { word: 'Alert', Icon: ShieldAlert, box: 'border-danger bg-danger-wash', accent: 'text-danger' },
+  pattern: { word: 'Pattern', Icon: TriangleAlert, box: 'border-ink bg-surface-2', accent: 'text-ink' },
+  note: { word: 'Note', Icon: Info, box: 'border-rule bg-surface-2', accent: 'text-ink-soft' },
   // A lead from the deposit-address model: something to look into, never part of the answer.
-  lead: { word: 'Lead', Icon: Lightbulb, box: 'border-dashed border-verified-text bg-surface', accent: 'text-verified-text' },
+  lead: { word: 'Lead', Icon: Lightbulb, box: 'border-dashed border-network bg-network-wash', accent: 'text-network' },
 }
 
 const kindOf = (flag: Flag): Kind =>
@@ -36,15 +36,15 @@ export function TypologyFlag({ flag, compact = false }: { flag: Flag; compact?: 
   const head = (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
       <Icon size={14} aria-hidden className={cx('shrink-0', accent)} />
-      <span className={cx('text-xs font-medium uppercase tracking-wide', accent)}>{word}</span>
-      <span className="text-sm font-semibold text-fg">{TYPOLOGY_NAMES[flag.code]}</span>
+      <span className={cx('text-2xs font-semibold uppercase tracking-[0.075em]', accent)}>{word}</span>
+      <span className="text-base font-semibold text-fg">{TYPOLOGY_NAMES[flag.code]}</span>
     </span>
   )
-  if (compact) return <span className={cx('inline-flex h-7 items-center rounded border px-2', box)}>{head}</span>
+  if (compact) return <span className={cx('inline-flex h-6 items-center border-l-2 px-2', box)}>{head}</span>
   return (
-    <div className={cx('flex flex-col gap-1.5 rounded border px-3 py-2.5', box)}>
+    <div className={cx('flex flex-col gap-1 border-l-2 px-3 py-2', box)}>
       {head}
-      <p className="text-sm text-fg">{flag.text}</p>
+      <p className="text-base text-fg">{flag.text}</p>
     </div>
   )
 }

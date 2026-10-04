@@ -17,8 +17,10 @@ const typingInField = (target: EventTarget | null) =>
 
 /** The way into every case: paste any wallet address. The chain is named while the officer
  *  is still typing, a typo is caught before any trace, and Enter opens the case.
- *  "/" puts the cursor here from anywhere; Escape clears it. */
-export function GlobalSearch() {
+ *  "/" puts the cursor here from anywhere; Escape clears it.
+ *  `bar` is the compact one in the header; `hero` is the landing's own, the largest control on it. */
+export function GlobalSearch({ variant = 'bar' }: { variant?: 'bar' | 'hero' }) {
+  const hero = variant === 'hero'
   const [value, setValue] = useState('')
   const [evmChain, setEvmChain] = useState<Chain>('ethereum')
   const [failure, setFailure] = useState<string | null>(null)
@@ -81,18 +83,38 @@ export function GlobalSearch() {
         : null
 
   return (
-    <form role="search" onSubmit={submit} className="relative flex min-w-0 flex-1 items-center gap-2">
+    <form role="search" onSubmit={submit} className={cx('relative flex min-w-0 items-center gap-2', hero ? 'w-full' : 'flex-1 justify-end')}>
       <label htmlFor={SEARCH_INPUT_ID} className="sr-only">
         Wallet address
       </label>
       <div
         className={cx(
-          'flex h-10 min-w-0 max-w-[720px] flex-1 items-center gap-2 rounded border bg-surface pl-3 pr-2',
-          'focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus',
-          seen.state === 'invalid' || failure ? 'border-seal-text' : 'border-rule-strong',
+          'relative flex min-w-0 flex-1 items-center gap-2 border bg-surface pl-3 pr-2 transition-colors duration-150',
+          'focus-within:outline focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-focus',
+          hero ? 'h-12' : 'h-8 max-w-[440px]',
+          seen.state === 'invalid' || failure ? 'border-danger' : hero ? 'border-ink' : 'border-rule hover:border-ink',
         )}
       >
-        <Search size={16} aria-hidden className="shrink-0 text-muted" />
+        {/* Registration marks, as on a plate: the landing's box is the instrument's intake. */}
+        {hero &&
+          (['tl', 'tr', 'bl', 'br'] as const).map((c) => (
+            <span
+              key={c}
+              aria-hidden
+              className="pointer-events-none absolute h-2.5 w-2.5 border-ink"
+              style={{
+                top: c[0] === 't' ? -1 : undefined,
+                bottom: c[0] === 'b' ? -1 : undefined,
+                left: c[1] === 'l' ? -1 : undefined,
+                right: c[1] === 'r' ? -1 : undefined,
+                borderTopWidth: c[0] === 't' ? 2 : 0,
+                borderBottomWidth: c[0] === 'b' ? 2 : 0,
+                borderLeftWidth: c[1] === 'l' ? 2 : 0,
+                borderRightWidth: c[1] === 'r' ? 2 : 0,
+              }}
+            />
+          ))}
+        <Search size={hero ? 16 : 14} aria-hidden className="shrink-0 text-ink-dim" />
         <input
           ref={inputRef}
           id={SEARCH_INPUT_ID}
@@ -105,9 +127,13 @@ export function GlobalSearch() {
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
+          autoFocus={hero}
           aria-invalid={seen.state === 'invalid' || undefined}
           aria-describedby={hint ? hintId : undefined}
-          className="h-full min-w-0 flex-1 bg-transparent font-mono text-sm text-fg outline-none placeholder:font-sans placeholder:text-muted [&::-webkit-search-cancel-button]:hidden"
+          className={cx(
+            'h-full min-w-0 flex-1 bg-transparent font-mono text-ink outline-none placeholder:font-sans placeholder:text-ink-dim [&::-webkit-search-cancel-button]:hidden',
+            hero ? 'text-md' : 'text-sm',
+          )}
         />
         {seen.state === 'typing' && seen.guess && <ChainBadge chain={seen.guess} tentative />}
         {seen.state === 'invalid' && seen.guess && <ChainBadge chain={seen.guess} tentative />}
@@ -117,7 +143,7 @@ export function GlobalSearch() {
             aria-label="Chain"
             value={evmChain}
             onChange={(e) => setEvmChain(e.target.value as Chain)}
-            className="h-6 shrink-0 rounded-sm border border-rule-strong bg-surface px-1 font-mono text-xs font-medium text-fg"
+            className="h-6 shrink-0 border border-rule bg-surface px-1 text-sm font-medium text-ink"
           >
             {EVM_TRACEABLE.map((c) => (
               <option key={c} value={c}>
@@ -127,21 +153,29 @@ export function GlobalSearch() {
           </select>
         )}
         {seen.state === 'empty' && (
-          <kbd aria-hidden className="hidden h-5 shrink-0 items-center rounded-sm border border-rule px-1.5 font-mono text-xs text-muted sm:inline-flex">
+          <kbd aria-hidden className="hidden h-5 shrink-0 items-center border border-rule px-1.5 font-mono text-2xs text-ink-dim sm:inline-flex">
             /
           </kbd>
         )}
       </div>
-      <Button type="submit" disabled={!canTrace} icon={<CornerDownLeft size={14} aria-hidden />}>
-        {openCase.isPending ? 'Opening…' : 'Trace wallet'}
+      <Button
+        type="submit"
+        variant={hero ? 'primary' : 'secondary'}
+        disabled={!canTrace}
+        className={hero ? 'h-12 px-4 text-md' : 'w-8 px-0'}
+        title={hero ? undefined : 'Trace wallet'}
+        icon={<CornerDownLeft size={14} aria-hidden />}
+      >
+        <span className={hero ? undefined : 'sr-only'}>{openCase.isPending ? 'Opening…' : 'Trace wallet'}</span>
       </Button>
       {hint && (
         <p
           id={hintId}
           role={hint.tone === 'error' ? 'alert' : 'status'}
           className={cx(
-            'absolute left-0 top-full z-30 mt-1.5 max-w-[720px] rounded border bg-surface px-3 py-2 text-sm text-fg shadow-md',
-            hint.tone === 'error' ? 'border-seal-text' : 'border-rule-strong',
+            'absolute top-full z-30 mt-1.5 max-w-[720px] border bg-surface px-3 py-2 text-base text-ink',
+            hero ? 'left-0' : 'right-0',
+            hint.tone === 'error' ? 'border-danger' : 'border-ink',
           )}
         >
           {hint.text}

@@ -15,15 +15,15 @@ export function AbstainPanel({ c, onSelect, className }: { c: CaseDetail; onSele
   return (
     <section
       aria-labelledby="answer-title"
-      className={cx('flex flex-col gap-6 rounded-md border border-dashed border-rule-strong bg-surface p-5', className)}
+      className={cx('flex flex-col gap-6 border border-dashed border-ink bg-surface p-4', className)}
     >
       <div className="flex flex-col gap-3">
         <p className="eyebrow">Insufficient evidence</p>
-        <h2 id="answer-title" className="display text-lg text-fg">
+        <h2 id="answer-title" className="title text-lg text-fg">
           No exchange is named
         </h2>
-        {c.abstain_reason && <p className="text-base text-fg [overflow-wrap:anywhere]">{c.abstain_reason}</p>}
-        <p className="text-xs text-muted">
+        {c.abstain_reason && <p className="text-md text-fg [overflow-wrap:anywhere]">{c.abstain_reason}</p>}
+        <p className="text-sm text-muted">
           The tool names an exchange only when the evidence clears the bar. This is a result to act on, not a failed trace.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function AbstainPanel({ c, onSelect, className }: { c: CaseDetail; onSele
 
       {c.narrative && (
         <Section title="Summary">
-          <p className="text-base text-fg [overflow-wrap:anywhere]">{c.narrative}</p>
+          <p className="text-md text-fg [overflow-wrap:anywhere]">{c.narrative}</p>
         </Section>
       )}
     </section>

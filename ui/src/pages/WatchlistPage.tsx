@@ -55,7 +55,7 @@ const CHANGE_ICON: Record<WatchChange['kind'], LucideIcon> = {
 function StateTag({ state }: { state: WatchState }) {
   const s = STATES[state]
   return (
-    <span className={cx('inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-sm border px-1.5 text-xs font-semibold', s.look)}>
+    <span className={cx('inline-flex h-6 items-center gap-1.5 whitespace-nowrap rounded-sm border px-1.5 text-sm font-semibold', s.look)}>
       <s.Icon size={13} aria-hidden className={state === 'checking' ? 'motion-safe:animate-spin' : undefined} />
       {s.words}
     </span>
@@ -76,7 +76,7 @@ function Row({ item }: { item: WatchItem }) {
   const busy = item.state === 'checking' || check.isPending
 
   return (
-    <li className={cx('flex flex-col gap-3 rounded-md border bg-surface p-4', item.state === 'changed' ? 'border-rule-strong' : 'border-rule')}>
+    <li className={cx('flex flex-col gap-3 border bg-surface p-4', item.state === 'changed' ? 'border-ink' : 'border-rule')}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <ChainBadge chain={item.chain} size="sm" />
@@ -131,14 +131,14 @@ function Row({ item }: { item: WatchItem }) {
         </div>
       </div>
 
-      {item.note && <p className="text-sm text-fg">{item.note}</p>}
+      {item.note && <p className="text-base text-fg">{item.note}</p>}
 
       {item.changes.length > 0 && (
         <ul aria-label="What is new" className="flex flex-col gap-1.5 border-t border-rule pt-3">
           {item.changes.map((c, i) => {
             const Icon = CHANGE_ICON[c.kind]
             return (
-              <li key={i} className={cx('flex gap-2 text-sm', c.severity === 'high' ? 'font-medium text-seal-text' : 'text-fg')}>
+              <li key={i} className={cx('flex gap-2 text-base', c.severity === 'high' ? 'font-medium text-seal-text' : 'text-fg')}>
                 <Icon size={15} aria-hidden className="mt-0.5 shrink-0" />
                 <span className="min-w-0 [overflow-wrap:anywhere]">{c.text}</span>
               </li>
@@ -146,12 +146,12 @@ function Row({ item }: { item: WatchItem }) {
           })}
         </ul>
       )}
-      {item.state === 'failed' && item.error && <p className="text-sm text-seal-text [overflow-wrap:anywhere]">{item.error}</p>}
+      {item.state === 'failed' && item.error && <p className="text-base text-seal-text [overflow-wrap:anywhere]">{item.error}</p>}
       {item.state === 'not_traced' && (
-        <p className="text-sm text-muted">This wallet has no trace to compare with. "Check now" traces it; that first result becomes what later checks are compared with.</p>
+        <p className="text-base text-muted">This wallet has no trace to compare with. "Check now" traces it; that first result becomes what later checks are compared with.</p>
       )}
 
-      <p className="tabular flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+      <p className="tabular flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
         <span>
           Watched since {formatDateTime(item.added_at)}
           {item.added_by ? ` by ${item.added_by}` : ''}
@@ -181,7 +181,7 @@ function AddForm() {
   const chain = seen.state === 'valid' ? (isEvm ? evmChain : seen.chain) : null
   const whyNot = chain && !CHAINS[chain].traceable ? CHAINS[chain].whyNot : null
   const hint = error ?? (seen.state === 'invalid' ? seen.reason : whyNot)
-  const field = 'h-9 rounded border border-rule-strong bg-surface px-2.5 text-sm text-fg'
+  const field = 'h-9 rounded border border-rule-strong bg-surface px-2.5 text-base text-fg'
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -201,7 +201,7 @@ function AddForm() {
   }
 
   return (
-    <form onSubmit={submit} aria-label="Watch a wallet" className="mb-6 flex flex-col gap-2 rounded-md border border-rule bg-surface p-4">
+    <form onSubmit={submit} aria-label="Watch a wallet" className="mb-6 flex flex-col gap-2 panel p-4">
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex min-w-[20rem] flex-1 flex-col gap-1">
           <span className="eyebrow">Wallet address</span>
@@ -244,7 +244,7 @@ function AddForm() {
         </Button>
       </div>
       {hint && (
-        <p id={hintId} role={error ? 'alert' : undefined} className="text-sm text-seal-text">
+        <p id={hintId} role={error ? 'alert' : undefined} className="text-base text-seal-text">
           {hint}
         </p>
       )}

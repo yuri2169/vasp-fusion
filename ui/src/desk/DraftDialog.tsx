@@ -150,7 +150,7 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
                 <input type="checkbox" className={box} checked={chosen.has(g.caseId)} onChange={() => setPicked(toggle(chosen, g.caseId))} />
                 <span className="min-w-0">
                   <span className="font-medium">{refOf(g.caseId)}</span>
-                  <span className="tabular block font-mono text-xs text-muted">
+                  <span className="tabular block font-mono text-sm text-muted">
                     {g.wallets.length} {g.wallets.length === 1 ? 'wallet' : 'wallets'}
                     {g.usd != null && ` · ${formatUsd(g.usd)}`}
                   </span>
@@ -166,7 +166,7 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
                 <input type="checkbox" className={box} checked={asks.has(ask)} onChange={() => setAsks(toggle(asks, ask))} />
                 <span>
                   {ASK_WORDS[ask]}
-                  {ask === 'freeze' && <span className="block text-xs text-muted">Adds Section 106 BNSS to the legal basis.</span>}
+                  {ask === 'freeze' && <span className="block text-sm text-muted">Adds Section 106 BNSS to the legal basis.</span>}
                 </span>
               </label>
             ))}
@@ -182,9 +182,9 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
               onChange={(e) => setOfficer(e.target.value)}
               placeholder="Rank, name, police station"
               autoComplete="off"
-              className="h-9 rounded border border-rule-strong bg-surface px-2.5 text-sm text-fg placeholder:text-muted"
+              className="h-9 rounded border border-rule-strong bg-surface px-2.5 text-base text-fg placeholder:text-muted"
             />
-            <span className="text-xs text-muted">Printed under the signature line. Latin letters only: the letter's PDF cannot print other scripts.</span>
+            <span className="text-sm text-muted">Printed under the signature line. Latin letters only: the letter's PDF cannot print other scripts.</span>
           </div>
 
           {draft.isError && (

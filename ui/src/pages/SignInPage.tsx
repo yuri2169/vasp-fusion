@@ -4,7 +4,7 @@ import { useSignIn } from '../api/queries'
 import { Button } from '../components/Button'
 
 const field =
-  'h-10 w-full rounded border border-rule-strong bg-surface px-3 text-sm text-fg placeholder:text-muted'
+  'h-10 w-full rounded border border-rule-strong bg-surface px-3 text-base text-fg placeholder:text-muted'
 
 /** Shown when the server requires a login and nobody is signed in (GET /api/auth/me).
  *  The session is a cookie the server sets; nothing is kept in the page. */
@@ -30,11 +30,11 @@ export function SignInPage() {
     <main className="flex min-h-screen items-center justify-center bg-page px-5 text-fg">
       <form onSubmit={submit} className="flex w-full max-w-[360px] flex-col gap-4">
         <div>
-          <h1 className="display text-xl">Sign in to VASP-FUSION</h1>
-          <p className="mt-1.5 text-sm text-muted">Every case opened and every request sent is logged under your name.</p>
+          <h1 className="display">Sign in to VASP-FUSION</h1>
+          <p className="mt-1.5 text-base text-muted">Every case opened and every request sent is logged under your name.</p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={userId} className="text-sm font-medium">
+          <label htmlFor={userId} className="text-base font-medium">
             User name
           </label>
           <input
@@ -49,7 +49,7 @@ export function SignInPage() {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={passId} className="text-sm font-medium">
+          <label htmlFor={passId} className="text-base font-medium">
             Password
           </label>
           <input
@@ -63,7 +63,7 @@ export function SignInPage() {
           />
         </div>
         {refused && (
-          <p role="alert" className="rounded border border-seal-text bg-seal-wash px-3 py-2 text-sm text-fg">
+          <p role="alert" className="rounded border border-seal-text bg-seal-wash px-3 py-2 text-base text-fg">
             {refused}
           </p>
         )}

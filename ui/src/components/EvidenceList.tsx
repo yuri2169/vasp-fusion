@@ -35,9 +35,9 @@ export function EvidenceList({ items, chain, className }: { items: EvidenceItem[
         return (
           <li
             key={item.kind + i}
-            className={cx('flex gap-2.5 border-t border-rule py-2.5 first:border-t-0 first:pt-0 last:pb-0', reason && 'border-t-0 py-1.5 pl-6')}
+            className={cx('flex gap-2.5 border-t border-rule-soft py-2 first:border-t-0 first:pt-0 last:pb-0', reason && 'border-t-0 py-1.5 pl-6')}
           >
-            {!reason && <Icon size={14} aria-hidden className="mt-0.5 shrink-0 text-muted" />}
+            {!reason && <Icon size={13} aria-hidden className="mt-0.5 shrink-0 text-ink-dim" />}
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               {!reason && (
                 <div className="flex flex-wrap items-center gap-2">
@@ -45,18 +45,18 @@ export function EvidenceList({ items, chain, className }: { items: EvidenceItem[
                   {item.tier && <TierTag tier={item.tier} size="sm" />}
                 </div>
               )}
-              <p className="break-words text-sm text-fg">{item.text}</p>
+              <p className="break-words text-base text-fg">{item.text}</p>
               {reason && (
                 <div className="flex items-center gap-2" title="SHAP value in log-odds: above 0 speaks for a deposit address, below 0 against">
-                  <span className="h-1.5 w-24 shrink-0 rounded-sm bg-sunk">
+                  <span className="h-1.5 w-24 shrink-0 bg-surface-3">
                     <span
                       data-testid="reason-bar"
                       data-sign={item.weight! < 0 ? 'against' : 'for'}
                       style={{ width: `${strongest > 0 ? Math.round((Math.abs(item.weight!) / strongest) * 100) : 0}%` }}
-                      className={cx('block h-full rounded-sm', item.weight! < 0 ? 'hatch' : 'bg-fg')}
+                      className={cx('anim-bar block h-full', item.weight! < 0 ? 'hatch' : 'bg-fusion')}
                     />
                   </span>
-                  <span className="tabular font-mono text-xs text-muted">{signed(item.weight!)}</span>
+                  <span className="tabular font-mono text-sm text-muted">{signed(item.weight!)}</span>
                 </div>
               )}
               {item.tx_hashes.length > 0 && (

@@ -96,7 +96,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
               />
               <span>
                 <span className="font-medium">{REPLY_WORDS[option]!.name}</span>
-                <span className="block text-xs text-muted">{REPLY_WORDS[option]!.means}</span>
+                <span className="block text-sm text-muted">{REPLY_WORDS[option]!.means}</span>
               </span>
             </label>
           ))}
@@ -170,7 +170,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
                 rows={2}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="rounded border border-rule-strong bg-surface px-2.5 py-1.5 text-sm text-fg"
+                className="rounded border border-rule-strong bg-surface px-2.5 py-1.5 text-base text-fg"
               />
             </div>
             {move.isError && (

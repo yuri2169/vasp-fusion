@@ -31,7 +31,7 @@ function rupees(text: string): number | null {
 
 const inputClass = (invalid?: boolean) =>
   cx(
-    'h-10 w-full min-w-0 rounded border bg-surface px-3 text-sm text-fg placeholder:text-muted',
+    'h-10 w-full min-w-0 rounded border bg-surface px-3 text-base text-fg placeholder:text-muted',
     invalid ? 'border-seal-text' : 'border-rule-strong',
   )
 
@@ -56,10 +56,10 @@ function Field({
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <div className="flex items-baseline justify-between gap-2">
-        <label htmlFor={id} className="text-sm font-medium text-fg">
+        <label htmlFor={id} className="text-base font-medium text-fg">
           {label}
         </label>
-        {optional && <span className="text-xs text-muted">optional</span>}
+        {optional && <span className="text-sm text-muted">optional</span>}
       </div>
       <div className="relative flex items-center">
         <input
@@ -73,7 +73,7 @@ function Field({
         {children}
       </div>
       {(error || hint) && (
-        <p id={noteId} className={cx('text-xs', error ? 'font-medium text-seal-text' : 'text-muted')}>
+        <p id={noteId} className={cx('text-sm', error ? 'font-medium text-seal-text' : 'text-muted')}>
           {error || hint}
         </p>
       )}
@@ -97,12 +97,12 @@ function DemoCases({ onPick, picked }: { onPick: (c: CaseSummary) => void; picke
   return (
     <section aria-label="Recorded demo cases" className="flex flex-col gap-3">
       <h2 className="eyebrow">Recorded demo cases</h2>
-      <p className="max-w-prose text-sm text-muted">
+      <p className="max-w-prose text-base text-muted">
         Real wallets, traced and stored, to see what a case looks like. Picking one fills in its address; nothing here alleges anything about its owner.
       </p>
       {cases.isPending && <Skeleton lines={3} />}
-      {cases.isError && <p className="text-sm text-fg">{cases.error instanceof ApiError ? cases.error.detail : 'The demo cases could not be loaded.'}</p>}
-      {cases.data && demos.length === 0 && <p className="text-sm text-fg">No recorded demo case is on file here. Paste any wallet address above to trace it.</p>}
+      {cases.isError && <p className="text-base text-fg">{cases.error instanceof ApiError ? cases.error.detail : 'The demo cases could not be loaded.'}</p>}
+      {cases.data && demos.length === 0 && <p className="text-base text-fg">No recorded demo case is on file here. Paste any wallet address above to trace it.</p>}
       <ul className="flex max-h-[520px] flex-col gap-2 overflow-y-auto pr-1">
         {demos.map((c) => (
           <li key={c.id}>
@@ -115,9 +115,9 @@ function DemoCases({ onPick, picked }: { onPick: (c: CaseSummary) => void; picke
                 picked === c.address ? 'border-fg' : 'border-rule',
               )}
             >
-              <span className="text-sm font-medium text-fg">{c.case_ref ?? c.id}</span>
+              <span className="text-base font-medium text-fg">{c.case_ref ?? c.id}</span>
               <ChainBadge chain={c.chain} size="sm" />
-              <span className="font-mono text-xs text-fg">{truncateMiddle(c.address)}</span>
+              <span className="font-mono text-sm text-fg">{truncateMiddle(c.address)}</span>
               <span className="ml-auto">
                 <OutcomeStamp outcome={c.outcome ?? null} status={c.status} vasp={c.top_vasp} />
               </span>
@@ -186,7 +186,7 @@ export function NewCasePage() {
       <PageHeader title="Open a case">One case per wallet. The trace follows the money from it to the nearest exchange, and says so when it cannot name one.</PageHeader>
 
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,600px)_minmax(0,1fr)]">
-        <form aria-label="Open a case" onSubmit={submit} noValidate className="rounded-md border border-rule bg-surface">
+        <form aria-label="Open a case" onSubmit={submit} noValidate className="panel">
           <Group title="The wallet">
             <Field
               label="Wallet address"
@@ -213,7 +213,7 @@ export function NewCasePage() {
                     aria-label="Chain"
                     value={evmChain}
                     onChange={(e) => setEvmChain(e.target.value as Chain)}
-                    className="h-6 rounded-sm border border-rule-strong bg-surface px-1 font-mono text-xs font-medium text-fg"
+                    className="h-6 rounded-sm border border-rule-strong bg-surface px-1 font-mono text-sm font-medium text-fg"
                   >
                     {EVM_TRACEABLE.map((c) => (
                       <option key={c} value={c}>
@@ -247,7 +247,7 @@ export function NewCasePage() {
                 error={amountError}
                 hint="In rupees, as the complainant reported it."
               >
-                <span aria-hidden className="pointer-events-none absolute left-3 text-sm text-muted">
+                <span aria-hidden className="pointer-events-none absolute left-3 text-base text-muted">
                   ₹
                 </span>
               </Field>
@@ -266,17 +266,17 @@ export function NewCasePage() {
 
           <Group title="The trace">
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-fg">How many hops to follow the money</span>
+              <span className="text-base font-medium text-fg">How many hops to follow the money</span>
               <HopLimit value={hops} onChange={setHops} name="max-hops" />
-              <p className="text-xs text-muted">
+              <p className="text-sm text-muted">
                 Three is usual. Each further hop reads more wallets and takes longer; a branch always ends at the first labelled wallet.
               </p>
             </div>
-            <label className="flex items-start gap-2 text-sm text-fg">
+            <label className="flex items-start gap-2 text-base text-fg">
               <input type="checkbox" checked={refresh} onChange={(e) => setRefresh(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--fg)]" />
               <span>
                 Trace again if this wallet already has a case
-                <span className="block text-xs text-muted">Otherwise its stored result opens as it was last traced.</span>
+                <span className="block text-sm text-muted">Otherwise its stored result opens as it was last traced.</span>
               </span>
             </label>
           </Group>
@@ -286,7 +286,7 @@ export function NewCasePage() {
               {openCase.isPending ? 'Opening…' : 'Trace wallet'}
             </Button>
             {openCase.isError && (
-              <p role="alert" className="min-w-0 flex-1 text-sm font-medium text-seal-text">
+              <p role="alert" className="min-w-0 flex-1 text-base font-medium text-seal-text">
                 {openCase.error instanceof ApiError ? openCase.error.detail : 'The case could not be opened. Try again.'}
               </p>
             )}

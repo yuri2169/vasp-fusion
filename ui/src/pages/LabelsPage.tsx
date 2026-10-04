@@ -26,7 +26,7 @@ const KIND_WORDS: Record<LabelOut['kind'], string> = {
 }
 const CHAINS_SHOWN = 10
 
-const field = 'h-9 rounded border border-rule-strong bg-surface px-2.5 text-sm text-fg'
+const field = 'h-9 rounded border border-rule-strong bg-surface px-2.5 text-base text-fg'
 
 const columns: Column<LabelOut>[] = [
   {
@@ -41,8 +41,8 @@ const columns: Column<LabelOut>[] = [
       ) : (
         // A chain the tool cannot trace: the label is held, but there is no wallet page for it.
         <span className="flex items-center gap-2">
-          <span className="rounded-sm border border-rule-strong px-1 text-xs uppercase text-muted">{chainName(l.chain)}</span>
-          <span className="font-mono text-xs [overflow-wrap:anywhere]" title={l.address}>
+          <span className="rounded-sm border border-rule-strong px-1 text-sm uppercase text-muted">{chainName(l.chain)}</span>
+          <span className="font-mono text-sm [overflow-wrap:anywhere]" title={l.address}>
             {l.address.length > 20 ? `${l.address.slice(0, 8)}…${l.address.slice(-6)}` : l.address}
           </span>
         </span>
@@ -63,12 +63,12 @@ const columns: Column<LabelOut>[] = [
   {
     key: 'category',
     header: 'Category',
-    cell: (l) => <span className="text-sm">{categoryName(l.category)}</span>,
+    cell: (l) => <span className="text-base">{categoryName(l.category)}</span>,
   },
   {
     key: 'kind',
     header: 'Kind of wallet',
-    cell: (l) => <span className={l.kind === 'unknown' ? 'text-sm text-muted' : 'text-sm'}>{KIND_WORDS[l.kind]}</span>,
+    cell: (l) => <span className={l.kind === 'unknown' ? 'text-base text-muted' : 'text-base'}>{KIND_WORDS[l.kind]}</span>,
   },
   {
     key: 'tier',
@@ -82,14 +82,14 @@ const columns: Column<LabelOut>[] = [
     cell: (l) =>
       l.confidence != null ? (
         <span
-          className="tabular whitespace-nowrap font-mono text-sm"
+          className="tabular whitespace-nowrap font-mono text-base"
           title={l.confidence_low != null ? 'Confirmed by the deposit-address model' : 'Set by the discovery rules, not calibrated'}
         >
-          {l.confidence_low == null && <span className="font-sans text-xs text-muted">rule </span>}
+          {l.confidence_low == null && <span className="font-sans text-sm text-muted">rule </span>}
           {formatConfidence(l.confidence)}
         </span>
       ) : (
-        <span className="text-xs text-muted" title="Only labels this tool derived carry a confidence; a sourced label is as good as its source.">
+        <span className="text-sm text-muted" title="Only labels this tool derived carry a confidence; a sourced label is as good as its source.">
           as its source
         </span>
       ),
@@ -103,12 +103,12 @@ const columns: Column<LabelOut>[] = [
           href={l.source_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm underline decoration-rule-strong underline-offset-2 [overflow-wrap:anywhere] hover:decoration-current"
+          className="text-base underline decoration-rule-strong underline-offset-2 [overflow-wrap:anywhere] hover:decoration-current"
         >
           {l.source}
         </a>
       ) : (
-        <span className="text-sm [overflow-wrap:anywhere]">{l.source}</span>
+        <span className="text-base [overflow-wrap:anywhere]">{l.source}</span>
       ),
   },
 ]
@@ -116,7 +116,7 @@ const columns: Column<LabelOut>[] = [
 function Sources({ sources }: { sources: LabelSource[] }) {
   return (
     <div className="overflow-auto rounded border border-rule">
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse text-base">
         <caption className="sr-only">Labels per source, with the licence on record</caption>
         <thead>
           <tr className="bg-sunk">
@@ -140,7 +140,7 @@ function Sources({ sources }: { sources: LabelSource[] }) {
                 )}
                 <span className="mt-1 flex flex-wrap gap-1.5">
                   {TIER_ORDER.filter((t) => s.tiers[t]).map((t) => (
-                    <span key={t} className="text-xs text-muted">
+                    <span key={t} className="text-sm text-muted">
                       {TIERS[t].name.toLowerCase()} {count(s.tiers[t])}
                     </span>
                   ))}
@@ -209,7 +209,7 @@ function CoveragePanels({ cov, pick }: { cov: LabelCoverage; pick: (key: string,
           }))}
         />
         {rest.length > 0 && (
-          <p className="px-1.5 text-xs text-muted">
+          <p className="px-1.5 text-sm text-muted">
             and {plural(rest.length, 'more chain')} with {count(rest.reduce((s, [, n]) => s + n, 0))} labels between them
           </p>
         )}
@@ -276,7 +276,7 @@ export function LabelsPage() {
       <form
         role="search"
         aria-label="Search the label store"
-        className="mb-4 flex flex-wrap items-end gap-3 rounded-md border border-rule bg-surface p-4"
+        className="mb-4 flex flex-wrap items-end gap-3 panel p-4"
         onSubmit={(e) => {
           e.preventDefault()
           set({
@@ -352,7 +352,7 @@ export function LabelsPage() {
               {found.data ? `${plural(total, 'label')} found` : 'Searching'}
             </h2>
             {total > PAGE && (
-              <div className="flex items-center gap-2 text-xs text-muted">
+              <div className="flex items-center gap-2 text-sm text-muted">
                 <span className="tabular">
                   {count(offset + 1)} to {count(Math.min(offset + PAGE, total))} of {count(total)}
                 </span>
@@ -393,13 +393,13 @@ export function LabelsPage() {
         />
       ) : cov ? (
         <>
-          <p className="mb-3 max-w-prose text-sm text-muted">
+          <p className="mb-3 max-w-prose text-base text-muted">
             <span className="tabular font-mono text-fg">{count(cov.total)}</span> labelled addresses. Every count below opens the labels behind it.
           </p>
           <CoveragePanels cov={cov} pick={pick} />
         </>
       ) : (
-        <p className="text-sm text-muted" aria-busy="true">
+        <p className="text-base text-muted" aria-busy="true">
           Counting the labels…
         </p>
       )}

@@ -64,23 +64,23 @@ export function DualMeter({
       >
         <div className="flex h-5 items-center justify-between gap-2">
           <span className="eyebrow">Proximity</span>
-          <span className="tabular font-mono text-xs text-muted">rank {proximityRank}</span>
+          <span className="tabular font-mono text-sm text-muted">rank {proximityRank}</span>
         </div>
         <div aria-hidden className="flex h-5 items-center">
-          <span className="h-2 w-2 shrink-0 rounded-full border-2 border-fg" />
+          <span className="h-2 w-2 shrink-0 border border-ink bg-surface" />
           {Array.from({ length: Math.max(MAX_HOPS, hops) }, (_, i) => (
             <span key={i} className="flex flex-1 items-center">
-              <span className={cx('h-0 flex-1 border-t-2', i < hops ? 'border-fg' : 'border-dashed border-rule')} />
+              <span className={cx('h-0 flex-1 border-t', i < hops ? 'border-fusion' : 'border-dashed border-rule')} />
               <span
                 className={cx(
                   'shrink-0',
-                  i === hops - 1 ? 'h-2.5 w-2.5 rounded-sm bg-fg' : i < hops ? 'h-1.5 w-1.5 rounded-full bg-fg' : 'h-1 w-1 rounded-full bg-rule',
+                  i === hops - 1 ? 'h-2.5 w-2.5 bg-fusion' : i < hops ? 'h-1.5 w-1.5 bg-fusion' : 'h-1 w-1 bg-rule',
                 )}
               />
             </span>
           ))}
         </div>
-        <div className="flex flex-wrap gap-x-2 text-xs text-fg">
+        <div className="flex flex-wrap gap-x-2 text-sm text-fg">
           {proximityFacts.map((fact, i) => (
             <span key={fact} className={cx('whitespace-nowrap', i > 0 && 'text-muted')}>
               {fact}
@@ -101,26 +101,26 @@ export function DualMeter({
       >
         <div className="flex h-5 items-center justify-between gap-2">
           <span className="eyebrow">{range ? 'Confidence' : 'Rule confidence'}</span>
-          <span className="tabular font-mono text-sm font-semibold text-fg">{formatConfidence(confidence)}</span>
+          <span className="tabular font-mono text-base font-semibold text-fg">{formatConfidence(confidence)}</span>
         </div>
         <div aria-hidden className="relative flex h-5 items-center">
-          <div className="relative h-2 w-full rounded-sm border border-rule-strong bg-sunk">
+          <div className="relative h-2 w-full bg-surface-3">
             {range && (
               <span
                 data-testid="confidence-range"
-                className="absolute inset-y-0 bg-fg opacity-25"
+                className="absolute inset-y-0 bg-fusion opacity-30"
                 style={{ left: pct(range[0]), width: `${Math.round((range[1] - range[0]) * 100)}%` }}
               />
             )}
             <span
               data-testid="confidence-fill"
-              className={cx('absolute inset-y-0 left-0', clears ? 'bg-fg' : 'hatch')}
+              className={cx('anim-bar absolute inset-y-0 left-0', clears ? 'bg-fusion' : 'hatch')}
               style={{ width: pct(confidence) }}
             />
           </div>
-          <span data-testid="confidence-bar-mark" className="absolute inset-y-0 w-0 border-l-2 border-fg" style={{ left: pct(bar) }} />
+          <span data-testid="confidence-bar-mark" className="absolute inset-y-0 w-0 border-l-2 border-ink" style={{ left: pct(bar) }} />
         </div>
-        <div className="flex flex-wrap justify-between gap-x-2 text-xs">
+        <div className="flex flex-wrap justify-between gap-x-2 text-sm">
           <span className={cx('whitespace-nowrap', clears ? 'text-fg' : 'font-medium text-fg')}>
             {clears ? `At or above the ${bar.toFixed(2)} bar` : `Under the ${bar.toFixed(2)} bar`}
           </span>

@@ -63,7 +63,7 @@ export function InboundTab({ c, onSelect }: { c: CaseDetail; onSelect: (address:
       header: 'Transfers',
       align: 'right',
       sortValue: (f) => f.transfers.length,
-      cell: (f) => <span className="tabular font-mono text-sm">{f.transfers.length}</span>,
+      cell: (f) => <span className="tabular font-mono text-base">{f.transfers.length}</span>,
     },
     { key: 'total', header: 'Paid in', align: 'right', sortValue: (f) => f.total, cell: (f) => <Amount value={f.total} asset={asset} /> },
     {
@@ -72,7 +72,7 @@ export function InboundTab({ c, onSelect }: { c: CaseDetail; onSelect: (address:
       align: 'right',
       sortValue: (f) => f.first,
       cell: (f) => (
-        <span className="tabular whitespace-nowrap font-mono text-xs text-muted">
+        <span className="tabular whitespace-nowrap font-mono text-sm text-muted">
           {formatDate(f.first)}
           {formatDate(f.last) !== formatDate(f.first) && ` to ${formatDate(f.last)}`}
         </span>
@@ -82,7 +82,7 @@ export function InboundTab({ c, onSelect }: { c: CaseDetail; onSelect: (address:
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-sm text-fg">
+      <p className="text-base text-fg">
         The wallet received <Amount value={received} asset={asset} /> in {plural(inbound.filter((e) => e.target === c.address).length, 'transfer')} from{' '}
         {plural(funders.length, 'wallet')}
       </p>
@@ -94,12 +94,12 @@ export function InboundTab({ c, onSelect }: { c: CaseDetail; onSelect: (address:
             {exchanges.map((x) => (
               <li key={x.vasp + x.deposit_address} className="flex flex-col gap-1.5 rounded border border-rule px-3 py-2.5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="display text-base text-fg">{x.vasp}</span>
+                  <span className="title text-md text-fg">{x.vasp}</span>
                   <TierTag tier={x.label_tier} size="sm" />
                   <AddressChip address={x.deposit_address} chain={c.chain} onSelect={() => onSelect(x.deposit_address)} />
                 </div>
                 {x.evidence.map((e, i) => (
-                  <p key={i} className="text-sm text-fg [overflow-wrap:anywhere]">
+                  <p key={i} className="text-base text-fg [overflow-wrap:anywhere]">
                     {e.text}
                   </p>
                 ))}

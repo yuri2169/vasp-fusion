@@ -15,7 +15,7 @@ import { AUDIT_ACTIONS, CHECK_NAMES, CHECK_RESULTS } from '../caseText'
 function Digest({ value, label }: { value: string; label: string }) {
   return (
     <span className="inline-flex max-w-full items-start gap-0.5">
-      <span className="break-all font-mono text-xs text-fg">{value}</span>
+      <span className="break-all font-mono text-sm text-fg">{value}</span>
       <CopyButton value={value} label={label} className="-mt-1 shrink-0" />
     </span>
   )
@@ -24,8 +24,8 @@ function Digest({ value, label }: { value: string; label: string }) {
 function Row({ name, children }: { name: string; children: ReactNode }) {
   return (
     <>
-      <dt className="pt-0.5 text-sm text-muted">{name}</dt>
-      <dd className="min-w-0 text-sm text-fg">{children}</dd>
+      <dt className="pt-0.5 text-base text-muted">{name}</dt>
+      <dd className="min-w-0 text-base text-fg">{children}</dd>
     </>
   )
 }
@@ -33,21 +33,21 @@ function Row({ name, children }: { name: string; children: ReactNode }) {
 const RESULT_ICONS = { same: CircleCheck, different: CircleSlash, not_checked: CircleDashed }
 
 const checkColumns: Column<VerifyCheck>[] = [
-  { key: 'name', header: 'Check', cell: (k) => <span className="whitespace-nowrap text-sm font-medium">{CHECK_NAMES[k.name]}</span> },
+  { key: 'name', header: 'Check', cell: (k) => <span className="whitespace-nowrap text-base font-medium">{CHECK_NAMES[k.name]}</span> },
   {
     key: 'result',
     header: 'Result',
     cell: (k) => {
       const Icon = RESULT_ICONS[k.result]
       return (
-        <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap text-sm', k.result === 'different' ? 'font-semibold text-fg' : 'text-fg')}>
+        <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap text-base', k.result === 'different' ? 'font-semibold text-fg' : 'text-fg')}>
           <Icon size={14} aria-hidden className={k.result === 'same' ? 'text-verified-text' : 'text-muted'} />
           {CHECK_RESULTS[k.result]}
         </span>
       )
     },
   },
-  { key: 'detail', header: 'What was found', cell: (k) => <span className="text-sm [overflow-wrap:anywhere]">{k.detail}</span> },
+  { key: 'detail', header: 'What was found', cell: (k) => <span className="text-base [overflow-wrap:anywhere]">{k.detail}</span> },
 ]
 
 function Verified({ result }: { result: VerifyResult }) {
@@ -60,8 +60,8 @@ function Verified({ result }: { result: VerifyResult }) {
       >
         <Icon size={16} aria-hidden className={cx('mt-0.5 shrink-0', result.matches ? 'text-verified-text' : 'text-seal-text')} />
         <div>
-          <p className="text-sm font-medium text-fg">{result.summary}</p>
-          <p className="tabular mt-0.5 font-mono text-xs text-muted">Checked {formatDateTime(result.checked_at)}</p>
+          <p className="text-base font-medium text-fg">{result.summary}</p>
+          <p className="tabular mt-0.5 font-mono text-sm text-muted">Checked {formatDateTime(result.checked_at)}</p>
         </div>
       </div>
       <DataTable caption="Checks" columns={checkColumns} rows={result.checks} rowKey={(k) => k.name} />
@@ -74,21 +74,21 @@ const auditColumns: Column<AuditEntry>[] = [
     key: 'at',
     header: 'When',
     sortValue: (r) => r.at,
-    cell: (r) => <span className="tabular whitespace-nowrap font-mono text-xs">{formatDateTime(r.at)}</span>,
+    cell: (r) => <span className="tabular whitespace-nowrap font-mono text-sm">{formatDateTime(r.at)}</span>,
   },
   {
     key: 'officer',
     header: 'Officer',
     sortValue: (r) => r.officer ?? null,
-    cell: (r) => (r.officer ? <span className="text-sm">{r.officer}</span> : <span className="text-sm text-muted">Not signed in</span>),
+    cell: (r) => (r.officer ? <span className="text-base">{r.officer}</span> : <span className="text-base text-muted">Not signed in</span>),
   },
-  { key: 'action', header: 'What', cell: (r) => <span className="text-sm">{AUDIT_ACTIONS[r.action] ?? r.action}</span> },
+  { key: 'action', header: 'What', cell: (r) => <span className="text-base">{AUDIT_ACTIONS[r.action] ?? r.action}</span> },
   {
     key: 'status',
     header: 'Answer',
     align: 'right',
     cell: (r) => (
-      <span className={cx('tabular whitespace-nowrap font-mono text-xs', r.status >= 400 ? 'font-semibold text-seal-text' : 'text-muted')}>
+      <span className={cx('tabular whitespace-nowrap font-mono text-sm', r.status >= 400 ? 'font-semibold text-seal-text' : 'text-muted')}>
         {r.status >= 400 ? `Refused (${r.status})` : `Done (${r.status})`}
       </span>
     ),
@@ -115,7 +115,7 @@ export function AuditTab({ c }: { c: CaseDetail }) {
                 Open the case file (PDF)
               </a>
             ) : (
-              <span className="text-xs text-muted">The case file (PDF) needs the live API.</span>
+              <span className="text-sm text-muted">The case file (PDF) needs the live API.</span>
             )}
             <Button size="sm" onClick={() => verify.mutate()} disabled={verify.isPending || !hasReceipt} icon={<ShieldCheck size={13} aria-hidden />}>
               {verify.isPending ? 'Verifying…' : 'Verify this case'}
@@ -124,27 +124,27 @@ export function AuditTab({ c }: { c: CaseDetail }) {
         </div>
 
         {!hasReceipt ? (
-          <p className="text-sm text-fg">This case was stored before receipts existed, so it cannot be verified. Trace it again to give it one.</p>
+          <p className="text-base text-fg">This case was stored before receipts existed, so it cannot be verified. Trace it again to give it one.</p>
         ) : (
           <>
-            <p className="max-w-prose text-sm text-muted">
+            <p className="max-w-prose text-base text-muted">
               Verifying traces the wallet again from the chain responses the first run read, and compares. The same responses, labels and code must give the
               same findings.
             </p>
             <dl className="grid grid-cols-[minmax(120px,auto)_1fr] gap-x-5 gap-y-2">
               <Row name="Findings fingerprint">
                 <Digest value={p.findings_sha256!} label="findings fingerprint" />
-                <span className="block text-xs text-muted">Every figure, address, time and transaction hash of the result; none of its wording.</span>
+                <span className="block text-sm text-muted">Every figure, address, time and transaction hash of the result; none of its wording.</span>
               </Row>
               {p.content_sha256 && (
                 <Row name="Content digest">
                   <Digest value={p.content_sha256} label="content digest" />
-                  <span className="block text-xs text-muted">The whole result as stored, wording included.</span>
+                  <span className="block text-sm text-muted">The whole result as stored, wording included.</span>
                 </Row>
               )}
               {p.input && p.input_sha256 && (
                 <Row name="What was asked">
-                  <span className="font-mono text-xs [overflow-wrap:anywhere]">
+                  <span className="font-mono text-sm [overflow-wrap:anywhere]">
                     {p.input.address} · {p.input.chain} · up to {p.input.max_hops} hops{p.input.since ? ` · from ${p.input.since}` : ''}
                   </span>
                   <span className="block">
@@ -163,10 +163,10 @@ export function AuditTab({ c }: { c: CaseDetail }) {
                   </span>
                   {p.responses && p.responses.length > 0 && (
                     <details className="mt-1">
-                      <summary className="cursor-pointer text-xs text-muted hover:text-fg">Every response, with its digest</summary>
+                      <summary className="cursor-pointer text-sm text-muted hover:text-fg">Every response, with its digest</summary>
                       <ol className="mt-2 flex flex-col gap-2">
                         {p.responses.map((r) => (
-                          <li key={r.query + r.sha256} className="flex flex-col font-mono text-xs">
+                          <li key={r.query + r.sha256} className="flex flex-col font-mono text-sm">
                             <span className="break-all text-fg">{r.query}</span>
                             <span className="break-all text-muted">{r.sha256}</span>
                           </li>
@@ -183,22 +183,22 @@ export function AuditTab({ c }: { c: CaseDetail }) {
               )}
               {p.model_sha256 && (
                 <Row name="Model">
-                  <span className="font-mono text-xs">{p.model_version}</span>
+                  <span className="font-mono text-sm">{p.model_version}</span>
                   <span className="block">
                     <Digest value={p.model_sha256} label="model digest" />
                   </span>
                 </Row>
               )}
               <Row name="Code">
-                <span className="font-mono text-xs">{p.code_version}</span>
+                <span className="font-mono text-sm">{p.code_version}</span>
                 {p.git_commit && (
-                  <span className="font-mono text-xs text-muted">
+                  <span className="font-mono text-sm text-muted">
                     {' · commit '}
                     {p.git_commit.slice(0, 12)}
                     {p.git_dirty && ' (with uncommitted changes)'}
                   </span>
                 )}
-                <span className="font-mono text-xs text-muted"> · seed {p.seed}</span>
+                <span className="font-mono text-sm text-muted"> · seed {p.seed}</span>
               </Row>
             </dl>
           </>
@@ -207,7 +207,7 @@ export function AuditTab({ c }: { c: CaseDetail }) {
         {p.notes && p.notes.length > 0 && (
           <ul className="flex flex-col gap-1 border-l-2 border-rule pl-3">
             {p.notes.map((note, i) => (
-              <li key={i} className="text-sm text-fg">
+              <li key={i} className="text-base text-fg">
                 {note}
               </li>
             ))}
@@ -215,7 +215,7 @@ export function AuditTab({ c }: { c: CaseDetail }) {
         )}
 
         {verify.isError && (
-          <p role="alert" className="rounded border border-seal-text bg-seal-wash px-3 py-2.5 text-sm text-fg">
+          <p role="alert" className="rounded border border-seal-text bg-seal-wash px-3 py-2.5 text-base text-fg">
             {verify.error instanceof ApiError ? verify.error.detail : 'The case could not be verified. Try again.'}
           </p>
         )}
@@ -225,7 +225,7 @@ export function AuditTab({ c }: { c: CaseDetail }) {
       <section aria-label="Access log" className="flex flex-col gap-3">
         <h3 className="eyebrow">Access log</h3>
         {audit.isError ? (
-          <p className="text-sm text-fg">{audit.error instanceof ApiError ? audit.error.detail : 'The access log could not be loaded.'}</p>
+          <p className="text-base text-fg">{audit.error instanceof ApiError ? audit.error.detail : 'The access log could not be loaded.'}</p>
         ) : (
           <DataTable
             caption="Access log of this case"

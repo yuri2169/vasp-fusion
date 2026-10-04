@@ -19,7 +19,7 @@ const ToastContext = createContext<{ show: (t: ToastInput) => void } | null>(nul
 const STAY_MS = 6000
 
 const ICONS = { info: Info, success: CircleCheck, error: OctagonAlert }
-const ACCENT = { info: 'text-muted', success: 'text-verified-text', error: 'text-seal-text' }
+const ACCENT = { info: 'text-muted', success: 'text-confirm', error: 'text-seal-text' }
 
 function Toast({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }) {
   const kind = toast.kind ?? 'info'
@@ -35,14 +35,14 @@ function Toast({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => void }
     <div
       role={kind === 'error' ? 'alert' : 'status'}
       className={cx(
-        'pointer-events-auto flex w-[360px] max-w-[calc(100vw-32px)] items-start gap-2.5 rounded border bg-surface px-3 py-2.5 shadow-md',
-        kind === 'error' ? 'border-seal-text' : 'border-rule-strong',
+        'pointer-events-auto flex w-[360px] max-w-[calc(100vw-32px)] anim-rise items-start gap-2.5 border bg-surface px-3 py-2.5',
+        kind === 'error' ? 'border-danger' : 'border-ink',
       )}
     >
       <Icon size={16} aria-hidden className={cx('mt-0.5 shrink-0', ACCENT[kind])} />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-fg">{toast.title}</p>
-        {toast.detail && <p className="mt-0.5 text-sm text-muted">{toast.detail}</p>}
+        <p className="text-base font-semibold text-fg">{toast.title}</p>
+        {toast.detail && <p className="mt-0.5 text-base text-muted">{toast.detail}</p>}
       </div>
       <button
         type="button"

@@ -73,8 +73,8 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
   }
 
   return (
-    <div className="overflow-auto rounded-md border border-rule bg-surface" style={{ maxHeight }}>
-      <table aria-busy={loading || undefined} className="w-full border-separate border-spacing-0 text-sm">
+    <div className="panel overflow-auto" style={{ maxHeight }}>
+      <table aria-busy={loading || undefined} className="w-full border-separate border-spacing-0 text-base">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr>
@@ -88,7 +88,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
                   aria-sort={c.sortValue ? (active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none') : undefined}
                   style={{ width: c.width }}
                   className={cx(
-                    'eyebrow sticky top-0 z-10 h-9 whitespace-nowrap border-b border-rule-strong bg-sunk px-3',
+                    'colhead sticky top-0 z-10 h-8 whitespace-nowrap border-b border-rule bg-surface-2 px-3',
                     c.align === 'right' ? 'text-right' : 'text-left',
                   )}
                 >
@@ -97,12 +97,12 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
                       type="button"
                       onClick={() => toggle(c.key)}
                       className={cx(
-                        '-mx-1 inline-flex items-center gap-1 rounded-sm px-1 uppercase tracking-[inherit] hover:text-fg',
-                        active && 'text-fg',
+                        '-mx-1 inline-flex items-center gap-1 px-1 uppercase tracking-[inherit] hover:text-ink',
+                        active && 'text-ink',
                       )}
                     >
                       {c.header}
-                      <Icon size={12} aria-hidden />
+                      <Icon size={11} aria-hidden />
                     </button>
                   ) : (
                     c.header
@@ -117,7 +117,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
             [0, 1, 2, 3].map((i) => (
               <tr key={i}>
                 {columns.map((c) => (
-                  <td key={c.key} className="h-11 border-b border-rule px-3">
+                  <td key={c.key} className="h-9 border-b border-rule-soft px-3">
                     <Skeleton width={c.align === 'right' ? '50%' : '75%'} />
                   </td>
                 ))}
@@ -125,7 +125,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
             ))}
           {!loading && sorted.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="px-3 py-8 text-sm text-muted">
+              <td colSpan={columns.length} className="px-3 py-8 text-base text-muted">
                 {empty ?? 'Nothing to show.'}
               </td>
             </tr>
@@ -137,13 +137,13 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
                 tabIndex={onRowOpen ? 0 : undefined}
                 onClick={onRowOpen && open(row)}
                 onKeyDown={onRowOpen && openByKey(row)}
-                className={cx('group', onRowOpen && 'cursor-pointer hover:bg-sunk focus-visible:bg-sunk')}
+                className={cx('group', onRowOpen && 'row-hover cursor-pointer')}
               >
                 {columns.map((c) => (
                   <td
                     key={c.key}
                     className={cx(
-                      'h-11 border-b border-rule px-3 py-1.5 align-middle group-last:border-b-0',
+                      'h-9 border-b border-rule-soft px-3 py-1 align-middle group-last:border-b-0',
                       c.align === 'right' && 'text-right',
                     )}
                   >
@@ -155,7 +155,7 @@ export function DataTable<T>({ caption, columns, rows, rowKey, initialSort, onRo
         </tbody>
       </table>
       {!loading && left > 0 && (
-        <div className="sticky left-0 flex flex-wrap items-center gap-3 border-t border-rule px-3 py-2 text-xs text-muted">
+        <div className="sticky left-0 flex flex-wrap items-center gap-3 border-t border-rule px-3 py-2 text-sm text-muted">
           <span aria-live="polite">
             Showing {visible.length.toLocaleString('en-US')} of {sorted.length.toLocaleString('en-US')}
           </span>

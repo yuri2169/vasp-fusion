@@ -15,7 +15,7 @@ export function HopLimit({ value, onChange, name }: { value: number; onChange: (
         <label
           key={hops}
           className={cx(
-            'relative inline-flex h-9 min-w-10 cursor-pointer items-center justify-center border-l border-rule-strong px-3 font-mono text-sm first:border-l-0',
+            'relative inline-flex h-9 min-w-10 cursor-pointer items-center justify-center border-l border-rule-strong px-3 font-mono text-base first:border-l-0',
             'has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-focus',
             value === hops ? 'bg-fg text-page' : 'bg-surface text-fg hover:bg-sunk',
           )}

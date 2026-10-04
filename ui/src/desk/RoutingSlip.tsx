@@ -47,11 +47,11 @@ function Cell({ step }: { step: SlipStep }) {
         step.state === 'next' && 'bg-sunk',
       )}
     >
-      <span className={cx('flex items-center gap-1 truncate text-xs', stamped ? 'font-medium text-fg' : 'text-muted')}>
+      <span className={cx('flex items-center gap-1 truncate text-sm', stamped ? 'font-medium text-fg' : 'text-muted')}>
         {step.state !== 'done' && <Mark state={step.state} />}
         {SHORT[step.label] ?? step.label}
       </span>
-      <span className="tabular truncate font-mono text-xs text-muted">{step.event ? dayOnly(step.event.at) : step.state === 'next' ? 'awaited' : ' '}</span>
+      <span className="tabular truncate font-mono text-sm text-muted">{step.event ? dayOnly(step.event.at) : step.state === 'next' ? 'awaited' : ' '}</span>
       <Tip id={tip.id} anchor={tip.anchor}>
         {sentence(step)}
       </Tip>
@@ -98,18 +98,18 @@ export function RoutingSlip({
             )}
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className={cx('flex items-center gap-1.5 text-sm', stamped ? 'font-semibold text-fg' : 'text-muted')}>
+              <span className={cx('flex items-center gap-1.5 text-base', stamped ? 'font-semibold text-fg' : 'text-muted')}>
                 <span className="inline-flex w-3 justify-center">
                   <Mark state={step.state} />
                 </span>
                 {step.label}
               </span>
-              <span className="tabular whitespace-nowrap font-mono text-xs text-muted">
+              <span className="tabular whitespace-nowrap font-mono text-sm text-muted">
                 {step.event ? formatDateTime(step.event.at) : STATE_WORDS[step.state]}
               </span>
             </div>
             {step.event && (step.event.note || step.event.by) && (
-              <p className="mt-0.5 pl-[18px] text-xs text-muted [overflow-wrap:anywhere]">
+              <p className="mt-0.5 pl-[18px] text-sm text-muted [overflow-wrap:anywhere]">
                 {step.event.by && <span className="font-medium">{step.event.by}. </span>}
                 {step.event.note}
               </p>

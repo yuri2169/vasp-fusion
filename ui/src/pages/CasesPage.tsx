@@ -25,7 +25,7 @@ const columns: Column<CaseSummary>[] = [
       <span className="flex items-center gap-2">
         <span className="font-medium text-fg">{c.case_ref ?? c.id}</span>
         {c.demo && (
-          <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="rounded-sm border border-dashed border-rule-strong px-1 text-xs text-muted">
+          <span title="A real wallet from the demonstration set, traced from recorded chain responses. Verify (in the Audit tab) traces it again and compares." className="rounded-sm border border-dashed border-rule-strong px-1 text-sm text-muted">
             Recorded
           </span>
         )}
@@ -55,7 +55,7 @@ const columns: Column<CaseSummary>[] = [
     sortValue: (c) => c.confidence ?? null,
     cell: (c) =>
       c.confidence != null ? (
-        <span className="tabular font-mono text-sm">{formatConfidence(c.confidence)}</span>
+        <span className="tabular font-mono text-base">{formatConfidence(c.confidence)}</span>
       ) : (
         <span className="text-muted">none</span>
       ),
@@ -67,7 +67,7 @@ const columns: Column<CaseSummary>[] = [
     sortValue: (c) => c.amount_lost_inr ?? null,
     cell: (c) =>
       c.amount_lost_inr != null ? (
-        <span className="tabular font-mono text-sm">{formatInr(c.amount_lost_inr)}</span>
+        <span className="tabular font-mono text-base">{formatInr(c.amount_lost_inr)}</span>
       ) : (
         <span className="text-muted">not given</span>
       ),
@@ -77,7 +77,7 @@ const columns: Column<CaseSummary>[] = [
     header: 'Opened',
     align: 'right',
     sortValue: (c) => c.created_at,
-    cell: (c) => <span className="tabular whitespace-nowrap text-sm text-muted">{formatDate(c.created_at)}</span>,
+    cell: (c) => <span className="tabular whitespace-nowrap text-base text-muted">{formatDate(c.created_at)}</span>,
   },
 ]
 
@@ -161,7 +161,7 @@ export function CasesPage() {
       ) : (
         <>
           {filters.length > 0 && (
-            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm" role="group" aria-label="Filters">
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-base" role="group" aria-label="Filters">
               <span className="text-muted">{cases.data ? `Showing ${shown.length} of ${all.length}:` : 'Showing:'}</span>
               {filters.map((f) => (
                 <button
@@ -169,13 +169,13 @@ export function CasesPage() {
                   type="button"
                   onClick={() => drop(f.key)}
                   aria-label={`Remove the filter: ${f.words}`}
-                  className="inline-flex h-7 items-center gap-1.5 rounded border border-fg bg-fg px-2.5 text-xs font-semibold text-page"
+                  className="inline-flex h-7 items-center gap-1.5 rounded border border-fg bg-fg px-2.5 text-sm font-semibold text-page"
                 >
                   {f.words}
                   <X size={13} aria-hidden />
                 </button>
               ))}
-              <Link to="/cases" replace className="text-xs text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg">
+              <Link to="/cases" replace className="text-sm text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg">
                 Show all cases
               </Link>
             </div>

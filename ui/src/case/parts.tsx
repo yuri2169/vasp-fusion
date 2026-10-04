@@ -19,7 +19,7 @@ export function Sentences({ items, marker = 'dash' }: { items: string[]; marker?
   return (
     <ul className="flex flex-col gap-2">
       {items.map((text, i) => (
-        <li key={i} className="flex gap-2 text-sm text-fg">
+        <li key={i} className="flex gap-2 text-base text-fg">
           <span aria-hidden className="shrink-0 select-none text-muted">
             {marker === 'arrow' ? '→' : '–'}
           </span>

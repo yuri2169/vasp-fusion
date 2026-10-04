@@ -241,7 +241,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const drawn = view.nodes.reduce((n, node) => n + (node.kind === 'more' ? 0 : node.members.length), 0)
 
   return (
-    <section aria-labelledby={`${tipId}-title`} className={cx('rounded-md border border-rule bg-surface', className)}>
+    <section aria-labelledby={`${tipId}-title`} className={cx('panel', className)}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-rule px-4 py-2">
         <h2 id={`${tipId}-title`} className="eyebrow">
           Fund flow
@@ -296,7 +296,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       </div>
 
       {folded && (
-        <div role="group" aria-label="Parts of the graph not drawn" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-xs text-muted">
+        <div role="group" aria-label="Parts of the graph not drawn" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-sm text-muted">
           <p className="mr-auto">
             Drawing {plural(drawn, 'wallet')} of {c.graph.nodes.length.toLocaleString('en-US')}: the path, then {PER_HOP} of each hop (labelled wallets first,
             then the largest). Every wallet and transfer is in the tabs below.
@@ -326,7 +326,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         className="w-full"
       />
       {!drawable && (
-        <p className="px-4 py-6 text-sm text-muted">
+        <p className="px-4 py-6 text-base text-muted">
           This browser cannot draw the graph. The Wallets and Transfers tabs list everything it would show.
         </p>
       )}

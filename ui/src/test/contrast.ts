@@ -44,9 +44,11 @@ function resolve(map: TokenMap): TokenMap {
   return out
 }
 
-export function readThemes(css: string): { brand: TokenMap; light: TokenMap; dark: TokenMap } {
-  const brand = block(css, '/* brand */')
-  const light = block(css, '/* light */')
+/** `palette`: the light block as written (the tokens every theme must define).
+ *  `light` / `dark`: every token, aliases included, resolved to a colour. */
+export function readThemes(css: string): { palette: TokenMap; light: TokenMap; dark: TokenMap } {
+  const palette = block(css, '/* light */')
   const dark = block(css, '/* dark */')
-  return { brand, light: resolve({ ...brand, ...light }), dark: resolve({ ...brand, ...light, ...dark }) }
+  const aliases = block(css, '/* aliases */')
+  return { palette, light: resolve({ ...palette, ...aliases }), dark: resolve({ ...palette, ...dark, ...aliases }) }
 }

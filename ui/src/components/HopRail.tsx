@@ -43,10 +43,10 @@ function Stub({ hop, chain }: { hop: Hop; chain: Chain }) {
   const partial = hop.traced_amount != null && Math.abs(hop.traced_amount - hop.amount) > 1e-9
   return (
     <span className="relative flex min-w-[108px] flex-1 items-center justify-center px-2">
-      <span aria-hidden className="rail-line absolute inset-x-0 top-1/2 -translate-y-px border-t-2 border-fg" />
+      <span aria-hidden className="rail-line absolute inset-x-0 top-1/2 border-t border-chain" />
       <span
         aria-hidden
-        className="absolute right-0 top-1/2 -translate-y-1/2 border-y-[5px] border-l-[7px] border-y-transparent border-l-fg"
+        className="absolute right-0 top-1/2 h-[5px] w-[5px] -translate-y-1/2 bg-chain"
       />
       <a
         data-testid="hop-stub"
@@ -56,10 +56,10 @@ function Stub({ hop, chain }: { hop: Hop; chain: Chain }) {
         aria-label={`Hop ${hop.index}: ${formatAmount(traced, hop.asset)}, ${elapsed(hop)}. Open the transaction on ${explorerName(chain)} (new tab)`}
         aria-describedby={tip.open ? tip.id : undefined}
         {...tip.bind}
-        className="stub relative z-[1] flex flex-col items-center px-2 py-1 leading-4 hover:bg-sunk"
+        className="stub relative z-[1] flex flex-col items-center px-2 py-0.5 transition-colors duration-150 hover:bg-chain-wash"
       >
         <Amount value={traced} asset={hop.asset} size="sm" />
-        <span className="tabular whitespace-nowrap font-mono text-xs text-muted">{elapsed(hop)}</span>
+        <span className="tabular whitespace-nowrap font-mono text-sm text-muted">{elapsed(hop)}</span>
       </a>
       <Tip id={tip.id} anchor={tip.anchor}>
         <span className="block break-all font-mono">{hop.tx_hash}</span>
@@ -121,8 +121,8 @@ export function HopRail({
   }, [hops.length, state])
 
   return (
-    <div className={cx('rounded-md border border-rule bg-surface', className)}>
-     <div ref={scroller} className="overflow-x-auto rounded-md">
+    <div className={cx('panel', className)}>
+     <div ref={scroller} className="overflow-x-auto">
       <ol aria-label="Path of the funds" className="flex w-full min-w-max items-stretch pl-4">
         <li {...step(0)} className={cx('flex items-center py-5', step(0).className)}>
           <AddressChip
@@ -161,10 +161,10 @@ export function HopRail({
         {state === 'tracing' &&
           Array.from({ length: depth }, (_, i) => (
             <li key={i} className="flex items-center py-5">
-              <span aria-hidden className="w-12 border-t-2 border-dashed border-rule-strong" />
+              <span aria-hidden className="w-12 border-t border-dashed border-chain" />
               <span
                 data-testid="hop-pending"
-                className="tabular inline-flex h-7 items-center whitespace-nowrap rounded border border-dashed border-rule-strong px-2 font-mono text-xs text-muted"
+                className="tabular inline-flex h-6 items-center whitespace-nowrap border border-dashed border-chain px-2 font-mono text-sm text-chain"
               >
                 hop {i + 1}
               </span>
@@ -173,8 +173,8 @@ export function HopRail({
 
         {state === 'tracing' ? (
           <li className="flex flex-1 items-center gap-3 py-5 pl-3 pr-4">
-            <span aria-hidden className="rail-tracing h-0.5 min-w-[96px] flex-1" />
-            <span role="status" className="whitespace-nowrap text-sm font-medium text-muted">
+            <span aria-hidden className="rail-tracing h-px min-w-[96px] flex-1" />
+            <span role="status" className="whitespace-nowrap text-sm font-medium text-chain">
               Tracing…
             </span>
           </li>
@@ -186,13 +186,13 @@ export function HopRail({
                 {...s}
                 className={cx(
                   'sticky right-0 z-[2] flex items-center bg-surface py-4 pr-4',
-                  overflowing && 'border-l border-dashed border-rule-strong pl-3',
+                  overflowing && 'border-l border-rule pl-3',
                   s.className,
                 )}
               >
                 <span
                   aria-hidden
-                  className={cx('w-7 shrink-0 border-t-2', abstained ? 'border-dashed border-rule-strong' : 'border-fg')}
+                  className={cx('w-7 shrink-0 border-t', abstained ? 'border-dashed border-data' : stamp.outcome === 'ATTRIBUTED' ? 'border-fusion' : 'border-danger')}
                 />
                 <OutcomeStamp {...stamp} size="lg" tilt />
               </li>

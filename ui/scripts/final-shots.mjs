@@ -18,7 +18,7 @@ const HERO = 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c'
 
 const browser = await launch({ port: 9339 })
 const { page } = browser
-const READY = `document.fonts.ready.then(() => document.fonts.check('16px "IBM Plex Sans"') && !!document.querySelector('main h1, main [role="alert"]') && !document.querySelector('main [aria-busy="true"]'))`
+const READY = `document.fonts.ready.then(() => document.fonts.check('13px "Public Sans"') && !!document.querySelector('main h1, main [role="alert"]') && !document.querySelector('main [aria-busy="true"]'))`
 const GRAPH = `document.querySelectorAll('[role="img"] canvas').length > 0`
 
 try {

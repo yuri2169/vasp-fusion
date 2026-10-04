@@ -134,10 +134,10 @@ export function PlotReference({
 /** The same figures as rows: every chart has one, folded under it. */
 export function ChartTable({ caption, head, rows }: { caption: string; head: string[]; rows: string[][] }) {
   return (
-    <details className="mt-2 text-xs">
+    <details className="mt-2 text-sm">
       <summary className="cursor-pointer select-none text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg">Show as table</summary>
       <div className="mt-2 max-h-64 overflow-auto rounded border border-rule">
-        <table className="w-full border-collapse text-xs">
+        <table className="w-full border-collapse text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead>
             <tr>

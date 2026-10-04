@@ -47,9 +47,9 @@ function Event({
   }
   return (
     <li data-testid="timeline-event" className="grid grid-cols-[84px_1fr] gap-x-4 border-t border-rule py-2.5 first:border-t-0">
-      <span className="tabular pt-1 font-mono text-xs text-muted">{clock(event.at)}</span>
+      <span className="tabular pt-1 font-mono text-sm text-muted">{clock(event.at)}</span>
       <div className="flex min-w-0 flex-col gap-1.5">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-sm text-fg">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-base text-fg">
           {event.kind === 'received' && event.to === suspect && (
             <>
               <span>Received from</span>
@@ -78,7 +78,7 @@ function Event({
           )}
           <Amount value={event.amount} asset={event.asset} className="ml-auto" />
         </div>
-        <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted">
+        <div className="flex flex-wrap items-center gap-x-3 text-sm text-muted">
           {event.afterArrivalS != null && <span>{delay(event.afterArrivalS)}</span>}
           {event.amount !== event.onChain && (
             <span>
@@ -122,8 +122,8 @@ export function TimelineTab({ c, onSelect }: { c: CaseDetail; onSelect: (address
         {days.map((day) => (
           <li key={day.date}>
             <div className="mb-1 flex items-baseline gap-3 border-b border-rule-strong pb-1.5">
-              <h3 className="text-sm font-semibold text-fg">{formatDate(day.date)}</h3>
-              {day.gapDays != null && <span className="text-xs text-muted">{day.gapDays} days later</span>}
+              <h3 className="text-base font-semibold text-fg">{formatDate(day.date)}</h3>
+              {day.gapDays != null && <span className="text-sm text-muted">{day.gapDays} days later</span>}
             </div>
             <ol>
               {day.events.map((event) => (
@@ -134,7 +134,7 @@ export function TimelineTab({ c, onSelect }: { c: CaseDetail; onSelect: (address
         ))}
       </ol>
       {shown < total && (
-        <p className="flex flex-wrap items-center gap-3 text-xs text-muted">
+        <p className="flex flex-wrap items-center gap-3 text-sm text-muted">
           <span aria-live="polite">
             Showing the first {shown.toLocaleString('en-US')} of {total.toLocaleString('en-US')} transfers
           </span>

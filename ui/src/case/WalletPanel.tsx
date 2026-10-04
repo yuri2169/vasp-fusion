@@ -45,10 +45,10 @@ export function LabelBlock({ label, chain }: { label: LabelOut; chain: CaseDetai
   return (
     <Section title="Label">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="display text-lg text-fg">{label.entity}</span>
+        <span className="title text-lg text-fg">{label.entity}</span>
         <TierTag tier={label.tier} size="sm" />
       </div>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-base">
         {kind && (
           <>
             <dt className="text-muted">Kind</dt>
@@ -82,10 +82,10 @@ export function LabelBlock({ label, chain }: { label: LabelOut; chain: CaseDetai
           </>
         )}
       </dl>
-      {label.evidence && <p className="text-sm text-fg [overflow-wrap:anywhere]">{label.evidence}</p>}
+      {label.evidence && <p className="text-base text-fg [overflow-wrap:anywhere]">{label.evidence}</p>}
       {label.model && (
         <div className="flex flex-col gap-1 rounded border border-rule bg-sunk px-3 py-2.5">
-          <p className="text-sm text-fg">
+          <p className="text-base text-fg">
             Deposit-address model: {formatConfidence(label.model.p)} that an address behaving like this is an exchange deposit address (
             {formatConfidenceRange(label.model.low, label.model.high)}).
             {label.model.basis === 'rule' && ' The label keeps the discovery rules’ confidence: the model’s value would not raise it.'}
@@ -114,7 +114,7 @@ function TransferRow({ c, edge, other, onSelect }: { c: CaseDetail; edge: GraphE
         />
         <Amount value={traced(edge)} asset={edge.asset} />
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 text-xs text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 text-sm text-muted">
         <span className="tabular font-mono">
           {formatDateTime(edge.block_time)}
           {!whole && ` · part of a transfer of ${edge.amount.toLocaleString('en-US')} ${edge.asset}`}
@@ -129,13 +129,13 @@ function Transfers({ c, title, edges, side, onSelect }: { c: CaseDetail; title: 
   if (edges.length === 0) return null
   return (
     <div>
-      <p className="text-xs font-medium text-muted">{title}</p>
+      <p className="text-sm font-medium text-muted">{title}</p>
       <ul>
         {edges.slice(0, LISTED).map((e) => (
           <TransferRow key={e.id} c={c} edge={e} other={e[side]} onSelect={onSelect} />
         ))}
       </ul>
-      {edges.length > LISTED && <p className="pt-1 text-xs text-muted">and {edges.length - LISTED} more, in the Transfers tab</p>}
+      {edges.length > LISTED && <p className="pt-1 text-sm text-muted">and {edges.length - LISTED} more, in the Transfers tab</p>}
     </div>
   )
 }
@@ -160,7 +160,7 @@ export function WalletPanel({
   const openCase = useOpenCase()
   const { show } = useToast()
 
-  const frame = cx('flex flex-col gap-5 rounded-md border border-rule-strong bg-surface p-5', className)
+  const frame = cx('panel flex flex-col gap-4 p-4', className)
   const back = (
     <Button size="sm" variant="ghost" icon={<ArrowLeft size={13} aria-hidden />} onClick={onClose} className="-ml-2 self-start">
       Back to the answer
@@ -176,16 +176,16 @@ export function WalletPanel({
         {back}
         <div className="flex flex-col gap-1">
           <p className="eyebrow">Exchange</p>
-          <h2 id="wallet-title" className="display text-lg text-fg">
+          <h2 id="wallet-title" className="title text-lg text-fg">
             {name}
           </h2>
-          <p className="text-sm text-muted">{plural(members.length, 'wallet')} of this exchange are in the case</p>
+          <p className="text-base text-muted">{plural(members.length, 'wallet')} of this exchange are in the case</p>
         </div>
         <ul className="flex flex-col gap-3">
           {members.map((n) => (
             <li key={n.id} className="flex flex-col gap-1">
               <AddressChip address={n.id} chain={c.chain} entity={n.label?.entity} tier={n.label?.tier} onSelect={() => onSelect(n.id)} className="self-start" />
-              <span className="text-xs text-muted">
+              <span className="text-sm text-muted">
                 {ROLE_NAMES[n.role]} · {distance(c, n)}
               </span>
             </li>
@@ -200,10 +200,10 @@ export function WalletPanel({
     return (
       <section aria-labelledby="wallet-title" className={frame}>
         {back}
-        <h2 id="wallet-title" className="display text-lg text-fg">
+        <h2 id="wallet-title" className="title text-lg text-fg">
           Wallet
         </h2>
-        <p className="text-sm text-fg">This wallet is not part of this case.</p>
+        <p className="text-base text-fg">This wallet is not part of this case.</p>
       </section>
     )
 
@@ -227,14 +227,14 @@ export function WalletPanel({
       {back}
       <div className="flex flex-col gap-2">
         <p className="eyebrow">Wallet · {CHAINS[c.chain].name}</p>
-        <h2 id="wallet-title" className="display text-lg text-fg">
+        <h2 id="wallet-title" className="title text-lg text-fg">
           {ROLE_NAMES[node.role]}
         </h2>
         <AddressChip address={node.id} chain={c.chain} full className="h-auto self-start py-1" />
-        <p className="text-sm text-muted">{distance(c, node)}</p>
+        <p className="text-base text-muted">{distance(c, node)}</p>
         <Link
           to={`/wallets/${c.chain}/${encodeURIComponent(node.id)}`}
-          className="self-start text-xs text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
+          className="self-start text-sm text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
         >
           Everything on record about this wallet
         </Link>
@@ -244,13 +244,13 @@ export function WalletPanel({
         <LabelBlock label={node.label} chain={c.chain} />
       ) : (
         <Section title="Label">
-          <p className="text-sm text-fg">No label in any source.</p>
+          <p className="text-base text-fg">No label in any source.</p>
         </Section>
       )}
 
       {(ledger.incoming.length > 0 || ledger.outgoing.length > 0) && (
         <Section title="On this trail">
-          <div className="flex flex-col gap-0.5 text-sm text-fg">
+          <div className="flex flex-col gap-0.5 text-base text-fg">
             {ledger.incoming.length > 0 && (
               <p>
                 Received <Amount value={ledger.received} asset={asset} /> in {plural(ledger.incoming.length, 'transfer')}

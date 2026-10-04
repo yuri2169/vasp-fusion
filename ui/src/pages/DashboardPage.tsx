@@ -95,17 +95,17 @@ function AlertRow({ alert }: { alert: Alert }) {
   return (
     <li className={cx('flex flex-col gap-1.5 rounded border px-3 py-2.5', look.row)}>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <span className={cx('inline-flex items-center gap-1.5 text-xs font-semibold', look.icon)}>
+        <span className={cx('inline-flex items-center gap-1.5 text-sm font-semibold', look.icon)}>
           <look.Icon size={14} aria-hidden />
           {look.word}
         </span>
-        <span className="tabular text-xs text-muted">{formatDate(alert.at)}</span>
+        <span className="tabular text-sm text-muted">{formatDate(alert.at)}</span>
       </div>
-      <p className="text-sm text-fg [overflow-wrap:anywhere]">{alert.text}</p>
+      <p className="text-base text-fg [overflow-wrap:anywhere]">{alert.text}</p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <AddressChip address={alert.wallet} chain={alert.chain} to={`/wallets/${alert.chain}/${encodeURIComponent(alert.wallet)}`} actions="copy" />
         {alert.case_id && (
-          <Link to={`/cases/${encodeURIComponent(alert.case_id)}`} className="text-xs underline decoration-rule-strong underline-offset-2 hover:decoration-current">
+          <Link to={`/cases/${encodeURIComponent(alert.case_id)}`} className="text-sm underline decoration-rule-strong underline-offset-2 hover:decoration-current">
             Open the case
           </Link>
         )}
@@ -148,7 +148,7 @@ function Coverage({ d }: { d: Dashboard }) {
           }))}
         />
         {rest.length > 0 && (
-          <p className="px-1.5 pt-1 text-xs text-muted">
+          <p className="px-1.5 pt-1 text-sm text-muted">
             and {plural(rest.length, 'more chain')} with {count(rest.reduce((s, [, n]) => s + n, 0))} labels between them
           </p>
         )}
@@ -259,15 +259,15 @@ export function DashboardPage() {
                 <Panel title="Time for the funds to reach the exchange">
                   {d.median_time_to_attribution_s != null ? (
                     <>
-                      <p className="tabular font-mono text-xl text-fg">{formatDuration(d.median_time_to_attribution_s)}</p>
-                      <p className="text-xs text-muted">
+                      <p className="tabular font-mono text-2xl text-fg">{formatDuration(d.median_time_to_attribution_s)}</p>
+                      <p className="text-sm text-muted">
                         Median over the {plural(d.attribution_times_n ?? 0, 'case')} that name an exchange: from the wallet's payment to its arrival at the exchange's address.
                         Chain time, not the time the trace took.
                         {d.median_time_to_attribution_s === 0 && ' "Same block" means the wallet paid the exchange\'s address directly.'}
                       </p>
                     </>
                   ) : (
-                    <p className="text-sm text-muted">Not yet measured: no finished case names an exchange.</p>
+                    <p className="text-base text-muted">Not yet measured: no finished case names an exchange.</p>
                   )}
                 </Panel>
               </div>
@@ -282,7 +282,7 @@ export function DashboardPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-muted">
+                  <p className="text-base text-muted">
                     Nothing to act on. A case that reaches a sanctioned address or a mixer appears here, and so does a watched wallet that has moved since it was last checked.
                   </p>
                 )}

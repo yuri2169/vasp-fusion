@@ -35,7 +35,7 @@ function GatewayReceipt({ receipt }: { receipt: NonNullable<RequestDetail['recei
     ['Where', receipt.location],
   ]
   return (
-    <div className="rounded border border-rule bg-surface px-3 py-2 text-xs">
+    <div className="rounded border border-rule bg-surface px-3 py-2 text-sm">
       <dl>
       {rows.map(([name, value]) => (
         <div key={name} className="flex justify-between gap-3 py-0.5">
@@ -137,7 +137,7 @@ export function RequestPage() {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] print:block">
         <aside aria-label="This request: next step, checks and history" className="flex flex-col gap-6 lg:sticky lg:top-[76px] lg:order-2 print:hidden">
           <Block title="Next step">
-            <p className="text-sm text-fg">{standing(r)}</p>
+            <p className="text-base text-fg">{standing(r)}</p>
             <RequestActions request={r} />
           </Block>
 
@@ -145,7 +145,7 @@ export function RequestPage() {
             <Block title={r.status === 'drafted' ? 'Check before approving' : 'Notes for the reviewing officer'}>
               <ul className="flex flex-col gap-2 rounded border border-dashed border-rule-strong bg-surface px-3 py-2.5">
                 {notes.map((note, i) => (
-                  <li key={i} className="flex gap-2 text-xs text-fg">
+                  <li key={i} className="flex gap-2 text-sm text-fg">
                     <span aria-hidden className="select-none text-muted">
                       –
                     </span>
@@ -153,7 +153,7 @@ export function RequestPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-muted">Not part of the request. A draft's printout carries them on a last sheet.</p>
+              <p className="text-sm text-muted">Not part of the request. A draft's printout carries them on a last sheet.</p>
             </Block>
           )}
 
@@ -179,7 +179,7 @@ export function RequestPage() {
                 </a>
               )}
             </div>
-            <p className="text-xs text-muted">
+            <p className="text-sm text-muted">
               Prints on A4 with the reference and page number on every page. In the print dialog, switch off the browser's own headers and footers.
               {r.letter.watermark && ' A draft prints with its watermark.'}
               {API_MODE === 'live' && r.receipt && " The letter PDF is the very file that was handed to the gateway."}

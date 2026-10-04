@@ -1,10 +1,11 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Route, Routes } from 'react-router'
 import { Skeleton } from './components/Skeleton'
 import { CasePage } from './pages/CasePage'
 import { CasesPage } from './pages/CasesPage'
 import { NewCasePage } from './pages/NewCasePage'
 import { NotFoundPage } from './pages/PlaceholderPage'
+import { StartPage } from './pages/StartPage'
 import { AppShell } from './shell/AppShell'
 
 // The request desk is loaded when it is first opened, so the first paint of a case does not carry it.
@@ -38,12 +39,12 @@ const later = (page: ReactNode) => (
   </Suspense>
 )
 
-/** Every route sits inside the shell (nav rail, search bar). The providers are in main.tsx. */
+/** Every route sits inside the shell (header, status bar). `/` is the landing. The providers are in main.tsx. */
 export function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<Navigate to="/cases" replace />} />
+        <Route index element={<StartPage />} />
         <Route path="cases" element={<CasesPage />} />
         <Route path="cases/new" element={<NewCasePage />} />
         <Route path="cases/:id" element={<CasePage />} />

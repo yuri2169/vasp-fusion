@@ -28,7 +28,7 @@ type Fold = ModelInfo['leave_one_exchange_out'][number]
 type Bar = NonNullable<ModelInfo['abstain']>['bars'][number]
 
 const pct = (v: number | null | undefined) => (v == null ? 'not measured' : share(v))
-const mono = 'tabular font-mono text-sm'
+const mono = 'tabular font-mono text-base'
 
 const foldColumns: Column<Fold>[] = [
   {
@@ -133,7 +133,7 @@ function Abstain({ a }: { a: NonNullable<ModelInfo['abstain']> }) {
       cell: (b) => (
         <span className={mono}>
           {b.threshold.toFixed(2)}
-          {b.threshold === a.current_threshold && <span className="ml-2 rounded-sm border border-fg px-1 font-sans text-xs font-semibold">in use</span>}
+          {b.threshold === a.current_threshold && <span className="ml-2 rounded-sm border border-fg px-1 font-sans text-sm font-semibold">in use</span>}
         </span>
       ),
     },
@@ -178,7 +178,7 @@ function Abstain({ a }: { a: NonNullable<ModelInfo['abstain']> }) {
       title={`The ${a.current_threshold.toFixed(2)} naming bar, checked`}
       note={`${plural(a.wallets, 'real wallet')} traced with the derived labels hidden, giving ${plural(a.claims, 'claim')} with a known answer. The target was at most ${formatPercent(a.target_risk)} wrong.`}
     >
-      <p className="text-sm text-fg">
+      <p className="text-base text-fg">
         {a.measured_threshold != null
           ? `The lowest bar that keeps the share wrong under the target is ${a.measured_threshold.toFixed(2)}.`
           : `No bar brings the upper bound under ${formatPercent(a.target_risk)}, so this measurement does not choose a bar. The bar in use, ${a.current_threshold.toFixed(2)}, is a rule that was checked, not one that was calibrated.`}
@@ -225,7 +225,7 @@ export function ModelPage() {
           aria-pressed={c.id === chain}
           onClick={() => setParams(c.id === 'tron' ? {} : { chain: c.id }, { replace: true })}
           className={cx(
-            'inline-flex h-9 items-center rounded border px-3 text-sm',
+            'inline-flex h-9 items-center rounded border px-3 text-base',
             c.id === chain ? 'border-fg bg-fg font-semibold text-page' : 'border-rule-strong bg-surface text-fg hover:bg-sunk',
           )}
         >
@@ -275,7 +275,7 @@ export function ModelPage() {
 
           <div className="grid items-start gap-4 lg:grid-cols-2">
             <Panel title="Calibration" note="When the model says 0.9, are nine in ten such addresses deposit addresses? Points on the dashed line mean yes.">
-              {m.reliability.length > 0 ? <ReliabilityPlot bins={m.reliability} /> : <p className="text-sm text-muted">Not yet measured.</p>}
+              {m.reliability.length > 0 ? <ReliabilityPlot bins={m.reliability} /> : <p className="text-base text-muted">Not yet measured.</p>}
             </Panel>
             <Panel title="Accuracy when answering, against coverage" note="Answer only the addresses the model is surest about: how many can it answer, and how often is it right?">
               {m.risk_coverage.length > 1 ? (
@@ -294,7 +294,7 @@ export function ModelPage() {
                   }
                 />
               ) : (
-                <p className="text-sm text-muted">Not yet measured.</p>
+                <p className="text-base text-muted">Not yet measured.</p>
               )}
             </Panel>
           </div>
@@ -316,14 +316,14 @@ export function ModelPage() {
             {(m.baseline || m.look_alikes) && (
               <Panel title="Read these against one rule, not against chance">
                 {m.baseline && (
-                  <p className="max-w-prose text-sm text-fg">
+                  <p className="max-w-prose text-base text-fg">
                     The single rule <code className="font-mono">{m.baseline.rule}</code> (an address forwards 90% or more of what it receives) scores precision{' '}
                     <span className={mono}>{score(m.baseline.precision)}</span> and recall <span className={mono}>{score(m.baseline.recall)}</span> on the same test addresses. That
                     is the bar the model has to clear.
                   </p>
                 )}
                 {m.look_alikes && (
-                  <p className="max-w-prose text-sm text-fg">
+                  <p className="max-w-prose text-base text-fg">
                     Its gain is on the look-alikes: of the <span className={mono}>{count(m.look_alikes.negatives)}</span> test wallets that forward as much but are not deposit
                     addresses, the model calls <span className={mono}>{count(m.look_alikes.flagged)}</span> a deposit address (
                     <span className={mono}>{pct(m.look_alikes.false_positive_rate)}</span>
@@ -345,14 +345,14 @@ export function ModelPage() {
             <Abstain a={m.abstain} />
           ) : (
             <Panel title="The naming bar">
-              <p className="text-sm text-muted">Not yet measured on {about.name}: the 0.60 naming bar was checked on Tron wallets only.</p>
+              <p className="text-base text-muted">Not yet measured on {about.name}: the 0.60 naming bar was checked on Tron wallets only.</p>
             </Panel>
           )}
 
           {m.notes.length > 0 && (
             <Panel title="What these numbers are, and are not">
               <Sentences items={m.notes} />
-              <p className="border-t border-rule pt-2 text-xs text-muted">
+              <p className="border-t border-rule pt-2 text-sm text-muted">
                 Only the model's probability is calibrated. A case's confidence also carries rule-set weights (label tier, hops, share of the funds); see a case's{' '}
                 <Link to="/cases" className="underline decoration-rule-strong underline-offset-2 hover:text-fg">
                   evidence

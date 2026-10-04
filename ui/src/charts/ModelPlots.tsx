@@ -132,7 +132,7 @@ export function CoveragePlot({
           </>
         )}
       </PlotFrame>
-      {y0 > 0 && <p className="text-xs text-muted">The vertical axis starts at {Math.round(y0 * 100)}%, not at zero.</p>}
+      {y0 > 0 && <p className="text-sm text-muted">The vertical axis starts at {Math.round(y0 * 100)}%, not at zero.</p>}
       <ChartTable caption={caption} head={['Share answered', 'Right when answering']} rows={points.map((p) => [share(p.coverage), share(p.accuracy)])} />
     </div>
   )

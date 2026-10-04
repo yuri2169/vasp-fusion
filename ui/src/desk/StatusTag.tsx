@@ -21,7 +21,7 @@ export function StatusTag({ status, className }: { status: DeskStatus; className
     <span
       data-testid="status-tag"
       data-status={status}
-      className={cx('inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border px-1.5 text-xs font-medium', box, className)}
+      className={cx('inline-flex h-6 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-sm border px-1.5 text-sm font-medium', box, className)}
     >
       <Icon size={13} aria-hidden className="shrink-0" />
       {STATUS_WORDS[status]}

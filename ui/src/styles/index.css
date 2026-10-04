@@ -1,15 +1,31 @@
-/* Fonts are self-hosted (the demo runs with no network). Latin, plus latin-ext for the rupee sign. */
-@import '@fontsource-variable/bricolage-grotesque/wght.css';
-@import '@fontsource/ibm-plex-sans/latin-400.css';
-@import '@fontsource/ibm-plex-sans/latin-500.css';
-@import '@fontsource/ibm-plex-sans/latin-600.css';
-@import '@fontsource/ibm-plex-sans/latin-ext-400.css';
-@import '@fontsource/ibm-plex-sans/latin-ext-500.css';
-@import '@fontsource/ibm-plex-mono/latin-400.css';
-@import '@fontsource/ibm-plex-mono/latin-500.css';
-@import '@fontsource/ibm-plex-mono/latin-600.css';
-@import '@fontsource/ibm-plex-mono/latin-ext-400.css';
-@import '@fontsource/ibm-plex-mono/latin-ext-500.css';
+/* VASP-FUSION: the BTC-FUSION design language, applied to this problem statement.
+ * See ui/DESIGN.md, and BTC-FUSION's docs/ui_architecture.md for why each rule exists.
+ *
+ * HOUSE RULES
+ *   - Radius 0 to 2px. Nothing is a floating rounded card.
+ *   - Depth comes from hairline borders and background steps, never box-shadow.
+ *   - No gradients except where one encodes a magnitude.
+ *   - MONO IS FOR VALUES ONLY: addresses, transaction hashes, amounts, timestamps.
+ *     Labels, headings, chips and prose are Public Sans.
+ *   - Every figure is tabular and right-aligned so columns compare vertically.
+ *   - Density is the feature.
+ *   - ONE FRAME between a leaf and the page; THREE PANEL WEIGHTS, no more.
+ *
+ * Fonts are self-hosted (the demo runs with no network). Latin, plus latin-ext for the rupee sign. */
+@import '@fontsource/public-sans/latin-400.css';
+@import '@fontsource/public-sans/latin-500.css';
+@import '@fontsource/public-sans/latin-600.css';
+@import '@fontsource/public-sans/latin-700.css';
+@import '@fontsource/public-sans/latin-ext-400.css';
+@import '@fontsource/public-sans/latin-ext-500.css';
+@import '@fontsource/archivo/latin-600.css';
+@import '@fontsource/archivo/latin-700.css';
+@import '@fontsource/archivo/latin-800.css';
+@import '@fontsource/spline-sans-mono/latin-400.css';
+@import '@fontsource/spline-sans-mono/latin-500.css';
+@import '@fontsource/spline-sans-mono/latin-600.css';
+@import '@fontsource/spline-sans-mono/latin-ext-400.css';
+@import '@fontsource/spline-sans-mono/latin-ext-500.css';
 @import './tokens.css';
 
 @tailwind base;
@@ -17,29 +33,33 @@
 @tailwind utilities;
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
   html {
-    background: var(--bg);
-    color: var(--fg);
+    background: var(--paper);
+    color: var(--ink);
     font-family: theme('fontFamily.sans');
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13px;
+    line-height: 19px;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    font-variant-numeric: tabular-nums;
   }
 
-  body {
-    min-height: 100vh;
+  /* The landing's "how it works" cue is an in-page anchor; this makes it travel. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
-  /* One focus ring, everywhere: 2px in the text colour, 2px clear of the control. */
+  /* Focus rings stay, in the chain colour, on every ground. */
   :focus-visible {
     outline: 2px solid var(--focus);
-    outline-offset: 2px;
-  }
-
-  /* On the ink rail the ring is paper, in both themes. */
-  .on-rail {
-    --focus: var(--rail-focus);
+    outline-offset: 1px;
   }
 
   /* Addresses, hashes and amounts. Zero is slashed so 0 and O never read alike. */
@@ -48,106 +68,168 @@
   }
 
   ::selection {
-    background: var(--saffron-wash);
-    color: var(--fg);
+    background: color-mix(in srgb, var(--fusion) 28%, transparent);
+  }
+
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--surface-2);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule);
+    border: 3px solid var(--surface-2);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-dim);
   }
 
   dialog::backdrop {
-    background: rgb(26 15 22 / 0.55);
+    background: rgb(5 8 11 / 0.6);
   }
 }
 
 @layer components {
-  /* Page titles and the names on stamps. Used with restraint. */
-  .display {
-    font-family: theme('fontFamily.display');
-    font-variation-settings: 'wght' 650;
-    letter-spacing: -0.01em;
+  .mono {
+    font-family: theme('fontFamily.mono');
+    font-feature-settings: 'zero' 1;
   }
 
-  /* Small capitals for field labels: an evidence tag's printed heading. */
+  /* The masthead voice. Every screen gets exactly one, and it is the largest thing on it.
+     A size utility beside it (`display text-lg`) wins, for a name set in the same voice. */
+  .display {
+    font-family: theme('fontFamily.cond');
+    font-weight: 800;
+    letter-spacing: -0.022em;
+    text-transform: uppercase;
+    line-height: 1.02;
+    font-size: clamp(22px, 2.9vw, 32px);
+  }
+
+  /* A name in the display face at reading size: an exchange, a panel's heading. */
+  .title {
+    font-family: theme('fontFamily.cond');
+    font-weight: 700;
+    letter-spacing: -0.012em;
+    line-height: 1.15;
+  }
+
+  /* The headline figure a screen is about. */
+  .figure {
+    font-family: theme('fontFamily.cond');
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(26px, 3.6vw, 40px);
+  }
+
+  /* Section label. Public Sans, not mono. */
   .eyebrow {
-    font-size: 12px;
-    line-height: 16px;
+    font-family: theme('fontFamily.sans');
+    font-size: 11px;
+    line-height: 15px;
+    font-weight: 600;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* Column headers are not section headings, and must not look like them. */
+  .colhead {
+    font-family: theme('fontFamily.sans');
+    font-size: 10px;
+    line-height: 14px;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--fg-muted);
+    color: var(--ink-dim);
   }
 
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+  .num {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
 
-  /* The docket stamp: a double rule, as a rubber stamp leaves. */
+  /* Panel weight: one focal panel per screen, the default hairline, and the filled one. */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+  }
+  .panel-primary {
+    background: var(--surface);
+    border: 1px solid var(--ink);
+  }
+  .panel-sub {
+    background: var(--surface-2);
+    border: 0;
+  }
+
+  /* Row hover. The inset shadow draws the left edge bar without a border, so the row does
+     not shift under the cursor. (An inset edge is a mark, not depth.) */
+  .row-hover {
+    transition: background-color 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .row-hover:hover,
+  .row-hover:focus-visible {
+    background: var(--active-wash);
+    box-shadow: inset 2px 0 0 0 var(--active);
+  }
+
+  /* The outcome plate the Hop Rail ends in: square, one hairline in its own colour. */
   .stamp {
     position: relative;
-    border: 2px solid currentColor;
-    border-radius: 2px;
-  }
-  .stamp::after {
-    content: '';
-    position: absolute;
-    inset: 2px;
     border: 1px solid currentColor;
-    border-radius: 1px;
-    opacity: 0.55;
-    pointer-events: none;
   }
   .stamp-dashed {
     border-style: dashed;
   }
-  .stamp-dashed::after {
-    display: none;
-  }
+  /* Kept as a hook for the rail's terminal plate; nothing in this language is set askew. */
   .stamp-tilt {
-    transform: rotate(-1.5deg);
+    transform: none;
   }
 
-  /* The ticket stub on a hop: perforated on both short sides. */
+  /* The stub on a hop: a square tag on the line, in the chain colour (an on-chain fact). */
   .stub {
     position: relative;
     background: var(--surface);
-    border-top: 1px solid var(--rule-strong);
-    border-bottom: 1px solid var(--rule-strong);
-    border-left: 1px dashed var(--rule-strong);
-    border-right: 1px dashed var(--rule-strong);
+    border: 1px solid var(--chain);
   }
 
   /* Confidence under the bar: hatched, so it reads as "not enough" without colour. */
   .hatch {
-    background-image: repeating-linear-gradient(
-      135deg,
-      var(--fg-muted) 0,
-      var(--fg-muted) 2px,
-      transparent 2px,
-      transparent 5px
-    );
+    background-image: repeating-linear-gradient(135deg, var(--ink-soft) 0, var(--ink-soft) 2px, transparent 2px, transparent 5px);
   }
 
   .skeleton {
-    background: var(--surface-sunk);
-    border-radius: 2px;
+    background: var(--surface-3);
     animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+
+  /* Graph paper under the landing explainer: the same rules the panels use, kept faint. */
+  .plate-grid {
+    background-image:
+      repeating-linear-gradient(to right, color-mix(in srgb, var(--rule) 55%, transparent) 0 1px, transparent 1px 200px),
+      repeating-linear-gradient(to bottom, color-mix(in srgb, var(--rule) 55%, transparent) 0 1px, transparent 1px 200px),
+      repeating-linear-gradient(to right, color-mix(in srgb, var(--rule-soft) 60%, transparent) 0 1px, transparent 1px 40px),
+      repeating-linear-gradient(to bottom, color-mix(in srgb, var(--rule-soft) 60%, transparent) 0 1px, transparent 1px 40px);
+  }
+
+  .blink {
+    animation: blink 1.2s steps(2, start) infinite;
   }
 }
 
 /* --- motion -----------------------------------------------------------------
-   One orchestrated animation in the whole app: the Hop Rail extending, hop by
-   hop, and the stamp landing at the end. Everything else is still. */
+   One idea: instrumentation coming alive. A trace draws, a bar grows, a counter
+   settles. 150 to 900ms, exponential ease-out, no bounce. */
 
-@keyframes rail-step {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes rail-draw {
+@keyframes grow-x {
   from {
     transform: scaleX(0);
   }
@@ -155,30 +237,83 @@
     transform: scaleX(1);
   }
 }
-
-/* The stamp comes down from above the page, a little askew, and settles. (Its resting
-   1.5 degree tilt is on the stamp itself; this is only the landing.) */
-@keyframes stamp-land {
-  0% {
+@keyframes rise {
+  from {
     opacity: 0;
-    transform: rotate(-6deg) scale(1.35);
+    transform: translateY(4px);
   }
-  60% {
+  to {
     opacity: 1;
-    transform: rotate(0.5deg) scale(0.97);
+    transform: none;
   }
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes blink {
+  0%,
   100% {
     opacity: 1;
-    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
   }
 }
 
+.anim-bar {
+  transform-origin: left center;
+  animation: grow-x 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-rise {
+  animation: rise 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Curves draw themselves. The path sets --len from its own getTotalLength(). */
+.anim-draw {
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  animation: draw 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.animate-ping-soft {
+  position: relative;
+}
+.animate-ping-soft::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--chain);
+  animation: ping-soft 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* The Hop Rail extending, hop by hop, and the plate arriving at its end. */
+@keyframes rail-step {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 @keyframes rail-trace {
   to {
     background-position: 16px 0;
   }
 }
-
 @keyframes skeleton-pulse {
   0%,
   100% {
@@ -190,36 +325,62 @@
 }
 
 .rail-step {
-  animation: rail-step 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rail-step 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--step, 0) * 260ms);
 }
-
 .rail-step .rail-line {
   transform-origin: left center;
-  animation: rail-draw 260ms ease-out both;
+  animation: grow-x 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--step, 0) * 260ms);
 }
-
 .rail-stamp {
-  animation: stamp-land 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: rise 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--step, 0) * 260ms + 120ms);
 }
-
 .rail-tracing {
-  background-image: linear-gradient(90deg, var(--rule-strong) 50%, transparent 50%);
-  background-size: 16px 2px;
+  background-image: linear-gradient(90deg, var(--chain) 50%, transparent 50%);
+  background-size: 16px 1px;
   animation: rail-trace 600ms linear infinite;
 }
 
+/* Reduced motion neutralises the INITIAL states too. `both` fill would otherwise strand an
+   element at its 0% keyframe: an invisible row, a zero-width bar, an undrawn curve.
+   Reduced motion must mean no motion, never no content. */
 @media (prefers-reduced-motion: reduce) {
-  .rail-step,
-  .rail-step .rail-line,
-  .rail-stamp,
-  .rail-tracing,
-  .skeleton {
-    animation: none;
-  }
-  * {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .anim-bar,
+  .rail-step .rail-line {
+    transform: none !important;
+  }
+  .anim-rise,
+  .rail-step,
+  .rail-stamp {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .anim-draw {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .animate-ping-soft::after {
+    display: none !important;
+  }
+  .rail-tracing,
+  .skeleton,
+  .blink {
+    animation: none !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
   }
 }

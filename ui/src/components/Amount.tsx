@@ -3,7 +3,7 @@ import { formatNumber, formatUsd } from '../lib/format'
 
 const DOLLAR_STABLECOINS = new Set(['USDT', 'USDC', 'DAI', 'TUSD', 'USDD', 'BUSD', 'FDUSD'])
 
-const SIZE = { sm: 'text-xs', md: 'text-sm', lg: 'text-lg' }
+const SIZE = { sm: 'text-sm', md: 'text-base', lg: 'text-lg' }
 
 /** An amount in its own asset, in mono with tabular figures, with the US dollar value
  *  after it when there is one and it says something the amount does not. */

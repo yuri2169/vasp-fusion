@@ -18,13 +18,13 @@ export function DeskNav({ counts }: { counts?: { exchanges?: number; requests?: 
           end
           className={({ isActive }) =>
             cx(
-              '-mb-px inline-flex h-9 items-center gap-1.5 rounded-t border border-b-0 px-3.5 text-sm',
+              '-mb-px inline-flex h-9 items-center gap-1.5 rounded-t border border-b-0 px-3.5 text-base',
               isActive ? 'border-rule-strong bg-surface font-semibold text-fg' : 'border-transparent text-muted hover:bg-sunk hover:text-fg',
             )
           }
         >
           {name}
-          {count[i] != null && <span className="tabular font-mono text-xs text-muted">{count[i]}</span>}
+          {count[i] != null && <span className="tabular font-mono text-sm text-muted">{count[i]}</span>}
         </NavLink>
       ))}
     </nav>

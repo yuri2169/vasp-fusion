@@ -104,30 +104,32 @@ const PATTERNS: [TypologyCode, Severity][] = [
   ['deposit_like', 'info'],
 ]
 
-const BRAND: [string, string, string][] = [
-  ['--ink', '#2B1622', 'Nav rail, headings'],
-  ['--paper', '#F5F4F8', 'Page background'],
-  ['--saffron', '#E8772E', 'The attributed exchange, the primary action'],
-  ['--verified', '#1F7A74', 'Published or explorer-tagged evidence'],
-  ['--seal', '#B3261E', 'Sanctioned, mixer, freeze'],
-  ['--slate', '#5B5566', 'Secondary text, derived evidence'],
+/** The layer palette: a colour is a claim about where a fact comes from. */
+const LAYERS: [string, string][] = [
+  ['--chain', 'On-chain facts: addresses, transfers, amounts, hops'],
+  ['--network', 'Label evidence: who an address belongs to'],
+  ['--fusion', 'The answer: named exchange, proximity, confidence'],
+  ['--confirm', 'Officer actions: approve, mark as sent, record a reply'],
+  ['--danger', 'Sanctioned or mixer contact, failures'],
+  ['--data', 'Unlabelled, insufficient evidence'],
 ]
 
 const ROLES: [string, string][] = [
-  ['--bg', 'Page'],
-  ['--surface', 'Cards, tables'],
-  ['--surface-sunk', 'Wells, table header'],
+  ['--paper', 'Page'],
+  ['--surface', 'Panels, tables'],
+  ['--surface-2', 'Filled panels, table header'],
+  ['--surface-3', 'Bar tracks, hover on a control'],
   ['--rule', 'Hairlines'],
-  ['--rule-strong', 'Control borders'],
-  ['--fg', 'Text'],
-  ['--fg-muted', 'Secondary text'],
-  ['--saffron-text', 'Saffron as text'],
-  ['--verified-text', 'Teal as text'],
-  ['--seal-text', 'Red as text'],
-  ['--saffron-wash', 'Saffron tint'],
-  ['--verified-wash', 'Teal tint'],
-  ['--seal-wash', 'Red tint'],
-  ['--slate-wash', 'Slate tint'],
+  ['--rule-soft', 'Row rules'],
+  ['--ink', 'Text'],
+  ['--ink-soft', 'Secondary text'],
+  ['--ink-dim', 'Column heads, metadata'],
+  ['--active-wash', 'Hover, selection (interaction only)'],
+  ['--chain-wash', 'Chain tint'],
+  ['--network-wash', 'Label tint'],
+  ['--fusion-wash', 'Answer tint'],
+  ['--confirm-wash', 'Action tint'],
+  ['--danger-wash', 'Danger tint'],
 ]
 
 function Section({ title, note, children }: { title: string; note?: ReactNode; children: ReactNode }) {
@@ -135,10 +137,10 @@ function Section({ title, note, children }: { title: string; note?: ReactNode; c
   return (
     <section aria-labelledby={id} className="border-t border-rule py-8">
       <div className="mb-5 grid gap-x-8 gap-y-1 lg:grid-cols-[220px_1fr]">
-        <h2 id={id} className="display text-lg">
+        <h2 id={id} className="title text-lg">
           {title}
         </h2>
-        {note && <p className="max-w-prose text-sm text-muted">{note}</p>}
+        {note && <p className="max-w-prose text-base text-muted">{note}</p>}
       </div>
       <div className="flex flex-col gap-6">{children}</div>
     </section>
@@ -158,13 +160,13 @@ function Spec({ label, children, block, wide }: { label: string; children: React
 function Swatch({ token, hex, use }: { token: string; hex?: string; use: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="h-10 w-10 shrink-0 rounded border border-rule-strong" style={{ background: `var(${token})` }} />
+      <span className="h-8 w-8 shrink-0 border border-rule" style={{ background: `var(${token})` }} />
       <div className="min-w-0">
-        <p className="font-mono text-xs text-fg">
+        <p className="font-mono text-sm text-fg">
           {token}
           {hex && <span className="text-muted"> {hex}</span>}
         </p>
-        <p className="truncate text-xs text-muted">{use}</p>
+        <p className="truncate text-sm text-muted">{use}</p>
       </div>
     </div>
   )
@@ -219,46 +221,46 @@ export function KitPage() {
         <ErrorState title="The fixtures could not be loaded" detail={(cases.error as Error).message} onRetry={() => void cases.refetch()} />
       )}
 
-      <Section title="Colour" note="Six brand colours that never change, and role tokens that switch with the theme. Saffron means the attributed exchange or the primary action, and nothing else.">
+      <Section title="Colour" note="The palette is BTC-FUSION’s. A colour says where a fact comes from, never a mood; hover and selection are ink, so no layer colour ever means “you are pointing at this”.">
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-3">
-          {BRAND.map(([token, hex, use]) => (
-            <Swatch key={token} token={token} hex={hex} use={use} />
+          {LAYERS.map(([token, use]) => (
+            <Swatch key={token} token={token} use={use} />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-dashed border-rule pt-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-rule-soft pt-4 lg:grid-cols-4">
           {ROLES.map(([token, use]) => (
             <Swatch key={token} token={token} use={use} />
           ))}
         </div>
       </Section>
 
-      <Section title="Type" note="Bricolage Grotesque for page titles and the names on stamps. IBM Plex Sans for everything read. IBM Plex Mono for every address, hash and amount.">
-        <Spec label="Display 40" block>
-          <p className="display text-2xl">Draft request to CoinDCX</p>
+      <Section title="Type" note="Archivo for the masthead and names. Public Sans for everything read. Spline Sans Mono for values only: every address, hash, amount and timestamp.">
+        <Spec label="Display 34" block>
+          <p className="title text-3xl">Draft request to CoinDCX</p>
         </Spec>
-        <Spec label="Display 28" block>
-          <p className="display text-xl">Where the funds went</p>
+        <Spec label="Display 24" block>
+          <p className="title text-2xl">Where the funds went</p>
         </Spec>
-        <Spec label="Display 20" block>
-          <p className="display text-lg">Exchanges reached</p>
+        <Spec label="Display 18" block>
+          <p className="title text-lg">Exchanges reached</p>
         </Spec>
         <Spec label="Body 16" block>
-          <p className="max-w-prose text-base">The narrative of a case is set at 16: it is the paragraph an officer reads in full.</p>
+          <p className="max-w-prose text-md">Prose meant to be read is set at 16: the narrative of a case.</p>
         </Spec>
-        <Spec label="Body 14" block>
-          <p className="max-w-prose text-sm">Everything else is 14: tables, labels, controls, the sentences that say what to do next.</p>
+        <Spec label="Body 13" block>
+          <p className="max-w-prose text-base">Everything else is 13: tables, labels, controls, the sentences that say what to do next.</p>
         </Spec>
         <Spec label="Small 12" block>
-          <p className="text-xs text-muted">Captions, tags and the figures under a meter.</p>
+          <p className="text-sm text-muted">Captions, tags and the figures under a meter.</p>
         </Spec>
         <Spec label="Field label" block>
           <p className="eyebrow">Exchanges reached</p>
         </Spec>
-        <Spec label="Mono 14" block>
-          <p className="break-all font-mono text-sm">{HERO_TRON}</p>
+        <Spec label="Mono 13" block>
+          <p className="break-all font-mono text-base">{HERO_TRON}</p>
         </Spec>
         <Spec label="Mono 12, tabular" block>
-          <p className="tabular font-mono text-xs">
+          <p className="tabular font-mono text-sm">
             0123456789 · 2,652.22 USDT · 0.364594 BTC · {formatInr(4050000)}
           </p>
         </Spec>
@@ -361,7 +363,7 @@ export function KitPage() {
         </Spec>
       </Section>
 
-      <Section title="Outcome stamps" note="What a case came to. Attributed is solid saffron; insufficient evidence is dashed slate and says what would change it; sanctioned or mixer reached is seal red.">
+      <Section title="Outcome stamps" note="What a case came to. Attributed is a solid plate in the fusion colour; insufficient evidence is dashed and neutral and says what would change it; sanctioned or mixer reached is seal red.">
         <Spec label="On a case">
           {cases.data ? (
             cases.data.map((c) => <OutcomeStamp key={c.id} {...stampOf(c)} size="lg" />)
@@ -438,7 +440,7 @@ export function KitPage() {
           )}
         </Spec>
         <Spec label="Reported loss">
-          {okx?.amount_lost_inr != null && <span className="tabular font-mono text-sm">{formatInr(okx.amount_lost_inr)}</span>}
+          {okx?.amount_lost_inr != null && <span className="tabular font-mono text-base">{formatInr(okx.amount_lost_inr)}</span>}
         </Spec>
       </Section>
 
@@ -458,7 +460,7 @@ export function KitPage() {
         </Spec>
       </Section>
 
-      <Section title="Hop Rail" note="The signature of a case: the suspect wallet, each hop with its ticket stub (amount, time taken), and the docket stamp it ends in. When a trace finishes, the rail extends hop by hop. That is the one animation in the app.">
+      <Section title="Hop Rail" note="The signature of a case: the suspect wallet, each hop with its stub (amount, time taken), and the docket stamp it ends in. When a trace finishes, the rail extends hop by hop. That is the one animation in the app.">
         <Spec label="Attributed" block wide>
           <div className="flex flex-col items-start gap-3">
             {okx ? (
@@ -503,7 +505,7 @@ export function KitPage() {
         </Spec>
       </Section>
 
-      <Section title="Where the funds went" note="One bar for the whole of what the wallet sent. Kind is not told by hue: saffron is the exchange the case names, ink any other named party, red a sanctioned address or a mixer, and everything unresolved is hatched. Every part is named under the bar.">
+      <Section title="Where the funds went" note="One bar for the whole of what the wallet sent. Kind is not told by hue: the fusion colour is the exchange the case names, ink any other named party, red a sanctioned address or a mixer, and everything unresolved is hatched. Every part is named under the bar.">
         {FUNDS.map((f) => (
           <Spec key={f.total} label={f.named ? 'An exchange is named' : f.slices[0].kind === 'sanctioned' ? 'Sanctioned' : 'No exchange reached'} block wide>
             <FundsBar slices={f.slices} asset={f.asset} total={f.total} named={f.named} />
@@ -531,7 +533,7 @@ export function KitPage() {
       <Section title="Tabs" note="The index tabs of a file. One tab stop; the arrow keys move along them, Home and End jump to the ends. A count says how many records a tab holds.">
         <Spec label="Case records" block wide>
           <Tabs label="Case records" tabs={KIT_TABS} active={tab} onChange={setTab}>
-            <p className="text-sm text-muted">The {KIT_TABS.find((t) => t.id === tab)!.label.toLowerCase()} of the case goes here.</p>
+            <p className="text-base text-muted">The {KIT_TABS.find((t) => t.id === tab)!.label.toLowerCase()} of the case goes here.</p>
           </Tabs>
         </Spec>
       </Section>

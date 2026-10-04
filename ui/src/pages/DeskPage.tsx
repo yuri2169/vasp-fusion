@@ -28,20 +28,20 @@ function FollowUps({ items }: { items: FollowUp[] }) {
         Follow up
       </h2>
       {items.length === 0 ? (
-        <p className="rounded-md border border-dashed border-rule-strong px-4 py-3 text-sm text-muted">Nothing is overdue. No reply is past its day.</p>
+        <p className="border-l-2 border-data bg-surface-2 px-4 py-3 text-base text-ink-soft">Nothing is overdue. No reply is past its day.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((f) => (
             <li
               key={f.request_id + f.kind}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-seal-text bg-seal-wash px-4 py-3"
+              className="flex flex-wrap items-center gap-x-4 gap-y-2 border-l-2 border-danger bg-danger-wash px-4 py-3"
             >
               <CalendarClock size={18} aria-hidden className="shrink-0 text-seal-text" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-seal-text">{FOLLOW_UP_WORDS[f.kind]}</p>
-                <p className="text-sm text-fg">{f.text}</p>
+                <p className="text-sm font-semibold uppercase tracking-wide text-seal-text">{FOLLOW_UP_WORDS[f.kind]}</p>
+                <p className="text-base text-fg">{f.text}</p>
               </div>
-              <span className="tabular whitespace-nowrap font-mono text-xs text-muted">due {formatDate(f.due)}</span>
+              <span className="tabular whitespace-nowrap font-mono text-sm text-muted">due {formatDate(f.due)}</span>
               <Link to={requestLink(f.request_id)} aria-label={`Open request to ${f.vasp}`} className={buttonClass('secondary', 'sm')}>
                 Open request
               </Link>
@@ -76,7 +76,7 @@ export function DeskPage() {
       header: 'Exchange',
       sortValue: (r) => r.vasp.toLowerCase(),
       cell: (r) => (
-        <Link to={vaspLink(r.vasp)} className="display text-base text-fg underline-offset-2 hover:underline">
+        <Link to={vaspLink(r.vasp)} className="title text-md text-fg underline-offset-2 hover:underline">
           {r.vasp}
         </Link>
       ),
@@ -86,7 +86,7 @@ export function DeskPage() {
       header: 'Wallets',
       align: 'right',
       sortValue: (r) => r.wallet_count,
-      cell: (r) => <span className="tabular font-mono text-sm">{r.wallet_count}</span>,
+      cell: (r) => <span className="tabular font-mono text-base">{r.wallet_count}</span>,
     },
     {
       key: 'usd',
@@ -94,7 +94,7 @@ export function DeskPage() {
       align: 'right',
       sortValue: (r) => r.total_usd,
       cell: (r) => (
-        <span className="tabular whitespace-nowrap font-mono text-sm font-medium" title="US-dollar stablecoins only; other assets are not converted">
+        <span className="tabular whitespace-nowrap font-mono text-base font-medium" title="US-dollar stablecoins only; other assets are not converted">
           {formatUsd(r.total_usd)}
         </span>
       ),
@@ -105,7 +105,7 @@ export function DeskPage() {
       cell: (r) => (
         <span className="flex flex-wrap gap-x-2 gap-y-0.5">
           {r.case_ids.map((id) => (
-            <Link key={id} to={`/cases/${encodeURIComponent(id)}`} className="whitespace-nowrap text-sm text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-current">
+            <Link key={id} to={`/cases/${encodeURIComponent(id)}`} className="whitespace-nowrap text-base text-fg underline decoration-rule-strong underline-offset-2 hover:decoration-current">
               {refOf(id)}
             </Link>
           ))}
@@ -123,7 +123,7 @@ export function DeskPage() {
       header: 'Next action',
       cell: (r) => (
         <span className="flex items-center justify-between gap-3">
-          <span className="min-w-0 text-sm text-fg">{r.next_action}</span>
+          <span className="min-w-0 text-base text-fg">{r.next_action}</span>
           <span className="flex shrink-0 gap-1.5">
             {r.last_request_id && (
               <Link to={requestLink(r.last_request_id)} aria-label={`Open request to ${r.vasp}`} className={buttonClass('secondary', 'sm')}>
@@ -179,7 +179,7 @@ export function DeskPage() {
             loading={desk.isPending}
             onRowOpen={(r) => navigate(vaspLink(r.vasp))}
           />
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-sm text-muted">
             Traced, USD counts US-dollar stablecoins only. The day a reply is due is an office reminder set for this installation, not a period set by law.
           </p>
         </>
