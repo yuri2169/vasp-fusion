@@ -12,6 +12,7 @@ import { DeskNav } from '../desk/DeskNav'
 import { DraftDialog } from '../desk/DraftDialog'
 import { StatusTag } from '../desk/StatusTag'
 import { FOLLOW_UP_WORDS, STATUS_ORDER } from '../desk/status'
+import { Rupees } from '../components/Rupees'
 import { formatDate, formatUsd } from '../lib/format'
 
 const vaspLink = (name: string) => `/vasps/${encodeURIComponent(name)}`
@@ -90,12 +91,13 @@ export function DeskPage() {
     },
     {
       key: 'usd',
-      header: 'Traced, USD',
+      header: 'Traced, USD and ₹',
       align: 'right',
       sortValue: (r) => r.total_usd,
       cell: (r) => (
         <span className="tabular whitespace-nowrap font-mono text-base font-medium" title="US-dollar stablecoins only; other assets are not converted">
           {formatUsd(r.total_usd)}
+          <Rupees usd={r.total_usd} className="ml-2 font-normal text-muted" />
         </span>
       ),
     },

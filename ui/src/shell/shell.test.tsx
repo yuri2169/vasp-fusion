@@ -190,6 +190,14 @@ describe('the app shell', () => {
     ])
   })
 
+  it('says once per screen which rate the rupee amounts are at', async () => {
+    const fx = await api.fx()
+    renderApp(<AppRoutes />, { route: '/cases' })
+    expect(await screen.findByText(fx.basis)).toBeInTheDocument()
+    expect(fx.basis).toContain(fx.rate.toFixed(2))
+    expect(screen.getAllByText(fx.basis)).toHaveLength(1)
+  })
+
   it('offers three themes, and says which is on', async () => {
     const { user } = renderApp(<AppRoutes />, { route: '/cases' })
     const themes = await screen.findByRole('radiogroup', { name: 'Colour theme' })

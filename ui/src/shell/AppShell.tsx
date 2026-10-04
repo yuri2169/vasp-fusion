@@ -1,3 +1,4 @@
+import { FxProvider } from '../components/Rupees'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router'
@@ -38,6 +39,7 @@ export function AppShell() {
   // The landing is full-bleed (its own veil and grid); every other screen sits in the content column.
   const home = pathname === '/'
   return (
+    <FxProvider>
     <div className="flex min-h-full flex-col bg-paper text-ink print:block print:min-h-0 print:bg-transparent">
       <a href="#content" className="sr-only z-50 bg-surface px-3 py-2 text-base font-medium text-ink focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
         Skip to content
@@ -54,5 +56,6 @@ export function AppShell() {
       </main>
       <Footer />
     </div>
+    </FxProvider>
   )
 }

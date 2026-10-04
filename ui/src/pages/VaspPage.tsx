@@ -15,6 +15,7 @@ import { DraftDialog } from '../desk/DraftDialog'
 import { StatusTag } from '../desk/StatusTag'
 import { isOverdue } from '../desk/status'
 import { CHAINS } from '../lib/chains'
+import { Rupees } from '../components/Rupees'
 import { formatConfidence, formatDate, formatUsd } from '../lib/format'
 
 const isChain = (chain: string): chain is Chain => chain in CHAINS
@@ -92,7 +93,7 @@ export function VaspPage() {
       align: 'right',
       sortValue: (w) => w.amount_usd ?? null,
       cell: (w) =>
-        w.amount_usd != null ? <span className="tabular font-mono text-base font-medium">{formatUsd(w.amount_usd)}</span> : <span className="text-muted">not in USD</span>,
+        w.amount_usd != null ? <span className="tabular whitespace-nowrap font-mono text-base font-medium">{formatUsd(w.amount_usd)}<Rupees usd={w.amount_usd} className="ml-2 font-normal text-muted" /></span> : <span className="text-muted">not in USD</span>,
     },
     { key: 'tier', header: 'Evidence tier', cell: (w) => <TierTag tier={w.tier} size="sm" /> },
     {

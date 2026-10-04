@@ -12,6 +12,7 @@ import type {
   CaseSummary,
   Chain,
   Dashboard,
+  FxRate,
   DataSource,
   Desk,
   Health,
@@ -190,6 +191,7 @@ export function createApi(transport: Transport) {
     requestPdfUrl: (id: string) => `/api/requests/${seg(id)}/pdf`,
 
     dashboard: () => get<Dashboard>('/dashboard'),
+    fx: () => get<FxRate>('/fx'),
     /** `chain`: 'tron' (the default) or 'ethereum'. */
     model: (chain?: string) => get<ModelInfo>('/model', { chain }),
     audit: (query?: AuditQuery) => get<AuditPage>('/audit', query),

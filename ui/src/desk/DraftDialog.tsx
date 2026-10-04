@@ -7,6 +7,7 @@ import { Button } from '../components/Button'
 import { Dialog } from '../components/Dialog'
 import { Skeleton } from '../components/Skeleton'
 import { useToast } from '../components/Toast'
+import { useRupees } from '../components/Rupees'
 import { formatUsd } from '../lib/format'
 import { ASK_ORDER, ASK_WORDS } from './status'
 
@@ -41,6 +42,7 @@ function groups(wallets: VaspWallet[]): CaseGroup[] {
  *  and the officer whose name goes under the signature line. The letter itself is written
  *  by the server; it opens as a draft for review. */
 export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; preselect?: string[]; onClose: () => void }) {
+  const rupees = useRupees()
   const page = useVasp(vasp)
   const cases = useCases()
   const me = useMe()
@@ -153,6 +155,7 @@ export function DraftDialog({ vasp, preselect, onClose }: { vasp: string; presel
                   <span className="tabular block font-mono text-sm text-muted">
                     {g.wallets.length} {g.wallets.length === 1 ? 'wallet' : 'wallets'}
                     {g.usd != null && ` · ${formatUsd(g.usd)}`}
+                    {rupees(g.usd) && ` · ${rupees(g.usd)}`}
                   </span>
                 </span>
               </label>

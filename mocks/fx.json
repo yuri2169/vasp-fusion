@@ -1,0 +1,13 @@
+{
+  "_demo": true,
+  "_notice": "UI fixture. Unlike the other mock files this is real: the reference rate in config/fx.yaml, copied when `make mocks` last ran. /api/fx serves the current one.",
+  "rate": 95.79,
+  "as_of": "2026-09-18",
+  "name": "RBI reference rate",
+  "basis": "₹ at 1 USD = ₹95.79, RBI reference rate, 18 Sep 2026",
+  "source_title": "Weekly Statistical Supplement, table \"FBIL Reference Rate and Forward Premia\" (INR per 1 USD, spot)",
+  "source_publisher": "Reserve Bank of India (rate computed by Financial Benchmarks India Pvt Ltd)",
+  "source_url": "https://www.rbi.org.in/Scripts/WSSView.aspx?Id=28732",
+  "published": "2026-09-25",
+  "accessed": "2026-10-04"
+}

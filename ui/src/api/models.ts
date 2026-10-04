@@ -49,6 +49,7 @@ export type DirectorySource = S['DirectorySource']
 export type Ask = RequestCreate['asks'][number]
 
 export type Dashboard = S['Dashboard']
+export type FxRate = S['FxRate']
 export type Alert = S['Alert']
 export type LabelCoverage = S['LabelCoverage']
 export type LabelSource = S['LabelSource']

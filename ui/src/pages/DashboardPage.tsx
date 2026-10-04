@@ -13,6 +13,7 @@ import { Skeleton } from '../components/Skeleton'
 import { TierTag } from '../components/TierTag'
 import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
+import { useRupees } from '../components/Rupees'
 import { formatDate, formatDuration, formatUsd } from '../lib/format'
 import { Ledger, Panel, type LedgerEntry } from '../overview/parts'
 import { chainName, count, plural } from '../overview/words'
@@ -162,6 +163,7 @@ function Coverage({ d }: { d: Dashboard }) {
 /** What is on file today. Every figure is a count of stored cases, requests and labels, and leads to the list behind it. */
 export function DashboardPage() {
   const dash = useDashboard()
+  const rupees = useRupees()
 
   if (dash.isError)
     return (
@@ -232,7 +234,7 @@ export function DashboardPage() {
                     key: v.vasp,
                     label: <span className="font-medium">{v.vasp}</span>,
                     value: v.total_usd,
-                    valueText: formatUsd(v.total_usd),
+                    valueText: [formatUsd(v.total_usd), rupees(v.total_usd)].filter(Boolean).join(' · '),
                     note: plural(v.cases, 'case'),
                     to: `/vasps/${encodeURIComponent(v.vasp)}`,
                   }))}

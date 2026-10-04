@@ -150,6 +150,8 @@ export function useMoveRequest(id: string) {
 
 // --- dashboard, model, wallets, labels, watchlist ------------------------------
 
+/** The rupee reference rate. It is a file on the server: read once. */
+export const useFx = () => useQuery({ queryKey: ['fx'] as const, queryFn: () => api.fx(), staleTime: Infinity })
 export const useDashboard = () => useQuery({ queryKey: keys.dashboard, queryFn: () => api.dashboard() })
 
 /** `chain`: 'tron' (the model the labels carry) or 'ethereum' (the explorer-tagged benchmark). */

@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router'
 import type { Layer } from '../components/Panel'
+import { RupeeBasis } from '../components/Rupees'
 
 /** What each colour says about where a fact comes from (ui/DESIGN.md, "Colour"). */
 // eslint-disable-next-line react/only-export-components
@@ -20,6 +21,7 @@ export function Footer() {
   return (
     <footer className="relative flex shrink-0 flex-wrap items-center gap-x-6 gap-y-1 border-t border-rule bg-surface px-4 py-2 print:hidden">
       <span className="text-2xs text-ink-dim">SIH 2026 · PS 26182 · MHA / I4C · Blockchain &amp; Cybersecurity</span>
+      <RupeeBasis className="text-2xs text-ink-dim" />
       <ul aria-label="Colour key" className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {COLOUR_KEY.map(([layer, words]) => (
           <li key={layer} title={words} className="flex items-center gap-2 text-2xs text-ink-dim">

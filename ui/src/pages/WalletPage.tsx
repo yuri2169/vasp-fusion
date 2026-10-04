@@ -19,6 +19,7 @@ import { useToast } from '../components/Toast'
 import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { addressUrl, explorerName } from '../lib/explorers'
+import { Rupees, usdOf } from '../components/Rupees'
 import { formatAmount, formatDate, formatUsd } from '../lib/format'
 import { Panel } from '../overview/parts'
 import { isChain, plural } from '../overview/words'
@@ -67,6 +68,7 @@ function Flow({ title, flow, chain, empty }: { title: string; flow: FlowSummary 
             <dt className="text-muted">Total</dt>
             <dd className="tabular font-mono text-fg">
               {flow.total != null && flow.asset ? formatAmount(flow.total, flow.asset) : flow.total_usd != null ? formatUsd(flow.total_usd) : 'in more than one asset'}
+              <Rupees usd={flow.total_usd ?? (flow.total != null && flow.asset ? usdOf(flow.total, flow.asset) : null)} />
             </dd>
             {flow.first_seen && flow.last_seen && (
               <>

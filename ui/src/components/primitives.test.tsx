@@ -1,3 +1,4 @@
+import { FxFixed } from './Rupees'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
@@ -105,6 +106,25 @@ describe('Amount', () => {
   it('does not repeat the figure for a dollar stablecoin', () => {
     render(<Amount value={48500} asset="USDT" usd={48500} />)
     expect(screen.queryByText('$48,500')).not.toBeInTheDocument()
+  })
+
+  const RATE = { rate: 80, as_of: '2024-01-01', name: 'RBI reference rate', basis: '₹ at 1 USD = ₹80.00, RBI reference rate, 1 Jan 2024', source_title: 't', source_url: 'u' }
+
+  it('adds rupees at the reference rate beside a dollar amount, in Indian grouping', () => {
+    render(<FxFixed rate={RATE}><Amount value={48500} asset="USDT" /></FxFixed>)
+    expect(screen.getByText('₹38,80,000')).toBeInTheDocument()
+  })
+
+  it('converts the dollar value it was given, not the amount in the asset', () => {
+    render(<FxFixed rate={RATE}><Amount value={0.002428} asset="ETH" usd={9.71} /></FxFixed>)
+    expect(screen.getByText('₹777')).toBeInTheDocument()
+  })
+
+  it('shows no rupees without a rate, and none for an amount that is not in dollars', () => {
+    const { rerender } = render(<Amount value={48500} asset="USDT" />)
+    expect(screen.queryByText(/₹/)).not.toBeInTheDocument()
+    rerender(<FxFixed rate={RATE}><Amount value={0.36} asset="BTC" /></FxFixed>)
+    expect(screen.queryByText(/₹/)).not.toBeInTheDocument()
   })
 
   it('shows no dollar value when there is none (Bitcoin has no price feed)', () => {

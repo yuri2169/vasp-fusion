@@ -418,6 +418,9 @@ def vasp(store: LabelStore, name: str, wallets: list[dict], requests: list[dict]
             "label_counts": counts, "wallets": wallets, "requests": requests}
 
 
+FX_NOTICE = ("UI fixture. Unlike the other mock files this is real: the reference rate in "
+             "config/fx.yaml, copied when `make mocks` last ran. /api/fx serves the current one.")
+
 MODEL_NOTICE = ("UI fixture. Unlike the other mock files these figures are real: the "
                 "deposit-address model's measurements, copied from "
                 "artifacts/model_v1/tron/metrics.json when `make mocks` last ran. "
@@ -436,6 +439,13 @@ def model_mock() -> dict:
                 "feature_importance": [],
                 "notes": ["No model has been measured yet: run `make model`."]}
     return model_info(metrics)
+
+
+def fx_mock() -> dict:
+    """The rate on file (config/fx.yaml), as /api/fx answers. Not invented."""
+    from vaspfusion import fx
+    rate = fx.usd_inr()
+    return S.FxRate.model_validate({**rate, "basis": fx.basis(rate)}).model_dump(mode="json")
 
 
 def main() -> None:
@@ -498,6 +508,7 @@ def main() -> None:
                 "label_coverage": coverage},
             "labels/coverage": coverage,
             "watchlist": {"items": []},
+            "fx": fx_mock(),
             "model": model_mock(),
             "audit": audit_mock(c1, c3, req),
             "auth/me": {"auth_required": True,
@@ -514,8 +525,8 @@ def main() -> None:
         path = MOCKS / f"{rel}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         measured = rel == "model" and body["status"] == "measured"
-        path.write_text(json.dumps({"_demo": True,
-                                    "_notice": MODEL_NOTICE if measured else NOTICE, **body},
+        notice = MODEL_NOTICE if measured else FX_NOTICE if rel == "fx" else NOTICE
+        path.write_text(json.dumps({"_demo": True, "_notice": notice, **body},
                                    indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {len(files)} mock files to {MOCKS.relative_to(ROOT)}/")
 
