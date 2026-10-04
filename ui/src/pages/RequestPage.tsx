@@ -133,7 +133,7 @@ export function RequestPage() {
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] print:block">
-        <aside className="flex flex-col gap-6 lg:sticky lg:top-[76px] lg:order-2 print:hidden">
+        <aside aria-label="This request: next step, checks and history" className="flex flex-col gap-6 lg:sticky lg:top-[76px] lg:order-2 print:hidden">
           <Block title="Next step">
             <p className="text-sm text-fg">{standing(r)}</p>
             <RequestActions request={r} />

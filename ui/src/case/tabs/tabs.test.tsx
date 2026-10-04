@@ -107,7 +107,7 @@ describe('PatternsTab', () => {
     expect(within(patterns).getAllByText('Pattern')).toHaveLength(5)
     expect(within(patterns).getAllByText('Note')).toHaveLength(1)
     expect(within(patterns).queryByText('Lead')).not.toBeInTheDocument()
-    expect(within(screen.getByRole('region', { name: 'Leads to check' })).getAllByText('Lead')).toHaveLength(2)
+    expect(within(screen.getByRole('region', { name: 'Leads to check, in full' })).getAllByText('Lead')).toHaveLength(2)
     const first = abstain.typology_flags[0]
     expect(within(patterns).getByRole('group', { name: `Transaction ${first.tx_hashes[0]}` })).toBeInTheDocument()
   })

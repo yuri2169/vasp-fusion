@@ -42,8 +42,9 @@ export function LetterSheet({ letter }: { letter: RequestLetter }) {
       {draft && (
         <>
           <div className="sheet-watermark" aria-hidden>
-            <span>{draft}</span>
-            <span>{draft}</span>
+            {/* Drawn by CSS from the attribute: it is decoration, the banner says it in readable ink. */}
+            <span data-text={draft} />
+            <span data-text={draft} />
           </div>
           <div className="sheet-watermark-print" aria-hidden>
             {draft}

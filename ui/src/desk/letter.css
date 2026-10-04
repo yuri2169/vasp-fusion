@@ -73,6 +73,10 @@
   transform: rotate(-32deg);
 }
 
+.sheet-watermark span::before {
+  content: attr(data-text);
+}
+
 .sheet-watermark-print {
   display: none;
 }

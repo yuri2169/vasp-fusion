@@ -49,7 +49,9 @@ export interface LedgerEntry {
  *  and (when it has a list behind it) a link to that list. Not cards: one sheet, hairlines between. */
 export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntry[]; label: string; perRow?: 'all' | 3 }) {
   return (
-    <dl
+    // A list, not a <dl>: a count that opens its list is one link, and a <dl> may not hold a link
+    // around its term and value.
+    <ul
       aria-label={label}
       className={cx(
         'grid grid-cols-2 overflow-hidden rounded-md border border-rule bg-surface sm:grid-cols-3',
@@ -59,14 +61,14 @@ export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntr
       {entries.map((e) => {
         const body = (
           <>
-            <dt className="eyebrow">{e.name}</dt>
-            <dd className={cx('tabular mt-1 whitespace-nowrap font-mono text-xl', e.alert ? 'text-seal-text' : 'text-fg')}>{e.value}</dd>
-            {e.note && <dd className="mt-1 text-xs text-muted">{e.note}</dd>}
+            <span className="eyebrow">{e.name}</span>
+            <span className={cx('tabular mt-1 whitespace-nowrap font-mono text-xl', e.alert ? 'text-seal-text' : 'text-fg')}>{e.value}</span>
+            {e.note && <span className="mt-1 text-xs text-muted">{e.note}</span>}
           </>
         )
         const cell = 'flex h-full flex-col px-4 py-3'
         return (
-          <div key={e.key} className="-mb-px -mr-px border-b border-r border-rule">
+          <li key={e.key} className="-mb-px -mr-px border-b border-r border-rule">
             {e.to ? (
               <Link to={e.to} className={cx(cell, 'hover:bg-sunk')}>
                 {body}
@@ -74,9 +76,9 @@ export function Ledger({ entries, label, perRow = 'all' }: { entries: LedgerEntr
             ) : (
               <div className={cell}>{body}</div>
             )}
-          </div>
+          </li>
         )
       })}
-    </dl>
+    </ul>
   )
 }

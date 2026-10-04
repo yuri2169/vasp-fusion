@@ -50,7 +50,7 @@ const APPROVE = press('Approve request')
 const REPLY = press('Record reply')
 
 // U4: the dashboard's counts; the label coverage; a table's rows; a plot; a wallet's record; the watchlist.
-const COUNTS = `document.querySelectorAll('dl[aria-label="Counts"] dd').length > 0`
+const COUNTS = `document.querySelectorAll('ul[aria-label="Counts"] li').length > 0`
 const COVERAGE = `document.querySelectorAll('ul[aria-label="Labels by tier"] li').length > 0`
 const ROWS = `document.querySelectorAll('tbody tr td a, tbody tr td button').length > 0`
 const PLOT = `document.querySelectorAll('svg[role="group"] circle').length > 0`

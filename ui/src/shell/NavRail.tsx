@@ -87,7 +87,7 @@ function OfficerBlock() {
 export function NavRail() {
   const { pathname } = useLocation()
   return (
-    <aside className="on-rail print:hidden sticky top-0 flex h-screen w-16 shrink-0 flex-col bg-rail text-rail-fg lg:w-rail">
+    <aside aria-label="VASP-FUSION" className="on-rail print:hidden sticky top-0 flex h-screen w-16 shrink-0 flex-col bg-rail text-rail-fg lg:w-rail">
       <Wordmark />
       <nav aria-label="Main" className="flex flex-1 flex-col gap-0.5 px-2.5 pt-3">
         {PLACES.map(({ to, name, Icon, also }) => {
