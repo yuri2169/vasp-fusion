@@ -50,7 +50,7 @@ function OfficerBlock() {
 
   if (!me.data) return <div className="h-12" />
   if (!officer)
-    return <p className="px-2.5 text-xs text-rail-muted max-lg:sr-only">{me.data.auth_required ? 'Not signed in' : 'No sign-in on this server'}</p>
+    return <p className="px-2.5 text-xs text-rail-muted max-lg:sr-only">{me.data.auth_required ? 'Not signed in' : 'Sign-in is switched off'}</p>
 
   return (
     <div className="flex items-center gap-2.5 px-1 max-lg:flex-col max-lg:px-0">

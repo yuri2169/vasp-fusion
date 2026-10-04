@@ -309,7 +309,7 @@ describe('the request letter', () => {
     serve(sent)
     const print = vi.spyOn(window, 'print').mockImplementation(() => {})
     const { user } = open('/requests/req-2026-0001')
-    await user.click(await screen.findByRole('button', { name: 'Print or save as PDF' }))
+    await user.click(await screen.findByRole('button', { name: 'Print' }))
     expect(print).toHaveBeenCalledOnce()
   })
 

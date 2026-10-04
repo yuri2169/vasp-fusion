@@ -156,7 +156,7 @@ describe('the app shell', () => {
     vi.spyOn(api, 'me').mockResolvedValue({ auth_required: false, officer: null })
     renderApp(<AppRoutes />, { route: '/cases' })
     expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument()
-    expect(screen.getByText('No sign-in on this server')).toBeInTheDocument()
+    expect(screen.getByText('Sign-in is switched off')).toBeInTheDocument()
   })
 
   it('says so when the server cannot be reached, and offers to try again', async () => {

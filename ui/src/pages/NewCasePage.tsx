@@ -102,7 +102,7 @@ function DemoCases({ onPick, picked }: { onPick: (c: CaseSummary) => void; picke
       </p>
       {cases.isPending && <Skeleton lines={3} />}
       {cases.isError && <p className="text-sm text-fg">{cases.error instanceof ApiError ? cases.error.detail : 'The demo cases could not be loaded.'}</p>}
-      {cases.data && demos.length === 0 && <p className="text-sm text-fg">This server holds no demo case. Run make demo to record them.</p>}
+      {cases.data && demos.length === 0 && <p className="text-sm text-fg">No recorded demo case is on file here. Paste any wallet address above to trace it.</p>}
       <ul className="flex max-h-[520px] flex-col gap-2 overflow-y-auto pr-1">
         {demos.map((c) => (
           <li key={c.id}>

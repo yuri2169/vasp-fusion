@@ -51,7 +51,7 @@ function GatewayReceipt({ receipt }: { receipt: NonNullable<RequestDetail['recei
       </div>
       {receipt.gateway === 'mock-outbox' && (
         <p className="mt-1.5 border-t border-rule pt-1.5 text-muted">
-          This server has no SAHYOG connection: the request was written to a local outbox, and nothing left this machine.
+          This installation is not connected to SAHYOG: the request was written to a local outbox, and nothing left this machine.
         </p>
       )}
     </dl>
@@ -168,19 +168,19 @@ export function RequestPage() {
           <Block title="On paper">
             <div className="flex flex-wrap gap-2">
               <Button icon={<Printer size={15} aria-hidden />} onClick={() => window.print()}>
-                Print or save as PDF
+                Print
               </Button>
               {API_MODE === 'live' && (
                 <a href={api.requestPdfUrl(r.id)} target="_blank" rel="noreferrer" className={buttonClass('secondary')}>
                   <FileDown size={15} aria-hidden />
-                  Server's PDF
+                  Open letter PDF
                 </a>
               )}
             </div>
             <p className="text-xs text-muted">
               Prints on A4 with the reference and page number on every page. In the print dialog, switch off the browser's own headers and footers.
               {r.letter.watermark && ' A draft prints with its watermark.'}
-              {API_MODE === 'live' && r.receipt && " The server's PDF is the very file that was handed to the gateway."}
+              {API_MODE === 'live' && r.receipt && " The letter PDF is the very file that was handed to the gateway."}
             </p>
           </Block>
         </aside>

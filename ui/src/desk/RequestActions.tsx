@@ -72,7 +72,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
       title: `Mark the request to ${request.vasp} as sent?`,
       body: (
         <p>
-          The letter and its data are handed to the SAHYOG gateway set up on this server, and the day a reply is expected is set. A sent request
+          The letter and its data are handed to the SAHYOG gateway set up for this installation, and the day a reply is expected is set. A sent request
           cannot be withdrawn or edited.
         </p>
       ),

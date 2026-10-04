@@ -156,7 +156,7 @@ export function AuditTab({ c }: { c: CaseDetail }) {
                 <Row name="What was read">
                   <span>
                     {p.pages ?? p.responses?.length ?? 0} responses{sources.length > 0 && ` from ${sources.join(', ')}`}
-                    {p.offline_replay && ', replayed from the cache'}
+                    {p.offline_replay && ', replayed from saved copies'}
                   </span>
                   <span className="block">
                     <Digest value={p.responses_sha256} label="responses digest" />

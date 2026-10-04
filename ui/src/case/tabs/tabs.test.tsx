@@ -153,7 +153,7 @@ describe('AuditTab', () => {
     const p = hero.provenance
     for (const digest of [p.findings_sha256!, p.content_sha256!, p.input_sha256!, p.responses_sha256!, p.label_db_sha256!, p.model_sha256!])
       expect(within(receipt).getByText(digest)).toBeInTheDocument()
-    expect(within(receipt).getByText(/10 responses from api\.trongrid\.io, replayed from the cache/)).toBeInTheDocument()
+    expect(within(receipt).getByText(/10 responses from api\.trongrid\.io, replayed from saved copies/)).toBeInTheDocument()
     expect(within(receipt).getByText('b5-bitcoin-1')).toBeInTheDocument()
     expect(within(receipt).getByText(p.notes[0])).toBeInTheDocument()
   })

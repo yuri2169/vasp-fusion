@@ -55,7 +55,7 @@ export function TraceProgress({ c, onStop }: { c: CaseDetail; onStop: () => void
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <Button onClick={onStop}>Stop waiting</Button>
         <span className="tabular font-mono text-xs text-muted">{waited > 0 ? `Waited ${formatDuration(waited)}` : 'Just started'}</span>
-        <span className="text-xs text-muted">The trace keeps running on the server; the case stays in the list.</span>
+        <span className="text-xs text-muted">The trace keeps running if you leave; the case stays in the list.</span>
       </div>
     </section>
   )

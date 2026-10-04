@@ -180,7 +180,7 @@ export function DeskPage() {
             onRowOpen={(r) => navigate(vaspLink(r.vasp))}
           />
           <p className="mt-2 text-xs text-muted">
-            Traced, USD counts US-dollar stablecoins only. The day a reply is due is an office reminder set on the server, not a period set by law.
+            Traced, USD counts US-dollar stablecoins only. The day a reply is due is an office reminder set for this installation, not a period set by law.
           </p>
         </>
       )}

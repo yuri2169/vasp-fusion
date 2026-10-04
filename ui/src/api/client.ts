@@ -103,7 +103,7 @@ function sentence(status: number, body: unknown): string {
     })
     return `The server refused the request: ${parts.join('; ')}.`
   }
-  return `The server answered with an error (${status}). Try again; if it keeps happening, check the server log.`
+  return `VASP-FUSION could not finish this (error ${status}). Nothing was changed. Try again; if it keeps happening, tell whoever runs this installation.`
 }
 
 export function liveTransport(fetchImpl: typeof fetch = (...args) => fetch(...args)): Transport {
