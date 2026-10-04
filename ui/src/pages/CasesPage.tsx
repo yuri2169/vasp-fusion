@@ -1,4 +1,6 @@
 import { FolderOpen, X } from 'lucide-react'
+import { ThreatChips, THREATS, THREAT_ORDER } from '../components/ThreatChip'
+import type { Threat } from '../api/models'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseSummary, Desk } from '../api/models'
@@ -30,6 +32,7 @@ const columns: Column<CaseSummary>[] = [
             Recorded
           </span>
         )}
+        <ThreatChips threats={c.threats} size="sm" />
       </span>
     ),
   },
@@ -112,6 +115,8 @@ export function CasesPage() {
   const status = params.get('status')
   const chain = params.get('chain')
   const open = params.get('open') === '1'
+  const threat = params.get('threat')
+  const threatOk = threat === 'any' || (threat != null && threat in THREATS)
   const desk = useDesk(open)
   const waiting = openIds(desk.data)
 
@@ -120,6 +125,7 @@ export function CasesPage() {
     status && STATUS_FILTERS[status] && { key: 'status', words: STATUS_FILTERS[status].words },
     chain && chain in CHAINS && { key: 'chain', words: `On ${CHAINS[chain as keyof typeof CHAINS].name}` },
     open && { key: 'open', words: 'Open: being traced, or an exchange has not replied' },
+    threatOk && { key: 'threat', words: threat === 'any' ? 'Touches a threat tag' : `Touches: ${THREATS[threat as Threat].name}` },
   ].filter((f): f is { key: string; words: string } => Boolean(f))
   const all = cases.data?.items ?? []
   const shown = all.filter(
@@ -127,7 +133,8 @@ export function CasesPage() {
       (!outcome || !OUTCOME_WORDS[outcome] || c.outcome === outcome) &&
       (!status || !STATUS_FILTERS[status] || STATUS_FILTERS[status].has(c)) &&
       (!chain || !(chain in CHAINS) || c.chain === chain) &&
-      (!open || STATUS_FILTERS.tracing.has(c) || waiting.has(c.id)),
+      (!open || STATUS_FILTERS.tracing.has(c) || waiting.has(c.id)) &&
+      (!threatOk || (threat === 'any' ? Boolean(c.threats?.length) : Boolean(c.threats?.includes(threat as Threat)))),
   )
   const drop = (key: string) => {
     const next = new URLSearchParams(params)
@@ -191,6 +198,27 @@ export function CasesPage() {
               <Stat label="Being traced" layer="chain" value={shown.filter(STATUS_FILTERS.tracing.has).length} />
             </dl>
           )}
+          <label className="mb-3 flex w-fit items-center gap-2 text-base">
+            <span className="text-muted">Threat tag</span>
+            <select
+              value={threatOk ? threat! : ''}
+              onChange={(e) => {
+                const next = new URLSearchParams(params)
+                if (e.target.value) next.set('threat', e.target.value)
+                else next.delete('threat')
+                setParams(next, { replace: true })
+              }}
+              className="h-8 border border-rule bg-surface px-2 text-base text-fg"
+            >
+              <option value="">Any or none</option>
+              <option value="any">Touches a threat tag</option>
+              {THREAT_ORDER.map((t) => (
+                <option key={t} value={t}>
+                  {THREATS[t].name}
+                </option>
+              ))}
+            </select>
+          </label>
           <DataTable
             caption="Cases"
             columns={columns}

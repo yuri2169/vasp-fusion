@@ -29,8 +29,9 @@ make reproduce                           # every figure below, regenerated from 
 | Deposit-address model, calibration error (ECE) | 0.0093 | `artifacts/model_v1/tron/metrics.json` |
 | Deposit-address model, Brier score | 0.0026 | same |
 | Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
-| Labelled addresses on file | 457,125 (1,690 published by exchanges, 338,143 curated, 111,795 explorer tags, 5,497 derived here) | `make labels` |
-| Recorded demonstration cases that replay offline to the same fingerprint | 8 of 8 (4 name an exchange, 3 say insufficient evidence, 1 reaches a sanctioned address) | `tests/golden/fingerprints.json` |
+| Labelled addresses on file | 474,142 (1,690 published by exchanges, 349,440 curated, 117,515 explorer tags, 5,497 derived here) | `make labels` |
+| ...of which carry a threat tag from a cited public source | 18,646: ransomware 11,271, fraud 6,213, terrorism financing 367, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
+| Recorded demonstration cases that replay offline to the same fingerprint | 12 of 12 (7 name an exchange, 3 say insufficient evidence, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
 
 A named exchange is a lead to confirm with the exchange, not proof. The wrongly-named rate above is the honest one: it was measured on wallets whose true exchange we knew and whose labels we hid.
 
@@ -75,7 +76,7 @@ UI=build make docker # the same image with the interface compiled in (what the d
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
 - **Nothing reaches the network at run time.** The image sets `OFFLINE=1`: a chain request that is not in its cache is refused, never fetched. `make docker-smoke` proves it by running the whole demo with networking disabled.
-- **What is baked in:** the label database; the chain responses the eleven demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the eight demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
+- **What is baked in:** the label database; the chain responses the twelve demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the twelve demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
 - **The interface.** `UI=build make docker` compiles `ui/` into the image (Node 22 stage; the build checks that the bundle carries no fixture and that the first load stays under 200 KB gzipped). The demo script is `docs/demo_script.md`. Without `UI=build` the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
 - **Only real records.** The fixtures in `mocks/` stand in for empty stores only with `VASPFUSION_DEMO_MODE=1` (off by default, off in the image): a server lists its own cases and nothing else.
 - **Login.** The image holds one demonstration account (`demo/officer.json`, published in the repository, so it protects nothing). `VASPFUSION_AUTH=off docker compose up` runs without a login. For real use, disable it and add officers: `docker compose exec vasp-fusion python -m vaspfusion.cli officer add <user> --name "..."`.
@@ -112,7 +113,7 @@ python -m vaspfusion.cli audit --verify
 - No file upload exists in this tool, so there is nothing to sandbox; cross-origin writes are refused (403), and every API reply is `no-store`, `nosniff`, not frameable.
 
 ## Reproduce
-`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the demo's chain cache (from the recorded fixtures), the eight demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
+`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the demo's chain cache (from the recorded fixtures), the twelve demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
 
 ## Layout
 | Path | What |
@@ -156,6 +157,24 @@ One row per `(address, chain)`: `entity, category, kind, tier, source, source_ur
 from vaspfusion.labels.lookup import lookup, LabelStore
 lookup("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron")   # Label(entity='Bitget', tier='published_por', ...)
 ```
+
+## Threat tags and high-risk alerts
+A label can carry a **threat** beside its category: `terrorism_financing`, `ransomware`, `darknet_market`, `fraud` or `sanctioned_other`, with who the source names (`threat_entity`), the source (`threat_source`, `threat_url`) and the source's own words (`threat_evidence`). The tool never infers a threat: every tag is a public source's statement, and `config/threats.yaml` holds each rule.
+
+| Source | Licence | Fetched | What is read |
+|---|---|---|---|
+| OFAC SDN list, the official XML (published 2 Oct 2026) | US-government public record | 5 Oct 2026 | Every digital-currency address with its entry's **programme codes**. `SDGT` or `FTO` → terrorism financing. Twelve entries whose programme does not say what they are (Hydra, the Nemesis administrator, REvil, SamSam, LockBit and IRGC-affiliated ransomware actors, the Prince Group chairman) are tagged by SDN uid from the Treasury press release of their designation, cited in the config. Everything else → `sanctioned_other`, programme kept |
+| Ransomwhere export | CC BY 4.0 (doi:10.5281/zenodo.13999026) | 5 Oct 2026 | 11,186 Bitcoin ransomware payment addresses; the family is the entity |
+| GraphSense TagPacks, commit `b556978` | MIT | 5 Oct 2026 | Tags whose own `abuse` field says ransomware, terrorism, scam, phishing, Ponzi, investment fraud or pyramid scheme; `category: market` in the Hydra and WalletExplorer packs |
+| The scam lists already in the store | as on record | | Rows filed `scam` are tagged `fraud` in their own words |
+
+- `make threats` flattens the raw files (`../research/data/threats/`) into the tracked `data/threat_tags.csv` (18,446 addresses) and writes `data/threat_sources.json` (sources, licences, fetch date, counts, what was skipped and why). `make labels` joins the file on: 1,429 tags sit on a label already held, 17,017 addresses got a label of their own (a listed address is `sanctioned`, a fraud address `scam`, anything else a named `entity`; **no category was added**).
+- Skipped, with the reason on record in the config: sextortion spam and extremism packs (neither is one of the four ecosystems), exchange hacks, `etherscan-wordcloud-market` (NFT marketplaces), the LockBit-tattoo recipients. Two `sanctioned` rows of the older list are not in the current SDN XML and carry no tag.
+- **In a trace:** money that reaches (or came from) a tagged address raises a high flag that names the threat, the entity, the source and the transactions: `threat_contact` ("Linked to ransomware (Conti, Ransomwhere): 2 hops away, 14% of the funds …"); a sanctioned or mixer address that also carries a tag keeps its own flag and gains the tag. The outcome rules are unchanged.
+- **On intake:** `POST /api/cases` looks the address up before the trace starts, so the answer already carries `screening` (a direct hit, or that there is none).
+- **Alerts:** the dashboard's alerts and the watchlist's changes carry the tag; a re-check that finds a link the baseline did not have is a `new_threat_link`. The wallet page reads High with the list entry's words. Labels and cases filter by threat (`?threat=`).
+- **Chainabuse is not read.** `CHAINABUSE_API_KEY` may be set; nothing uses it yet.
+- The recorded case `tron-terror-link` (`DEMO/2026/112`) is a real Tron wallet: 28% of the 115,903 USDT it sent went, one hop away, to two addresses the SDN list files under ISIL Khorasan (programmes FTO and SDGT). Nothing here alleges anything about whoever controls the wallet.
 
 ## Chain adapters
 ```python

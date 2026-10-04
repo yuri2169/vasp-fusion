@@ -11,7 +11,7 @@ What is regenerated, and from what:
   model         artifacts/model_v1/<chain>/  the tracked dataset.csv (train, calibrate, measure)
   abstain       artifacts/abstain_v1/tron/   the tracked claims.csv
   demo-cache    a chain cache                tests/fixtures/demo (recorded chain responses)
-  demo          the eleven demo cases        that cache, OFFLINE=1; golden fingerprints
+  demo          the twelve demo cases        that cache, OFFLINE=1; golden fingerprints
   verify        each case traced again       cache only
   golden        tests/golden/, expected.json the recorded fixtures
   mocks         mocks/                       the label DB (seeded)
@@ -188,7 +188,7 @@ def main() -> None:
              *cli, "abstain-eval", "--from-claims")
     if run.step("demo-cache", "the demo's chain cache, from the recorded fixtures",
                 *cli, "demo-cache", "--out", str(cache)):
-        run.step("demo", "the eleven demo cases, offline, against the golden fingerprints",
+        run.step("demo", "the twelve demo cases, offline, against the golden fingerprints",
                  *cli, "demo", "--golden", "tests/golden/fingerprints.json", env=demo_env)
         run.step("verify", "each case traced again from the cache only",
                  *cli, "verify", "--all", env=demo_env)

@@ -3,6 +3,7 @@
 // server, so the desk holds the request the flow sent.
 //
 //   node scripts/final-shots.mjs            BASE_URL=http://127.0.0.1:8000, OUT_DIR=docs/screenshots
+//   ONLY=threat node scripts/final-shots.mjs   only the screens whose name contains "threat"
 //
 // It signs in with the published demonstration account when the server asks for a login.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -15,6 +16,9 @@ const here = dirname(fileURLToPath(import.meta.url))
 const OUT = process.env.OUT_DIR ?? resolve(here, '..', '..', 'docs', 'screenshots')
 const officer = JSON.parse(readFileSync(resolve(here, '..', '..', 'demo', 'officer.json'), 'utf8'))
 const HERO = 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c'
+// An address the OFAC SDN list files under ISIL Khorasan; the case tron-terror-link reaches it.
+const LISTED = 'TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ'
+const ONLY = process.env.ONLY // only the screens whose name contains this
 
 const browser = await launch({ port: 9339 })
 const { page } = browser
@@ -85,7 +89,15 @@ try {
     ['model-ethereum', '/model?chain=ethereum'],
     ['watchlist', '/watchlist'],
     ['wallet', `/wallets/tron/${HERO}`],
-  ].filter(Boolean)
+    // threat tags: a case that reaches listed addresses, a listed wallet, and the two filters
+    ['case-threat', '/cases/tron-terror-link', GRAPH],
+    ['case-threat-patterns', '/cases/tron-terror-link?tab=patterns', GRAPH],
+    ['wallet-threat', `/wallets/tron/${LISTED}`],
+    ['labels-threat', '/labels?threat=terrorism_financing'],
+    ['cases-threat', '/cases?threat=any'],
+  ]
+    .filter(Boolean)
+    .filter(([name]) => !ONLY || name.includes(ONLY))
 
   for (const theme of ['light', 'dark']) {
     await media(theme)

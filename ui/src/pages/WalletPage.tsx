@@ -1,4 +1,5 @@
 import { Eye, EyeOff, OctagonAlert, ShieldQuestion, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { ThreatChip, threatOf } from '../components/ThreatChip'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { Chain, FlowSummary, WalletDetail } from '../api/models'
@@ -32,7 +33,7 @@ const LEVELS: Record<Level, { words: string; Icon: LucideIcon; look: string; say
     words: 'High',
     Icon: OctagonAlert,
     look: 'border-seal-text text-seal-text',
-    says: 'A sanctions, mixer or scam label, or an alert of a case, names this address.',
+    says: 'A threat tag, a sanctions, mixer or scam label, or an alert of a case, names this address.',
   },
   elevated: {
     words: 'Elevated',
@@ -194,6 +195,7 @@ export function WalletPage() {
             <ChainBadge chain={chain} />
             <span className="font-mono text-lg font-medium normal-case tracking-normal [overflow-wrap:anywhere]">{address}</span>
             <CopyButton value={address} label="Copy the address" />
+            <ThreatChip tag={threatOf(label)} />
           </span>
         }
         meta={
@@ -236,7 +238,7 @@ export function WalletPage() {
             <div className="panel p-4">
               {label ? (
                 <>
-                  <LabelBlock label={label} chain={chain} />
+                  <LabelBlock label={label} chain={chain} level={2} />
                   {label.category !== 'sanctioned' && label.entity !== 'Unidentified exchange' && (
                     <Link
                       to={`/vasps/${encodeURIComponent(label.entity)}`}

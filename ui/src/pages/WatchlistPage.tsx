@@ -1,4 +1,5 @@
 import { CircleCheck, CircleDashed, Eye, LoaderCircle, OctagonAlert, Radar, TriangleAlert, type LucideIcon } from 'lucide-react'
+import { ThreatChip } from '../components/ThreatChip'
 import { useId, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../api/client'
@@ -48,6 +49,7 @@ const STATES: Record<WatchState, { words: string; Icon: LucideIcon; look: string
 
 const CHANGE_ICON: Record<WatchChange['kind'], LucideIcon> = {
   new_alert: OctagonAlert,
+  new_threat_link: OctagonAlert,
   new_exchange: TriangleAlert,
   new_activity: Radar,
 }
@@ -140,7 +142,14 @@ function Row({ item }: { item: WatchItem }) {
             return (
               <li key={i} className={cx('flex gap-2 text-base', c.severity === 'high' ? 'font-medium text-seal-text' : 'text-fg')}>
                 <Icon size={15} aria-hidden className="mt-0.5 shrink-0" />
-                <span className="min-w-0 [overflow-wrap:anywhere]">{c.text}</span>
+                <span className="min-w-0 [overflow-wrap:anywhere]">
+                  {c.threat && (
+                    <span className="mr-2 inline-flex align-middle">
+                      <ThreatChip tag={c.threat} size="sm" />
+                    </span>
+                  )}
+                  {c.text}
+                </span>
               </li>
             )
           })}

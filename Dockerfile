@@ -7,9 +7,9 @@
 #
 # What is baked in, all from files in this repository plus the label database:
 #   * the label database (data/labels.duckdb, built by `make labels`);
-#   * the chain responses the eleven demo wallets' traces read, replayed from the recorded
+#   * the chain responses the twelve demo wallets' traces read, replayed from the recorded
 #     fixtures (tests/fixtures/demo) into a chain cache: `cli demo-cache`, no network;
-#   * the eleven demo cases, traced from that cache while the image is built. The build
+#   * the twelve demo cases, traced from that cache while the image is built. The build
 #     FAILS unless each one reproduces its golden findings fingerprint and verifies;
 #   * the demonstration watchlist (demo/watchlist.json): five wallets those cases reached.
 # The build itself needs the network once (base images, Python wheels). The result can be

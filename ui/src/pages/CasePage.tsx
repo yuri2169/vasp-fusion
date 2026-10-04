@@ -1,4 +1,6 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { threatOf } from '../components/ThreatChip'
+import type { ThreatTag } from '../api/models'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { API_MODE, api } from '../api/api'
 import { ApiError } from '../api/client'
@@ -23,6 +25,7 @@ import { ErrorState } from '../components/ErrorState'
 import { FundsBar } from '../components/FundsBar'
 import { HopRail } from '../components/HopRail'
 import { PageHeader } from '../components/PageHeader'
+import { ScreeningNote, ThreatChips } from '../components/ThreatChip'
 import { Skeleton } from '../components/Skeleton'
 import { Tabs, type TabItem } from '../components/Tabs'
 import { useToast } from '../components/Toast'
@@ -34,9 +37,10 @@ import { formatDate, formatInr } from '../lib/format'
 const FlowGraph = lazy(() => import('../case/FlowGraph').then((m) => ({ default: m.FlowGraph })))
 
 /** Owners of the labelled wallets in a case, by address, for the Hop Rail's chips. */
-function labelsOf(c: CaseDetail): Record<string, { entity: string; tier: Tier }> {
-  const out: Record<string, { entity: string; tier: Tier }> = {}
-  for (const node of c.graph.nodes) if (node.label) out[node.id] = { entity: node.label.entity, tier: node.label.tier }
+function labelsOf(c: CaseDetail): Record<string, { entity: string; tier: Tier; threat?: ThreatTag }> {
+  const out: Record<string, { entity: string; tier: Tier; threat?: ThreatTag }> = {}
+  for (const node of c.graph.nodes)
+    if (node.label) out[node.id] = { entity: node.label.entity, tier: node.label.tier, threat: threatOf(node.label) ?? undefined }
   return out
 }
 
@@ -161,6 +165,7 @@ export function CasePage() {
           <ChainBadge chain={c.chain} />
           <span className="break-all font-mono text-lg font-medium normal-case tracking-normal">{c.address}</span>
           <CopyButton value={c.address} label="address" />
+          <ThreatChips threats={c.threats} />
         </span>
       }
       actions={
@@ -184,6 +189,14 @@ export function CasePage() {
     return (
       <>
         {header}
+      {c.screening?.hit && (
+        <div className="mb-4">
+          <ScreeningNote screening={c.screening} />
+        </div>
+      )}
+        <div className="mb-4">
+          <ScreeningNote screening={c.screening} />
+        </div>
         <ErrorState
           title="The trace failed"
           detail={c.error ?? 'No reason was recorded.'}
@@ -235,6 +248,9 @@ export function CasePage() {
     return (
       <>
         {header}
+        <div className="mb-4">
+          <ScreeningNote screening={c.screening} />
+        </div>
         {rail}
         <TraceProgress
           c={c}

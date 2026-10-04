@@ -28,6 +28,9 @@ export type Receipt = S['Receipt']
 export type VerifyResult = S['VerifyResult']
 
 export type LabelOut = S['LabelOut']
+export type ThreatTag = S['ThreatTag']
+export type Threat = ThreatTag['threat']
+export type Screening = S['Screening']
 export type LabelSearch = S['LabelSearch']
 export type WalletDetail = S['WalletDetail']
 

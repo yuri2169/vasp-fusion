@@ -11,6 +11,7 @@
  *    data colour  an unlabelled wallet the trail stops at
  *    edge width   the amount; hairlines, dashed for money coming in */
 import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
+import { THREATS } from '../components/ThreatChip'
 import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { formatAmount, truncateMiddle } from '../lib/format'
 import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
@@ -99,6 +100,8 @@ export const captionY = (y: number, side: number) => y - side / 2 - 9
 /** What is written over a node: the owner a label names, or what the wallet is to the case. */
 function captionOf(n: FlowNode): string | null {
   if (n.role === 'suspect') return 'Suspect'
+  // a tagged wallet says what it is tagged as, in words, beside the warning sign
+  if (n.label?.threat) return `\u26A0 ${THREATS[n.label.threat].name}: ${n.label.threat_entity ?? n.entity ?? ''}`.replace(/: $/, '')
   if (n.entity) return n.entity
   if (n.role === 'hub') return 'Busy wallet'
   return null
@@ -135,7 +138,7 @@ export function toElements(view: FlowView): ElementDefinition[] {
         group: 'nodes',
         data: { id: `caption:${n.id}`, owner: n.id, label: caption },
         position: { x: position.x, y: captionY(position.y, side) },
-        classes: 'caption',
+        classes: n.label?.threat && n.role !== 'suspect' ? 'caption threat' : 'caption',
         selectable: false,
         grabbable: false,
       })
@@ -266,6 +269,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     },
 
     // --- the owner's name over a node -------------------------------------
+    // (a threat-tagged wallet's caption is in the danger colour, after the plain rule below)
     {
       selector: 'node.caption',
       style: {
@@ -285,6 +289,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         'text-background-padding': '2px',
       },
     },
+    { selector: 'node.caption.threat', style: { color: t.seal } },
 
     // --- transfers --------------------------------------------------------
     {

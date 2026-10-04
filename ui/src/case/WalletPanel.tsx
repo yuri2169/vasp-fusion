@@ -1,4 +1,5 @@
 import { ArrowLeft } from 'lucide-react'
+import { ThreatChip, threatOf } from '../components/ThreatChip'
 import { Link, useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseDetail, EvidenceItem, GraphEdge, GraphNode, LabelOut } from '../api/models'
@@ -38,16 +39,30 @@ function distance(c: CaseDetail, node: GraphNode): string {
 }
 
 /** The label on a wallet: who, how it is known, and (for our own derived labels) what the rules and the model saw. */
-export function LabelBlock({ label, chain }: { label: LabelOut; chain: CaseDetail['chain'] }) {
+export function LabelBlock({ label, chain, level = 3 }: { label: LabelOut; chain: CaseDetail['chain']; level?: 2 | 3 }) {
   const kind = KIND_NAMES[label.kind]
   const scored = label.confidence_low != null && label.confidence_high != null
   const reasons: EvidenceItem[] = (label.model?.reasons ?? []).map((r) => ({ kind: 'model', text: r.text, weight: r.weight, tx_hashes: [], tier: null }))
   return (
-    <Section title="Label">
+    <Section title="Label" level={level}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="title text-lg text-fg">{label.entity}</span>
         <TierTag tier={label.tier} size="sm" />
+        <ThreatChip tag={threatOf(label)} size="sm" bare={label.threat_entity === label.entity} />
       </div>
+      {label.threat_evidence && (
+        <p className="border-l-2 border-danger pl-2 text-sm text-ink-soft [overflow-wrap:anywhere]" data-testid="threat-evidence">
+          {label.threat_evidence}
+          {label.threat_url && (
+            <>
+              {' '}
+              <a href={label.threat_url} target="_blank" rel="noopener noreferrer" className="underline decoration-rule-strong underline-offset-2 hover:decoration-fg">
+                Source
+              </a>
+            </>
+          )}
+        </p>
+      )}
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-base">
         {kind && (
           <>

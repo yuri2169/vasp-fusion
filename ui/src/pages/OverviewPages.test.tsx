@@ -40,7 +40,7 @@ const live: Dashboard = {
     by_category: { exchange: 378616, entity: 62948 },
     by_tier: { curated: 338143, explorer_tag: 111795, derived: 5497, published_por: 1690 },
     by_chain: { bitcoin: 337192, ethereum: 88047, tron: 5895 },
-    by_source: [],
+    by_source: [], by_threat: {},
   },
 }
 
@@ -129,7 +129,7 @@ describe('the labels explorer', () => {
     const row = (name: RegExp) => within(sources).getByRole('link', { name }).closest('tr')!
     expect(row(/GraphSense TagPacks/)).toHaveTextContent('MIT')
     expect(row(/eth-labels/)).toHaveTextContent('Not recorded')
-    expect(row(/OFAC SDN/)).toHaveTextContent('US-government public record')
+    expect(row(/OFAC SDN list of sanctioned addresses/)).toHaveTextContent('US-government public record')
     expect(screen.getByText(/"Not recorded" means this project holds no record of that source's own licence/)).toBeInTheDocument()
     // a count is a link to the labels behind it
     const tiers = screen.getByRole('list', { name: 'Labels by tier' })
@@ -173,6 +173,7 @@ describe('the labels explorer', () => {
       by_tier: { curated: 10 },
       by_chain: { tron: 10 },
       by_source: [{ source: 'x', name: 'A set nobody recorded', obtained_from: null, licence: null, url: null, labels: 10, tiers: { curated: 10 } }],
+      by_threat: {},
     }
     vi.spyOn(api, 'labelCoverage').mockResolvedValue(cov)
     open('/labels')
@@ -427,5 +428,36 @@ describe('the rail', () => {
     expect(within(nav).getByRole('link', { name: 'Watchlist' })).toHaveAttribute('href', '/watchlist')
     expect(within(nav).getByRole('link', { name: 'Labels' })).toHaveAttribute('aria-current', 'page')
     await screen.findByRole('region', { name: 'On record against this address' })
+  })
+})
+
+describe('threat tags on the overview pages', () => {
+  it('filters the labels explorer by threat and marks a tagged row', async () => {
+    const search = vi.spyOn(api, 'labelSearch').mockResolvedValue({
+      query: '',
+      total: 1,
+      limit: 50,
+      offset: 0,
+      items: [
+        {
+          address: 'TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ',
+          chain: 'tron',
+          entity: 'ISIL KHORASAN',
+          category: 'sanctioned',
+          kind: 'unknown',
+          tier: 'curated',
+          source: 'ofac-sdn-xml',
+          threat: 'terrorism_financing',
+          threat_entity: 'ISIL KHORASAN',
+          threat_source: 'ofac-sdn-xml',
+          threat_evidence: 'OFAC SDN list (published 2026-10-02), uid 18647: ISIL KHORASAN; programme FTO, SDGT. Listed as: TRX.',
+        },
+      ],
+    })
+    open('/labels?threat=terrorism_financing')
+    const table = await screen.findByRole('table', { name: 'Labels found' })
+    expect(search).toHaveBeenCalledWith({ q: '', chain: '', category: '', tier: '', threat: 'terrorism_financing', limit: 50, offset: 0 })
+    expect(screen.getByRole('combobox', { name: 'Threat tag' })).toHaveValue('terrorism_financing')
+    expect((await within(table).findByText('Terrorism financing')).closest('[data-threat]')).toHaveAttribute('data-threat', 'terrorism_financing')
   })
 })

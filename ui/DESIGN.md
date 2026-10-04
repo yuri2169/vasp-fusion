@@ -223,6 +223,17 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
   | `derived` | Derived by VASP-FUSION | flask | slate |
   | none | Unlabelled | dashed square in the chain colour | dashed slate |
 
+- **Threat tags** (`ThreatChip`): what a public source ties an address to. Always an icon and the threat in words, in the danger colour on its wash; with a tag it adds who the source names, and hover or focus shows the source and its own words.
+
+  | Threat | Words | Icon |
+  |---|---|---|
+  | `terrorism_financing` | Terrorism financing | siren |
+  | `ransomware` | Ransomware | lock-keyhole |
+  | `darknet_market` | Darknet market | store |
+  | `fraud` | Fraud | badge-alert |
+  | `sanctioned_other` | Sanctioned | ban |
+
+  It sits on the case header (the threats the case touches), under a tagged wallet on the Hop Rail, beside the tier on a label, on an alert and on a watchlist change. On the graph a tagged wallet's caption reads "⚠ Terrorism financing: ISIL KHORASAN" in the danger colour. **Screening** (`ScreeningNote`): a direct hit is an alert block under the case header, "High-risk wallet", in the backend's sentence; no hit is one quiet line shown while the trace runs. The labels explorer and the cases list filter by threat (`?threat=`).
 - **Outcome stamps** (`OutcomeStamp`):
   - ATTRIBUTED: a solid plate in the fusion colour, the exchange's name.
   - INSUFFICIENT EVIDENCE: slate, dashed border, "No exchange named", and a line saying what would change it.
@@ -260,6 +271,7 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 | `CopyButton` | Copy a whole value; announces "Copied" |
 | `ChainBadge` | The chain (TRON, ETH, BSC, POLYGON, ARB, BASE, OP, AVAX, BTC, SOL); `tentative` for a guess |
 | `TierTag`, `TierIcon` | Label tier |
+| `ThreatChip`, `ThreatChips`, `ScreeningNote` | A threat tag; the threats a case touches; what the check on intake found |
 | `OutcomeStamp` | The outcome: `size="lg"` on a case, `sm` in a table row |
 | `DualMeter` | Proximity and confidence of one candidate; `layout="stack"` in a narrow column |
 | `Amount` | An amount in its asset, with US dollars when that adds something |

@@ -5,10 +5,11 @@ import { cx } from '../lib/cx'
 import { leadsOf } from './rules'
 
 /** A part of a panel, under a small printed heading. It is a landmark, so a screen reader can jump to it. */
-export function Section({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
+export function Section({ title, children, className, level = 3 }: { title: string; children: ReactNode; className?: string; level?: 2 | 3 }) {
+  const Heading = level === 2 ? 'h2' : 'h3' // h2 where the section sits straight under a page title
   return (
     <section aria-label={title} className={cx('flex flex-col gap-2', className)}>
-      <h3 className="eyebrow">{title}</h3>
+      <Heading className="eyebrow">{title}</Heading>
       {children}
     </section>
   )

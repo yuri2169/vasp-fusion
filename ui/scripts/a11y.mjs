@@ -71,6 +71,8 @@ const ROUTES = [
   `/cases/tron-coindcx?wallet=${HERO}`,
   '/cases/tron-abstain',
   '/cases/tron-ofac',
+  '/cases/tron-terror-link', // threat chips on the header, the rail and the alerts
+  '/cases?threat=any',
   '/cases/btc-htx',
   '/desk',
   '/desk?vasp=CoinDCX&case=tron-htx-coindcx',
@@ -80,6 +82,8 @@ const ROUTES = [
   '/dashboard',
   '/labels',
   '/labels?q=CoinDCX',
+  '/labels?threat=terrorism_financing',
+  '/wallets/tron/TLDtPq9PQsDuQunME8CSeVdYaLtRdrVgoJ', // a listed address: the chip in the title
   '/model',
   '/model?chain=ethereum',
   '/watchlist',

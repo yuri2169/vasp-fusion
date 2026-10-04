@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { ThreatChip, threatOf, THREATS, THREAT_ORDER } from '../components/ThreatChip'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { Category, LabelCoverage, LabelOut, LabelSource, Tier } from '../api/models'
@@ -63,7 +64,12 @@ const columns: Column<LabelOut>[] = [
   {
     key: 'category',
     header: 'Category',
-    cell: (l) => <span className="text-base">{categoryName(l.category)}</span>,
+    cell: (l) => (
+      <span className="flex flex-wrap items-center gap-1.5 text-base">
+        {categoryName(l.category)}
+        <ThreatChip tag={threatOf(l)} size="sm" />
+      </span>
+    ),
   },
   {
     key: 'kind',
@@ -243,11 +249,12 @@ export function LabelsPage() {
   const chain = params.get('chain') ?? ''
   const category = params.get('category') ?? ''
   const tier = params.get('tier') ?? ''
+  const threat = params.get('threat') ?? ''
   const offset = Math.max(0, Number(params.get('offset')) || 0)
 
   const coverage = useLabelCoverage()
-  const searching = Boolean(q || chain || category || tier)
-  const found = useLabelSearch({ q, chain, category, tier, limit: PAGE, offset }, searching)
+  const searching = Boolean(q || chain || category || tier || threat)
+  const found = useLabelSearch({ q, chain, category, tier, ...(threat ? { threat } : {}), limit: PAGE, offset }, searching)
 
   const next = (changes: Record<string, string>) => {
     const p = new URLSearchParams(params)
@@ -334,6 +341,19 @@ export function LabelsPage() {
               <option key={t} value={t}>
                 {TIERS[t].name}
                 {cov?.by_tier[t] != null ? ` (${count(cov.by_tier[t])})` : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="eyebrow">Threat tag</span>
+          <select value={threat} onChange={(e) => set({ threat: e.target.value })} className={field}>
+            <option value="">Any or none</option>
+            <option value="any">Any threat tag</option>
+            {THREAT_ORDER.map((t) => (
+              <option key={t} value={t}>
+                {THREATS[t].name}
+                {cov?.by_threat?.[t] != null ? ` (${count(cov.by_threat[t])})` : ''}
               </option>
             ))}
           </select>

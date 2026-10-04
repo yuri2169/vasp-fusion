@@ -1,11 +1,13 @@
 import { Info, Lightbulb, ShieldAlert, TriangleAlert, type LucideIcon } from 'lucide-react'
 import type { TypologyCode, TypologyFlag as Flag } from '../api/models'
 import { cx } from '../lib/cx'
+import { ThreatChip } from './ThreatChip'
 
 /** The investigator's name for each pattern (docs/api_contract.md, "Flags"). */
 export const TYPOLOGY_NAMES: Record<TypologyCode, string> = {
   sanctioned_contact: 'Sanctioned contact',
   mixer_contact: 'Mixer contact',
+  threat_contact: 'Link to a tagged address',
   bridge_hop: 'Bridge',
   peel_chain: 'Peel chain',
   rapid_forwarding: 'Rapid forwarding',
@@ -43,7 +45,10 @@ export function TypologyFlag({ flag, compact = false }: { flag: Flag; compact?: 
   if (compact) return <span className={cx('inline-flex h-6 items-center border-l-2 px-2', box)}>{head}</span>
   return (
     <div className={cx('flex flex-col gap-1 border-l-2 px-3 py-2', box)}>
-      {head}
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {head}
+        {flag.threat && <ThreatChip tag={flag.threat} size="sm" />}
+      </span>
       <p className="text-base text-fg">{flag.text}</p>
     </div>
   )

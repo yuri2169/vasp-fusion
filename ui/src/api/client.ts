@@ -139,7 +139,7 @@ export function liveTransport(fetchImpl: typeof fetch = (...args) => fetch(...ar
 /** What the officer has to give to open a case; the rest has server defaults. */
 export type CaseOpen = Pick<CaseCreate, 'address'> & Partial<Omit<CaseCreate, 'address'>>
 export type CasesQuery = { outcome?: CaseSummary['outcome']; status?: CaseSummary['status'] }
-export type LabelQuery = { q?: string; chain?: string; category?: string; tier?: string; limit?: number; offset?: number }
+export type LabelQuery = { q?: string; chain?: string; category?: string; tier?: string; threat?: string; limit?: number; offset?: number }
 export type RequestsQuery = { vasp?: string; status?: RequestStatus }
 export type AuditQuery = { limit?: number; offset?: number; officer?: string; action?: string; target?: string; verify?: boolean }
 

@@ -1,4 +1,5 @@
 import { OctagonAlert, Radar, TriangleAlert } from 'lucide-react'
+import { ThreatChip } from '../components/ThreatChip'
 import { Link } from 'react-router'
 import { ApiError } from '../api/client'
 import type { Alert, Dashboard } from '../api/models'
@@ -99,6 +100,7 @@ function AlertRow({ alert }: { alert: Alert }) {
         <span className={cx('inline-flex items-center gap-1.5 text-sm font-semibold', look.icon)}>
           <look.Icon size={14} aria-hidden />
           {look.word}
+          {alert.threat && <ThreatChip tag={alert.threat} size="sm" />}
         </span>
         <span className="tabular text-sm text-muted">{formatDate(alert.at)}</span>
       </div>

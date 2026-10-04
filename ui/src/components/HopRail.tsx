@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import type { ThreatTag } from '../api/models'
+import { ThreatChip } from './ThreatChip'
 import type { Chain, Hop, Tier } from '../api/models'
 import { cx } from '../lib/cx'
 import { explorerName, txUrl } from '../lib/explorers'
@@ -15,7 +17,7 @@ export interface HopRailProps {
   /** What the case came to; drawn as the docket stamp the rail ends in. */
   stamp: Omit<OutcomeStampProps, 'size' | 'tilt'>
   /** Owners of labelled wallets on the path, by address (from `CaseDetail.graph.nodes`). */
-  labels?: Record<string, { entity: string; tier: Tier }>
+  labels?: Record<string, { entity: string; tier: Tier; threat?: ThreatTag }>
   /** 'tracing' while the case is queued or running: the wallet, and a line still being drawn. */
   state?: 'tracing' | 'done'
   /** While tracing: how many hops out the trace has gone so far (`CaseDetail.progress.hop`). */
@@ -143,17 +145,20 @@ export function HopRail({
             return (
               <li key={hop.tx_hash + hop.to_address} {...s} className={cx('flex flex-1 items-center py-5', s.className)}>
                 <Stub hop={hop} chain={suspect.chain} />
-                <AddressChip
-                  address={hop.to_address}
-                  chain={suspect.chain}
-                  entity={labels[hop.to_address]?.entity}
-                  tier={labels[hop.to_address]?.tier}
-                  head={4}
-                  tail={4}
-                  actions="copy"
-                  className="shrink-0"
-                  {...pick(hop.to_address)}
-                />
+                <span className="flex shrink-0 flex-col items-start gap-1">
+                  <AddressChip
+                    address={hop.to_address}
+                    chain={suspect.chain}
+                    entity={labels[hop.to_address]?.entity}
+                    tier={labels[hop.to_address]?.tier}
+                    head={4}
+                    tail={4}
+                    actions="copy"
+                    className="shrink-0"
+                    {...pick(hop.to_address)}
+                  />
+                  {labels[hop.to_address]?.threat && <ThreatChip tag={labels[hop.to_address].threat} size="sm" />}
+                </span>
               </li>
             )
           })}

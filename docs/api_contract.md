@@ -287,6 +287,18 @@ No schema changed: `bsc` and `solana` were already in the chain enum, and a case
 - **Confidence on chains without a measured model.** The deposit-address model scores Tron only, and the naming bar was measured on Tron only (`GET /api/model?chain=tron`, `abstain`). On every other chain `confidence_interval` is null (show "rule confidence"), `provenance.notes[]` says unlabelled wallets were not scored, and the case file says "The bar has not been measured on this chain." A client must not show the Tron error figures under a case on another chain: check `abstain.chain`.
 - Three more recorded demo cases (eleven now): **`bnb-coindcx`**, **`sol-okx`**, **`polygon-bitget`**.
 
+### Threat tags and high-risk alerts (G3)
+All additive.
+- **`Threat`**: `terrorism_financing`, `ransomware`, `darknet_market`, `fraud`, `sanctioned_other`. **`ThreatTag`**: `{threat, entity, source, url, evidence}`: what a public source says, in its own words. Show `evidence` as written.
+- **`LabelOut`** gains `threat`, `threat_entity`, `threat_source`, `threat_url`, `threat_evidence` (all null on an untagged label). `category` is unchanged and still drives the outcome.
+- **`TypologyCode` has a new value, `threat_contact`** (severity `high`): traced money reached, or the wallet was funded by, or the wallet is, a tagged address whose category raises no alert of its own. **`TypologyFlag.threat`** is the tag; it is also set on a `sanctioned_contact` or `mixer_contact` whose address carries one, and the sentence then ends "; tagged terrorism financing (ISIL KHORASAN, OFAC SDN list)". Figures as the other label flags: `share`, `amount`, `hops`.
+- **`CaseSummary.screening`** `{hit, text, tag}`: the check of the case's own address, present from the answer to `POST /api/cases` on (before the trace runs). **`CaseSummary.threats`**: the distinct threats the case touches. `GET /api/cases?threat=<threat>|any`.
+- **`GET /api/labels/search?threat=<threat>|any`**, and **`LabelCoverage.by_threat`**.
+- **`Alert.threat`** on the dashboard; **`WatchChange.kind: "new_threat_link"`** (high) with `threat`, when a re-check finds a link to a tagged address that the baseline did not have. A baseline taken before this change reports no link as new.
+- `WalletDetail.risk`: a tag on the address's label makes the level `high`; the first reason is the tag with its evidence.
+- A new live demo case: **`tron-terror-link`** (twelve demo cases now).
+
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 
