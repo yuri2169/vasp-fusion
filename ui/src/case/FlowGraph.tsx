@@ -1,6 +1,6 @@
 import cytoscape, { type Core, type EventObject } from 'cytoscape'
-import { ChevronLeft, ChevronRight, Eye, EyeOff, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { Box, ChevronLeft, ChevronRight, Eye, EyeOff, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { api } from '../api/api'
 import type { CaseContext, CaseDetail, ContextEdge, FlowRisk } from '../api/models'
 import { Button } from '../components/Button'
@@ -19,6 +19,21 @@ import { GraphLegend } from './GraphLegend'
 import { TraceSummaryLine } from './TraceSummaryLine'
 import { RISK_WORDS } from '../components/RiskTag'
 import { captionY, edgeRisk, fanWords, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
+import type { Flow3DHandle } from './Flow3D'
+
+// The 3D library (three.js) is large and most officers never open it: it is fetched when
+// 3D is chosen, from this installation like everything else.
+const Flow3D = lazy(() => import('./Flow3D'))
+
+/** The 3D view draws with WebGL. Where there is none the switch says so and 2D stays. */
+function canWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas')
+    return !!(canvas.getContext('webgl2') ?? canvas.getContext('webgl'))
+  } catch {
+    return false
+  }
+}
 
 /** The page's colours as the canvas needs them, read again whenever the theme changes. */
 function useThemeColors(): ThemeColors {
@@ -102,6 +117,11 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
   const cyRef = useRef<Core | null>(null)
   const tipId = useId()
   const theme = useThemeColors()
+  // 2D is the view of record (pictures, replay, the case file). 3D is the same picture, turned.
+  const [mode, setMode] = useState<'2d' | '3d'>('2d')
+  const [gl] = useState(canWebGL)
+  const space = useRef<Flow3DHandle>(null)
+  const in3d = mode === '3d'
   const big = c.graph.nodes.length > BIG_GRAPH
   const [collapse, setCollapse] = useState(big)
   const [hover, setHover] = useState<Hover | null>(null)
@@ -189,10 +209,29 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
   const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
 
   // The canvas's handlers outlive a render: they read what is current through these.
-  const live = useRef({ view, onSelect, openMore, openFan, openContextMore })
+  /** A click on a node, in either view (null: on nothing). */
+  const tap = (id: string | null) => {
+    if (id === null) onSelect(null)
+    // The rest of a hop is not a wallet to open: a click draws more of that hop.
+    else if (id.startsWith('more:')) openMore(Number(id.slice('more:'.length)))
+    // nor is a fan's group: a click draws its wallets one by one, in place
+    else if (id.startsWith('fan:')) openFan(id)
+    // the rest of a wallet's context: a click draws more of it
+    else if (id.startsWith('ctxmore:')) openContextMore(id)
+    else onSelect(id)
+  }
+  const live = useRef({ view, tap })
   useEffect(() => {
-    live.current = { view, onSelect, openMore, openFan, openContextMore }
+    live.current = { view, tap }
   })
+
+  // Back in 2D the canvas has been hidden: it takes its size again and shows all of the picture.
+  useEffect(() => {
+    if (in3d) return
+    cyRef.current?.resize()
+    if (cyRef.current && fitted.current !== null) fit()
+    // only on a change of view
+  }, [in3d])
 
   const fit = (onlyPath = false) => {
     const cy = cyRef.current
@@ -249,19 +288,12 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
 
     const frame = () => container.current!.getBoundingClientRect()
     cy.on('tap', 'node', (e: EventObject) => {
-      const id: string = e.target.id()
-      // The rest of a hop is not a wallet to open: a click draws more of that hop.
-      if (id.startsWith('more:')) live.current.openMore(Number(id.slice('more:'.length)))
-      // nor is a fan's group: a click draws its wallets one by one, in place
-      else if (id.startsWith('fan:')) live.current.openFan(id)
-      // the rest of a wallet's context: a click draws more of it
-      else if (id.startsWith('ctxmore:')) live.current.openContextMore(id)
       // a wallet that is only context is not a wallet of the case: a click names it, no more
-      else if (e.target.data('context')) e.target.toggleClass('named')
-      else live.current.onSelect(id)
+      if (e.target.data('context') && !String(e.target.id()).startsWith('ctxmore:')) e.target.toggleClass('named')
+      else live.current.tap(e.target.id())
     })
     cy.on('tap', (e: EventObject) => {
-      if (e.target === cy) live.current.onSelect(null)
+      if (e.target === cy) live.current.tap(null)
     })
     cy.on('mouseover', 'node', (e: EventObject) => {
       const node = live.current.view.nodes.find((n) => n.id === e.target.id())
@@ -419,17 +451,42 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
           Fund flow
         </h2>
         <div className="flex flex-wrap items-center gap-1">
-          <Button size="sm" variant="ghost" icon={<Maximize2 size={13} aria-hidden />} onClick={() => fit()}>
-            Fit
-          </Button>
-          <Button size="sm" variant="ghost" icon={<RotateCcw size={13} aria-hidden />} title="Put every wallet back where the layout drew it" onClick={resetLayout}>
-            Reset layout
-          </Button>
-          <Button size="sm" variant="ghost" icon={<Route size={13} aria-hidden />} onClick={() => fit(true)}>
-            Focus path
-          </Button>
-          <Button size="sm" variant="ghost" aria-label="Zoom in" title="Zoom in" onClick={() => zoomBy(1.25)} icon={<Plus size={13} aria-hidden />} />
-          <Button size="sm" variant="ghost" aria-label="Zoom out" title="Zoom out" onClick={() => zoomBy(0.8)} icon={<Minus size={13} aria-hidden />} />
+          <fieldset className="mr-1 flex items-center border border-rule" aria-describedby={gl ? undefined : `${tipId}-nogl`}>
+            <legend className="sr-only">View</legend>
+            {(['2d', '3d'] as const).map((m) => (
+              <label
+                key={m}
+                className={cx(
+                  'flex cursor-pointer items-center gap-1 px-2 py-1 text-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-[var(--chain)]',
+                  mode === m ? 'bg-sunk font-semibold text-fg' : 'text-muted',
+                  m === '3d' && !gl && 'cursor-not-allowed opacity-60',
+                )}
+              >
+                <input type="radio" name={`${tipId}-view`} value={m} checked={mode === m} disabled={m === '3d' && (!gl || !drawable)} onChange={() => setMode(m)} className="sr-only" />
+                {m === '3d' && <Box size={13} aria-hidden />}
+                {m === '2d' ? '2D' : '3D'}
+              </label>
+            ))}
+          </fieldset>
+          {in3d ? (
+            <Button size="sm" variant="ghost" icon={<RotateCcw size={13} aria-hidden />} title="Turn the view back to where it opened (Home)" onClick={() => space.current?.reset()}>
+              Reset view
+            </Button>
+          ) : (
+            <>
+              <Button size="sm" variant="ghost" icon={<Maximize2 size={13} aria-hidden />} onClick={() => fit()}>
+                Fit
+              </Button>
+              <Button size="sm" variant="ghost" icon={<RotateCcw size={13} aria-hidden />} title="Put every wallet back where the layout drew it" onClick={resetLayout}>
+                Reset layout
+              </Button>
+              <Button size="sm" variant="ghost" icon={<Route size={13} aria-hidden />} onClick={() => fit(true)}>
+                Focus path
+              </Button>
+            </>
+          )}
+          <Button size="sm" variant="ghost" aria-label="Zoom in" title="Zoom in" onClick={() => (in3d ? space.current?.zoom(0.8) : zoomBy(1.25))} icon={<Plus size={13} aria-hidden />} />
+          <Button size="sm" variant="ghost" aria-label="Zoom out" title="Zoom out" onClick={() => (in3d ? space.current?.zoom(1.25) : zoomBy(0.8))} icon={<Minus size={13} aria-hidden />} />
           {canGroup && (
             <Button
               size="sm"
@@ -448,7 +505,8 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
             size="sm"
             variant="ghost"
             aria-label="Export PNG"
-            title="Save the picture as a PNG"
+            disabled={in3d}
+            title={in3d ? 'The picture for the file comes from the 2D view' : 'Save the picture as a PNG'}
             icon={<Image size={13} aria-hidden />}
             onClick={() => {
               const cy = cyRef.current
@@ -470,7 +528,19 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
         </div>
       </div>
 
-      {drawable && steps.length > 1 && (
+      {!gl && (
+        <p id={`${tipId}-nogl`} className="border-b border-rule px-4 py-1.5 text-sm text-muted">
+          The 3D view needs WebGL, which this browser does not offer here. The 2D view shows the same wallets and transfers.
+        </p>
+      )}
+      {in3d && (
+        <p className="border-b border-rule bg-sunk px-4 py-1.5 text-sm text-muted" data-testid="note-3d">
+          3D is a visual aid: the same wallets and transfers, turned. It has no PNG export and no replay; pictures for the file come from the 2D view. Drag to turn it, Shift and drag to
+          move it; the arrow keys, + and − do the same once the view has the focus.
+        </p>
+      )}
+
+      {drawable && !in3d && steps.length > 1 && (
         <div
           role="group"
           aria-label="Replay the money"
@@ -607,8 +677,13 @@ export function FlowGraph({ c, selected, onSelect, className, loadContext = read
             : `Fund-flow graph: ${wallets} wallets and ${transfers} transfers, left to right by hop. Every wallet is also listed in the Wallets tab.${withCtx ? ` ${withCtx.contextTransfers} other transfers are drawn greyed as context; they are not the suspect wallet's money.` : ''}`
         }
         style={{ height: drawable ? height : undefined }}
-        className="w-full"
+        className={cx('w-full', in3d && 'hidden')}
       />
+      {in3d && (
+        <Suspense fallback={<p role="status" className="px-4 py-6 text-base text-muted" style={{ minHeight: height }}>Loading the 3D view…</p>}>
+          <Flow3D ref={space} view={view} elements={elements} theme={theme} shown={shown} onTap={(id) => tap(id)} height={height} still={still} />
+        </Suspense>
+      )}
       {!drawable && (
         <p className="px-4 py-6 text-base text-muted">
           This browser cannot draw the graph. The Wallets and Transfers tabs list everything it would show.

@@ -73,6 +73,16 @@ const fake = vi.hoisted(() => {
 })
 
 vi.mock('cytoscape', () => ({ default: (options: Record<string, unknown>) => ((fake.state.options = options), fake.cy) }))
+// The 3D view draws with WebGL, which jsdom has not: what it is asked to draw is checked here,
+// how it draws it in flowSpace.test.ts and in a real browser (scripts/graph-shots.mjs).
+const space = vi.hoisted(() => ({ props: [] as Record<string, unknown>[], reset: vi.fn(), zoom: vi.fn() }))
+vi.mock('./Flow3D', () => ({
+  default: (props: Record<string, unknown> & { ref?: { current: unknown } }) => {
+    space.props.push(props)
+    if (props.ref) props.ref.current = { reset: space.reset, zoom: space.zoom }
+    return <div data-testid="flow-3d" />
+  },
+}))
 const downloads = vi.hoisted(() => ({ url: vi.fn(), text: vi.fn() }))
 vi.mock('../lib/download', () => ({ downloadUrl: downloads.url, downloadText: downloads.text }))
 
@@ -97,6 +107,9 @@ beforeEach(() => {
   fake.state.calls.length = 0
   fake.state.placed.length = 0
   fake.state.hidden.length = 0
+  space.props.length = 0
+  space.reset.mockClear()
+  space.zoom.mockClear()
   downloads.url.mockClear()
   downloads.text.mockClear()
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({} as never)
@@ -529,5 +542,88 @@ describe('FlowGraph: context on demand (a recorded case and its recorded context
     fire('tap', 'node', element(other.data.id, { data: (key: string) => (key === 'context' ? 1 : undefined), toggleClass: toggled }))
     expect(toggled).toHaveBeenCalledWith('named')
     expect(onSelect).not.toHaveBeenCalled()
+  })
+})
+
+describe('FlowGraph: the optional 3D view', () => {
+  const choose3d = async () => {
+    await userEvent.click(screen.getByRole('radio', { name: '3D' }))
+    return screen.findByTestId('flow-3d')
+  }
+
+  it('opens in 2D, with 3D one choice away', () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    expect(screen.getByRole('radio', { name: '2D' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '3D' })).not.toBeChecked()
+    expect(screen.queryByTestId('flow-3d')).not.toBeInTheDocument()
+    expect(space.props).toHaveLength(0)
+  })
+
+  it('shows the same wallets and transfers in 3D as the 2D canvas was given', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    await choose3d()
+    const given = space.props.at(-1)!
+    expect((given.elements as { data: { id: string } }[]).map((e) => e.data.id)).toEqual(fake.state.added.at(-1)!.map((e) => e.data.id))
+    expect(screen.getByRole('img', { hidden: true })).toHaveClass('hidden')
+  })
+
+  it('says 3D is a visual aid, and takes away what belongs to the 2D picture', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    await choose3d()
+    expect(screen.getByTestId('note-3d')).toHaveTextContent('3D is a visual aid')
+    expect(screen.getByTestId('note-3d')).toHaveTextContent('pictures for the file come from the 2D view')
+    expect(screen.getByRole('button', { name: 'Export PNG' })).toBeDisabled()
+    expect(screen.queryByRole('group', { name: 'Replay the money' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Reset layout' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('radio', { name: '2D' }))
+    expect(screen.queryByTestId('flow-3d')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Export PNG' })).toBeEnabled()
+    expect(screen.getByRole('group', { name: 'Replay the money' })).toBeInTheDocument()
+  })
+
+  it('selects in both views at once: a click in 3D selects, and the selection is marked there', async () => {
+    const onSelect = vi.fn()
+    const deposit = hero.graph.nodes[1].id
+    const { rerender } = render(<FlowGraph c={hero} selected={null} onSelect={onSelect} />)
+    await choose3d()
+    act(() => (space.props.at(-1)!.onTap as (id: string | null, context: boolean) => void)(deposit, false))
+    expect(onSelect).toHaveBeenLastCalledWith(deposit)
+    rerender(<FlowGraph c={hero} selected={deposit} onSelect={onSelect} />)
+    expect(space.props.at(-1)!.shown).toBe(deposit)
+    act(() => (space.props.at(-1)!.onTap as (id: string | null, context: boolean) => void)(null, false))
+    expect(onSelect).toHaveBeenLastCalledWith(null)
+  })
+
+  it('has Reset view and zoom on buttons', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    await choose3d()
+    await userEvent.click(screen.getByRole('button', { name: 'Reset view' }))
+    expect(space.reset).toHaveBeenCalledTimes(1)
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom in' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Zoom out' }))
+    expect(space.zoom.mock.calls.map((c) => c[0] < 1)).toEqual([true, false])
+  })
+
+  it('opens a fan from 3D as a click in 2D does', async () => {
+    const ten = fanCase(10)
+    render(<FlowGraph c={ten} selected={null} onSelect={() => {}} />)
+    await choose3d()
+    act(() => (space.props.at(-1)!.onTap as (id: string | null, context: boolean) => void)(`fan:in:${ten.address}`, false))
+    expect((space.props.at(-1)!.elements as { data: { id: string } }[]).filter((e) => /^p\d+$/.test(e.data.id))).toHaveLength(10)
+  })
+
+  it('tells the 3D view to hold still under reduced motion', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({ matches: query.includes('reduce'), media: query, addEventListener: () => {}, removeEventListener: () => {} }) as unknown as MediaQueryList)
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    await choose3d()
+    expect(space.props.at(-1)!.still).toBe(true)
+  })
+
+  it('is switched off, with the reason, where the browser has no WebGL', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(((kind: string) => (kind === '2d' ? {} : null)) as never)
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    expect(screen.getByRole('radio', { name: '3D' })).toBeDisabled()
+    expect(screen.getByText(/The 3D view needs WebGL, which this browser does not offer here/)).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: '2D' })).toBeChecked()
   })
 })
