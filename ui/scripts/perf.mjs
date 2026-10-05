@@ -1,12 +1,14 @@
 // How the case page behaves on a graph of 2,000 wallets, measured in a real browser.
 //
 //   npm run build && node scripts/perf.mjs            (N=2000 by default)
+//   CASE_FILE=case.json node scripts/perf.mjs         a real stored case instead (GET /api/cases/<id>)
 //
 // It serves the built bundle (`vite preview`), answers the page's /api requests itself with a
 // synthetic case (scripts/big-graph.mjs: a shape, not data), and times: the page until the graph
 // is drawn, frames while the graph is dragged, each "draw more" step, and the Wallets tab.
 // Headless, without a GPU: a desk machine with one is faster than these figures.
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bigCase } from './big-graph.mjs'
@@ -29,7 +31,8 @@ const check = (name, value, limit, unit = 'ms') => {
 
 try {
   await waitFor(async () => (await fetch(BASE)).ok, 'vite preview')
-  const c = bigCase(N)
+  const real = process.env.CASE_FILE
+  const c = real ? JSON.parse(readFileSync(real, 'utf8')) : bigCase(N)
   const answers = {
     [`/api/cases/${c.id}`]: c,
     '/api/auth/me': { auth_required: false, officer: null },
@@ -47,7 +50,7 @@ try {
   })
   await page.send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false })
 
-  console.log(`A synthetic case of ${c.graph.nodes.length} wallets and ${c.graph.edges.length} transfers`)
+  console.log(`${real ? 'A real traced case' : 'A synthetic case'} of ${c.graph.nodes.length} wallets and ${c.graph.edges.length} transfers`)
   await page.send('Page.navigate', { url: `${BASE}/cases/${c.id}` })
   await waitFor(() => page.evaluate(`document.querySelectorAll('[role="img"] canvas').length > 0`), 'the graph')
   check('page open to graph drawn', await page.evaluate('performance.now()'), 2000)
@@ -68,7 +71,9 @@ try {
   // Each step is timed from the click to the second frame after it.
   const timed = async (js) =>
     page.evaluate(`new Promise((done) => { const t = performance.now(); ${js}; requestAnimationFrame(() => requestAnimationFrame(() => done(performance.now() - t))) })`)
-  check('draw 50 more of hop 2', await timed(dom.clickText('Draw 50 more of hop 2')), 200)
+  // a real case offers "draw more" only where a hop holds more wallets than are drawn at first
+  if (await page.evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim().startsWith('Draw 50 more of hop 2'))`))
+    check('draw 50 more of hop 2', await timed(dom.clickText('Draw 50 more of hop 2')), 200)
   for (const hop of [3, 4, 5]) {
     if (await page.evaluate(`[...document.querySelectorAll('button')].some((b) => b.textContent.trim().startsWith('Draw hop ${hop}'))`))
       check(`draw hop ${hop}`, await timed(dom.clickText(`Draw hop ${hop}`)), 200)
