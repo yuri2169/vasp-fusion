@@ -103,10 +103,10 @@
       "section": "The system may additionally support",
       "text": "visualization of fund movement",
       "status": "built",
-      "what": "The Hop Rail, the fund-flow graph with a replay, the timeline and the 'where the funds went' bar on every case.",
+      "what": "The Hop Rail, the fund-flow graph with a replay, the timeline and the 'where the funds went' bar on every case. The graph draws the wallet's own money only, and says so in the trace's own counts: how many transfers it saw, how many it followed, and why each other wallet was not followed. The rest of what it read can be switched on as greyed context, for one wallet or for all, without changing the answer. Many small payers of one wallet are drawn as one group that opens in place. An optional 3D view shows the same picture turned.",
       "where": "/cases",
       "evidence_kind": "test",
-      "evidence": "ui/src/case/FlowGraph.test.tsx",
+      "evidence": "tests/test_case_trace_summary.py::test_the_counts_add_up_against_the_graph",
       "gap": null,
       "computed": false
     },

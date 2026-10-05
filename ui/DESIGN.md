@@ -231,7 +231,34 @@ Drawn by Cytoscape (`src/case/FlowGraph.tsx`) from a view computed in `src/lib/c
 - **Replay** (the bar under the toolbar, when there are two or more transfers): Play / Pause, previous, next and a scrubber draw the transfers in block-time order. The newest line runs from payer to payee and its amount counts up, and always lands on the real figure. Space plays and pauses, the arrows step. The line beside the scrubber says which transfer, its amount and its time in words. **With reduced motion there is no Play and nothing animates:** the same control steps one transfer at a time.
 - **Nothing is reachable by mouse only.** The canvas is `role="img"` with a sentence; the Wallets tab lists every wallet and selects it the same way a click does, the Transfers tab every transfer.
 - **A large case (over 250 wallets) is drawn in part** (`foldFlow`). A hop of 400 wallets is a column 36,000px tall that tells nobody anything. Drawn: the path, then 12 wallets of each hop, chosen as the selected wallet and the way to it, the named exchange's wallets, any labelled wallet, then the largest. The rest of a hop is one quiet dashed node, "+388 wallets"; hops past the path's end wait behind "Draw hop 3". A line under the toolbar says how many are drawn and has a button for every fold, so the keyboard can do what a click on the fold does. A selection never refits the picture. Nothing is dropped: the Wallets and Transfers tabs hold every one.
-- Straight lines, not square ("taxi") routing: square routing runs different transfers along one trunk, and the picture then no longer says which wallet paid which.
+- Straight lines, not square ("taxi") routing: square routing runs different transfers along one trunk, and the picture then no longer says which wallet paid which. **The one exception is a fan** (below), where every line on the trunk belongs to the same one wallet.
+
+### Fans: many wallets and one wallet (`lib/caseGraph.ts`, `groupFans`)
+The defect this answers: ten wallets paid the suspect wallet, their lines converged on its tile and covered its address.
+- **A fan is grouped.** Unlabelled wallets that only paid one wallet (or were only paid by it) are its fan. The four largest are drawn; the rest are one quiet dashed node, "**6 wallets paid in**" with their total under it. A click opens the group in place (a button "Collapse" above the canvas closes it; the keyboard reaches the same wallets in the Wallets tab). A labelled payer is never in the group. Nothing is dropped: the group's amount is its wallets' sum.
+- **A fan's lines are square.** Each leaves its own wallet level, joins a trunk between the columns and comes in along the wallet's own line. The payers stand either side of that line, the largest nearest, and leave it free, so no line rises through the text under a tile. An opened fan of more than ten payers is a grid of columns to the left.
+- **The suspect wallet's own payments are square too**: every payment into it, and from four payees on every payment out of it that is not the Hop Rail's path. It stands alone in its column, so the trunk beside it can only be its own.
+- **Each amount of a fan is written beside its own wallet**, on the level part of its line, never on the trunk.
+- **An amount is written on a line only where there is room** (`placeLabels`): never on a tile, on the text under or over a tile, or on another amount. The crossing of a bridge, a flagged transfer and the Hop Rail's path are placed first, then the larger amounts; the rest say it on hover.
+
+### What the trace saw (`case/TraceSummaryLine.tsx`)
+The picture is sparse on purpose: it draws the suspect wallet's money and nothing else. One line above the canvas says by how much, in the trace's own counts (`CaseDetail.trace_summary`): "Followed **23 of 655** transfers seen. **23 wallets not followed:** 16 below the dust limit, 4 high-activity hubs, …". Each reason is a link that opens the list of its wallets; a wallet that is on the graph can be shown there from the list. The case file prints the same sentence. A case stored before this was counted shows no line.
+
+### Context: other transfers, on demand (`lib/context.ts`)
+- **Off by default.** The "Context" bar has a switch, "Show all context (adds 632 transfers)": the figure is what it will draw, said before it is switched on. With a wallet selected the bar also offers "Show this wallet's other transfers". "Hide context" returns the default view exactly.
+- **Drawn as context, not as findings:** small grey tiles (`--data`) in a band under the picture, thin dotted lines with an open arrowhead, no amount on the line, a name only on hover or a click. The legend gains "Other transfers (context, not the suspect's money)". A context wallet is not a wallet of the case: a click names it and selects nothing.
+- **Bounded:** eight other wallets each way for a wallet (labelled ones first, then by amount), the rest one node "+92" that draws 50 more on a click. The band fills row by row under each half-column.
+- **It never changes the answer.** Context is left out of the replay, of the path to a selection, of the counts the canvas reads to a screen reader, of the Hop Rail, the share of funds and the risk class. The trail's own tiles, sizes, line widths and amounts are the same with context on (tested element by element).
+- A wallet the trace did not read (a labelled wallet, one at the hop limit) is read when this installation is online; offline the bar says it was not recorded with the case.
+
+### The 3D view (`case/Flow3D.tsx`, `case/flowSpace.ts`)
+- **2D / 3D** is a two-way choice on the toolbar. **2D is the default and the view of record**: the PNG, the replay and the case file come from it. With 3D open a line says so ("3D is a visual aid…"), the PNG button is disabled and the replay bar is not shown.
+- **The same picture, turned.** The 3D view is built from the elements the 2D canvas is given, in its current state (grouped, a fan opened, context on or off). Each wallet is the 2D tile itself: the same square, fill, border, icon, name over it and address under it. Hop depth is the x axis; the Hop Rail's path runs along it; the other wallets of a hop stand on a disc around it. Line colours are the 2D ones.
+- **Nothing moves by itself.** Every position is computed (the same every time); there is no auto-rotation and no settling. With reduced motion the camera's own moves are instant.
+- Drag turns it, Shift and drag moves it. From the keyboard, with the view focused: arrows turn, + and − zoom, Shift and the arrows move, Home puts it back. "Reset view" and the zoom buttons are on the toolbar. As in 2D, the wheel scrolls the page.
+- A click selects in both views and on the Hop Rail, and opens a group as it does in 2D.
+- **No WebGL: the 3D choice is disabled** and a sentence says why; 2D is unaffected.
+- The library (three.js) is in a chunk that is fetched only when 3D is chosen, from this installation: `make ui-build` fails if it reaches the first load or the 2D graph's chunk.
 
 ## Encoding rules
 
