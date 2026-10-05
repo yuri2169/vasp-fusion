@@ -321,6 +321,24 @@ All additive, except that **`RiskInfo.level` is gone** (it was a three-step rule
 - **`LabelCoverage.traceable_total`**, `traceable_chains`: labels on the chains a trace can run on. The landing's headline shows this, not `total`.
 - Audit actions added: `coverage.view`, `sahyog.complaint`, `sahyog.status`, `sahyog.reply`, `sim.view`, `sim.complaint`, `sim.reply`.
 
+### Batches, the trace budget and measured throughput (G5)
+
+All additive.
+
+- **`POST /api/cases/batch`** → 202 `BatchDetail`. Body `BatchCreate`: either `rows[]` (`address`, optional `chain`, `case_ref`) or `csv` (the text of a CSV file; columns `address, chain, case_ref`, header line optional, comma, semicolon or tab), plus optional `name`, `max_hops`, `max_wallets`, `max_seconds`. At most 2,000 rows and 2 MB. There is no multipart upload: the browser reads the file and posts its text.
+  - Every row is checked on its own. A row that cannot be traced has `accepted: false` and `error` (a sentence); the others are queued. A wallet given twice has `duplicate_of` (the earlier row) and shares its case. A wallet that already has a finished case is linked to it, not traced again.
+  - 422 only when the upload as a whole cannot be read: neither or both of `rows` and `csv`, no row, too many rows, too large.
+- **`GET /api/batches`** → `BatchList` (newest first, without rows). **`GET /api/batches/{id}`** → `BatchDetail`: `progress` (`total`, `accepted`, `duplicates`, `refused`, `queued`, `running`, `done`, `failed`, `by_outcome`, `finished`), `workers` (0 = traced in the server process), `results_csv`, and `rows[]` in upload order. Poll it while `progress.finished` is false.
+  - `BatchRow`: `row` (its number in the upload), `address`, `chain`, `case_ref`, `accepted`, `error`, `duplicate_of`, `case_id`, `case_url`, `status`, and once the case is done `outcome`, `top_vasp`, `hops`, `proximity_rank`, `share_of_funds`, `confidence`, `risk_class`, `budget_ended`. **Proximity (`hops`, `proximity_rank`, `share_of_funds`) and `confidence` are separate figures**, as on a case.
+- **`GET /api/batches/{id}/results.csv`**: the same table as a file, one line per uploaded row. Cells that a spreadsheet would run as a formula are written as text.
+- **The trace budget.** `CaseCreate.max_wallets` (1 to 2,000, default 40: wallets read per direction, largest share first) and `max_seconds` (1 to 3,600, default none).
+  - `provenance.budget` (`TraceBudget`): `max_wallets`, `max_hops`, `max_seconds`, `ended_by` (`wallets`, `time` or null), `ended_side`, `wallets_read`, `share_not_followed`, `text`. **Show `text` when `ended_by` is set**: the budget, not the evidence, ended the trace. Null in a case stored before G5.
+  - `provenance.input` gains `max_wallets`, `max_seconds`, `stopped_after` **only when the budget was changed**: a case traced with the default budget has the same four-field input and the same input digest as before. `stopped_after` records where a time limit ended the walk, so `verify` replays it exactly.
+- **`GET /api/scale`** → `ScaleMetrics`: `status` (`measured` or `not_measured`), `measured_on`, `machine`, `chain_data`, `wallets`, `rounds`, `runs[]` (`workers`, `cases`, `seconds`, `cases_per_minute`, `median_seconds_per_case`, `p95_seconds_per_case`, `transfers_per_second`, `peak_memory_mb`, `speedup`, ...), `one_process`, `intake`, `baseline`, `limits[]`, `notes[]`. Read from `artifacts/scale/metrics.json` (`make bench-scale`). Show `limits` beside the figures.
+- **The queue.** Every trace is queued in the case store before it runs (`vaspfusion/store/queue.py`). With `VASPFUSION_WORKERS=n` (`make serve WORKERS=n`) a pool of n worker processes traces; a case's `status` and `progress` read the same either way.
+- Audit actions added: `batch.upload`, `batch.list`, `batch.view`, `batch.export`, `scale.view`.
+- Mocks: `batches.json`, `batches/b-demo.json` (the three demo cases and one refused row), `scale.json` (the measured figures, real). In demo mode an upload answers with the demonstration batch.
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 

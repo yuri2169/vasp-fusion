@@ -13,6 +13,7 @@ import { Skeleton } from '../components/Skeleton'
 import { cx } from '../lib/cx'
 import { formatDate, formatPercent } from '../lib/format'
 import { Ledger, Panel, type LedgerEntry } from '../overview/parts'
+import { Throughput } from '../overview/Throughput'
 import { count, plural, score, share } from '../overview/words'
 
 const CHAINS = [
@@ -363,6 +364,10 @@ export function ModelPage() {
           )}
         </div>
       )}
+
+      <div className="mt-4">
+        <Throughput />
+      </div>
     </>
   )
 }

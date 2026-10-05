@@ -20,6 +20,8 @@ const WalletPage = lazy(() => import('./pages/WalletPage').then((m) => ({ defaul
 const LabelsPage = lazy(() => import('./pages/LabelsPage').then((m) => ({ default: m.LabelsPage })))
 const ModelPage = lazy(() => import('./pages/ModelPage').then((m) => ({ default: m.ModelPage })))
 const CoveragePage = lazy(() => import('./pages/CoveragePage').then((m) => ({ default: m.CoveragePage })))
+const BatchPage = lazy(() => import('./pages/BatchPage').then((m) => ({ default: m.BatchPage })))
+const BatchUploadPage = lazy(() => import('./pages/BatchPage').then((m) => ({ default: m.BatchUploadPage })))
 const SahyogSimPage = lazy(() => import('./pages/SahyogSimPage').then((m) => ({ default: m.SahyogSimPage })))
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage })))
 
@@ -50,6 +52,8 @@ export function AppRoutes() {
         <Route path="cases" element={<CasesPage />} />
         <Route path="cases/new" element={<NewCasePage />} />
         <Route path="cases/:id" element={<CasePage />} />
+        <Route path="batch" element={later(<BatchUploadPage />)} />
+        <Route path="batch/:id" element={later(<BatchPage />)} />
         <Route path="desk" element={later(<DeskPage />)} />
         <Route path="vasps/:name" element={later(<VaspPage />)} />
         <Route path="requests" element={later(<RequestsPage />)} />

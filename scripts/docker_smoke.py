@@ -253,6 +253,33 @@ class Smoke:
                    and after["status"] == "freeze_confirmed"
                    and after["status_history"][-1].get("via") == "sahyog", (s, ack))
 
+        s, _, scale = api.call("GET", "/api/scale")
+        ok("the measured throughput is served from the bench file, with what limits it",
+           s == 200 and scale["status"] == "measured"
+           and [r["workers"] for r in scale["runs"]] == [1, 2, 4, 8] and scale["limits"]
+           and scale["machine"], (s, str(scale)[:300]))
+        if not self.read_only:
+            rows = "address,chain,case_ref\n" + "".join(
+                f"{sp['address']},{sp['chain']},SMOKE/{i}\n" for i, sp in enumerate(specs[:3], 1)
+            ) + "not-a-wallet,,SMOKE/4\n"
+            s, _, batch = api.call("POST", "/api/cases/batch", {"name": "smoke", "csv": rows})
+            ok("a batch is accepted row by row: three wallets get their case, the bad row is "
+               "kept with its reason",
+               s == 202 and batch["progress"]["accepted"] == 3 and batch["progress"]["refused"] == 1
+               and [r["case_id"] for r in batch["rows"][:3]] == [sp["id"] for sp in specs[:3]]
+               and "chain" in (batch["rows"][3]["error"] or ""), (s, str(batch)[:400]))
+            s, _, done = api.call("GET", f"/api/batches/{batch.get('id')}")
+            ok("the batch's table has each wallet's result",
+               s == 200 and done["progress"]["finished"] and done["progress"]["done"] == 3
+               and [r["outcome"] for r in done["rows"][:3]]
+               == [sp["expect"]["outcome"] for sp in specs[:3]]
+               and done["rows"][0]["top_vasp"] == hero["expect"]["top_vasp"], (s, str(done)[:400]))
+            s, headers, table = api.call("GET", f"/api/batches/{batch.get('id')}/results.csv")
+            ok("...and downloads as CSV",
+               s == 200 and "text/csv" in headers.get("content-type", "")
+               and table.decode().splitlines()[0].startswith("row,wallet,chain")
+               and len(table.decode().splitlines()) == 5, (s, table[:200]))
+
         s, _, audit = api.call("GET", "/api/audit?limit=500&verify=true")
         actions = [(a["officer"], a["action"], a["status"]) for a in audit["items"]]
         ok(f"the audit log has it all ({audit['total']} rows)",

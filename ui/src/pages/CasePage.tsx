@@ -288,6 +288,13 @@ export function CasePage() {
 
       {rail}
 
+      {c.provenance.budget?.ended_by && (
+        <p role="note" aria-label="Trace budget" className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-l-2 border-data pl-3 text-base text-ink">
+          <span className="colhead">Budget reached</span>
+          <span className="max-w-[90ch]">{c.provenance.budget.text}</span>
+        </p>
+      )}
+
       {c.risk && (
         <p aria-label="Risk class" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-ink-soft">
           <button type="button" onClick={() => setParam('tab', 'risk')} className="inline-flex items-center gap-2 hover:underline" title="Open the Risk tab">

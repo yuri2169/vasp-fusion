@@ -175,10 +175,10 @@ rows:
     section: Expected solution
     text: "Scalable architecture capable of handling large-volume blockchain transaction analysis."
     status: partly
-    what: "Chain responses are cached, traces run in the background and a complaint's wallets are worked through a queue."
-    where: /dashboard
-    evidence: {make: intake-timing}
-    gap: "Measured only at small volume: 12 recorded wallets, 290 transfers, 179 chain responses, 6.3 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built."
+    what: "A batch of up to 2,000 wallets is uploaded, queued in a table that survives a restart, and traced by a pool of worker processes that share one response cache and one rate limit per provider. The officer can raise a trace's budget from 40 to 2,000 wallets. Measured on one machine: 410 cases a minute with one worker, 901 with four (artifacts/scale/metrics.json)."
+    where: /batch
+    evidence: {make: bench-scale}
+    gap: "Measured on one laptop with chain responses replayed from a cache: live throughput, which the providers' rate limits bound, was not measured. More than four workers gave no gain there. The case store is a single file with one writing process, and nothing was run on more than one machine (docs/scaling.md)."
 
   # ---------------------------------------------------------------- The solution should aim to
   - id: aim-time

@@ -8,6 +8,15 @@ export const NAMING_BAR = 0.6
 export const HOP_LIMITS = [1, 2, 3, 4, 5]
 export const DEFAULT_HOPS = 3
 
+/** The trace budget: wallets read per direction. 40 unless the officer raises it; 2,000 is what the graph draws. */
+export const DEFAULT_WALLETS = 40
+export const MAX_WALLETS = 2000
+/** What is wrong with a typed wallet budget, or null. */
+export const walletBudgetError = (text: string): string | null => {
+  const n = Number(text)
+  return text.trim() === '' || !Number.isInteger(n) || n < 1 || n > MAX_WALLETS ? 'A whole number from 1 to 2,000.' : null
+}
+
 /** A lead from the deposit-address model: something to look into, never part of the answer. */
 export const isLead = (flag: TypologyFlag) => flag.code === 'deposit_like'
 export const leadsOf = (c: CaseDetail) => c.typology_flags.filter(isLead)

@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CaseSummary, Chain } from '../api/models'
 import { useCases, useOpenCase } from '../api/queries'
-import { DEFAULT_HOPS } from '../case/rules'
-import { HopLimit } from '../case/TraceAgain'
+import { DEFAULT_HOPS, DEFAULT_WALLETS, walletBudgetError } from '../case/rules'
+import { HopLimit, WalletBudget } from '../case/TraceAgain'
 import { Button } from '../components/Button'
 import { ChainBadge } from '../components/ChainBadge'
 import { OutcomeStamp } from '../components/OutcomeStamp'
@@ -143,6 +143,7 @@ export function NewCasePage() {
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState('')
   const [hops, setHops] = useState(DEFAULT_HOPS)
+  const [wallets, setWallets] = useState(String(DEFAULT_WALLETS))
   const [refresh, setRefresh] = useState(false)
 
   const seen = inspectAddress(address)
@@ -154,7 +155,7 @@ export function NewCasePage() {
   const amountValue = amount.trim() ? rupees(amount) : null
   const amountError = amount.trim() && amountValue === null ? 'Write the amount in rupees, in digits: 4050000 or 40,50,000.' : null
   const dateError = date && date > today() ? 'The incident cannot be in the future.' : null
-  const ready = seen.state === 'valid' && chain !== null && !untraceable && !amountError && !dateError && !openCase.isPending
+  const ready = seen.state === 'valid' && chain !== null && !untraceable && !amountError && !dateError && walletBudgetError(wallets) === null && !openCase.isPending
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -168,6 +169,7 @@ export function NewCasePage() {
         ...(amountValue !== null && { amount_lost_inr: amountValue }),
         ...(date && { incident_date: date }),
         max_hops: hops,
+        ...(Number(wallets) !== DEFAULT_WALLETS && { max_wallets: Number(wallets) }),
         refresh,
       },
       {
@@ -272,6 +274,7 @@ export function NewCasePage() {
                 Three is usual. Each further hop reads more wallets and takes longer; a branch always ends at the first labelled wallet.
               </p>
             </div>
+            <WalletBudget value={wallets} onChange={setWallets} />
             <label className="flex items-start gap-2 text-base text-fg">
               <input type="checkbox" checked={refresh} onChange={(e) => setRefresh(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--fg)]" />
               <span>

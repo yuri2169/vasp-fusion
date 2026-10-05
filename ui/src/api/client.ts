@@ -6,6 +6,10 @@
  */
 import type {
   AuditPage,
+  BatchCreate,
+  BatchDetail,
+  BatchList,
+  ScaleMetrics,
   CaseCreate,
   ComplaintCreate,
   ComplaintStatus,
@@ -149,7 +153,9 @@ export type LabelQuery = { q?: string; chain?: string; category?: string; tier?:
 export type RequestsQuery = { vasp?: string; status?: RequestStatus }
 /** What the simulator's form has to give; the rest has server defaults. */
 export type ComplaintFile = Pick<ComplaintCreate, 'complaint_ref' | 'agency' | 'officer' | 'wallets'> & Partial<ComplaintCreate>
-export type AuditQuery = { limit?: number; offset?: number; officer?: string; action?: string; target?: string; verify?: boolean }
+/** A batch is the text of a CSV file (or rows); the budget has server defaults. */
+export type BatchUpload = Partial<BatchCreate>
+export type AuditQuery ={ limit?: number; offset?: number; officer?: string; action?: string; target?: string; verify?: boolean }
 
 const seg = encodeURIComponent
 
@@ -212,6 +218,14 @@ export function createApi(transport: Transport) {
     fileComplaint: (body: ComplaintFile) => call<ComplaintStatus>('POST', '/sahyog-sim/complaints', { body }),
     /** Plays the exchange's side: a reply arriving through the gateway. */
     simReply: (id: string, body: ReplyIn) => call<ReplyAck>('POST', `/sahyog-sim/requests/${seg(id)}/reply`, { body }),
+
+    /** Many wallets at once: answers with every row accepted or refused; poll `batch(id)` for the results. */
+    uploadBatch: (body: BatchUpload) => call<BatchDetail>('POST', '/cases/batch', { body }),
+    batches: () => get<BatchList>('/batches'),
+    batch: (id: string) => get<BatchDetail>(`/batches/${seg(id)}`),
+    batchCsvUrl: (id: string) => `/api/batches/${seg(id)}/results.csv`,
+    /** Measured throughput, as `make bench-scale` last wrote it; "not_measured" when it was never run. */
+    scale: () => get<ScaleMetrics>('/scale'),
   }
 }
 

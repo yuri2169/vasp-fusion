@@ -2,7 +2,7 @@
 import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSyncExternalStore } from 'react'
 import { api } from './api'
-import { ApiError, getDataSource, subscribeDataSource, type CaseOpen, type CasesQuery, type ComplaintFile, type LabelQuery } from './client'
+import { ApiError, getDataSource, subscribeDataSource, type BatchUpload, type CaseOpen, type CasesQuery, type ComplaintFile, type LabelQuery } from './client'
 import type { CaseDetail, Chain, Login, ReplyIn, RequestCreate, RequestPatch, SahyogSim, WatchCreate, WatchList } from './models'
 
 export function createQueryClient(): QueryClient {
@@ -38,6 +38,9 @@ export const keys = {
   watchlist: ['watchlist'] as const,
   psCoverage: ['ps-coverage'] as const,
   sahyogSim: ['sahyog-sim'] as const,
+  batches: ['batches'] as const,
+  batch: (id: string) => ['batch', id] as const,
+  scale: ['scale'] as const,
 }
 
 export const useMe = () => useQuery({ queryKey: keys.me, queryFn: () => api.me(), staleTime: 60_000 })
@@ -251,6 +254,33 @@ export function useSimReply() {
     },
   })
 }
+
+export const useBatches = () => useQuery({ queryKey: keys.batches, queryFn: () => api.batches() })
+
+/** One batch. While any of its wallets is still queued or being traced it is asked for again once a second. */
+export const useBatch = (id: string) =>
+  useQuery({
+    queryKey: keys.batch(id),
+    queryFn: () => api.batch(id),
+    staleTime: 0,
+    refetchInterval: (q) => (q.state.data && !q.state.data.progress.finished ? 1000 : false),
+  })
+
+/** Upload a batch: cases appear and are traced, so the case views are read again. */
+export function useUploadBatch() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: BatchUpload) => api.uploadBatch(body),
+    onSuccess: (batch) => {
+      client.setQueryData(keys.batch(batch.id), batch)
+      void client.invalidateQueries({ queryKey: keys.batches })
+      invalidateCaseViews(client)
+    },
+  })
+}
+
+/** The measured throughput. It changes only when the bench is run again. */
+export const useScale = () => useQuery({ queryKey: keys.scale, queryFn: () => api.scale(), staleTime: 300_000 })
 
 /** 'mock' | 'live' | 'mixed' of the latest answer, or null before the first one. */
 export const useDataSource = () => useSyncExternalStore(subscribeDataSource, getDataSource, getDataSource)

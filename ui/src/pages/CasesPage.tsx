@@ -152,9 +152,14 @@ export function CasesPage() {
     setParams(next, { replace: true })
   }
   const openCase = (
-    <Link to="/cases/new" className={buttonClass('primary')}>
-      Open a case
-    </Link>
+    <>
+      <Link to="/batch" className={buttonClass('secondary')}>
+        Trace a batch
+      </Link>
+      <Link to="/cases/new" className={buttonClass('primary')}>
+        Open a case
+      </Link>
+    </>
   )
 
   return (

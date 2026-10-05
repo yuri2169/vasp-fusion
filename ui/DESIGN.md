@@ -341,6 +341,15 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 - **Mock or live** (`VITE_API`): `npm run dev` and the tests read the fixtures in `../mocks` (`GET /api/<path>` → `mocks/<path>.json`). `VITE_API=live npm run dev` talks to `make serve` through the dev proxy. `npm run build` is live (the bundle is served by the API); `VITE_API=mock npm run build` builds on the fixtures.
 - Real data only. `/kit` shows the B1 fixtures, read through the client; never invent an address or a figure for a screen.
 
+## Batches, the budget and throughput (`/batch`, `/batch/:id`)
+
+- **A batch is part of Cases**, not an eighth place in the header: "Trace a batch" sits beside "Open a case" on `/cases`, and the Cases entry stays lit on `/batch`.
+- **`/batch`** is the same cover sheet as "Open a case": the file (read in the browser and sent as text; there is no upload route), or pasted lines, a name, and the budget. Beside it, the earlier batches with one sentence each.
+- **`/batch/:id`**: the counts as a ledger (rows, the three outcomes, rows refused), then the queue as one ruled bar (traced solid, being traced hatched, waiting empty, failed red; each named in words under it) with the server's counts in one sentence, then the result table in upload order. **A refused row stays in the table** with its reason. Proximity (hops, share) and confidence are separate columns. The table downloads as CSV from the header.
+- **The wallet budget** (`case/TraceAgain.tsx`, `WalletBudget`) is one control used on intake, on a batch and in "Trace again". It is sent only when it is not 40.
+- **When the budget, not the evidence, ended a trace**, the case says so under the rail in the server's sentence, on a single data-coloured edge: it is a statement about what is unknown, so it is never the fusion colour.
+- **Throughput** is a panel at the foot of the Model page (`overview/Throughput.tsx`), read from `GET /api/scale`: a row per worker count, the bar in each row is that row's own figure against the fastest run, then what limits it in the file's own sentences. With no measurement the panel says so and shows no figure.
+
 ## Commands (in `ui/`)
 
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.

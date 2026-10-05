@@ -251,6 +251,9 @@ export function createMockTransport(opts: { now?: () => number; traceMs?: number
         return { data, source: 'mock' }
       }
 
+      // An upload in demo mode answers with the recorded demonstration batch: nothing is traced here.
+      if (method === 'POST' && decoded === '/cases/batch') return { data: await fixture('/batches/b-demo'), source: 'mock' }
+
       if (method === 'POST' && decoded === '/cases') {
         const address = String((opts.body as { address?: unknown } | undefined)?.address ?? '').trim()
         const found = (await fixture<CaseList>('/cases')).items.find((c) => sameAddress(c.address, address))

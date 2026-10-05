@@ -35,6 +35,17 @@ make reproduce                           # every figure below, regenerated from 
 | ...of which carry a threat tag from a cited public source | 18,646: ransomware 11,271, fraud 6,213, terrorism financing 367, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
 | Recorded demonstration cases that replay offline to the same fingerprint | 12 of 12 (7 name an exchange, 3 say insufficient evidence, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
 
+**Volume.** A batch of wallets is uploaded at `/batch`, queued, and traced by a pool of worker processes (`make serve WORKERS=4`). Measured by `make bench-scale` on one laptop (Darwin arm64, 10 cores, 5 Oct 2026), 300 cases per run, chain responses replayed from a cache, read from `artifacts/scale/metrics.json`:
+
+| Worker processes | Cases per minute | Median seconds per case | Transfers analysed per second | Peak memory |
+|---|---|---|---|---|
+| 1 | 409.5 | 0.14 | 1,221 | 385 MB |
+| 2 | 658.9 | 0.17 | 1,965 | 811 MB |
+| 4 | 900.9 | 0.25 | 2,687 | 1,602 MB |
+| 8 | 878.5 | 0.40 | 2,620 | 3,040 MB |
+
+Every case in every run reproduces its recorded fingerprint. Before this work the same replay ran at 156.8 cases per minute. Three limits, stated plainly: more than four workers gave no gain on that machine; **live throughput was not measured** (public chain APIs rate-limit free keys, and that is the bound in real use); and it is one machine with one store file. `docs/scaling.md` separates what was measured from what is only design. These timings are a measurement of one machine and are not part of `make reproduce`.
+
 A named exchange is a lead to confirm with the exchange, not proof. The wrongly-named rate above is the honest one: it was measured on wallets whose true exchange we knew and whose labels we hid.
 
 | | | |

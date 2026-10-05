@@ -58,4 +58,7 @@ export const AUDIT_ACTIONS: Record<string, string> = {
   'case.export': 'Exported the case file',
   'case.receipt': 'Read the receipt',
   'case.verify': 'Verified the case',
+  'batch.upload': 'Uploaded a batch of wallets',
+  'batch.view': 'Read a batch',
+  'batch.export': 'Downloaded the results of a batch',
 }

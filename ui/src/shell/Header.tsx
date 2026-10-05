@@ -11,7 +11,7 @@ import { GlobalSearch } from './GlobalSearch'
 
 /** `also`: other routes that belong to the same place (an exchange's page and a request are the desk's). */
 const PLACES: { to: string; name: string; also?: string[] }[] = [
-  { to: '/cases', name: 'Cases' },
+  { to: '/cases', name: 'Cases', also: ['/batch'] },
   { to: '/desk', name: 'Request desk', also: ['/vasps', '/requests'] },
   { to: '/dashboard', name: 'Dashboard' },
   { to: '/watchlist', name: 'Watchlist' },
