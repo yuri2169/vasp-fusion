@@ -19,12 +19,17 @@ __all__ = ["CacheMiss", "ChainCache", "ChainProvider", "Direction", "Fetcher", "
 
 
 def default_fetcher() -> Fetcher:
-    return Fetcher(ChainCache(), UrllibTransport())
+    """Cache first, then the chain APIs, paced by the limiter every worker shares. With
+    OFFLINE=1 nothing can be written, so the cache is opened for a replay."""
+    if cache.offline_mode():
+        return Fetcher(ChainCache(read_only=True), UrllibTransport())
+    from .ratelimit import RateLimiter
+    return Fetcher(ChainCache(), UrllibTransport(), limiter=RateLimiter())
 
 
 def cache_only_fetcher(path=None) -> Fetcher:
     """Reads the cache and nothing else, whatever OFFLINE says (`verify`)."""
-    return Fetcher(ChainCache(path), None, offline=True)
+    return Fetcher(ChainCache(path, read_only=True), None, offline=True)
 
 
 def get_provider(chain: str, fetcher: Fetcher | None = None, **opts) -> ChainProvider:

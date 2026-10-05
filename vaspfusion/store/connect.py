@@ -5,7 +5,9 @@ Two things can make `duckdb.connect()` fail for a moment, and both pass by thems
 
 * another PROCESS holds the file's write lock (`IOException ... lock`);
 * another THREAD of this process is closing its connection to the same file at this
-  instant (`BinderException: Unique file handle conflict ... already attached`).
+  instant (`BinderException: Unique file handle conflict ... already attached`);
+* another THREAD of this process holds the file open the other way (read-only beside
+  read-write: `ConnectionException ... different configuration`).
 
 The second one was not waited for until U5: a read beside a write then failed, and the
 API answered 500 (`GET /api/cases/{id}` during a refresh, about once in 12).
@@ -22,7 +24,8 @@ def _passing(e: Exception) -> bool:
     text = str(e).lower()
     if isinstance(e, duckdb.IOException):
         return "lock" in text
-    return "file handle conflict" in text or "already attached" in text
+    return "file handle conflict" in text or "already attached" in text \
+        or "different configuration" in text
 
 
 def connect(path: Path | str, read_only: bool = False, wait_s: float = 30.0):
@@ -30,7 +33,7 @@ def connect(path: Path | str, read_only: bool = False, wait_s: float = 30.0):
     while True:
         try:
             return duckdb.connect(str(path), read_only=read_only)
-        except (duckdb.IOException, duckdb.BinderException) as e:
+        except (duckdb.IOException, duckdb.BinderException, duckdb.ConnectionException) as e:
             if not _passing(e) or time.monotonic() > deadline:
                 raise
             time.sleep(0.02)

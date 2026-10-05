@@ -61,17 +61,32 @@ class ChainCache:
     `hold=True` keeps one connection open until `close()`: a long batch job (the
     discovery crawl) then pays the open/close cost once instead of per page. No
     other process can use the file meanwhile, so give such a job its own file.
-    Calls are serialised by a lock, so worker threads may share one cache."""
+    Calls are serialised by a lock, so worker threads may share one cache.
 
-    def __init__(self, path: Path | str | None = None, hold: bool = False):
+    `read_only=True` is for a replay (OFFLINE=1, verify): nothing is written, so the
+    file is opened read-only, which any number of processes may do at once, and the one
+    connection is kept until `close()`. Opening the file for every page was 45% of a
+    replayed trace (measured, docs/scaling.md). A missing file is an empty cache."""
+
+    def __init__(self, path: Path | str | None = None, hold: bool = False,
+                 read_only: bool = False):
         self.path = Path(path or os.environ.get("VASPFUSION_CHAIN_CACHE") or DEFAULT_CACHE)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         self._held = None
+        self.read_only = read_only
+        if read_only:
+            return                  # opened at the first read, and only if the file exists
         with self._con() as con:
             con.execute(_DDL)
         if hold:
             self._held = self._con()
+
+    def __del__(self):              # a replay's connection must not outlive its fetcher
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - the interpreter is shutting down
+            pass
 
     def close(self) -> None:
         with self._lock:
@@ -81,6 +96,15 @@ class ChainCache:
 
     def _exec(self, sql: str, params: list, fetch: bool = False):
         with self._lock:
+            if self.read_only and self._held is None:
+                if not self.path.exists():
+                    return (0,) if "count(*)" in sql else None
+                self._held = self._con(read_only=True)
+                if not self._held.execute(
+                        "SELECT count(*) FROM information_schema.tables "
+                        "WHERE table_name = 'chain_cache'").fetchone()[0]:
+                    self.close()
+                    return (0,) if "count(*)" in sql else None
             if self._held is not None:
                 cur = self._held.execute(sql, params)
                 return cur.fetchone() if fetch else None
@@ -100,6 +124,8 @@ class ChainCache:
         return (row[0], row[1]) if row else None
 
     def put(self, chain: str, address: str, direction: str, query: str, raw: bytes) -> str:
+        if self.read_only:
+            raise ProviderError("this cache was opened for a replay and is not written to")
         sha = hashlib.sha256(raw).hexdigest()
         self._exec("INSERT OR REPLACE INTO chain_cache VALUES (?, ?, ?, ?, ?, ?, ?)",
                    [chain, address, direction, query,
@@ -141,8 +167,12 @@ class Fetcher:
                  offline: bool | None = None, sleep: Callable[[float], None] = time.sleep,
                  clock: Callable[[], float] = time.monotonic,
                  min_interval: dict[str, float] | None = None,
-                 max_retries: int = 5, backoff: float = 1.0, refresh: bool = False):
+                 max_retries: int = 5, backoff: float = 1.0, refresh: bool = False,
+                 limiter=None):
         self.cache = cache
+        # ratelimit.RateLimiter: the pacing every worker shares. None = this fetcher
+        # paces only itself (tests, and single-process batch jobs with their own cache).
+        self.limiter = limiter
         self.refresh = refresh  # True: skip cache reads (still writes), i.e. re-fetch live
         self.transport = transport
         self._offline = offline
@@ -158,8 +188,15 @@ class Fetcher:
     def offline(self) -> bool:
         return offline_mode() if self._offline is None else self._offline
 
+    def close(self) -> None:
+        """Let go of the cache file (a replay keeps one connection open)."""
+        self.cache.close()
+
     def _throttle(self, host: str) -> None:
         gap = self.min_interval.get(host, 0.0)
+        if self.limiter is not None:
+            self.limiter.acquire(host, gap)
+            return
         with self._lock:                # each caller books the next free slot, then waits
             now = self.clock()
             last = self._last_call.get(host)
@@ -214,6 +251,8 @@ class Fetcher:
                 if attempt == self.max_retries:
                     raise ProviderError(f"gave up on {host} after {attempt + 1} tries: {e}") from e
                 self._count("retries")
+                if self.limiter is not None:     # the refusal holds every worker back
+                    self.limiter.penalise(host, self.backoff * 2 ** attempt)
                 self.sleep(self.backoff * 2 ** attempt)
                 continue
             sha = self.cache.put(chain, address, direction, query, body)
