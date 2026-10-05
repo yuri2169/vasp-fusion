@@ -234,7 +234,7 @@ The exchange's reply to a request that was sent, arriving through the portal.
 - **Identity.** Nothing signs a payload or proves who the officer or the exchange is. The API key identifies the caller as "the portal", no more.
 - **Delivery to the exchange.** The directory records each exchange's own published channel (a portal or an address) for the officer's use. The tool does not submit to those channels.
 - **Callbacks.** `callback_url` is carried, never called.
-- **Volume.** A complaint's wallets are traced one after another in one process. Measured on 5 Oct 2026: one complaint with the 11 recorded wallets (six chains), intake to 11 results, **6.4 seconds** (5.9 to 10.3 over four runs, the first the slowest; 9.5 to 15.6 while other work loaded the machine) with chain responses replayed and no network (`make intake-timing`, `artifacts/intake_timing.json`). A live trace also waits on the public chain APIs.
+- **Volume.** A complaint's wallets are traced one after another in one process. Measured on 5 Oct 2026: one complaint with the 12 recorded wallets (six chains), intake to 12 results, **6.3 seconds** (four runs, all between 6.3 and 6.4, on a quiet machine) with chain responses replayed and no network (`make intake-timing`, `artifacts/intake_timing.json`). A live trace also waits on the public chain APIs.
 
 ## Legal basis cited
 

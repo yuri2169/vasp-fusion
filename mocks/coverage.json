@@ -150,12 +150,12 @@
       "id": "alerting",
       "section": "The system may additionally support",
       "text": "alerting for high-risk wallets linked to ransomware, darknet, terrorism financing, or fraud ecosystems",
-      "status": "partly",
-      "what": "An alert is raised when traced money reaches a sanctioned or mixer address, and a watched wallet is flagged when it shows new activity, a new exchange, a new alert or a higher risk class.",
+      "status": "built",
+      "what": "Labels carry threat tags from cited public sources (the OFAC SDN list, Ransomwhere, GraphSense TagPacks, scam lists): ransomware, darknet market, terrorism financing, fraud. A case is screened when it is opened, a link to a tagged address is an alert that names the threat and the source, and a watched wallet raises a change on a new link or a higher risk class. A wallet none of those sources lists raises nothing: the alert is only as wide as the lists.",
       "where": "/watchlist",
       "evidence_kind": "test",
-      "evidence": "tests/test_wallets_watch.py::test_a_new_exchange_and_a_new_alert_are_named",
-      "gap": "The labels carry sanctioned, scam and mixer only. There are no ransomware, darknet or terrorism-financing tags yet, so no alert names those.",
+      "evidence": "tests/test_wallets_watch.py::test_a_recheck_that_finds_a_new_link_to_a_tagged_address_is_a_high_change",
+      "gap": null,
       "computed": false
     },
     {
@@ -199,7 +199,7 @@
       "section": "Expected solution",
       "text": "Real-time generation of investigative intelligence.",
       "status": "partly",
-      "what": "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 11 recorded wallets, on six chains, went from intake to 11 results in 6.4 seconds (5.9 to 10.3 over four runs, the first the slowest; artifacts/intake_timing.json).",
+      "what": "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 12 recorded wallets, on six chains, went from intake to 12 results in 6.3 seconds (four runs, all between 6.3 and 6.4; artifacts/intake_timing.json).",
       "where": "/cases/new",
       "evidence_kind": "test",
       "evidence": "tests/api/test_cases_live.py::test_a_running_case_says_what_the_trace_has_read_so_far",
@@ -239,7 +239,7 @@
       "where": "/dashboard",
       "evidence_kind": "make",
       "evidence": "intake-timing",
-      "gap": "Measured only at small volume: 11 recorded wallets, 137 transfers, 155 chain responses, 6.4 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built.",
+      "gap": "Measured only at small volume: 12 recorded wallets, 290 transfers, 179 chain responses, 6.3 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built.",
       "computed": false
     },
     {
@@ -292,8 +292,8 @@
     }
   ],
   "counts": {
-    "built": 14,
-    "partly": 10,
+    "built": 15,
+    "partly": 9,
     "planned": 0
   },
   "total": 24,

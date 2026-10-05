@@ -182,6 +182,13 @@
       }
     }
   ],
+  "by_threat": {
+    "ransomware": 11271,
+    "fraud": 6213,
+    "sanctioned_other": 613,
+    "terrorism_financing": 367,
+    "darknet_market": 182
+  },
   "traceable_chains": [
     "tron",
     "ethereum",

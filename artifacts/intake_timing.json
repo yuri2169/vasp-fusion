@@ -1,14 +1,14 @@
 {
-  "wallets": 11,
-  "seconds": 6.36,
-  "seconds_per_wallet": 0.58,
-  "transfers_in_the_results": 137,
-  "chain_responses_read": 155,
-  "results_handed_to_the_gateway": 11,
+  "wallets": 12,
+  "seconds": 6.34,
+  "seconds_per_wallet": 0.53,
+  "transfers_in_the_results": 290,
+  "chain_responses_read": 179,
+  "results_handed_to_the_gateway": 12,
   "outcomes": {
     "ATTRIBUTED": 7,
     "INSUFFICIENT_EVIDENCE": 3,
-    "SANCTIONED_OR_MIXER_REACHED": 1
+    "SANCTIONED_OR_MIXER_REACHED": 2
   },
   "chain_data": "replayed from the recorded demo cache; no network",
   "machine": "Darwin arm64, 10 cores, Python 3.12.14",

@@ -502,7 +502,7 @@ def main() -> None:
         total, found = store.search("coindcx", limit=10)
         st = store.stats()
         coverage = {k: st[k] for k in ("total", "by_category", "by_tier", "by_chain",
-                                       "by_source")}
+                                       "by_source", "by_threat")}
         coverage["traceable_chains"] = list(TRACEABLE)
         coverage["traceable_total"] = sum(n for c, n in st["by_chain"].items()
                                           if c in TRACEABLE)

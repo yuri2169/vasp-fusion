@@ -280,3 +280,36 @@ def test_the_config_is_refused_when_it_breaks_its_rules(tmp_path):
 def test_the_classes_are_read_off_the_score():
     assert [risk.class_of(s) for s in (0, 24, 25, 49, 50, 74, 75, 100)] == \
         ["low", "low", "medium", "medium", "high", "high", "severe", "severe"]
+
+
+# ------------------------------------------------------------------ threat tags
+TAG = {"threat": "ransomware", "entity": "Conti", "source": "ransomwhere", "url": None,
+       "evidence": "Ransomwhere: ransomware payment address, family Conti."}
+
+
+def test_a_link_to_a_threat_tagged_address_is_severe_and_counted_once():
+    base = _bare(DONE["tron-coindcx"])
+    paid = next(e for e in base["graph"]["edges"] if e["direction"] == "outbound")
+    flag = _flag("threat_contact", severity="high", wallet=paid["target"], threat=TAG,
+                 figures={"share": 0.14, "hops": 2.0}, tx_hashes=[paid["tx_hash"]],
+                 text="Linked to ransomware (Conti, Ransomwhere): 2 hops away")
+    r = risk.case_risk({**base, "typology_flags": [flag]})
+    assert [i["code"] for i in r["indicators"]] == ["threat_contact"]
+    assert r["risk_class"] == "severe" and r["indicators"][0]["text"] == flag["text"]
+    # a scam-listed wallet that carries a tag is that same link, not a second indicator
+    c = copy.deepcopy(base)
+    node = next(n for n in c["graph"]["nodes"] if n["id"] == paid["target"])
+    node["label"] = {**(node["label"] or {}), "category": "scam", "entity": "X", "label": "X",
+                     "source": "a-list", "threat": "fraud", "threat_entity": "X",
+                     "threat_source": "a-list"}
+    both = risk.case_risk({**c, "typology_flags": [flag]})
+    assert [i["code"] for i in both["indicators"]] == ["threat_contact"]
+
+
+def test_a_tagged_address_is_severe_by_its_tag_in_the_sources_words():
+    label = {"category": "entity", "entity": "Conti", "source": "ransomwhere", "label": "Conti",
+             "threat": "ransomware", "threat_entity": "Conti", "threat_source": "ransomwhere",
+             "threat_url": None, "threat_evidence": TAG["evidence"]}
+    r = risk.wallet_risk("RW", label, [])
+    assert (r["risk_class"], r["indicators"][0]["code"]) == ("severe", "threat_self")
+    assert r["reasons"][0].endswith(TAG["evidence"])
