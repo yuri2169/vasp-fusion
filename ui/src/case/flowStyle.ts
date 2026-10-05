@@ -15,6 +15,7 @@ import { THREATS } from '../components/ThreatChip'
 import type { FlowRisk, RiskClass } from '../api/models'
 import { RISK_ORDER, RISK_WORDS } from '../components/RiskTag'
 import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
+import { CHAINS } from '../lib/chains'
 import { formatAmount, truncateMiddle } from '../lib/format'
 import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
 
@@ -109,6 +110,19 @@ function captionOf(n: FlowNode): string | null {
   return null
 }
 
+/** The mark a cross-chain line wears on the canvas, before the bridge's name. */
+export const BRIDGE_MARK = '\u21C4'
+const ARROW = '\u2192'
+const chainCode = (chain: keyof typeof CHAINS) => CHAINS[chain].code
+
+/** What a tile prints under its icon: the short address, with the chain's code first when
+ *  the wallet is on another chain than the case (its id is then `chain:address`). */
+export function tileLabel(id: string): string {
+  const at = id.indexOf(':')
+  const chain = at > 0 ? id.slice(0, at) : ''
+  return chain in CHAINS ? `${CHAINS[chain as keyof typeof CHAINS].code} ${truncateMiddle(id.slice(at + 1), 4, 4)}` : truncateMiddle(id, 4, 4)
+}
+
 /** The mark a flagged transfer wears on the canvas, with its class in words beside it. */
 export const RISK_MARK = '▲'
 
@@ -145,7 +159,7 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
             ? `+${n.members.length.toLocaleString('en-US')} wallets`
             : n.kind === 'cluster'
               ? `${n.members.length} wallets`
-              : truncateMiddle(n.id, 4, 4),
+              : tileLabel(n.id),
       },
       position,
     })
@@ -172,8 +186,12 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
         width: Math.max(1, Math.round(edgeWidth(e.amount, view.maxAmount) * 5.5) / 10),
         inbound: e.direction === 'inbound' ? 1 : 0,
         onPath: e.onPath ? 1 : 0,
+        ...(e.bridge ? { bridge: 1 } : {}),
         // Written on the main path and on the larger flows; the rest say it on hover.
-        label: risk
+        label: e.bridge
+          ? // a crossing always says so: both chains and what arrived (the bridge tile it leaves is named)
+            `${BRIDGE_MARK} ${chainCode(e.bridge.source_chain)} ${ARROW} ${e.bridge.dest_chain ? chainCode(e.bridge.dest_chain) : '?'}\n${formatAmount(e.amount, e.asset)}`
+          : risk
           ? // two short lines: a flagged transfer is often the one between two close tiles
             `${RISK_MARK} ${RISK_WORDS[risk]} risk\n${formatAmount(e.amount, e.asset)}`
           : e.onPath || e.amount >= view.maxAmount * 0.1
@@ -345,6 +363,12 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     { selector: 'edge[risk = "high"], edge[risk = "severe"]', style: { 'line-color': t.seal, 'target-arrow-color': t.seal, color: t.seal, 'font-weight': 600 } },
     { selector: 'edge[risk]', style: { 'text-wrap': 'wrap', 'font-size': 11 } },
     { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], 'line-opacity': 0.7 } },
+    // A bridge's payout joins two chains: a dotted line in the label colour (a bridge is a
+    // named party), always captioned with the bridge and both chains.
+    {
+      selector: 'edge[bridge = 1]',
+      style: { 'line-style': 'dashed', 'line-dash-pattern': [2, 4], 'line-color': t.verifiedText, 'target-arrow-color': t.verifiedText, 'text-wrap': 'wrap', 'font-size': 11 },
+    },
 
     // --- looking at one wallet: its path stays, the rest steps back --------
     { selector: '.dim', style: { opacity: 0.2 } },

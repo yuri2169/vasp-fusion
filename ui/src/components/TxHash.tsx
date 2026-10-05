@@ -3,12 +3,15 @@ import type { Chain } from '../api/models'
 import { cx } from '../lib/cx'
 import { explorerName, txUrl } from '../lib/explorers'
 import { truncateMiddle } from '../lib/format'
+import { useTxChain } from '../lib/txChains'
 import { CopyButton } from './CopyButton'
 import { Tip, useTip } from './Tip'
 
 /** A transaction hash: mono, shortened in the middle, whole on hover or focus, copied whole. */
-export function TxHash({ hash, chain, full, className }: { hash: string; chain: Chain; full?: boolean; className?: string }) {
+export function TxHash({ hash, chain: given, full, className }: { hash: string; chain: Chain; full?: boolean; className?: string }) {
   const tip = useTip()
+  // a transaction after a bridge is on another chain than the case: the case says which
+  const chain = useTxChain(hash, given)
   return (
     <span
       role="group"

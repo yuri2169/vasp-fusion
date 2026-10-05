@@ -98,17 +98,19 @@ describe('FundsBar', () => {
     expect(segments().map((s) => s.dataset.fill)).toEqual(['seal', 'open', 'open'])
     unmount()
     render(<FundsBar slices={bridge.where_funds_went} asset="USDT" total={bridge.total_sent} />)
-    expect(segments().map((s) => s.dataset.fill)).toEqual(['party', 'party', 'open', 'open', 'party', 'open', 'open'])
+    // the money that crossed the Across bridge was followed onto Base: it is past the hop limit there, not "at a bridge"
+    expect(segments().map((s) => s.dataset.fill)).toEqual(['open', 'party', 'open', 'open', 'party', 'open', 'open'])
   })
 
   it('names every slice in words, with its share and amount', () => {
     render(<FundsBar slices={bridge.where_funds_went} asset="USDT" total={bridge.total_sent} />)
     const legend = screen.getByRole('list', { name: 'Where the funds went' })
     const rows = within(legend).getAllByRole('listitem').map((li) => li.textContent)
-    expect(rows[0]).toMatch(/Across Protocol \(bridge\).*60%.*8,250 USDT/)
+    expect(rows[0]).toMatch(/Past the hop limit.*62%.*8,546\.08 USDT/)
     expect(rows[1]).toMatch(/Uniswap V4.*25%.*3,471\.12 USDT/)
     expect(rows[3]).toMatch(/Busy unlabelled wallets.*4%/)
-    expect(rows[5]).toMatch(/Past the hop limit.*2%/)
+    expect(rows[4]).toMatch(/Optimism \(bridge\).*4%.*500 USDT/)
+    expect(rows[5]).toMatch(/Cost of crossing a bridge.*under 1%.*23\.92 USDT/)
     expect(rows[6]).toMatch(/Came back to the wallet.*under 1%/)
     expect(screen.getByText('Where the 13,705.05 USDT went')).toBeInTheDocument()
   })

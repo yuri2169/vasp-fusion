@@ -1,4 +1,5 @@
 import type { CaseDetail, TypologyFlag as Flag } from '../../api/models'
+import { walletId } from '../../lib/chains'
 import { AddressChip } from '../../components/AddressChip'
 import { EmptyState } from '../../components/EmptyState'
 import { TxHash } from '../../components/TxHash'
@@ -8,20 +9,22 @@ import { isLead } from '../rules'
 const LISTED = 6
 
 function FlagRow({ c, flag, onSelect }: { c: CaseDetail; flag: Flag; onSelect: (address: string) => void }) {
-  const node = c.graph.nodes.find((n) => n.id === flag.wallet)
+  // a flag names a plain address and its chain; the graph knows the wallet by its id
+  const wallet = walletId(c.chain, flag.wallet, flag.chain)
+  const node = c.graph.nodes.find((n) => n.id === wallet)
   return (
     <li className="flex flex-col gap-2">
       <TypologyFlag flag={flag} />
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-3">
         {node && (
           <AddressChip
-            address={flag.wallet}
+            address={wallet}
             chain={c.chain}
             entity={node.label?.entity}
             tier={node.label?.tier}
             role={flag.wallet === c.address ? 'suspect' : undefined}
             actions="copy"
-            onSelect={() => onSelect(flag.wallet)}
+            onSelect={() => onSelect(wallet)}
           />
         )}
         {flag.tx_hashes.slice(0, LISTED).map((hash) => (

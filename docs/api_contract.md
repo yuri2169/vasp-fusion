@@ -339,6 +339,36 @@ All additive.
 - Audit actions added: `batch.upload`, `batch.list`, `batch.view`, `batch.export`, `scale.view`.
 - Mocks: `batches.json`, `batches/b-demo.json` (the three demo cases and one refused row), `scale.json` (the measured figures, real). In demo mode an upload answers with the demonstration batch.
 
+## Money that crossed a bridge (G4)
+
+A deposit into a labelled bridge is matched to its payout by the bridge's own public index
+(Across today), the payout is read on the destination chain, and the trace goes on from the
+recipient. Everything below is additive; a case stored before G4 has none of it.
+
+- `CaseDetail.chains`: the chains the traced money was followed on, in the order it crossed.
+  One entry unless a deposit was followed.
+- `CaseDetail.crossings[]` (`Crossing`): every bridge deposit, followed or not.
+  `status`: `followed` | `not_traced` (matched: `dest_name`, `recipient` and `payout_tx` are
+  set, `reason` says why the trace stopped) | `unresolved` (no match; the trail ends at the
+  bridge as before). `amount_out` is what the recipient received in `payout_tx`, read on the
+  destination chain; it can be less than the bridge quotes. `fee` = `traced_in` - `traced_out`.
+- **Wallet ids.** `GraphNode.id` is the address, or `chain:address` for a wallet on another
+  chain than the case (an EVM address is the same string on every EVM chain, so the recipient
+  of a bridge is often the suspect's own address). `GraphNode.address` is always the plain
+  address and `GraphNode.chain` its chain. `GraphEdge.source` / `target` are ids. **Every other
+  address field is a plain address** with its chain beside it: `Hop.from_chain` / `to_chain`,
+  `Candidate.chain` and `path_chains`, `RequestWallet.chain`, `TypologyFlag.chain`.
+- **The cross-chain edge.** `GraphEdge.bridge` / `Hop.bridge` (a `Crossing`) is set on the
+  payout: `source` is the bridge wallet, `target` the recipient, `tx_hash` the payout
+  transaction, `chain` the destination chain. The deposit is the edge before it.
+- `CaseDetail.tx_chains`: transaction hash -> chain, for every transaction that is not on the
+  case's own chain. Use it for explorer links wherever only a hash is at hand (evidence, flags).
+- `FundsSlice.kind` has a new value, `bridge_fee`: what the followed crossings cost.
+- `RequestWallet.asset`: over a bridge a stablecoin can arrive as another one.
+- A swap service (`category: swap_service`) is a VASP: it is named, routed and written to.
+  Its letter always carries the `transactions` ask, worded as a request for the payout chain,
+  address and transaction.
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 

@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react'
 import type { CaseDetail, Chain, GraphNode } from '../../api/models'
 import { AddressChip } from '../../components/AddressChip'
 import { Amount } from '../../components/Amount'
+import { BridgeLeg } from '../../components/BridgeLeg'
 import { Button } from '../../components/Button'
 import { EmptyState } from '../../components/EmptyState'
 import { TxHash } from '../../components/TxHash'
 import { TypologyFlag } from '../../components/TypologyFlag'
+import { CHAINS } from '../../lib/chains'
 import { formatDate, formatDuration } from '../../lib/format'
 import { timelineOf, type TimelineEvent } from '../../lib/timeline'
 
@@ -69,10 +71,17 @@ function Event({
               {chip(event.to)}
             </>
           )}
-          {event.kind === 'forwarded' && (
+          {event.kind === 'forwarded' && !event.bridge && (
             <>
               {chip(event.from)}
               <span>forwarded to</span>
+              {chip(event.to)}
+            </>
+          )}
+          {event.bridge && (
+            <>
+              {chip(event.from)}
+              <span>paid out on {CHAINS[event.bridge.dest_chain ?? chain].name} to</span>
               {chip(event.to)}
             </>
           )}
@@ -85,8 +94,9 @@ function Event({
               part of a transfer of <Amount value={event.onChain} asset={event.asset} size="sm" />
             </span>
           )}
-          <TxHash hash={event.txHash} chain={chain} className="ml-auto" />
+          {!event.bridge && <TxHash hash={event.txHash} chain={chain} className="ml-auto" />}
         </div>
+        {event.bridge && <BridgeLeg leg={event.bridge} />}
         {event.flags.map((flag, i) => (
           <TypologyFlag key={flag.code + i} flag={flag} />
         ))}

@@ -9,18 +9,97 @@
  "case_ref": "DEMO/2026/107",
  "complaint_no": null,
  "amount_lost_inr": null,
- "created_at": "2026-10-02T16:20:36.848304Z",
+ "created_at": "2026-10-05T06:56:14.144301Z",
  "demo": true,
  "error": null,
+ "screening": {
+  "hit": false,
+  "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store.",
+  "tag": null
+ },
+ "threats": [],
+ "risk_class": "medium",
+ "risk_score": 44,
+ "sahyog_complaint_ref": null,
+ "risk": {
+  "score": 44,
+  "risk_class": "medium",
+  "indicators": [
+   {
+    "code": "bridge_hop",
+    "name": "Funds went into a bridge",
+    "points": 24,
+    "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
+    "fatf_category": "Transaction patterns",
+    "wallet": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    "case_id": null,
+    "tx_hashes": [
+     "0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249",
+     "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f",
+     "0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383"
+    ]
+   },
+   {
+    "code": "rapid_forwarding",
+    "name": "Forwarded within minutes",
+    "points": 15,
+    "text": "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
+    "fatf_category": "Transaction patterns",
+    "wallet": "0x46c754ae7d9f172052c7a4093a217136670f6357",
+    "case_id": null,
+    "tx_hashes": [
+     "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
+     "0x1ce6031c3268170ecd6e27bb55c28f9d923f2d328b5e0f99f9adfcfc824215e6",
+     "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
+     "0x7a3491c4ee5fa1d369d79f76c68a693887a3b82f4cccbbbbb167f9092060dba4",
+     "0xa4134fadcfa0e4414f15e820cfa3faf9ddcf1475a4e98159ca77994d0caf1fd1",
+     "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3",
+     "0xc67952d57c782fb480ad2da5bfd294df1ee34bb30923a088d4c0c3be3ce6a441"
+    ]
+   },
+   {
+    "code": "fan_in",
+    "name": "Funded by many wallets, or split funds merged again",
+    "points": 5,
+    "text": "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
+    "fatf_category": "Transaction patterns",
+    "wallet": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "case_id": null,
+    "tx_hashes": [
+     "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
+     "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
+     "0x276bf322ef6ec11157edac2e931414059b31cce6e49da78289b43e0c260ed092",
+     "0x354f54f1dbfff50406b9d6e1260bc0f534cfccd1f1834c78aec2a9d463a25093",
+     "0x3cf4d6232d4a7ffddf8cbc417c4643d53d3e9e77d3f01b22ecbb683649bf8f8e",
+     "0x7d6e59bf7c4dd899bdc0e7da0d59665f9f93d49bf796975e8aff591d09bc145d",
+     "0x9e627af44aea53dab503b39aac98447682810453c60b3e09ca8179f227b574ef",
+     "0xa4aa8b509b0052c56090ede55df0b1e56379ff18fb788074f9f34aedfb0f33fa",
+     "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3",
+     "0xba179d6cc1c889b3b064270561baccbcea48c1fe9770715704f5e327f0b77da4",
+     "0xbc1e8b6d52c89e89240894c4017cdc345d3d5ff8878201762636346b14ff7770"
+    ]
+   }
+  ],
+  "reasons": [
+   "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
+   "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
+   "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)"
+  ],
+  "flows": [],
+  "path_class": "low",
+  "basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+  "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
+ },
+ "progress": null,
  "asset": "USDT",
  "total_sent": 13705.0531,
  "total_received": 13705.05228,
  "where_funds_went": [
   {
-   "kind": "bridge",
-   "name": "Across Protocol",
-   "share": 0.602,
-   "amount": 8250.0
+   "kind": "beyond_hop_limit",
+   "name": null,
+   "share": 0.6236,
+   "amount": 8546.079008
   },
   {
    "kind": "other_label",
@@ -47,10 +126,10 @@
    "amount": 500.0
   },
   {
-   "kind": "beyond_hop_limit",
+   "kind": "bridge_fee",
    "name": null,
-   "share": 0.0233,
-   "amount": 320.0
+   "share": 0.0017,
+   "amount": 23.920992
   },
   {
    "kind": "returned",
@@ -59,11 +138,103 @@
    "amount": 8.67774
   }
  ],
+ "chains": [
+  "ethereum",
+  "base"
+ ],
+ "crossings": [
+  {
+   "bridge": "Optimism",
+   "bridge_address": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
+   "status": "unresolved",
+   "reason": "deposits into Optimism cannot be matched to a payout by this tool",
+   "source_chain": "ethereum",
+   "source_tx": "0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383",
+   "asset_in": "USDT",
+   "amount_in": 5029.0463,
+   "traced_in": 500.0,
+   "dest_chain": null,
+   "dest_name": null,
+   "recipient": null,
+   "payout_tx": null,
+   "paid_by": null,
+   "asset_out": null,
+   "amount_out": null,
+   "traced_out": null,
+   "fee": null,
+   "seconds": null,
+   "deposited_at": null,
+   "paid_at": null,
+   "matched_by": null
+  },
+  {
+   "bridge": "Across Protocol",
+   "bridge_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+   "status": "followed",
+   "reason": null,
+   "source_chain": "ethereum",
+   "source_tx": "0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249",
+   "asset_in": "USDT",
+   "amount_in": 450.0,
+   "traced_in": 450.0,
+   "dest_chain": "base",
+   "dest_name": "Base",
+   "recipient": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "payout_tx": "0x302c38dae85698a31ea13536243d9b5a10826df17a39bdc38b47cb35bbea732f",
+   "paid_by": "0x0f7ae28de1c8532170ad4ee566b5801485c13a0e",
+   "asset_out": "USDC",
+   "amount_out": 448.693209,
+   "traced_out": 448.693209,
+   "fee": 1.306791,
+   "seconds": 8,
+   "deposited_at": "2026-05-30T21:01:47Z",
+   "paid_at": "2026-05-30T21:01:55Z",
+   "matched_by": "app.across.to"
+  },
+  {
+   "bridge": "Across Protocol",
+   "bridge_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+   "status": "followed",
+   "reason": null,
+   "source_chain": "ethereum",
+   "source_tx": "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f",
+   "asset_in": "USDT",
+   "amount_in": 7800.0,
+   "traced_in": 7800.0,
+   "dest_chain": "base",
+   "dest_name": "Base",
+   "recipient": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "payout_tx": "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d",
+   "paid_by": "0x0f7ae28de1c8532170ad4ee566b5801485c13a0e",
+   "asset_out": "USDC",
+   "amount_out": 7777.385799,
+   "traced_out": 7777.385799,
+   "fee": 22.614201,
+   "seconds": 54,
+   "deposited_at": "2026-06-01T02:54:59Z",
+   "paid_at": "2026-06-01T02:55:53Z",
+   "matched_by": "app.across.to"
+  }
+ ],
+ "tx_chains": {
+  "0x07e9e3dee2a8fdcdc1d7b9c48e2d63b619c8a6b7ff5ce9b44200204626892f9b": "base",
+  "0x0c1e76c98af1ab32df59f2b48a8bebc515225985fb4213ec0a81287d8062656e": "base",
+  "0x12f822bdc5f318d9980369a0067e6bb4bb6be00148dfce63fcb05ab1e67a506d": "base",
+  "0x1d3a0b20274bdaec5653f1df9e88fecec2a6caf2bb323516db004083cf06ec61": "base",
+  "0x302c38dae85698a31ea13536243d9b5a10826df17a39bdc38b47cb35bbea732f": "base",
+  "0x4a3bca8ca66bcd8c3bd5f3e02a938bcd87cf247ec9f1ab53e38d1b48f23ee137": "base",
+  "0x8b1e527ea5e4cebb588c6acd2e6aa9e93c1d00bf290128ba7e77228826fe71b8": "base",
+  "0xa8f9ccddb47b0e0e9bf79fbb5442b91fe34a23be5e170bc0651c8719d8d85996": "base",
+  "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d": "base"
+ },
  "hop_rail": [
   {
    "index": 1,
    "from_address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
    "to_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+   "from_chain": "ethereum",
+   "to_chain": "ethereum",
+   "bridge": null,
    "tx_hash": "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f",
    "asset": "USDT",
    "amount": 7800.0,
@@ -71,12 +242,66 @@
    "traced_amount": 7800.0,
    "block_time": "2026-06-01T02:54:59Z",
    "elapsed_s": null
+  },
+  {
+   "index": 2,
+   "from_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+   "to_address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "from_chain": "ethereum",
+   "to_chain": "base",
+   "bridge": {
+    "bridge": "Across Protocol",
+    "bridge_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    "status": "followed",
+    "reason": null,
+    "source_chain": "ethereum",
+    "source_tx": "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f",
+    "asset_in": "USDT",
+    "amount_in": 7800.0,
+    "traced_in": 7800.0,
+    "dest_chain": "base",
+    "dest_name": "Base",
+    "recipient": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "payout_tx": "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d",
+    "paid_by": "0x0f7ae28de1c8532170ad4ee566b5801485c13a0e",
+    "asset_out": "USDC",
+    "amount_out": 7777.385799,
+    "traced_out": 7777.385799,
+    "fee": 22.614201,
+    "seconds": 54,
+    "deposited_at": "2026-06-01T02:54:59Z",
+    "paid_at": "2026-06-01T02:55:53Z",
+    "matched_by": "app.across.to"
+   },
+   "tx_hash": "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d",
+   "asset": "USDC",
+   "amount": 7777.385799,
+   "amount_usd": 7777.385799,
+   "traced_amount": 7777.385799,
+   "block_time": "2026-06-01T02:55:53Z",
+   "elapsed_s": 54
+  },
+  {
+   "index": 3,
+   "from_address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "to_address": "0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+   "from_chain": "base",
+   "to_chain": "base",
+   "bridge": null,
+   "tx_hash": "0x0c1e76c98af1ab32df59f2b48a8bebc515225985fb4213ec0a81287d8062656e",
+   "asset": "USDC",
+   "amount": 2537.5,
+   "amount_usd": 2537.5,
+   "traced_amount": 2537.5,
+   "block_time": "2026-06-01T02:57:37Z",
+   "elapsed_s": 104
   }
  ],
  "graph": {
   "nodes": [
    {
     "id": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "chain": "ethereum",
     "role": "suspect",
     "hop": 0,
@@ -86,6 +311,7 @@
    },
    {
     "id": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    "address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
     "chain": "ethereum",
     "role": "bridge",
     "hop": 1,
@@ -103,13 +329,19 @@
      "evidence": null,
      "confidence_low": null,
      "confidence_high": null,
-     "model": null
+     "model": null,
+     "threat": null,
+     "threat_entity": null,
+     "threat_source": null,
+     "threat_url": null,
+     "threat_evidence": null
     },
     "cluster": null,
     "is_hub": false
    },
    {
     "id": "0x46c754ae7d9f172052c7a4093a217136670f6357",
+    "address": "0x46c754ae7d9f172052c7a4093a217136670f6357",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 1,
@@ -119,6 +351,7 @@
    },
    {
     "id": "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+    "address": "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 1,
@@ -128,6 +361,7 @@
    },
    {
     "id": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
+    "address": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
     "chain": "ethereum",
     "role": "hub",
     "hop": 1,
@@ -137,6 +371,7 @@
    },
    {
     "id": "0x06ac98cad9598ce082567aee360371e4a57eedc5",
+    "address": "0x06ac98cad9598ce082567aee360371e4a57eedc5",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 1,
@@ -146,6 +381,7 @@
    },
    {
     "id": "0x7f54f05635d15cde17a49502fedb9d1803a3be8a",
+    "address": "0x7f54f05635d15cde17a49502fedb9d1803a3be8a",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 1,
@@ -155,6 +391,7 @@
    },
    {
     "id": "0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c",
+    "address": "0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 1,
@@ -163,7 +400,18 @@
     "is_hub": false
    },
    {
+    "id": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "address": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "chain": "base",
+    "role": "intermediary",
+    "hop": 2,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
     "id": "0xa000b020c290d000020aac04026b5306d60050f0",
+    "address": "0xa000b020c290d000020aac04026b5306d60050f0",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 2,
@@ -173,6 +421,7 @@
    },
    {
     "id": "0xf4e147db314947fc1275a8cbb6cde48c510cd8cf",
+    "address": "0xf4e147db314947fc1275a8cbb6cde48c510cd8cf",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 2,
@@ -182,6 +431,7 @@
    },
    {
     "id": "0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7",
+    "address": "0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7",
     "chain": "ethereum",
     "role": "intermediary",
     "hop": 2,
@@ -190,7 +440,18 @@
     "is_hub": false
    },
    {
+    "id": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "address": "0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "chain": "base",
+    "role": "unknown",
+    "hop": 3,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
     "id": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+    "address": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 3,
@@ -208,13 +469,29 @@
      "evidence": null,
      "confidence_low": null,
      "confidence_high": null,
-     "model": null
+     "model": null,
+     "threat": null,
+     "threat_entity": null,
+     "threat_source": null,
+     "threat_url": null,
+     "threat_evidence": null
     },
     "cluster": null,
     "is_hub": false
    },
    {
+    "id": "base:0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+    "address": "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+    "chain": "base",
+    "role": "unknown",
+    "hop": 3,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
     "id": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
+    "address": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
     "chain": "ethereum",
     "role": "bridge",
     "hop": 3,
@@ -232,13 +509,19 @@
      "evidence": null,
      "confidence_low": null,
      "confidence_high": null,
-     "model": null
+     "model": null,
+     "threat": null,
+     "threat_entity": null,
+     "threat_source": null,
+     "threat_url": null,
+     "threat_evidence": null
     },
     "cluster": null,
     "is_hub": false
    },
    {
     "id": "0x8f8caeab8b6cefe82176eecd8a975a0155794543",
+    "address": "0x8f8caeab8b6cefe82176eecd8a975a0155794543",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 3,
@@ -247,7 +530,18 @@
     "is_hub": false
    },
    {
+    "id": "base:0xca5cc95b8cbe2901f4500f680f561e4ed7be85ac",
+    "address": "0xca5cc95b8cbe2901f4500f680f561e4ed7be85ac",
+    "chain": "base",
+    "role": "unknown",
+    "hop": 3,
+    "label": null,
+    "cluster": null,
+    "is_hub": false
+   },
+   {
     "id": "0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745",
+    "address": "0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 1,
@@ -257,6 +551,7 @@
    },
    {
     "id": "0xc38e4e6a15593f908255214653d3d947ca1c2338",
+    "address": "0xc38e4e6a15593f908255214653d3d947ca1c2338",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 1,
@@ -266,6 +561,7 @@
    },
    {
     "id": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
+    "address": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
     "chain": "ethereum",
     "role": "unknown",
     "hop": 1,
@@ -285,7 +581,9 @@
     "amount_usd": 320.0,
     "traced_amount": 320.0,
     "block_time": "2026-02-11T04:13:35Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e2",
@@ -297,7 +595,9 @@
     "amount_usd": 500.0,
     "traced_amount": 500.0,
     "block_time": "2026-05-10T02:30:11Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e3",
@@ -309,7 +609,9 @@
     "amount_usd": 76.37486,
     "traced_amount": 76.37486,
     "block_time": "2026-05-14T19:40:47Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e4",
@@ -321,7 +623,9 @@
     "amount_usd": 2456.276482,
     "traced_amount": 2456.276482,
     "block_time": "2026-05-23T01:53:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e5",
@@ -333,7 +637,9 @@
     "amount_usd": 500.0,
     "traced_amount": 500.0,
     "block_time": "2026-05-24T19:07:35Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e6",
@@ -345,7 +651,9 @@
     "amount_usd": 511.761935,
     "traced_amount": 511.761935,
     "block_time": "2026-05-24T19:11:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e7",
@@ -357,7 +665,9 @@
     "amount_usd": 511.762444,
     "traced_amount": 511.762444,
     "block_time": "2026-05-24T19:15:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e8",
@@ -369,7 +679,9 @@
     "amount_usd": 11.0,
     "traced_amount": 11.0,
     "block_time": "2026-05-28T01:07:35Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e9",
@@ -381,7 +693,9 @@
     "amount_usd": 450.0,
     "traced_amount": 450.0,
     "block_time": "2026-05-30T21:01:47Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e10",
@@ -393,7 +707,9 @@
     "amount_usd": 567.877379,
     "traced_amount": 567.877379,
     "block_time": "2026-05-30T21:06:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e11",
@@ -405,7 +721,9 @@
     "amount_usd": 7800.0,
     "traced_amount": 7800.0,
     "block_time": "2026-06-01T02:54:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e12",
@@ -417,7 +735,9 @@
     "amount_usd": 320.0,
     "traced_amount": 320.0,
     "block_time": "2026-02-11T19:44:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e13",
@@ -429,7 +749,9 @@
     "amount_usd": 500.0,
     "traced_amount": 500.0,
     "block_time": "2026-05-10T02:31:11Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e14",
@@ -441,7 +763,9 @@
     "amount_usd": 6.125377,
     "traced_amount": 6.125377,
     "block_time": "2026-05-23T01:53:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e15",
@@ -453,7 +777,9 @@
     "amount_usd": 2456.276482,
     "traced_amount": 2450.151105,
     "block_time": "2026-05-23T01:53:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e16",
@@ -465,7 +791,9 @@
     "amount_usd": 500.0,
     "traced_amount": 500.0,
     "block_time": "2026-05-24T19:11:11Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e17",
@@ -477,7 +805,9 @@
     "amount_usd": 1.276214,
     "traced_amount": 1.276214,
     "block_time": "2026-05-24T19:11:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e18",
@@ -489,7 +819,9 @@
     "amount_usd": 511.761935,
     "traced_amount": 510.485721,
     "block_time": "2026-05-24T19:11:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e19",
@@ -501,7 +833,9 @@
     "amount_usd": 1.276149,
     "traced_amount": 1.276149,
     "block_time": "2026-05-24T19:15:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e20",
@@ -513,10 +847,86 @@
     "amount_usd": 511.762444,
     "traced_amount": 510.486295,
     "block_time": "2026-05-24T19:15:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
     "id": "e21",
+    "source": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    "target": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "tx_hash": "0x302c38dae85698a31ea13536243d9b5a10826df17a39bdc38b47cb35bbea732f",
+    "asset": "USDC",
+    "amount": 448.693209,
+    "amount_usd": 448.693209,
+    "traced_amount": 448.693209,
+    "block_time": "2026-05-30T21:01:55Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": {
+     "bridge": "Across Protocol",
+     "bridge_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+     "status": "followed",
+     "reason": null,
+     "source_chain": "ethereum",
+     "source_tx": "0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249",
+     "asset_in": "USDT",
+     "amount_in": 450.0,
+     "traced_in": 450.0,
+     "dest_chain": "base",
+     "dest_name": "Base",
+     "recipient": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+     "payout_tx": "0x302c38dae85698a31ea13536243d9b5a10826df17a39bdc38b47cb35bbea732f",
+     "paid_by": "0x0f7ae28de1c8532170ad4ee566b5801485c13a0e",
+     "asset_out": "USDC",
+     "amount_out": 448.693209,
+     "traced_out": 448.693209,
+     "fee": 1.306791,
+     "seconds": 8,
+     "deposited_at": "2026-05-30T21:01:47Z",
+     "paid_at": "2026-05-30T21:01:55Z",
+     "matched_by": "app.across.to"
+    }
+   },
+   {
+    "id": "e22",
+    "source": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+    "target": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "tx_hash": "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d",
+    "asset": "USDC",
+    "amount": 7777.385799,
+    "amount_usd": 7777.385799,
+    "traced_amount": 7777.385799,
+    "block_time": "2026-06-01T02:55:53Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": {
+     "bridge": "Across Protocol",
+     "bridge_address": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+     "status": "followed",
+     "reason": null,
+     "source_chain": "ethereum",
+     "source_tx": "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f",
+     "asset_in": "USDT",
+     "amount_in": 7800.0,
+     "traced_in": 7800.0,
+     "dest_chain": "base",
+     "dest_name": "Base",
+     "recipient": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+     "payout_tx": "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d",
+     "paid_by": "0x0f7ae28de1c8532170ad4ee566b5801485c13a0e",
+     "asset_out": "USDC",
+     "amount_out": 7777.385799,
+     "traced_out": 7777.385799,
+     "fee": 22.614201,
+     "seconds": 54,
+     "deposited_at": "2026-06-01T02:54:59Z",
+     "paid_at": "2026-06-01T02:55:53Z",
+     "matched_by": "app.across.to"
+    }
+   },
+   {
+    "id": "e23",
     "source": "0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7",
     "target": "0x8f8caeab8b6cefe82176eecd8a975a0155794543",
     "tx_hash": "0xeb5c94807b2d6ae76d3528d8f5a46bb0500e6d651e27fb18eabccbb1eec6207f",
@@ -525,10 +935,12 @@
     "amount_usd": 9998.05151,
     "traced_amount": 320.0,
     "block_time": "2026-03-03T19:15:47Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e22",
+    "id": "e24",
     "source": "0xf4e147db314947fc1275a8cbb6cde48c510cd8cf",
     "target": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
     "tx_hash": "0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383",
@@ -537,10 +949,12 @@
     "amount_usd": 5029.0463,
     "traced_amount": 500.0,
     "block_time": "2026-05-10T02:40:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e23",
+    "id": "e25",
     "source": "0xa000b020c290d000020aac04026b5306d60050f0",
     "target": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
     "tx_hash": "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
@@ -549,10 +963,12 @@
     "amount_usd": 2456.276482,
     "traced_amount": 2450.151105,
     "block_time": "2026-05-23T01:53:23Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e24",
+    "id": "e26",
     "source": "0xa000b020c290d000020aac04026b5306d60050f0",
     "target": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
     "tx_hash": "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
@@ -561,10 +977,12 @@
     "amount_usd": 511.761935,
     "traced_amount": 510.485721,
     "block_time": "2026-05-24T19:11:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e25",
+    "id": "e27",
     "source": "0xa000b020c290d000020aac04026b5306d60050f0",
     "target": "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
     "tx_hash": "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3",
@@ -573,10 +991,110 @@
     "amount_usd": 511.762444,
     "traced_amount": 510.486295,
     "block_time": "2026-05-24T19:15:59Z",
-    "direction": "outbound"
+    "direction": "outbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e26",
+    "id": "e28",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "tx_hash": "0x1d3a0b20274bdaec5653f1df9e88fecec2a6caf2bb323516db004083cf06ec61",
+    "asset": "USDC",
+    "amount": 431.38,
+    "amount_usd": 431.38,
+    "traced_amount": 431.38,
+    "block_time": "2026-05-30T21:02:59Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e29",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xca5cc95b8cbe2901f4500f680f561e4ed7be85ac",
+    "tx_hash": "0x12f822bdc5f318d9980369a0067e6bb4bb6be00148dfce63fcb05ab1e67a506d",
+    "asset": "USDC",
+    "amount": 10.0,
+    "amount_usd": 10.0,
+    "traced_amount": 10.0,
+    "block_time": "2026-05-31T00:38:57Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e30",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "tx_hash": "0xa8f9ccddb47b0e0e9bf79fbb5442b91fe34a23be5e170bc0651c8719d8d85996",
+    "asset": "USDC",
+    "amount": 558.25,
+    "amount_usd": 558.25,
+    "traced_amount": 7.313209,
+    "block_time": "2026-05-31T01:12:25Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e31",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "tx_hash": "0x0c1e76c98af1ab32df59f2b48a8bebc515225985fb4213ec0a81287d8062656e",
+    "asset": "USDC",
+    "amount": 2537.5,
+    "amount_usd": 2537.5,
+    "traced_amount": 2537.5,
+    "block_time": "2026-06-01T02:57:37Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e32",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "tx_hash": "0x07e9e3dee2a8fdcdc1d7b9c48e2d63b619c8a6b7ff5ce9b44200204626892f9b",
+    "asset": "USDC",
+    "amount": 2537.5,
+    "amount_usd": 2537.5,
+    "traced_amount": 2537.5,
+    "block_time": "2026-06-01T02:58:09Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e33",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+    "tx_hash": "0x8b1e527ea5e4cebb588c6acd2e6aa9e93c1d00bf290128ba7e77228826fe71b8",
+    "asset": "USDC",
+    "amount": 2500.0,
+    "amount_usd": 2500.0,
+    "traced_amount": 2500.0,
+    "block_time": "2026-06-01T02:59:15Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e34",
+    "source": "base:0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+    "target": "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+    "tx_hash": "0x4a3bca8ca66bcd8c3bd5f3e02a938bcd87cf247ec9f1ab53e38d1b48f23ee137",
+    "asset": "USDC",
+    "amount": 1800.0,
+    "amount_usd": 1800.0,
+    "traced_amount": 202.385799,
+    "block_time": "2026-06-03T02:00:17Z",
+    "direction": "outbound",
+    "chain": "base",
+    "bridge": null
+   },
+   {
+    "id": "e35",
     "source": "0xc38e4e6a15593f908255214653d3d947ca1c2338",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x3cf4d6232d4a7ffddf8cbc417c4643d53d3e9e77d3f01b22ecbb683649bf8f8e",
@@ -585,10 +1103,12 @@
     "amount_usd": 78.308769,
     "traced_amount": 78.308769,
     "block_time": "2026-02-11T04:05:47Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e27",
+    "id": "e36",
     "source": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x354f54f1dbfff50406b9d6e1260bc0f534cfccd1f1834c78aec2a9d463a25093",
@@ -597,10 +1117,12 @@
     "amount_usd": 78.046055,
     "traced_amount": 78.046055,
     "block_time": "2026-02-11T04:06:35Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e28",
+    "id": "e37",
     "source": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0xa4aa8b509b0052c56090ede55df0b1e56379ff18fb788074f9f34aedfb0f33fa",
@@ -609,10 +1131,12 @@
     "amount_usd": 120.10096,
     "traced_amount": 120.10096,
     "block_time": "2026-02-11T04:07:47Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e29",
+    "id": "e38",
     "source": "0xc38e4e6a15593f908255214653d3d947ca1c2338",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0xba179d6cc1c889b3b064270561baccbcea48c1fe9770715704f5e327f0b77da4",
@@ -621,10 +1145,12 @@
     "amount_usd": 47.176847,
     "traced_amount": 47.176847,
     "block_time": "2026-02-11T04:07:47Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e30",
+    "id": "e39",
     "source": "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x7d6e59bf7c4dd899bdc0e7da0d59665f9f93d49bf796975e8aff591d09bc145d",
@@ -633,10 +1159,12 @@
     "amount_usd": 25.00661,
     "traced_amount": 25.00661,
     "block_time": "2026-04-20T00:50:23Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e31",
+    "id": "e40",
     "source": "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0xbc1e8b6d52c89e89240894c4017cdc345d3d5ff8878201762636346b14ff7770",
@@ -645,10 +1173,12 @@
     "amount_usd": 547.735299,
     "traced_amount": 547.735299,
     "block_time": "2026-04-20T17:28:35Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e32",
+    "id": "e41",
     "source": "0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x276bf322ef6ec11157edac2e931414059b31cce6e49da78289b43e0c260ed092",
@@ -657,10 +1187,12 @@
     "amount_usd": 5000.0,
     "traced_amount": 5000.0,
     "block_time": "2026-05-23T01:46:47Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e33",
+    "id": "e42",
     "source": "0x46c754ae7d9f172052c7a4093a217136670f6357",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
@@ -669,10 +1201,12 @@
     "amount_usd": 6.125377,
     "traced_amount": 6.125377,
     "block_time": "2026-05-23T01:53:23Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e34",
+    "id": "e43",
     "source": "0x46c754ae7d9f172052c7a4093a217136670f6357",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
@@ -681,10 +1215,12 @@
     "amount_usd": 1.276214,
     "traced_amount": 1.276214,
     "block_time": "2026-05-24T19:11:59Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e35",
+    "id": "e44",
     "source": "0x46c754ae7d9f172052c7a4093a217136670f6357",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3",
@@ -693,10 +1229,12 @@
     "amount_usd": 1.276149,
     "traced_amount": 1.276149,
     "block_time": "2026-05-24T19:15:59Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    },
    {
-    "id": "e36",
+    "id": "e45",
     "source": "0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745",
     "target": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "tx_hash": "0x9e627af44aea53dab503b39aac98447682810453c60b3e09ca8179f227b574ef",
@@ -705,7 +1243,9 @@
     "amount_usd": 7800.0,
     "traced_amount": 7800.0,
     "block_time": "2026-06-01T02:52:23Z",
-    "direction": "inbound"
+    "direction": "inbound",
+    "chain": "ethereum",
+    "bridge": null
    }
   ]
  },
@@ -715,7 +1255,8 @@
    "code": "bridge_hop",
    "severity": "warn",
    "wallet": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
-   "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away",
+   "chain": "ethereum",
+   "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base",
    "figures": {
     "amount": 8250.0,
     "hops": 1.0,
@@ -724,12 +1265,14 @@
    "tx_hashes": [
     "0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249",
     "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f"
-   ]
+   ],
+   "threat": null
   },
   {
    "code": "bridge_hop",
    "severity": "warn",
    "wallet": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
+   "chain": "ethereum",
    "text": "4% of the funds (500 USDT) reached a bridge, 0x99c9\u2026884be1 (Optimism), 3 hops away",
    "figures": {
     "amount": 500.0,
@@ -738,12 +1281,14 @@
    },
    "tx_hashes": [
     "0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383"
-   ]
+   ],
+   "threat": null
   },
   {
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "0x46c754ae7d9f172052c7a4093a217136670f6357",
+   "chain": "ethereum",
    "text": "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block",
    "figures": {
     "amount": 3479.800861,
@@ -754,12 +1299,14 @@
     "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
     "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
     "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3"
-   ]
+   ],
+   "threat": null
   },
   {
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "0xa000b020c290d000020aac04026b5306d60050f0",
+   "chain": "ethereum",
    "text": "0xa000\u20260050f0 passed on 100% of the 3,471.12 USDT that reached it in the same block",
    "figures": {
     "amount": 3471.123121,
@@ -770,12 +1317,14 @@
     "0x16584efe1f0fe442abb6bb044d41fe756f2b94ecc26876d54e75557da7fa4901",
     "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636",
     "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3"
-   ]
+   ],
+   "threat": null
   },
   {
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
+   "chain": "ethereum",
    "text": "0xf0bd\u2026039185 passed on 100% of the 1,000 USDT that reached it within 4 minutes of its arrival",
    "figures": {
     "amount": 1000.0,
@@ -787,12 +1336,14 @@
     "0x7a3491c4ee5fa1d369d79f76c68a693887a3b82f4cccbbbbb167f9092060dba4",
     "0xa4134fadcfa0e4414f15e820cfa3faf9ddcf1475a4e98159ca77994d0caf1fd1",
     "0xc67952d57c782fb480ad2da5bfd294df1ee34bb30923a088d4c0c3be3ce6a441"
-   ]
+   ],
+   "threat": null
   },
   {
    "code": "fan_in",
    "severity": "info",
    "wallet": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+   "chain": "ethereum",
    "text": "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
    "figures": {
     "amount": 13705.05228,
@@ -810,20 +1361,20 @@
     "0xb03f9260298d4c9cb92be65fb88f31fc50f46e0c4594b8eef088ea7fbe2eaca3",
     "0xba179d6cc1c889b3b064270561baccbcea48c1fe9770715704f5e327f0b77da4",
     "0xbc1e8b6d52c89e89240894c4017cdc345d3d5ff8878201762636346b14ff7770"
-   ]
+   ],
+   "threat": null
   }
  ],
- "narrative": "Wallet 0x2102\u2026f364b0 sent 13,705.05 USDT on Ethereum in 11 transfers between 11 Feb 2026 and 1 Jun 2026. No exchange is named. None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% went into a bridge (Across Protocol); 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 2% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself. Not followed in this run: 2,251.05 USDC in 9 transfers, 2.90 ETH in 10 transfers.",
- "abstain_reason": "None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% went into a bridge (Across Protocol); 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 2% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself.",
+ "narrative": "Wallet 0x2102\u2026f364b0 sent 13,705.05 USDT on Ethereum in 11 transfers between 11 Feb 2026 and 1 Jun 2026. 8,250 USDT (60%) left Ethereum through the Across Protocol bridge in 2 deposits, and 8,226.08 USDC of it arrived at 0x2102\u2026f364b0 on Base, where the trace goes on. No exchange is named. None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% crossed to Base through the Across Protocol bridge and was followed there; 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 62% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself; under 1% was kept by the bridge as its fee. Not followed in this run: 2,251.05 USDC in 9 transfers, 2.90 ETH in 10 transfers.",
+ "abstain_reason": "None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% crossed to Base through the Across Protocol bridge and was followed there; 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 62% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself; under 1% was kept by the bridge as its fee.",
  "what_would_change": [
-  "Following the funds across the bridge (Across Protocol) onto the destination chain",
   "Following the funds across the bridge (Optimism) onto the destination chain",
   "A label for 0x1231\u20266f4eae (holds 4% of the funds; it pays out to many wallets and may be an exchange or payment service)",
-  "Tracing deeper than 3 hops from 0x8f8c\u2026794543 (2% of the funds)",
+  "Tracing deeper than 3 hops from 0xd888\u20261008a9 on Base (42% of the funds)",
+  "Tracing deeper than 3 hops from 0xf0bd\u2026039185 on Base (18% of the funds)",
   "A full history of 0xf4e1\u20260cd8cf (4% of the funds)"
  ],
  "next_steps": [
-  "Follow the 8,250 USDT that went into the Across Protocol bridge at 0x5c7b\u2026ed35c5 onto the destination chain: a bridge is not an exchange and holds no customer account, so no request is drafted for it. The bridge transactions (0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249, 0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f) name the destination chain and address",
   "Follow the 500 USDT that went into the Optimism bridge at 0x99c9\u2026884be1 onto the destination chain: a bridge is not an exchange and holds no customer account, so no request is drafted for it. The bridge transaction (0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383) names the destination chain and address",
   "Identify 0x1231\u20266f4eae: 4% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
   "Run the trace again with more than 3 hops"
@@ -831,11 +1382,13 @@
  "provenance": {
   "seed": 26182,
   "code_version": "b5-bitcoin-1",
-  "label_db_sha256": "14343ca8bc30f4465785214e9c59e2c59e91510a1239023915c743af02a957f6",
+  "label_db_sha256": "6d0f44af0332b989b0315e92197414c04853fce1c4844913732331e847c92668",
   "fetched_at": null,
   "offline_replay": true,
   "data_sources": [
    "api.etherscan.io",
+   "app.across.to",
+   "base.blockscout.com",
    "label store"
   ],
   "notes": [
@@ -851,120 +1404,132 @@
   "responses": [
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1770783215",
-    "sha256": "19ff6c31356b79c212fb3f82aafe2a6376500f06738ef585723f86bcb78c0756"
+    "sha256": "34a98eaee3e7b8b35f7da5d3ba3e7744ab64c7872cbcc47b50cfd03ef5faf433"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1770839063",
-    "sha256": "6fb886a978fd2864f071a74f77e6669a97b99af7287578bb9e3cdb5a0dc609f7"
+    "sha256": "7e37831a51782846934e4146737fef10ed316846f3efdec8ab6a3ee122572641"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1778380211",
-    "sha256": "255019b98320fa6a3c3f6a1ac5fa8672879b70409ab2cbb7a786ac3aa67a60f6"
+    "sha256": "cad11ee69bfd36c28367260d0acda9f3c2018423eb68c84738cd85ce5003ae5c"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1778380271",
-    "sha256": "370d2c6dda9cecdd86f8f68d1193f3911e7f7574c0d544b117ecef86495ca698"
+    "sha256": "92fba82d35b001e7ed141142ec17861644fd2cd300d1c5115acaf8bbe88c71d5"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1779501203",
-    "sha256": "f69cd36c10108b8caffde76109da4cefe0431acbc21ec94c94c25045e089ee73"
+    "sha256": "c9885e590fd36161e66235b91ccd9f154f7ee8a8d482bd01180527f564678e31"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1780175183",
-    "sha256": "a078fe4672f4bfa2b34043447c0261bedb37947e67527f4a9c668148e31f736a"
+    "sha256": "67ed7b46dbdb8d9c749bb8cdbca229d01e7cf128d619c559696c094e3a1be953"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x06ac98cad9598ce082567aee360371e4a57eedc5&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=24431067",
-    "sha256": "6fa15f86780cac8e6eef48d5f15bb7fa7cc029afb1ce86142b4bc96d360bbedf"
+    "sha256": "6bbf297949104708208e7ac145d1b60093b2e723ce7563a63fb9c5a9831c238b"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=25210765",
-    "sha256": "b9d9c424f7e580699dbd821c5d87457e0a5c5a89f37c3b6fc6d9cfaaf7d857e2"
+    "sha256": "84b389166e4aa1d8841ebc3916ee123ff7583d8dc990c42287fb9a6036acb957"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=25210765",
-    "sha256": "3b5a3e4edfea2efe2f039d308456ebe7c0f3cf98e11a0956f11d7d056cfb5767"
+    "sha256": "048b1cb5a46c9a39992dda1c39b5abd90994d3e3dd7534affaa2bde57061112c"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "154aac79552a2141117e2d2768b79d5fd9c2717437cdbf3820c98985f10615fc"
-   },
-   {
-    "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "61fe874179a936cecd10798c678b532c2ab02d3c778dad7990a9ea79d9fd0aa8"
+    "sha256": "158e8a26ca39afe17cea1de8cdbb3c998919b30f23e3e7a95e74cf8298d5df6a"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "80079ab9db02d1208be651434744f8da5a564478f2e17e560607a138a8be79dc"
-   },
-   {
-    "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "9be5f66b7f9561a1c13bf167692d6ff708dc9ade6921bcb9f6305e487caa38ba"
+    "sha256": "2e120346d908c52573a83c5b792258524c6eccd5ddb48e92ba54bf64b4e2e6db"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x46c754ae7d9f172052c7a4093a217136670f6357&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=25154809",
-    "sha256": "0f569e0db0496b2308999907c38028df28bb92cec37f2093b7ae210425a32609"
+    "sha256": "2565a53f8e7a6d3f87d7ba175c6ce274f3da9684fdfa0bf2d51e43bf59132954"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0x46c754ae7d9f172052c7a4093a217136670f6357&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=25154809",
-    "sha256": "70448c8c411f90ef915030cd1ddb41ec68de58cb5b95ce8187d3f166702e2013"
+    "sha256": "774faed38bda12983094210276d73459f96b2cf31d0d3d8e82b6288607b1ef1d"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xa000b020c290d000020aac04026b5306d60050f0&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=25154809",
-    "sha256": "832396a727de74ec1a8644439c2a554921d235464d4f9efb6b048d301120b88e"
+    "sha256": "d3618ebba5dac976848a1459195d797ccb324333c833a2f7529429f0b0cf3da9"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xa000b020c290d000020aac04026b5306d60050f0&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=25154809",
-    "sha256": "c42952a0fb3aa3707098298fe33e1dd824ddb757d81db0e63795681e33b77b76"
+    "sha256": "15f9a4a0d03de656f92a4cc5a882890f8505e7d5e6a8b94738489101767555bf"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=24435699",
-    "sha256": "fb0a2a0817d5ec9bc4dd9b633da1699989691ae02df5f5436045b12e6f800fa5"
+    "sha256": "241ce1d3ba24572f9830cf41a0ce66b67fff2f9268b0f00f6a3b61047dbd0ca1"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xb665c27c2b3f2f35eab9a501467e0fe440bd16b7&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=24435699",
-    "sha256": "c55c0d4400d805eb7f81a0fcf23c570ae0d8c84491e307159a168c0732358078"
+    "sha256": "a2f997ff5bbc50405608119c3f94c06d949c0916e995a6f33d4f4f7e564d292b"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf0bd6a0eef022198876d5cc115954f9ee6039185&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=25061715",
-    "sha256": "3c780f31ace4f32ef0d0045f21d566f58bcb02f0f19abd19ca9331581fc998f2"
+    "sha256": "17ef4898bc811f6dd4e25eb57f8c135538398bb0a610428980df0a4b35d93d28"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf4e147db314947fc1275a8cbb6cde48c510cd8cf&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=25061720",
-    "sha256": "1676d0de586179b8d8b2214ac87cf490cdb2e276bc9c6c4a22ec8f6a64fdaddf"
+    "sha256": "50c7c321ed053de7b3131f6c5b67cc100381f7e17ea6a4fb588a0d6cdd1c3a36"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf4e147db314947fc1275a8cbb6cde48c510cd8cf&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=2&sort=asc&startblock=25061720",
-    "sha256": "afd47b06034de113856f1abdfac4f1b37bdff0855b44573d54f894d273a8a51d"
+    "sha256": "abe02db46581e7b01c280540553a8a5ef1ca20194d277103c2a1cb7f4df98a56"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf4e147db314947fc1275a8cbb6cde48c510cd8cf&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=3&sort=asc&startblock=25061720",
-    "sha256": "e5b7bbdb6d710006046b770dc40a01d704405150fa12c0a3acc7fe25c4ca5c97"
+    "sha256": "edd8f333f87b04ccf443cab6f30a4dcca4e8a00be806013454693c9b744b3faa"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf4e147db314947fc1275a8cbb6cde48c510cd8cf&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=4&sort=asc&startblock=25061720",
-    "sha256": "6afb12d4de3a6dc4350072d0279dacc6a5ff23c2565bde47172b889c91d00a89"
+    "sha256": "193c689751b5397433a98dae124cfc5cc0058d5cceba5e9fdd569c5461e3e624"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=tokentx&address=0xf4e147db314947fc1275a8cbb6cde48c510cd8cf&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=5&sort=asc&startblock=25061720",
-    "sha256": "93703ac2e704a455a92f90cc769d889916b8fbd3b75ebf7db0abf4f9f455ebd6"
+    "sha256": "f3538dede7311a4c63ac981103e602e877ab1f9e73c922e4552996b8a44e6470"
    },
    {
     "query": "https://api.etherscan.io/v2/api?action=txlist&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "684236b99025a88adbfaa9b2872d46296ac7050e4436229c65a8e6a89e46c297"
+    "sha256": "f75f258f5886c72e433ae92ff69e22ee5050681f04231d34ddc17560cae02a78"
    },
    {
-    "query": "https://api.etherscan.io/v2/api?action=txlist&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&chainid=1&module=account&offset=100&page=1&sort=asc&startblock=0",
-    "sha256": "fe49f1c45ea526413155e8a4a769bd33eb7c5f947cab5bd66ec52ce3ce89d429"
+    "query": "https://app.across.to/api/deposit?depositTxHash=0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249&originChainId=1",
+    "sha256": "e4d31fcc864bb86b550bdb357c1244c070d7cc46c6dedabbfab6bf291e89f067"
+   },
+   {
+    "query": "https://app.across.to/api/deposit?depositTxHash=0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f&originChainId=1",
+    "sha256": "2236265a487fabfd6f5884d33fb079e14406e8d0551e6138bbfe08a26e334f27"
+   },
+   {
+    "query": "https://base.blockscout.com/api?action=getblocknobytime&closest=after&module=block&timestamp=1780174915",
+    "sha256": "03b5825dce0dfed650b0b62986337be3594f0fd8e5879fdc030852222f3573d2"
+   },
+   {
+    "query": "https://base.blockscout.com/api?action=getblocknobytime&closest=after&module=block&timestamp=1780282553",
+    "sha256": "017f454e03b6573aa0c2af4e9fd3894d754e012a321903010ac03213abc31fcc"
+   },
+   {
+    "query": "https://base.blockscout.com/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&contractaddress=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&module=account&offset=100&page=1&sort=asc&startblock=46692784",
+    "sha256": "dc7320ffc9077251d82b0c1bb9f49b560fa9528a221617cf648898c10201237a"
+   },
+   {
+    "query": "https://base.blockscout.com/api?action=tokentx&address=0x210297c6996b3008ed6ef0d4deb74b9515f364b0&contractaddress=0x833589fcd6edb6e08f4c7c32d4f71b54bda02913&module=account&offset=100&page=1&sort=asc&startblock=46746603",
+    "sha256": "80fe03e239fc9f6319805be3bb3c79d32880f914e648a06f15f17b99dd94bdba"
    }
   ],
-  "responses_sha256": "21bb63cc09eda8142ae9c5044b59e21d2233e5369f7a5dec6c07d8d33f2487f7",
-  "pages": 27,
-  "findings_sha256": "23dc4404ad5dec800da124698f6ba3d65da4a6ccd45aa02f1f656ed919d38ad5",
-  "content_sha256": "17310c66f13059778c7fc0cfad53e553ef67b90b78488b1e0d8f89729e8046dc",
+  "responses_sha256": "dc819bac66ad7c5dc9af35805f2fb584f2278c6f9370f33b9fdf99a35ee3dde1",
+  "pages": 30,
+  "findings_sha256": "6c0517744cf5da02bbb3d68b598d7eecee7b5f6f028b396b8bbc8fd24ed1c1b9",
+  "content_sha256": "b62ae6f120a8057d24862dd26f27e795a3307141d3493d15121365bf1dc0ced5",
   "model_version": null,
   "model_sha256": null,
-  "git_commit": "9e7038dee70d1356301e62e6ebfa8920d792fe50",
-  "git_dirty": false
+  "git_commit": "6129a5eb52723aa49b3ad532812f239519e38d84",
+  "git_dirty": true
  }
 }

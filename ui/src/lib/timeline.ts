@@ -1,6 +1,6 @@
 /** The Timeline tab's data: every transfer of a case in the order it happened, with how long
  *  the money sat before it moved on, and the patterns the trace saw on the transfer that shows them. */
-import type { CaseDetail, GraphEdge, TypologyFlag } from '../api/models'
+import type { CaseDetail, Crossing, GraphEdge, TypologyFlag } from '../api/models'
 import { traced } from './caseGraph'
 
 export interface TimelineEvent {
@@ -19,6 +19,8 @@ export interface TimelineEvent {
   /** sent and forwarded: seconds since money last arrived at `from` on this trail; null when none was seen arriving. */
   afterArrivalS: number | null
   flags: TypologyFlag[]
+  /** Set when the transfer is a bridge's payout on another chain. */
+  bridge?: Crossing
 }
 
 export interface TimelineDay {
@@ -56,6 +58,7 @@ export function timelineOf(c: CaseDetail): { days: TimelineDay[]; unplaced: Typo
       onChain: e.amount,
       asset: e.asset,
       txHash: e.tx_hash,
+      ...(e.bridge ? { bridge: e.bridge } : {}),
       afterArrivalS: kind === 'received' ? null : lastArrivalBefore(e.source, e),
       flags: [],
     }

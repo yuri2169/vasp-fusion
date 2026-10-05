@@ -1,7 +1,7 @@
 import { ExternalLink } from 'lucide-react'
 import { Link } from 'react-router'
 import type { Chain, Tier } from '../api/models'
-import { CHAINS } from '../lib/chains'
+import { CHAINS, splitWalletId } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { addressUrl, explorerName } from '../lib/explorers'
 import { truncateMiddle } from '../lib/format'
@@ -10,6 +10,8 @@ import { TierIcon, TIERS } from './TierTag'
 import { Tip, useTip } from './Tip'
 
 export interface AddressChipProps {
+  /** An address, or the id of a wallet on another chain than `chain` (`base:0x…`): the chip
+   *  then shows that chain's code and links to that chain's explorer. */
   address: string
   chain: Chain
   /** The owner a label names, with the label's tier. Leave both out for an unlabelled address. */
@@ -37,8 +39,8 @@ export interface AddressChipProps {
 /** An address, the core content of this tool: mono, shortened in the middle, with the
  *  whole of it one hover, one Tab or one click (copy) away. Copy always copies it whole. */
 export function AddressChip({
-  address,
-  chain,
+  address: given,
+  chain: home,
   entity,
   tier,
   role,
@@ -53,6 +55,7 @@ export function AddressChip({
   className,
 }: AddressChipProps) {
   const tip = useTip()
+  const { address, chain, away } = splitWalletId(given, home)
   const shown = full ? address : truncateMiddle(address, head, tail)
   const tierName = entity ? TIERS[tier ?? 'none'].name : null
   const name = [`${CHAINS[chain].name} address ${address}`, entity, tierName].filter(Boolean).join(', ')
@@ -73,6 +76,15 @@ export function AddressChip({
       {role === 'suspect' && (
         <span className="-ml-2 inline-flex self-stretch items-center bg-chain px-1.5 text-2xs font-semibold uppercase tracking-[0.06em] text-surface">
           Suspect
+        </span>
+      )}
+      {away && (
+        <span
+          data-testid="chip-chain"
+          title={`On ${CHAINS[chain].name}`}
+          className="-ml-2 inline-flex self-stretch items-center border-r border-rule px-1.5 font-mono text-2xs font-medium tracking-wide text-chain"
+        >
+          {CHAINS[chain].code}
         </span>
       )}
       {entity && (

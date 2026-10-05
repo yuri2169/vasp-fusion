@@ -4,7 +4,8 @@
  *  The layout is ours, not a library's: a column per hop (funders to the left of the wallet
  *  the case is about), and the path the Hop Rail shows kept on the first line, so the graph
  *  reads as the rail with its side branches hanging under it. Same case, same picture. */
-import type { CaseDetail, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
+import type { CaseDetail, Crossing, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
+import { walletId } from './chains'
 
 export type Role = GraphNode['role']
 
@@ -46,6 +47,8 @@ export interface FlowEdge {
   /** In time order. */
   transfers: GraphEdge[]
   onPath: boolean
+  /** Set when this line is a bridge's payout: it joins two chains. */
+  bridge?: Crossing
 }
 
 export interface FlowView {
@@ -66,9 +69,11 @@ const isInbound = (e: GraphEdge) => e.direction === 'inbound'
 
 /** The path the Hop Rail shows, from the suspect wallet to the nearest exchange reached. */
 export function mainPath(c: CaseDetail): string[] {
-  if (c.hop_rail.length > 0) return [c.hop_rail[0].from_address, ...c.hop_rail.map((h) => h.to_address)]
+  // the rail and a candidate's path carry plain addresses with their chain beside them
+  if (c.hop_rail.length > 0)
+    return [walletId(c.chain, c.hop_rail[0].from_address, c.hop_rail[0].from_chain), ...c.hop_rail.map((h) => walletId(c.chain, h.to_address, h.to_chain))]
   const top = c.candidates.find((x) => x.vasp === c.top_vasp && x.direction !== 'inbound')
-  return top && top.path.length > 0 ? top.path : [c.address]
+  return top && top.path.length > 0 ? top.path.map((a, i) => walletId(c.chain, a, top.path_chains?.[i])) : [c.address]
 }
 
 /** Whether "Group exchange wallets" would change anything: some exchange has two or more wallets here. */
@@ -139,6 +144,7 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
     const edge = flowEdges.get(id) ?? { id, source, target, direction: isInbound(e) ? 'inbound' : 'outbound', amount: 0, asset: e.asset, transfers: [], onPath: false }
     edge.amount += traced(e)
     edge.transfers.push(e)
+    if (e.bridge) edge.bridge = e.bridge
     flowEdges.set(id, edge)
     nodes.get(source)!.sent += traced(e)
     nodes.get(target)!.received += traced(e)

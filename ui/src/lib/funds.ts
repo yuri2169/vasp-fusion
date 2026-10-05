@@ -27,6 +27,8 @@ export function fundsName(slice: FundsSlice): string {
       return 'Came back to the wallet'
     case 'fee':
       return 'Network fees'
+    case 'bridge_fee':
+      return 'Cost of crossing a bridge'
   }
 }
 

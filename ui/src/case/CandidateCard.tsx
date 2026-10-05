@@ -9,7 +9,7 @@ import { DualMeter } from '../components/DualMeter'
 import { EvidenceList } from '../components/EvidenceList'
 import { TierTag } from '../components/TierTag'
 import { StatusTag } from '../desk/StatusTag'
-import { CHAINS } from '../lib/chains'
+import { CHAINS, walletId } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { deskLink, isInbound, NAMING_BAR, routable } from './rules'
 
@@ -107,12 +107,12 @@ export function CandidateCard({
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
         <span className="title text-lg text-fg">{candidate.vasp}</span>
         <TierTag tier={candidate.label_tier} size="sm" />
-        {candidate.amount != null && c.asset && <Amount value={candidate.amount} asset={c.asset} className="ml-auto" />}
+        {candidate.amount != null && c.asset && <Amount value={candidate.amount} asset={candidate.request_wallets?.[0]?.asset ?? c.asset} className="ml-auto" />}
       </div>
       <AddressChip
-        address={candidate.deposit_address}
+        address={walletId(c.chain, candidate.deposit_address, candidate.chain)}
         chain={c.chain}
-        onSelect={() => onSelect(candidate.deposit_address)}
+        onSelect={() => onSelect(walletId(c.chain, candidate.deposit_address, candidate.chain))}
         className="self-start"
       />
 

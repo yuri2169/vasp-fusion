@@ -8,7 +8,7 @@ Each file is `GET /api/cases/<id>` as the API answered it on 2 Oct 2026 (code `b
 | `tron-htx-coindcx.json` | two exchanges named; one holds without its label, one does not |
 | `tron-abstain.json` | INSUFFICIENT_EVIDENCE with an exchange under the bar, five patterns and two leads |
 | `tron-ofac.json` | SANCTIONED_OR_MIXER_REACHED with no exchange |
-| `eth-bridge.json` | INSUFFICIENT_EVIDENCE: two bridges, 17 wallets, 36 transfers |
+| `eth-bridge.json` | INSUFFICIENT_EVIDENCE: two Across deposits followed from Ethereum onto Base, one bridge deposit not matched; 21 wallets, 45 transfers. Refreshed 5 Oct 2026 (G4) |
 
 They are test data for the interface only. Nothing reads them at runtime.
 

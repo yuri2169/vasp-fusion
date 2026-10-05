@@ -13,7 +13,8 @@ import { useToast } from '../components/Toast'
 import { TxHash } from '../components/TxHash'
 import { TypologyFlag } from '../components/TypologyFlag'
 import { ledgerOf, traced } from '../lib/caseGraph'
-import { CHAINS } from '../lib/chains'
+import { BridgeLeg } from '../components/BridgeLeg'
+import { CHAINS, splitWalletId, walletId } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { formatConfidence, formatConfidenceRange, formatDateTime } from '../lib/format'
 import { ROLE_NAMES } from './caseText'
@@ -134,8 +135,9 @@ function TransferRow({ c, edge, other, onSelect }: { c: CaseDetail; edge: GraphE
           {formatDateTime(edge.block_time)}
           {!whole && ` · part of a transfer of ${edge.amount.toLocaleString('en-US')} ${edge.asset}`}
         </span>
-        <TxHash hash={edge.tx_hash} chain={c.chain} />
+        <TxHash hash={edge.tx_hash} chain={edge.chain ?? c.chain} />
       </div>
+      {edge.bridge && <BridgeLeg leg={edge.bridge} className="mt-1" />}
     </li>
   )
 }
@@ -223,13 +225,15 @@ export function WalletPanel({
     )
 
   const ledger = ledgerOf(c, node.id)
-  const patterns = c.typology_flags.filter((f) => f.wallet === node.id)
+  const patterns = c.typology_flags.filter((f) => walletId(c.chain, f.wallet, f.chain) === node.id)
+  // a wallet the money reached over a bridge is on another chain than the case
+  const at = splitWalletId(node.id, c.chain)
   const isSuspect = node.id === c.address
   const asset = c.asset ?? c.graph.edges[0]?.asset ?? ''
 
   const trace = () =>
     openCase.mutate(
-      { address: node.id, chain: c.chain },
+      { address: at.address, chain: at.chain },
       {
         onSuccess: (opened) => navigate(`/cases/${encodeURIComponent(opened.id)}`, { state: { watched: true } }),
         onError: (error) =>
@@ -241,14 +245,14 @@ export function WalletPanel({
     <section aria-labelledby="wallet-title" className={frame}>
       {back}
       <div className="flex flex-col gap-2">
-        <p className="eyebrow">Wallet · {CHAINS[c.chain].name}</p>
+        <p className="eyebrow">Wallet · {CHAINS[at.chain].name}</p>
         <h2 id="wallet-title" className="title text-lg text-fg">
           {ROLE_NAMES[node.role]}
         </h2>
         <AddressChip address={node.id} chain={c.chain} full className="h-auto self-start py-1" />
         <p className="text-base text-muted">{distance(c, node)}</p>
         <Link
-          to={`/wallets/${c.chain}/${encodeURIComponent(node.id)}`}
+          to={`/wallets/${at.chain}/${encodeURIComponent(at.address)}`}
           className="self-start text-sm text-muted underline decoration-rule-strong underline-offset-2 hover:text-fg"
         >
           Everything on record about this wallet
@@ -256,7 +260,7 @@ export function WalletPanel({
       </div>
 
       {node.label ? (
-        <LabelBlock label={node.label} chain={c.chain} />
+        <LabelBlock label={node.label} chain={at.chain} />
       ) : (
         <Section title="Label">
           <p className="text-base text-fg">No label in any source.</p>

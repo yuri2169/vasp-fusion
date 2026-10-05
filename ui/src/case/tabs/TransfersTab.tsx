@@ -1,6 +1,7 @@
 import type { CaseDetail, GraphEdge, GraphNode } from '../../api/models'
 import { RISK_ORDER, RiskTag } from '../../components/RiskTag'
 import { AddressChip } from '../../components/AddressChip'
+import { BridgeLeg, ChainHop } from '../../components/BridgeLeg'
 import { Amount } from '../../components/Amount'
 import { DataTable, type Column } from '../../components/DataTable'
 import { TxHash } from '../../components/TxHash'
@@ -46,7 +47,27 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
         </span>
       ),
     },
-    { key: 'tx', header: 'Transaction', cell: (e) => <TxHash hash={e.tx_hash} chain={c.chain} /> },
+    {
+      key: 'tx',
+      header: 'Transaction',
+      cell: (e) =>
+        e.bridge ? (
+          // a bridge's payout: its own transaction, and the deposit it answers on the other chain
+          <span data-testid="bridge-row" className="flex flex-col items-start gap-0.5">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-fg">
+              {e.bridge.bridge} <ChainHop from={e.bridge.source_chain} to={e.bridge.dest_chain} name={e.bridge.dest_name} />
+            </span>
+            <span className="flex items-center gap-1 text-sm text-muted">
+              Payout <TxHash hash={e.tx_hash} chain={e.chain ?? c.chain} />
+            </span>
+            <span className="flex items-center gap-1 text-sm text-muted">
+              Deposit <TxHash hash={e.bridge.source_tx} chain={e.bridge.source_chain} />
+            </span>
+          </span>
+        ) : (
+          <TxHash hash={e.tx_hash} chain={e.chain ?? c.chain} />
+        ),
+    },
     ...(c.risk
       ? [
           {
@@ -67,7 +88,19 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
       : []),
   ]
 
+  const legs = c.crossings ?? []
   return (
+    <div className="flex flex-col gap-4">
+      {legs.length > 0 && (
+        <section aria-label="Bridges" className="panel flex flex-col gap-3 p-4">
+          <h3 className="eyebrow">
+            Bridges · {legs.filter((x) => x.status === 'followed').length} of {legs.length} deposits followed onto another chain
+          </h3>
+          {legs.map((leg) => (
+            <BridgeLeg key={leg.source_tx + leg.bridge_address} leg={leg} />
+          ))}
+        </section>
+      )}
     <DataTable
       caption="Transfers"
       columns={columns}
@@ -77,5 +110,6 @@ export function TransfersTab({ c, onSelect }: { c: CaseDetail; onSelect: (addres
       empty="No transfers were read for this wallet."
       maxHeight={520}
     />
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 import type { Candidate, CaseDetail } from '../api/models'
+import { walletId } from '../lib/chains'
 import { AddressChip } from '../components/AddressChip'
 import { TierTag } from '../components/TierTag'
 import { TypologyFlag } from '../components/TypologyFlag'
@@ -24,7 +25,11 @@ function Funder({ c, candidate, onSelect }: { c: CaseDetail; candidate: Candidat
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-base font-semibold text-fg">{candidate.vasp}</span>
         <TierTag tier={candidate.label_tier} size="sm" />
-        <AddressChip address={candidate.deposit_address} chain={c.chain} onSelect={() => onSelect(candidate.deposit_address)} />
+        <AddressChip
+          address={walletId(c.chain, candidate.deposit_address, candidate.chain)}
+          chain={c.chain}
+          onSelect={() => onSelect(walletId(c.chain, candidate.deposit_address, candidate.chain))}
+        />
       </div>
       {candidate.evidence
         .filter((e) => e.kind === 'path')

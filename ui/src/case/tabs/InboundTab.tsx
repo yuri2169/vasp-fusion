@@ -96,7 +96,7 @@ export function InboundTab({ c, onSelect }: { c: CaseDetail; onSelect: (address:
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="title text-md text-fg">{x.vasp}</span>
                   <TierTag tier={x.label_tier} size="sm" />
-                  <AddressChip address={x.deposit_address} chain={c.chain} onSelect={() => onSelect(x.deposit_address)} />
+                  <AddressChip address={x.deposit_address} chain={x.chain ?? c.chain} onSelect={() => onSelect(x.deposit_address)} />
                 </div>
                 {x.evidence.map((e, i) => (
                   <p key={i} className="text-base text-fg [overflow-wrap:anywhere]">

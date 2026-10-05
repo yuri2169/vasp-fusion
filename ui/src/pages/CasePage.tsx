@@ -1,4 +1,7 @@
+import { ArrowRight } from 'lucide-react'
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { CHAINS } from '../lib/chains'
+import { TxChains } from '../lib/txChains'
 import { threatOf } from '../components/ThreatChip'
 import type { ThreatTag } from '../api/models'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
@@ -174,6 +177,13 @@ export function CasePage() {
       title={
         <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <ChainBadge chain={c.chain} />
+          {(c.chains ?? []).slice(1).map((chain) => (
+            <span key={chain} data-testid="chain-crossed" className="inline-flex items-center gap-1.5" title={`The money was followed onto ${CHAINS[chain].name}`}>
+              <ArrowRight size={14} aria-hidden className="text-ink-dim" />
+              <span className="sr-only">followed onto</span>
+              <ChainBadge chain={chain} />
+            </span>
+          ))}
           <span className="break-all font-mono text-lg font-medium normal-case tracking-normal">{c.address}</span>
           <CopyButton value={c.address} label="address" />
           <ThreatChips threats={c.threats} />
@@ -276,7 +286,7 @@ export function CasePage() {
   const finished = !tracing && (watchedTrace || sawTracing)
 
   return (
-    <>
+    <TxChains.Provider value={c.tx_chains ?? {}}>
       {header}
 
       {tracing && (
@@ -356,6 +366,6 @@ export function CasePage() {
       </div>
 
       <TraceAgain c={c} open={asking} onClose={() => setAsking(false)} onStarted={() => setWatchedTrace(true)} />
-    </>
+    </TxChains.Provider>
   )
 }

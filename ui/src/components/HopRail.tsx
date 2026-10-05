@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import type { ThreatTag } from '../api/models'
 import { ThreatChip } from './ThreatChip'
 import type { Chain, Hop, Tier } from '../api/models'
+import { CHAINS, walletId } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { explorerName, txUrl } from '../lib/explorers'
 import { formatAmount, formatDate, formatDateTime, formatDuration } from '../lib/format'
 import { AddressChip } from './AddressChip'
 import { Amount } from './Amount'
+import { ChainHop } from './BridgeLeg'
 import { OutcomeStamp, type OutcomeStampProps } from './OutcomeStamp'
 import { Tip, useTip } from './Tip'
 
@@ -16,7 +18,7 @@ export interface HopRailProps {
   hops: Hop[]
   /** What the case came to; drawn as the docket stamp the rail ends in. */
   stamp: Omit<OutcomeStampProps, 'size' | 'tilt'>
-  /** Owners of labelled wallets on the path, by address (from `CaseDetail.graph.nodes`). */
+  /** Owners of labelled wallets on the path, by wallet id (from `CaseDetail.graph.nodes`). */
   labels?: Record<string, { entity: string; tier: Tier; threat?: ThreatTag }>
   /** 'tracing' while the case is queued or running: the wallet, and a line still being drawn. */
   state?: 'tracing' | 'done'
@@ -74,6 +76,56 @@ function Stub({ hop, chain }: { hop: Hop; chain: Chain }) {
             </>
           )}
         </span>
+      </Tip>
+    </span>
+  )
+}
+
+/** The stub of a hop that crosses a bridge. It is drawn apart from an ordinary hop: a boxed
+ *  ticket on a double line, naming the bridge and both chains. A crossing is two transactions,
+ *  so the ticket carries two links: the deposit on the chain the money left and the payout on
+ *  the chain it arrived on. */
+function BridgeStub({ hop }: { hop: Hop }) {
+  const tip = useTip()
+  const leg = hop.bridge!
+  const traced = hop.traced_amount ?? hop.amount
+  const to = leg.dest_chain ?? hop.to_chain!
+  const link = 'underline decoration-rule-strong underline-offset-2 hover:decoration-fg'
+  return (
+    <span className="relative flex min-w-[196px] flex-1 items-center justify-center px-2">
+      <span aria-hidden className="rail-line absolute inset-x-0 top-1/2 h-[5px] -translate-y-1/2 border-y border-chain" />
+      <span aria-hidden className="absolute right-0 top-1/2 h-[5px] w-[5px] -translate-y-1/2 bg-chain" />
+      <span
+        data-testid="hop-bridge"
+        role="group"
+        aria-label={`Hop ${hop.index}: crossed from ${CHAINS[leg.source_chain].name} to ${CHAINS[to].name} over the ${leg.bridge} bridge, ${formatAmount(traced, hop.asset)} arrived, ${elapsed(hop)}`}
+        aria-describedby={tip.open ? tip.id : undefined}
+        {...tip.bind}
+        className="stub relative z-[1] flex flex-col items-center gap-0.5 border border-chain bg-surface px-2.5 py-1"
+      >
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-2xs font-semibold uppercase tracking-[0.06em] text-ink-soft">
+          {leg.bridge}
+          <ChainHop from={leg.source_chain} to={to} />
+        </span>
+        <Amount value={traced} asset={hop.asset} size="sm" />
+        <span className="tabular flex items-center gap-2 whitespace-nowrap font-mono text-sm text-muted">
+          {elapsed(hop)}
+          <a href={txUrl(leg.source_chain, leg.source_tx)} target="_blank" rel="noopener noreferrer" className={link} aria-label={`Open the deposit on ${explorerName(leg.source_chain)} (new tab)`}>
+            deposit
+          </a>
+          <a href={txUrl(to, hop.tx_hash)} target="_blank" rel="noopener noreferrer" className={link} aria-label={`Open the payout on ${explorerName(to)} (new tab)`}>
+            payout
+          </a>
+        </span>
+      </span>
+      <Tip id={tip.id} anchor={tip.anchor}>
+        <span className="block text-muted">Deposit on {CHAINS[leg.source_chain].name} · {formatAmount(leg.amount_in, leg.asset_in)}</span>
+        <span className="block break-all font-mono">{leg.source_tx}</span>
+        <span className="mt-1 block text-muted">
+          Payout on {CHAINS[to].name} · {formatAmount(hop.amount, hop.asset)} · {formatDateTime(hop.block_time)}
+        </span>
+        <span className="block break-all font-mono">{hop.tx_hash}</span>
+        {leg.matched_by && <span className="mt-1 block text-muted">Matched by {leg.matched_by}. The amount is read from the payout.</span>}
       </Tip>
     </span>
   )
@@ -142,22 +194,25 @@ export function HopRail({
         {state === 'done' &&
           hops.map((hop, i) => {
             const s = step(i + 1)
+            // the wallet this hop reaches, and the chain its transaction is on
+            const to = walletId(suspect.chain, hop.to_address, hop.to_chain)
+            const chain = hop.to_chain ?? suspect.chain
             return (
-              <li key={hop.tx_hash + hop.to_address} {...s} className={cx('flex flex-1 items-center py-5', s.className)}>
-                <Stub hop={hop} chain={suspect.chain} />
+              <li key={hop.tx_hash + to} {...s} className={cx('flex flex-1 items-center py-5', s.className)}>
+                {hop.bridge ? <BridgeStub hop={hop} /> : <Stub hop={hop} chain={chain} />}
                 <span className="flex shrink-0 flex-col items-start gap-1">
                   <AddressChip
-                    address={hop.to_address}
+                    address={to}
                     chain={suspect.chain}
-                    entity={labels[hop.to_address]?.entity}
-                    tier={labels[hop.to_address]?.tier}
+                    entity={labels[to]?.entity}
+                    tier={labels[to]?.tier}
                     head={4}
                     tail={4}
                     actions="copy"
                     className="shrink-0"
-                    {...pick(hop.to_address)}
+                    {...pick(to)}
                   />
-                  {labels[hop.to_address]?.threat && <ThreatChip tag={labels[hop.to_address].threat} size="sm" />}
+                  {labels[to]?.threat && <ThreatChip tag={labels[to].threat} size="sm" />}
                 </span>
               </li>
             )
