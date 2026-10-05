@@ -86,7 +86,7 @@ The demo needs no keys. To trace a real wallet you need free API keys in a file 
 | `make: *** missing separator`, or `\r: command not found` | The files have Windows line endings, because the repository was cloned with Windows Git or lives under `/mnt/c`. Delete the folder and clone again inside Ubuntu (step 3). |
 | `uv: command not found` | Close the Ubuntu window and open it again. |
 | `make setup` cannot find Python 3.12 | `sudo apt install -y python3 python3-venv`, then run `make setup` again. Ubuntu 24.04 ships 3.12. |
-| `node --version` is not v22 | Run the NodeSource lines in step 2 again. |
+| `npm: not found`, or `node --version` is not v22 | The Node installer download failed and Ubuntu's older Node was installed instead. Run the two NodeSource lines in step 2 again, then check `node --version` and `npm --version`. |
 | The page does not open at 127.0.0.1:8000 | Wait until the terminal says the server is running. If it still fails, run `wsl --shutdown` in PowerShell, open Ubuntu again and start the server again. |
 | `address already in use` | Another program holds port 8000: `make offline-serve PORT=8010`, then open port 8010. |
 | `docker: command not found`, or `permission denied` | Docker Desktop is not running, or WSL integration for Ubuntu is off (see the Docker section). |
