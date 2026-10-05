@@ -67,14 +67,16 @@ def routed_wallets(case: dict, bar: float = BAR, canonical=_same) -> list[dict]:
             out.append({
                 "vasp": canonical(c["vasp"]), "category": c["category"],
                 "case_id": case["id"], "case_ref": case.get("case_ref"),
-                "complaint_no": case.get("complaint_no"), "chain": case["chain"],
+                "complaint_no": case.get("complaint_no"),
+                # the wallet may be on another chain than the case (reached over a bridge)
+                "chain": w.get("chain") or case["chain"], "case_chain": case["chain"],
                 "suspect": case["address"], "address": w["address"],
                 "paid_into": w.get("paid_into"), "label": w.get("label"),
                 "kind": w.get("kind"), "tier": w["tier"], "confidence": c["confidence"],
                 "confidence_interval": c.get("confidence_interval"),
                 "counterfactual_holds": c.get("counterfactual_holds"), "hops": c["hops"],
-                "asset": case.get("asset"), "amount": w["amount"],
-                "amount_usd": _usd(w["amount"], case.get("asset")),
+                "asset": w.get("asset") or case.get("asset"), "amount": w["amount"],
+                "amount_usd": _usd(w["amount"], w.get("asset") or case.get("asset")),
                 "reached_at": w["reached_at"], "tx_hashes": w["tx_hashes"]})
     return out
 

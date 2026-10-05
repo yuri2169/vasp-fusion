@@ -288,7 +288,7 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "0ffe1ce4f0721735c4cc1d27a0fbde73547b40fec66e014a0d206afd6f4ef601",
-    "content_sha256": "e00cacab493de90262f905d6397f2904c5267dc49afa25c24e2f7af7c017ac82"
+    "content_sha256": "ab75c5774956fb6c294539fff394dd62dde204028e52087b595697f676fa54d4"
   },
   "screening": {
     "hit": false,

@@ -26,7 +26,7 @@ from ..attribute.rules import TIER_WEIGHT, RuleConfig
 from ..trace import TraceConfig
 from . import fmt
 from .case_narrative import CHAIN_NAMES
-from .flow import ROLE_WORDS, layout, wallet_index
+from .flow import ROLE_WORDS, layout, wallet_id, wallet_index
 
 ROOT = Path(__file__).resolve().parents[2]
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"
@@ -45,6 +45,7 @@ FUNDS_WORDS = {
     "not_followed": "Not followed (too small, or the listing could not be read to the end)",
     "returned": "Came back to the traced wallet",
     "fee": "Paid to miners as network fees along the trail",
+    "bridge_fee": "Kept by a bridge as the cost of crossing",
 }
 FLAG_WORDS = {
     "peel_chain": "Peel chain", "fan_out": "Fan-out", "fan_in": "Fan-in",
@@ -110,7 +111,9 @@ def _header(case: dict) -> list[dict]:
     rows = [("Case reference", case.get("case_ref") or "-"),
             ("Complaint number", case.get("complaint_no") or "-"),
             ("Wallet traced", case["address"]),
-            ("Chain", chain),
+            ("Chain", chain + ("; followed onto " + ", ".join(
+                fmt.chain_name(c) for c in case["chains"][1:])
+                if len(case.get("chains") or []) > 1 else "")),
             ("Asset followed", case.get("asset") or "none"),
             ("Traced on", when(case["created_at"])),
             ("Case id", case["id"])]
@@ -198,10 +201,11 @@ def _flow(case: dict, index: list[dict]) -> list[dict]:
         caption += (" 1 smaller wallet is not drawn; it is in the table." if lay["omitted"] == 1
                     else f" {lay['omitted']} smaller wallets are not drawn; they are in the "
                          f"table.")
-    rows = [[f"W{r['n']}", r["address"],
-             ROLE_WORDS[r["role"]] + (f": {r['entity']}" if r["entity"] else ""),
+    rows = [[f"W{r['n']}", r["plain"],
+             ROLE_WORDS[r["role"]] + (f": {r['entity']}" if r["entity"] else "")
+             + (f", on {fmt.chain_name(r['chain'])}" if r["chain"] != case["chain"] else ""),
              "funded it" if r["col"] < 0 else "-" if r["col"] == 0 else str(r["col"]),
-             _amount(r["amount"], asset)] for r in index]
+             _amount(r["amount"], r["asset"] or asset)] for r in index]
     return [{"t": "h", "text": "Flow of funds"},
             {"t": "flow", "layout": lay, "caption": caption},
             {"t": "table", "head": ["No.", "Address", "What it is", "Hop", "Traced funds"],
@@ -238,8 +242,13 @@ def _candidates(case: dict, bar: float, number: dict[str, int]) -> list[dict]:
             f"rank {c['proximity_rank']}"
         out.append({"t": "h2", "text": f"{c['vasp']} ({direction})"})
         out.append({"t": "kv", "rows": [
-            ("Address reached", c["deposit_address"]),
-            ("Route", "  ->  ".join(f"W{number[a]}" if a in number else a for a in c["path"])),
+            ("Address reached", c["deposit_address"]
+             + (f" on {fmt.chain_name(c['chain'])}" if c.get("chain") not in (None, case["chain"])
+                else "")),
+            ("Route", "  ->  ".join(
+                f"W{number[w]}" if w in number else a for a, w in zip(c["path"], (
+                    wallet_id(case, a, ch) for a, ch in zip(
+                        c["path"], c.get("path_chains") or [None] * len(c["path"])))))),
             ("Time to reach", fmt.duration(c["time_to_reach_s"])
              if c.get("time_to_reach_s") is not None else "-")]})
         for ev in c["evidence"]:
@@ -260,7 +269,12 @@ def _rail(case: dict, number: dict[str, int]) -> list[dict]:
     rows = []
     for h in case["hop_rail"]:
         rows.append([str(h["index"]),
-                     f"W{number.get(h['from_address'], '?')} -> W{number.get(h['to_address'], '?')}",
+                     "W{} -> W{}".format(
+                         number.get(wallet_id(case, h["from_address"], h.get("from_chain")), "?"),
+                         number.get(wallet_id(case, h["to_address"], h.get("to_chain")), "?"))
+                     + (f" (over the {h['bridge']['bridge']} bridge, "
+                        f"{fmt.chain_name(h['from_chain'])} to {fmt.chain_name(h['to_chain'])})"
+                        if h.get("bridge") else ""),
                      _amount(h.get("traced_amount") if h.get("traced_amount") is not None
                              else h["amount"], h["asset"] or asset),
                      when(h["block_time"]),
@@ -338,6 +352,48 @@ def _confidence(case: dict, rules: RuleConfig, bar_check: dict | None) -> list[d
         paras.append("The bar has not been measured on this chain.")
     return [{"t": "h", "text": "How the confidence was worked out"},
             *({"t": "p", "text": p} for p in paras)]
+
+
+CROSSING_WORDS = {"followed": "Followed", "not_traced": "Matched, not followed",
+                  "unresolved": "Not matched"}
+
+
+def _bridges(case: dict) -> list[dict]:
+    """Every bridge deposit the traced money made: what went in, where it came out, and
+    who says the two transactions belong together."""
+    legs = case.get("crossings") or []
+    if not legs:
+        return []
+    out = [{"t": "h", "text": "Bridges"},
+           {"t": "p", "text": "A bridge takes money in on one chain and pays it out on "
+            "another, in two transactions that do not refer to each other. The match below "
+            "is the bridge's own public index, asked by the deposit transaction. The amount "
+            "paid out is read from the payout transaction on the destination chain, not "
+            "from the bridge; the difference is what the crossing cost."}]
+    for x in legs:
+        rows = [("Bridge", f"{x['bridge']} ({x['bridge_address']}, "
+                           f"{fmt.chain_name(x['source_chain'])})"),
+                ("Result", CROSSING_WORDS[x["status"]]
+                 + (f": {x['reason']}" if x.get("reason") else "")),
+                ("Went in", f"{_amount(x['traced_in'], x['asset_in'])}"
+                 + ("" if abs(x["traced_in"] - x["amount_in"]) < 1e-9 else
+                    f" of a deposit of {_amount(x['amount_in'], x['asset_in'])}")
+                 + (f", {when(x['deposited_at'])}" if x.get("deposited_at") else "")),
+                ("Deposit transaction", x["source_tx"])]
+        if x.get("recipient"):
+            rows += [("Came out on", x["dest_name"]),
+                     ("Recipient", x["recipient"]),
+                     ("Payout transaction", x["payout_tx"])]
+        if x.get("amount_out") is not None:
+            rows.append(("Paid out", _amount(x["amount_out"], x["asset_out"])
+                         + (f", {fmt.duration(x['seconds'])} after the deposit"
+                            if x.get("seconds") is not None else "")))
+        if x.get("fee") is not None:
+            rows.append(("Cost of crossing", _amount(x["fee"], x["asset_in"])))
+        if x.get("matched_by"):
+            rows.append(("Matched by", x["matched_by"]))
+        out.append({"t": "kv", "rows": rows})
+    return out
 
 
 def _lists(case: dict) -> list[dict]:
@@ -493,6 +549,7 @@ def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
     blocks += _flow(case, index)
     blocks += _candidates(case, rules.attribute_min, number)
     blocks += _rail(case, number)
+    blocks += _bridges(case)
     blocks += _flags(case)
     blocks += _risk(case)
     blocks += _confidence(case, rules, bar_check)
@@ -512,6 +569,12 @@ def _wrap(text: str, width: int = 96, indent: str = "") -> list[str]:
     return textwrap.wrap(text, width=width, initial_indent=indent,
                          subsequent_indent=" " * len(indent),
                          break_long_words=False, break_on_hyphens=False) or [indent.rstrip()]
+
+
+def _end(wallet: str) -> str:
+    """An arrow's end in words: `chain:address` (another chain's wallet) says its chain."""
+    chain, sep, address = wallet.partition(":")
+    return f"{address} ({fmt.chain_name(chain)})" if sep else wallet
 
 
 def blocks_text(blocks: list[dict]) -> str:
@@ -547,9 +610,10 @@ def blocks_text(blocks: list[dict]) -> str:
                 out.append(f"    W{box['n']}  column {lay['columns'][box['col']]}, "
                            f"row {box['row'] + 1}: {box['title']}")
             for a in lay["arrows"]:
-                out.append(f"    arrow {a['source']} -> {a['target']} ({a['direction']}, "
+                out.append(f"    arrow {_end(a['source'])} -> {_end(a['target'])} "
+                           f"({a['direction']}, "
                            f"{a['transfers']} transfer{'s' if a['transfers'] != 1 else ''}, "
-                           f"{_amount(a['amount'], lay['asset'])})")
+                           f"{_amount(a['amount'], a.get('asset') or lay['asset'])})")
         elif t == "pages":
             out += [f"    {sha}  {query}" for sha, query in b["rows"]]
         else:

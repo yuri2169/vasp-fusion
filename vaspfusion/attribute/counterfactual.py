@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from ..chains.base import ProviderError
+from ..chains.base import ProviderError, split_id
 from ..explain import fmt
 from ..trace import TraceConfig, TraceResult, trace
 from ..trace import ZERO
@@ -41,20 +41,27 @@ def _blind_spots(first: TraceResult, second: TraceResult) -> list[str]:
 
 
 class HiddenLabels:
-    """A label lookup that does not know the given addresses."""
+    """A label lookup that does not know the given wallets. `hidden` holds wallet ids
+    (chains/base.py) of a trace that started on `home`: the same address on another
+    chain is another wallet and keeps its label."""
 
-    def __init__(self, labels, hidden: set[str]):
-        self.labels, self.hidden = labels, set(hidden)
+    def __init__(self, labels, hidden: set[str], home: str | None = None):
+        self.labels = labels
+        self.hidden = {split_id(w, home)[::-1] if home else (w, None) for w in hidden}
+
+    def _is_hidden(self, address: str, chain: str) -> bool:
+        return (address, chain) in self.hidden or (address, None) in self.hidden
 
     def lookup_many(self, pairs):
         return {k: v for k, v in self.labels.lookup_many(pairs).items()
-                if k[0] not in self.hidden}
+                if not self._is_hidden(*k)}
 
     def infer(self, address: str, chain: str):
         """A label derived from the wallet's cluster (Bitcoin) is hidden like any other;
         every other wallet keeps its own."""
         inner = getattr(self.labels, "infer", None)
-        return None if inner is None or address in self.hidden else inner(address, chain)
+        return None if inner is None or self._is_hidden(address, chain) \
+            else inner(address, chain)
 
 
 def _verdict(c: Candidate, again: Candidate | None, rules: RuleConfig) -> tuple[bool, str]:
@@ -74,11 +81,12 @@ def _verdict(c: Candidate, again: Candidate | None, rules: RuleConfig) -> tuple[
 
 
 def check(c: Candidate, tr: TraceResult, provider, labels, cfg: TraceConfig,
-          rules: RuleConfig) -> Candidate:
+          rules: RuleConfig, crossings=None) -> Candidate:
     """`c` with its counterfactual filled in; unchanged if the second trace cannot run."""
     try:
-        tr2 = trace(tr.address, tr.chain, provider, HiddenLabels(labels, {c.deposit_address}),
-                    cfg)
+        tr2 = trace(tr.address, tr.chain, provider,
+                    HiddenLabels(labels, {c.deposit_address}, tr.chain), cfg,
+                    crossings=crossings)
     except ProviderError:
         return c
     again = next((x for x in attribute(tr2, rules).candidates
@@ -99,13 +107,13 @@ def check(c: Candidate, tr: TraceResult, provider, labels, cfg: TraceConfig,
 
 def add_counterfactuals(tr: TraceResult, att: Attribution, provider, labels,
                         cfg: TraceConfig = TraceConfig(),
-                        rules: RuleConfig = RuleConfig()) -> None:
+                        rules: RuleConfig = RuleConfig(), crossings=None) -> None:
     """Fill in the counterfactual of every named candidate (at most MAX_CHECKED, nearest
     first). Nothing else about the attribution changes."""
     # a wallet tagged "exchange" with no owner has no exchange to be "still" reached
     named = [c for c in att.candidates if c.direction == "outbound" and c.hops > 0
              and c.vasp != UNROUTABLE and c.confidence >= rules.attribute_min][:MAX_CHECKED]
-    done = {id(c): check(c, tr, provider, labels, cfg, rules) for c in named}
+    done = {id(c): check(c, tr, provider, labels, cfg, rules, crossings) for c in named}
     if att.top is not None:
         att.top = done.get(id(att.top), att.top)
     att.candidates = [done.get(id(c), c) for c in att.candidates]

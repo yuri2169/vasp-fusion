@@ -1194,10 +1194,20 @@ export interface components {
             /** Deposit Address */
             deposit_address: string;
             /**
+             * Chain
+             * @description The chain deposit_address is on. null on cases stored before G4: the case's chain
+             */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /**
              * Path
              * @description Addresses from the suspect to deposit_address
              */
             path: string[];
+            /**
+             * Path Chains
+             * @description The chain of each address in path
+             */
+            path_chains?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana")[] | null;
             /** Evidence */
             evidence: components["schemas"]["EvidenceItem"][];
             /**
@@ -1347,6 +1357,26 @@ export interface components {
              * @default []
              */
             where_funds_went: components["schemas"]["FundsSlice"][];
+            /**
+             * Chains
+             * @description The chains the traced money was followed on, in the order it crossed. One entry (the case's chain) unless a bridge deposit was followed
+             * @default []
+             */
+            chains: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana")[];
+            /**
+             * Crossings
+             * @description Every bridge deposit the traced money made, followed or not, in time order
+             * @default []
+             */
+            crossings: components["schemas"]["Crossing"][];
+            /**
+             * Tx Chains
+             * @description Transaction hash -> chain, for every transaction of this case that is not on the case's own chain (a payout, and the transfers after it)
+             * @default {}
+             */
+            tx_chains: {
+                [key: string]: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
+            };
             /** Hop Rail */
             hop_rail: components["schemas"]["Hop"][];
             graph: components["schemas"]["CaseGraph"];
@@ -1732,6 +1762,112 @@ export interface components {
              */
             computed: boolean;
         };
+        /**
+         * Crossing
+         * @description One deposit into a bridge and what became of it (G4).
+         *
+         *     `followed`: the bridge's index matched the deposit to a payout, the payout was read
+         *     on the destination chain and the trace goes on from the recipient. `not_traced`:
+         *     matched (chain, recipient and payout transaction are set), but the trace could not go
+         *     on there; `reason` says why. `unresolved`: no match; the trail ends at the bridge.
+         */
+        Crossing: {
+            /**
+             * Bridge
+             * @description The bridge, as its label names it
+             */
+            bridge: string;
+            /**
+             * Bridge Address
+             * @description The bridge wallet the deposit went into
+             */
+            bridge_address: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "followed" | "not_traced" | "unresolved";
+            /**
+             * Reason
+             * @description Why it was not followed
+             */
+            reason?: string | null;
+            /**
+             * Source Chain
+             * @enum {string}
+             */
+            source_chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
+            /**
+             * Source Tx
+             * @description The deposit transaction, on source_chain
+             */
+            source_tx: string;
+            /** Asset In */
+            asset_in: string;
+            /**
+             * Amount In
+             * @description The whole deposit
+             */
+            amount_in: number;
+            /**
+             * Traced In
+             * @description The part of it that is the suspect wallet's money
+             */
+            traced_in: number;
+            /**
+             * Dest Chain
+             * @description Set when the money came out on a chain this tool reads
+             */
+            dest_chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /**
+             * Dest Name
+             * @description The destination as it is said
+             */
+            dest_name?: string | null;
+            /** Recipient */
+            recipient?: string | null;
+            /**
+             * Payout Tx
+             * @description On the destination chain
+             */
+            payout_tx?: string | null;
+            /**
+             * Paid By
+             * @description The address that paid the recipient in payout_tx (a contract of the bridge)
+             */
+            paid_by?: string | null;
+            /** Asset Out */
+            asset_out?: string | null;
+            /**
+             * Amount Out
+             * @description What the recipient received in payout_tx, read on the destination chain. It can be less than the bridge quotes
+             */
+            amount_out?: number | null;
+            /**
+             * Traced Out
+             * @description The followed part of amount_out
+             */
+            traced_out?: number | null;
+            /**
+             * Fee
+             * @description traced_in - traced_out: what the crossing cost. Counted as a fee in where_funds_went, never as missing money
+             */
+            fee?: number | null;
+            /**
+             * Seconds
+             * @description From the deposit to the payout
+             */
+            seconds?: number | null;
+            /** Deposited At */
+            deposited_at?: string | null;
+            /** Paid At */
+            paid_at?: string | null;
+            /**
+             * Matched By
+             * @description Who says the two transactions belong together: the host of the bridge's index
+             */
+            matched_by?: string | null;
+        };
         /** Dashboard */
         Dashboard: {
             counts: components["schemas"]["DashboardCounts"];
@@ -2018,7 +2154,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "vasp" | "sanctioned" | "mixer" | "bridge" | "other_label" | "hub" | "beyond_hop_limit" | "not_moved" | "not_followed" | "returned" | "fee";
+            kind: "vasp" | "sanctioned" | "mixer" | "bridge" | "other_label" | "hub" | "beyond_hop_limit" | "not_moved" | "not_followed" | "returned" | "fee" | "bridge_fee";
             /**
              * Name
              * @description The VASP or labelled party, when there is one
@@ -2120,14 +2256,26 @@ export interface components {
              * @enum {string}
              */
             direction: "outbound" | "inbound";
+            /**
+             * Chain
+             * @description The chain tx_hash is on. null on cases stored before G4: the case's chain
+             */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /** @description Set on a cross-chain edge: source is the bridge wallet, target the recipient on the destination chain, tx_hash the payout transaction */
+            bridge?: components["schemas"]["Crossing"] | null;
         };
         /** GraphNode */
         GraphNode: {
             /**
              * Id
-             * @description The address
+             * @description The address; for a wallet the money reached on another chain, `chain:address` (an EVM address is the same string on every EVM chain)
              */
             id: string;
+            /**
+             * Address
+             * @description The plain address. null on cases stored before G4, where it equals id
+             */
+            address?: string | null;
             /**
              * Chain
              * @enum {string}
@@ -2192,7 +2340,9 @@ export interface components {
         };
         /**
          * Hop
-         * @description One step on the Hop Rail: money moved from `from_address` to `to_address`.
+         * @description One step on the Hop Rail: money moved from `from_address` to `to_address`. On a
+         *     cross-chain step `bridge` is set: `from_address` is the bridge wallet on `from_chain`,
+         *     `to_address` the recipient on `to_chain`, and `tx_hash` the payout transaction.
          */
         Hop: {
             /** Index */
@@ -2201,6 +2351,14 @@ export interface components {
             from_address: string;
             /** To Address */
             to_address: string;
+            /**
+             * From Chain
+             * @description null on cases stored before G4
+             */
+            from_chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            /** To Chain */
+            to_chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+            bridge?: components["schemas"]["Crossing"] | null;
             /** Tx Hash */
             tx_hash: string;
             /** Asset */
@@ -3034,9 +3192,14 @@ export interface components {
             address: string;
             /**
              * Amount
-             * @description Traced funds through this wallet, in the case's asset
+             * @description Traced funds through this wallet, in `asset`
              */
             amount: number;
+            /**
+             * Asset
+             * @description The asset that reached address. null on cases stored before G4: the case's asset. Over a bridge it can differ from the case's (USDT in, USDC out)
+             */
+            asset?: string | null;
             /**
              * Paid Into
              * @description Set when address carries no label: the VASP's labelled wallet it paid into
@@ -3055,6 +3218,11 @@ export interface components {
             kind: "hot" | "cold" | "deposit" | "reserve" | "unknown";
             /** Label */
             label?: string | null;
+            /**
+             * Chain
+             * @description The chain address is on, when the money reached it over a bridge. null: the case's chain
+             */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
             /**
              * Reached At
              * Format: date-time
@@ -3465,6 +3633,11 @@ export interface components {
             severity: "info" | "warn" | "high";
             /** Wallet */
             wallet: string;
+            /**
+             * Chain
+             * @description The chain wallet is on. null: the case's chain
+             */
+            chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
             /** Text */
             text: string;
             /**

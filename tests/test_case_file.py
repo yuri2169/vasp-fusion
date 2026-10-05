@@ -43,7 +43,10 @@ def test_it_holds_every_finding(case_id, cases):
     for h in case["hop_rail"]:
         assert h["tx_hash"] in text
     for n in case["graph"]["nodes"]:
-        assert n["id"] in text                         # the wallet table lists every wallet
+        assert (n["address"] or n["id"]) in text       # the wallet table lists every wallet
+    assert "base:0x" not in text                       # a graph id is never printed
+    for x in case["crossings"]:                        # each bridge leg, both transactions
+        assert x["source_tx"] in text and (x["payout_tx"] or "") in text
     if case["abstain_reason"]:
         assert " ".join(case["abstain_reason"].split()) in flat
     for step in case["next_steps"]:

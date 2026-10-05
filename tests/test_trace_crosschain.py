@@ -20,13 +20,14 @@ def ftx(n, frm, to, amount, minute, asset="USDC"):
 
 
 class Labels:
-    """{(address, chain): (entity, category)}: the same address may be two wallets."""
+    """{(address, chain): (entity, category[, kind])}: the same address may be two wallets."""
 
     def __init__(self, labels):
         self.labels = {
-            (a, c): Label(address=a, chain=c, entity=e, category=cat, kind="unknown",
-                          tier="curated", source="toy", source_url=None, label=f"{e} toy label")
-            for (a, c), (e, cat) in labels.items()}
+            (a, c): Label(address=a, chain=c, entity=spec[0], category=spec[1],
+                          kind=spec[2] if len(spec) > 2 else "unknown", tier="curated",
+                          source="toy", source_url=None, label=f"{spec[0]} toy label")
+            for (a, c), spec in labels.items()}
         self.asked: list[tuple] = []
 
     def lookup_many(self, pairs):

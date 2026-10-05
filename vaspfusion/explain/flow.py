@@ -28,8 +28,11 @@ def wallet_index(case: dict) -> list[dict]:
     into: dict[str, float] = {}
     sent_in: dict[str, float] = {}
     outbound: set[str] = set()
+    asset_of: dict[str, str] = {}       # over a bridge a wallet may hold another stablecoin
     for e in g["edges"]:
         traced = e.get("traced_amount") or 0.0
+        asset_of.setdefault(e["source"] if e.get("direction") == "inbound" else e["target"],
+                            e["asset"])
         if e.get("direction", "outbound") == "inbound":
             sent_in[e["source"]] = sent_in.get(e["source"], 0.0) + traced
         else:
@@ -45,7 +48,10 @@ def wallet_index(case: dict) -> list[dict]:
         else:
             col, amount = -1, sent_in[addr]
         label = n.get("label") or {}
-        rows.append({"address": addr, "col": col, "role": n["role"], "amount": amount,
+        rows.append({"address": addr, "plain": n.get("address") or addr,
+                     "chain": n.get("chain") or case["chain"],
+                     "asset": asset_of.get(addr, case.get("asset")),
+                     "col": col, "role": n["role"], "amount": amount,
                      "entity": label.get("entity"), "tier": label.get("tier"),
                      "label": label.get("label"),
                      "title": label.get("entity") if label.get("entity")
@@ -58,12 +64,19 @@ def wallet_index(case: dict) -> list[dict]:
     return rows
 
 
+def wallet_id(case: dict, address: str, chain: str | None) -> str:
+    """The graph id of a wallet: the address, or `chain:address` on another chain."""
+    return address if chain in (None, case["chain"]) else f"{chain}:{address}"
+
+
 def _must_show(case: dict) -> set[str]:
     keep = {case["address"]}
     for c in case["candidates"]:
-        keep.update(c["path"])
+        chains = c.get("path_chains") or [None] * len(c["path"])
+        keep.update(wallet_id(case, a, ch) for a, ch in zip(c["path"], chains))
     for h in case["hop_rail"]:
-        keep.update((h["from_address"], h["to_address"]))
+        keep.update((wallet_id(case, h["from_address"], h.get("from_chain")),
+                     wallet_id(case, h["to_address"], h.get("to_chain"))))
     return keep
 
 
@@ -89,7 +102,7 @@ def layout(case: dict, index: list[dict] | None = None, max_boxes: int = MAX_BOX
         for row, r in enumerate(column):
             boxes.append({"n": r["n"], "address": r["address"], "col": cols.index(col),
                           "row": row, "role": r["role"], "title": r["title"],
-                          "amount": r["amount"]})
+                          "amount": r["amount"], "asset": r["asset"]})
     shown = {b["address"] for b in boxes}
     merged: dict[tuple[str, str, str], dict] = {}
     for e in case["graph"]["edges"]:
@@ -97,7 +110,8 @@ def layout(case: dict, index: list[dict] | None = None, max_boxes: int = MAX_BOX
             continue
         key = (e["source"], e["target"], e.get("direction", "outbound"))
         a = merged.setdefault(key, {"source": e["source"], "target": e["target"],
-                                    "direction": key[2], "amount": 0.0, "transfers": 0})
+                                    "direction": key[2], "amount": 0.0, "transfers": 0,
+                                    "asset": e["asset"]})
         a["amount"] += e.get("traced_amount") or 0.0
         a["transfers"] += 1
     arrows = [merged[k] for k in sorted(merged)]

@@ -253,25 +253,88 @@ def test_ethereum_wallets_are_not_scored_and_the_case_says_why(tmp_path):
         "seen."]
 
 
-def test_eth_wallet_whose_money_went_into_a_bridge_is_not_attributed_to_it(tmp_path):
+def test_eth_wallet_whose_money_went_into_a_bridge_is_followed_onto_base(tmp_path):
+    """Real: 0x2102…f364b0 put 8,250 USDT into Across in two deposits. Across' index names
+    Base and the same address as recipient; the payouts are read on Base, and the trace
+    goes on there. No exchange is reached within 3 hops, and the case says so."""
     case = run_demo("eth-bridge", tmp_path / "c.duckdb")
     across = "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5"     # "Across Protocol: Ethereum Spoke Pool V2"
+    me = SPECS["eth-bridge"]["address"]
     assert case["outcome"] == "INSUFFICIENT_EVIDENCE" and case["candidates"] == []
-    assert case["where_funds_went"][0] == {"kind": "bridge", "name": "Across Protocol",
-                                           "share": 0.602, "amount": 8250.0}
+    assert case["chains"] == ["ethereum", "base"]
+    small, big = [x for x in case["crossings"] if x["bridge"] == "Across Protocol"]
+    assert (big["status"], big["dest_chain"], big["recipient"], big["matched_by"]) == \
+        ("followed", "base", me, "app.across.to")
+    # what arrived is read on Base: less than the 7,796.877993 Across' index quotes
+    assert (big["amount_in"], big["asset_out"], big["amount_out"], big["seconds"]) == \
+        (7800.0, "USDC", 7777.385799, 54)
+    assert (small["amount_in"], small["amount_out"], small["seconds"]) == (450.0, 448.693209, 8)
+    assert round(big["fee"] + small["fee"], 6) == 23.920992
+    # the fee is a fee, nothing is left "at the bridge", and the slices still add up
+    where = {(w["kind"], w["name"]): w["amount"] for w in case["where_funds_went"]}
+    assert ("bridge", "Across Protocol") not in where
+    assert where[("bridge_fee", None)] == 23.920992
+    assert round(sum(where.values()), 4) == case["total_sent"]
+    # the same address is two wallets: the suspect on Ethereum, the recipient on Base
+    nodes = {n["id"]: n for n in case["graph"]["nodes"]}
+    assert (nodes[me]["chain"], nodes[me]["role"]) == ("ethereum", "suspect")
+    assert (nodes[f"base:{me}"]["chain"], nodes[f"base:{me}"]["address"],
+            nodes[f"base:{me}"]["hop"]) == ("base", me, 2)
+    assert nodes[across]["role"] == "bridge" and nodes[across]["cluster"] is None
+    edge = next(e for e in case["graph"]["edges"] if e["tx_hash"] == big["payout_tx"])
+    assert (edge["source"], edge["target"], edge["chain"], edge["bridge"]["source_tx"]) == \
+        (across, f"base:{me}", "base", big["source_tx"])
+    # the rail crosses: deposit on Ethereum, payout on Base, then on from the recipient
+    rail = case["hop_rail"]
+    assert [(h["from_chain"], h["to_chain"], h["bridge"] is not None) for h in rail] == [
+        ("ethereum", "ethereum", False), ("ethereum", "base", True), ("base", "base", False)]
+    assert (rail[1]["from_address"], rail[1]["to_address"], rail[1]["tx_hash"]) == \
+        (across, me, big["payout_tx"])
+    assert case["tx_chains"][big["payout_tx"]] == "base" and big["source_tx"] not in case["tx_chains"]
     first, second = flags_of(case, "bridge_hop")
     assert (first["wallet"], first["severity"], first["figures"]["hops"]) == (across, "warn", 1.0)
-    assert len(first["tx_hashes"]) == 2 and second["figures"]["amount"] == 500.0
-    node = next(n for n in case["graph"]["nodes"] if n["id"] == across)
-    assert node["role"] == "bridge" and node["cluster"] is None
-    assert "60% went into a bridge (Across Protocol)" in case["abstain_reason"]
-    assert case["what_would_change"][0] == ("Following the funds across the bridge (Across "
-                                            "Protocol) onto the destination chain")
+    assert first["text"].endswith("(Across Protocol), 1 hop away; followed onto Base")
+    assert "60% crossed to Base through the Across Protocol bridge and was followed there" \
+        in case["abstain_reason"]
+    assert "8,226.08 USDC of it arrived at 0x2102…f364b0 on Base" in case["narrative"]
+    assert "Tracing deeper than 3 hops from 0xd888…1008a9 on Base (42% of the funds)" \
+        in case["what_would_change"]
+    # a bridge with no resolver stays as before: the officer is told what to follow by hand
+    assert second["figures"]["amount"] == 500.0 and "followed onto" not in second["text"]
+    assert case["what_would_change"][0] == ("Following the funds across the bridge (Optimism) "
+                                            "onto the destination chain")
     assert case["next_steps"][0].startswith(
-        "Follow the 8,250 USDT that went into the Across Protocol bridge at 0x5c7b…ed35c5 onto "
-        "the destination chain: a bridge is not an exchange")
+        "Follow the 500 USDT that went into the Optimism bridge at 0x99c9…884be1 onto the "
+        "destination chain: a bridge is not an exchange")
     assert not any(s.startswith("Draft a request") for s in case["next_steps"])
-    assert case["hop_rail"][-1]["to_address"] == across      # the rail leads to the bridge
+    assert not any("Across" in s for s in case["next_steps"])
+    assert "app.across.to" in case["provenance"]["data_sources"]
+    assert "base.blockscout.com" in case["provenance"]["data_sources"]
+
+
+def test_the_bridged_case_replays_offline_with_the_same_fingerprint(tmp_path):
+    live = run_demo("eth-bridge", tmp_path / "c.duckdb")
+    again = run_demo("eth-bridge", tmp_path / "c.duckdb", offline=True)
+    assert again["provenance"]["findings_sha256"] == live["provenance"]["findings_sha256"]
+    assert again["provenance"]["offline_replay"] is True and again["chains"] == live["chains"]
+
+
+def test_no_wallet_id_leaks_into_what_an_officer_reads(tmp_path):
+    """`chain:address` is an id for the graph only. Every sentence and every address
+    field carries the plain address (and says the chain in words)."""
+    case = run_demo("eth-bridge", tmp_path / "c.duckdb")
+    ids = {"source", "target", "id"}
+
+    def walk(v, key=None):
+        if isinstance(v, dict):
+            for k, x in v.items():
+                walk(x, k)
+        elif isinstance(v, list):
+            for x in v:
+                walk(x, key)
+        elif isinstance(v, str) and key not in ids:
+            assert "base:0x" not in v and "ethereum:0x" not in v, (key, v)
+    walk(case)
 
 
 # ---- adapters say whether a listing is the whole answer

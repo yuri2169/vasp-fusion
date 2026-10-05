@@ -147,10 +147,10 @@
   "candidates": [],
   "where_funds_went": [
    {
-    "kind": "bridge",
-    "name": "Across Protocol",
-    "share": 0.602,
-    "amount": 8250.0
+    "kind": "beyond_hop_limit",
+    "name": null,
+    "share": 0.6236,
+    "amount": 8546.079008
    },
    {
     "kind": "other_label",
@@ -177,10 +177,10 @@
     "amount": 500.0
    },
    {
-    "kind": "beyond_hop_limit",
+    "kind": "bridge_fee",
     "name": null,
-    "share": 0.0233,
-    "amount": 320.0
+    "share": 0.0017,
+    "amount": 23.920992
    },
    {
     "kind": "returned",
@@ -189,8 +189,8 @@
     "amount": 8.67774
    }
   ],
-  "nodes": 17,
-  "edges": 36,
+  "nodes": 21,
+  "edges": 45,
   "flags": [
    [
     "bridge_hop",

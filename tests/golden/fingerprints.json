@@ -20,9 +20,9 @@
   "pages": 5
  },
  "eth-bridge": {
-  "findings_sha256": "23dc4404ad5dec800da124698f6ba3d65da4a6ccd45aa02f1f656ed919d38ad5",
-  "responses_sha256": "d0ddae6afe46fb92b7e183130ac44a2a20eda527cbc279e0d47b7ed1304a8023",
-  "pages": 24
+  "findings_sha256": "6c0517744cf5da02bbb3d68b598d7eecee7b5f6f028b396b8bbc8fd24ed1c1b9",
+  "responses_sha256": "dc819bac66ad7c5dc9af35805f2fb584f2278c6f9370f33b9fdf99a35ee3dde1",
+  "pages": 30
  },
  "polygon-bitget": {
   "findings_sha256": "77f3d68b271e124950a744ffb20f64951afa0c32a16065bdfbcd3687c25f7d76",

@@ -35,8 +35,11 @@ def wallets_to_score(tr: TraceResult, cfg: LeadConfig = LeadConfig()) -> list[Tr
     out to many wallets, which a deposit address never does."""
     if not tr.total_out:
         return []
+    # a wallet the money reached over a bridge is on another chain, which the model (and
+    # the scorer's adapter) does not read
     nodes = [n for (side, _), n in tr.nodes.items()
              if side == "outbound" and n.label is None and n.state != "hub"
+             and n.chain in (None, tr.chain)
              and float(n.received / tr.total_out) >= cfg.min_share]
     nodes.sort(key=lambda n: (-n.received, n.address))
     return nodes[:cfg.max_wallets]

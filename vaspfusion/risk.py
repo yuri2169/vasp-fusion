@@ -88,6 +88,9 @@ def class_of(score: int, cfg: dict | None = None) -> str:
 
 
 def _short(a: str) -> str:
+    chain, sep, plain = a.partition(":")    # a wallet on another chain: `chain:address`
+    if sep:
+        return f"{_short(plain)} on {chain.title()}"
     return a if len(a) <= 14 else f"{a[:6]}…{a[-6:]}"
 
 

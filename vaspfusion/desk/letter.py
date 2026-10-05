@@ -31,6 +31,20 @@ ASK_TEXT = {
 }
 
 
+# An instant-swap service takes the deposit into custody and pays out from its own pool,
+# often on another chain: the payout cannot be matched on-chain, so it is asked for.
+SWAP_TRANSACTIONS = (
+    "furnish, for each deposit listed below, the swap order it belongs to and the payout "
+    "made for it: the payout chain, the payout address, the payout transaction hash, the "
+    "asset and amount paid out, the time, and any refund address given; and the further "
+    "orders placed from the same account, device or IP address")
+SWAP_PARAGRAPH = (
+    "{vasp} operates a swap service: it receives a deposit and pays the customer out from "
+    "its own funds, in another asset or on another chain. The payout is therefore not "
+    "visible from the deposit on the public record, and this office cannot follow the funds "
+    "further without the order records requested below.")
+
+
 def _join(parts: list[str]) -> str:
     return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
 
@@ -94,6 +108,16 @@ def review_notes(wallets: list[dict], entry: dict) -> list[str]:
                 f"{w['address']} is {w['vasp']}'s own labelled wallet, not a customer's "
                 f"deposit address. {w['vasp']} can identify the account only from the "
                 "transactions listed for it.")
+        if w.get("category") == "swap_service":
+            notes.append(
+                f"{w['vasp']} is a swap service. It may hold no KYC on the customer; the "
+                "payout chain, address and transaction it is asked for are what lets the "
+                "trace go on. Trace the payout address as a new case when the reply comes.")
+        if w.get("chain") and w.get("case_chain") and w["chain"] != w["case_chain"]:
+            notes.append(
+                f"{w['address']} is on {fmt.chain_name(w['chain'])}, not on "
+                f"{fmt.chain_name(w['case_chain'])} where the traced wallet is: the funds "
+                "crossed a bridge on the way. The case file lists the bridge transactions.")
         if w["counterfactual_holds"] is False:
             notes.append(
                 f"Naming {w['vasp']} for {w['address']} rests on one label "
@@ -132,13 +156,18 @@ def draft_letter(*, reference: str, vasp: str, entry: dict, wallets: list[dict],
             seen.add(w["case_id"])
             cases.append({"case_id": w["case_id"], "case_ref": w["case_ref"],
                           "complaint_no": w["complaint_no"], "wallet": w["suspect"],
-                          "chain": w["chain"]})
+                          "chain": w.get("case_chain") or w["chain"]})
     names = [_case_name(c) for c in cases]
     n = len({w["address"] for w in wallets})         # one wallet in two cases is one wallet
     plural = "s" if n != 1 else ""
     legal_name = entry.get("legal_name")
     to = f"The Nodal Officer, {legal_name} ({vasp})" if legal_name else f"The Nodal Officer, {vasp}"
     basis, citations = legal_basis(asks)
+    swap = bool(wallets) and all(w.get("category") == "swap_service" for w in wallets)
+    if swap and "transactions" not in asks:     # the payout is the point of the request
+        asks = [x for x in ASK_ORDER if x in (*asks, "transactions")]
+        basis, citations = legal_basis(asks)
+    ask_text = {**ASK_TEXT, "transactions": SWAP_TRANSACTIONS} if swap else ASK_TEXT
     paragraphs = [
         "This office is investigating the "
         + ("matter" if len(cases) == 1 else f"{len(cases)} matters")
@@ -149,8 +178,9 @@ def draft_letter(*, reference: str, vasp: str, entry: dict, wallets: list[dict],
         + f") to the {n} wallet{plural} listed in the table below, which the "
         f"analysis attributes to {vasp}. The table states, for each wallet, the amount traced, "
         "the transactions, and the evidence tier and confidence of the attribution.",
+        *([SWAP_PARAGRAPH.format(vasp=vasp)] if swap else []),
         "You are requested to: "
-        + "; ".join(f"({chr(97 + i)}) {ASK_TEXT[a]}" for i, a in enumerate(asks)) + ".",
+        + "; ".join(f"({chr(97 + i)}) {ask_text[a]}" for i, a in enumerate(asks)) + ".",
         f"Please reply quoting reference {reference}.",
     ]
     return {

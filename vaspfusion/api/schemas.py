@@ -48,7 +48,8 @@ RISK_BASIS = ("An indicator score from published red-flag rules. Not a probabili
               "measured against known outcomes.")
 FundsKind = Literal["vasp", "sanctioned", "mixer", "bridge", "other_label", "hub",
                     "beyond_hop_limit", "not_moved", "not_followed", "returned",
-                    "fee"]   # Bitcoin only: miner fees paid along the trail (B5)
+                    "fee",   # Bitcoin only: miner fees paid along the trail (B5)
+                    "bridge_fee"]   # what a followed bridge crossing cost (G4)
 
 
 class _M(BaseModel):
@@ -307,11 +308,57 @@ class CaseList(_M):
     items: list[CaseSummary]
 
 
+CrossingStatus = Literal["followed", "not_traced", "unresolved"]
+
+
+class Crossing(_M):
+    """One deposit into a bridge and what became of it (G4).
+
+    `followed`: the bridge's index matched the deposit to a payout, the payout was read
+    on the destination chain and the trace goes on from the recipient. `not_traced`:
+    matched (chain, recipient and payout transaction are set), but the trace could not go
+    on there; `reason` says why. `unresolved`: no match; the trail ends at the bridge."""
+    bridge: str = Field(description="The bridge, as its label names it")
+    bridge_address: str = Field(description="The bridge wallet the deposit went into")
+    status: CrossingStatus
+    reason: str | None = Field(None, description="Why it was not followed")
+    source_chain: TraceChain
+    source_tx: str = Field(description="The deposit transaction, on source_chain")
+    asset_in: str
+    amount_in: float = Field(description="The whole deposit")
+    traced_in: float = Field(description="The part of it that is the suspect wallet's money")
+    dest_chain: TraceChain | None = Field(None, description=(
+        "Set when the money came out on a chain this tool reads"))
+    dest_name: str | None = Field(None, description="The destination as it is said")
+    recipient: str | None = None
+    payout_tx: str | None = Field(None, description="On the destination chain")
+    paid_by: str | None = Field(None, description=(
+        "The address that paid the recipient in payout_tx (a contract of the bridge)"))
+    asset_out: str | None = None
+    amount_out: float | None = Field(None, description=(
+        "What the recipient received in payout_tx, read on the destination chain. It can "
+        "be less than the bridge quotes"))
+    traced_out: float | None = Field(None, description="The followed part of amount_out")
+    fee: float | None = Field(None, description=(
+        "traced_in - traced_out: what the crossing cost. Counted as a fee in "
+        "where_funds_went, never as missing money"))
+    seconds: int | None = Field(None, description="From the deposit to the payout")
+    deposited_at: datetime | None = None
+    paid_at: datetime | None = None
+    matched_by: str | None = Field(None, description=(
+        "Who says the two transactions belong together: the host of the bridge's index"))
+
+
 class Hop(_M):
-    """One step on the Hop Rail: money moved from `from_address` to `to_address`."""
+    """One step on the Hop Rail: money moved from `from_address` to `to_address`. On a
+    cross-chain step `bridge` is set: `from_address` is the bridge wallet on `from_chain`,
+    `to_address` the recipient on `to_chain`, and `tx_hash` the payout transaction."""
     index: int = Field(ge=1)
     from_address: str
     to_address: str
+    from_chain: TraceChain | None = Field(None, description="null on cases stored before G4")
+    to_chain: TraceChain | None = None
+    bridge: Crossing | None = None
     tx_hash: str
     asset: str
     amount: float
@@ -323,7 +370,11 @@ class Hop(_M):
 
 
 class GraphNode(_M):
-    id: str = Field(description="The address")
+    id: str = Field(description=(
+        "The address; for a wallet the money reached on another chain, `chain:address` "
+        "(an EVM address is the same string on every EVM chain)"))
+    address: str | None = Field(None, description=(
+        "The plain address. null on cases stored before G4, where it equals id"))
     chain: TraceChain
     role: NodeRole
     hop: int = Field(ge=0, description="0 = the suspect wallet")
@@ -344,6 +395,11 @@ class GraphEdge(_M):
                                                            "suspect wallet's money")
     block_time: datetime
     direction: Direction = "outbound"
+    chain: TraceChain | None = Field(None, description=(
+        "The chain tx_hash is on. null on cases stored before G4: the case's chain"))
+    bridge: Crossing | None = Field(None, description=(
+        "Set on a cross-chain edge: source is the bridge wallet, target the recipient on "
+        "the destination chain, tx_hash the payout transaction"))
 
 
 class CaseGraph(_M):
@@ -363,12 +419,18 @@ class RequestWallet(_M):
     address: str = Field(description=(
         "A labelled deposit address; or the unlabelled wallet that passed everything it "
         "got on to the VASP's wallet in paid_into; or the VASP's own labelled wallet"))
-    amount: float = Field(description="Traced funds through this wallet, in the case's asset")
+    amount: float = Field(description="Traced funds through this wallet, in `asset`")
+    asset: str | None = Field(None, description=(
+        "The asset that reached address. null on cases stored before G4: the case's asset. "
+        "Over a bridge it can differ from the case's (USDT in, USDC out)"))
     paid_into: str | None = Field(None, description=(
         "Set when address carries no label: the VASP's labelled wallet it paid into"))
     tier: Tier = Field(description="Of the label that names the VASP")
     kind: Kind
     label: str | None = None
+    chain: TraceChain | None = Field(None, description=(
+        "The chain address is on, when the money reached it over a bridge. null: the "
+        "case's chain"))
     reached_at: datetime = Field(description="When the traced funds first reached address")
     tx_hashes: list[str] = Field(description=(
         "The transfers that brought the funds to address and, for a pass-through wallet, "
@@ -393,7 +455,11 @@ class Candidate(_M):
     time_to_reach_s: int | None = None
     label_tier: Tier
     deposit_address: str
+    chain: TraceChain | None = Field(None, description=(
+        "The chain deposit_address is on. null on cases stored before G4: the case's chain"))
     path: list[str] = Field(description="Addresses from the suspect to deposit_address")
+    path_chains: list[TraceChain] | None = Field(None, description=(
+        "The chain of each address in path"))
     evidence: list[EvidenceItem]
     counterfactual: str | None = Field(None, description=(
         "Named candidates only: what happens to this answer when the label on "
@@ -420,6 +486,8 @@ class TypologyFlag(_M):
         "(figures: p, low, high, share, amount); it never changes the outcome"))
     severity: Severity
     wallet: str
+    chain: TraceChain | None = Field(None, description=(
+        "The chain wallet is on. null: the case's chain"))
     text: str
     figures: dict[str, float] = {}
     tx_hashes: list[str] = []
@@ -587,6 +655,14 @@ class CaseDetail(CaseSummary):
     total_received: float | None = None
     where_funds_went: list[FundsSlice] = Field([], description="Adds up to the whole of "
                                                "`total_sent`; largest first")
+    chains: list[TraceChain] = Field([], description=(
+        "The chains the traced money was followed on, in the order it crossed. One entry "
+        "(the case's chain) unless a bridge deposit was followed"))
+    crossings: list[Crossing] = Field([], description=(
+        "Every bridge deposit the traced money made, followed or not, in time order"))
+    tx_chains: dict[str, TraceChain] = Field({}, description=(
+        "Transaction hash -> chain, for every transaction of this case that is not on the "
+        "case's own chain (a payout, and the transfers after it)"))
     hop_rail: list[Hop]
     graph: CaseGraph
     candidates: list[Candidate] = Field(description="Sorted by proximity_rank")

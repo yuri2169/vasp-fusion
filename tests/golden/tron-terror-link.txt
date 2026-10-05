@@ -588,8 +588,8 @@ vaspfusion.cli verify tron-terror-link
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         d519e36ed2cc1f444efea2d7436776cf421a1a27e818f23fb5a18b2be7e731d6
-  Receipt SHA-256         24d55b61d643154b881de1cf67d1ef09d95d79fdf6a8b16a88dd4d00855a98a2
+  Content SHA-256         6e31532640e0f673523af66cc29522b55b25cd144a624ddaab492d5c2986d560
+  Receipt SHA-256         78e08891c64722f9096de8a919df2225e8d4590d7b351996021da1c24a492951
 
   Chain responses read
     e49e9397a6676b123a1c9789ca45c43ca203bd747c56173ba9a7cef1f4c3d1fa  https://api.trongrid.io/v1/accounts/TB37WWozkkenGVYWD7Do2N5WT2CedqDktJ/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1713098907000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

@@ -154,7 +154,7 @@ class FlowDiagram(Flowable):
             c.setFont("Helvetica", 7)
             c.drawString(x + 4 + used, y + self.BOX_H - 10,
                          _fit(_unescaped(_t(b["title"])), "Helvetica", 7, inner - used))
-            amount = fmt.amount(str(round(b["amount"], 6)), lay["asset"])
+            amount = fmt.amount(str(round(b["amount"], 6)), b.get("asset") or lay["asset"])
             c.drawString(x + 4, y + 6, _fit(amount, "Helvetica", 7, inner))
         c.restoreState()
 

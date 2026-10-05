@@ -44,8 +44,28 @@ def _opening(tr: TraceResult) -> str:
     return f"{sent} in {n} transfer{'s' if n != 1 else ''} {when}."
 
 
+def _crossed(tr: TraceResult) -> list[str]:
+    """One sentence per bridge and recipient the money was followed to."""
+    legs: dict[tuple[str, str], list] = {}
+    for c in tr.crossings:
+        if c.status == "followed":
+            legs.setdefault((c.entity, c.payout.to_addr), []).append(c)
+    said = []
+    for (entity, recipient), group in legs.items():
+        went = sum(c.traced_in for c in group)
+        came = sum(c.traced_out for c in group)
+        said.append(
+            f"{fmt.amount(went, group[0].deposit.asset)} ({fmt.pct(went / tr.total_out)}) left "
+            f"{fmt.chain_name(group[0].deposit.chain)} through the {entity} bridge in "
+            f"{len(group)} deposit{'s' if len(group) != 1 else ''}, and "
+            f"{fmt.amount(came, group[0].payout.asset)} of it arrived at "
+            f"{fmt.short(recipient)}, where the trace goes on.")
+    return said
+
+
 def _reached(tr: TraceResult, c: Candidate) -> str:
-    text = (f"{fmt.amount(c.amount, tr.asset)} ({fmt.pct(c.share)}) reached {c.vasp} in "
+    arrived = c.path_edges[-1].transfer.asset if c.path_edges else tr.asset
+    text = (f"{fmt.amount(c.amount, arrived)} ({fmt.pct(c.share)}) reached {c.vasp} in "
             f"{fmt.hops(c.hops_min, c.hops_max)}")
     if len(c.path_edges) > 1 and c.hops_max == c.hops_min:
         text += f" within {fmt.duration(c.time_to_reach_s)}"
@@ -72,7 +92,7 @@ def path_hashes(tr: TraceResult, att: Attribution) -> list[str]:
 
 
 def narrative(tr: TraceResult, att: Attribution, rules: RuleConfig = RuleConfig()) -> str:
-    parts = [_opening(tr)]
+    parts = [_opening(tr), *_crossed(tr)]
     untraced_service = tr.asset is None and bool(tr.notes) and "not traced" in tr.notes[0]
     alerts = [f["text"] + "." for f in att.flags if f["severity"] == "high"
               and not (untraced_service and f["wallet"] == tr.address)]   # the opening said it

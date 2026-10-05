@@ -82,4 +82,5 @@ def run_demo(case_id: str, cache_path, offline: bool = False, **kw) -> dict:
     cfg = TraceConfig(max_hops=spec["max_hops"])
     return run_case(spec["address"], spec["chain"], demo_provider(spec["chain"], fetcher, cfg),
                     DemoLabels(), case_id=case_id, cfg=cfg, fetcher=fetcher, demo=True,
-                    scorer=make_scorer(spec["chain"], fetcher, key="test-key"), **kw)
+                    scorer=make_scorer(spec["chain"], fetcher, key="test-key"),
+                    provider_opts={"key": "test-key"}, **kw)

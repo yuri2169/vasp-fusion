@@ -88,6 +88,12 @@ class _View:
         for edges in (*self.sent.values(), *self.got.values()):
             edges.sort(key=lambda e: (_when(e), e.transfer.tx_hash, e.transfer.to_addr))
 
+    def asset_at(self, wallet: str) -> str | None:
+        """The asset the traced money is in at `wallet`: the case's, unless it arrived
+        over a bridge as another one."""
+        edges = self.got.get(wallet) or self.sent.get(wallet)
+        return edges[0].transfer.asset if edges and wallet != self.tr.address else self.asset
+
     def received(self, wallet: str) -> Decimal:
         if wallet == self.tr.address:
             return self.tr.total_out
@@ -123,6 +129,9 @@ def _label_flags(tr: TraceResult) -> list[dict]:
             continue
         total = tr.total_out if side == "outbound" else tr.total_in
         asset = tr.asset if side == "outbound" else tr.in_asset
+        into = tr.edges_into(side, addr)
+        if side == "outbound" and into:     # over a bridge it may have arrived as another
+            asset = into[0].transfer.asset
         share = float(node.received / total)
         if tag is not None and cat not in ALERT_CATEGORIES:
             if side == "outbound":
@@ -147,6 +156,11 @@ def _label_flags(tr: TraceResult) -> list[dict]:
                     f"{fmt.short(addr)} ({node.label.entity})")
         if _specific(tag):
             text += f"; tagged {named(tag)}"
+        if cat == "bridge" and side == "outbound":
+            onto = sorted({fmt.chain_name(c.payout.chain) for c in tr.crossings
+                           if c.bridge_wallet == addr and c.status == "followed"})
+            if onto:
+                text += f"; followed onto {' and '.join(onto)}"
         flags.append(_flag(ALERT_CATEGORIES.get(cat, "bridge_hop"),
                            "high" if cat in ALERT_CATEGORIES else "warn", addr, text,
                            {"share": round(share, 4), "amount": node.received, "hops": node.hop},
@@ -207,7 +221,7 @@ def _fan_out(v: _View, cfg: TypologyConfig) -> list[dict]:
         amount = sum((e.traced for e in best), ZERO)
         took = _when(best[-1]) - _when(best[0])
         flags.append(_flag("fan_out", "info", wallet,
-                           f"{fmt.short(wallet)} paid {fmt.amount(amount, v.asset)} to "
+                           f"{fmt.short(wallet)} paid {fmt.amount(amount, v.asset_at(wallet))} to "
                            f"{recipients} wallets within {fmt.duration(took)}",
                            {"recipients": recipients, "amount": amount,
                             "hours": round(took / 3600, 2)}, best))
@@ -232,7 +246,7 @@ def _fan_in(v: _View, cfg: TypologyConfig) -> list[dict]:
             continue
         amount = sum((e.traced for e in edges), ZERO)
         flags.append(_flag("fan_in", "info", wallet,
-                           f"{fmt.amount(amount, v.asset)} of the wallet's money came together "
+                           f"{fmt.amount(amount, v.asset_at(wallet))} of the wallet's money came together "
                            f"again at {fmt.short(wallet)}, from {len(senders)} wallets it had "
                            "been split across",
                            {"senders": len(senders), "amount": amount}, edges))
@@ -269,7 +283,7 @@ def _rapid(v: _View, cfg: TypologyConfig) -> list[dict]:
             continue
         flags.append(_flag("rapid_forwarding", "warn", wallet,
                            f"{fmt.short(wallet)} passed on {fmt.pct(passed / received)} of the "
-                           f"{fmt.amount(received, v.asset)} that reached it "
+                           f"{fmt.amount(received, v.asset_at(wallet))} that reached it "
                            + ("in the same block" if slowest == 0 else
                               f"within {fmt.duration(slowest)} of its arrival"),
                            {"share": round(float(passed / received), 4), "amount": received,

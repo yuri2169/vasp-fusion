@@ -2822,6 +2822,30 @@
             "type": "string",
             "title": "Deposit Address"
           },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "The chain deposit_address is on. null on cases stored before G4: the case's chain"
+          },
           "path": {
             "items": {
               "type": "string"
@@ -2829,6 +2853,33 @@
             "type": "array",
             "title": "Path",
             "description": "Addresses from the suspect to deposit_address"
+          },
+          "path_chains": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "tron",
+                    "ethereum",
+                    "bsc",
+                    "polygon",
+                    "arbitrum",
+                    "base",
+                    "optimism",
+                    "avalanche",
+                    "bitcoin",
+                    "solana"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path Chains",
+            "description": "The chain of each address in path"
           },
           "evidence": {
             "items": {
@@ -3289,6 +3340,57 @@
             "title": "Where Funds Went",
             "description": "Adds up to the whole of `total_sent`; largest first",
             "default": []
+          },
+          "chains": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "tron",
+                "ethereum",
+                "bsc",
+                "polygon",
+                "arbitrum",
+                "base",
+                "optimism",
+                "avalanche",
+                "bitcoin",
+                "solana"
+              ]
+            },
+            "type": "array",
+            "title": "Chains",
+            "description": "The chains the traced money was followed on, in the order it crossed. One entry (the case's chain) unless a bridge deposit was followed",
+            "default": []
+          },
+          "crossings": {
+            "items": {
+              "$ref": "#/components/schemas/Crossing"
+            },
+            "type": "array",
+            "title": "Crossings",
+            "description": "Every bridge deposit the traced money made, followed or not, in time order",
+            "default": []
+          },
+          "tx_chains": {
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "tron",
+                "ethereum",
+                "bsc",
+                "polygon",
+                "arbitrum",
+                "base",
+                "optimism",
+                "avalanche",
+                "bitcoin",
+                "solana"
+              ]
+            },
+            "type": "object",
+            "title": "Tx Chains",
+            "description": "Transaction hash -> chain, for every transaction of this case that is not on the case's own chain (a payout, and the transfers after it)",
+            "default": {}
           },
           "hop_rail": {
             "items": {
@@ -4391,6 +4493,256 @@
         ],
         "title": "CoverageRow"
       },
+      "Crossing": {
+        "properties": {
+          "bridge": {
+            "type": "string",
+            "title": "Bridge",
+            "description": "The bridge, as its label names it"
+          },
+          "bridge_address": {
+            "type": "string",
+            "title": "Bridge Address",
+            "description": "The bridge wallet the deposit went into"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "followed",
+              "not_traced",
+              "unresolved"
+            ],
+            "title": "Status"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "Why it was not followed"
+          },
+          "source_chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Source Chain"
+          },
+          "source_tx": {
+            "type": "string",
+            "title": "Source Tx",
+            "description": "The deposit transaction, on source_chain"
+          },
+          "asset_in": {
+            "type": "string",
+            "title": "Asset In"
+          },
+          "amount_in": {
+            "type": "number",
+            "title": "Amount In",
+            "description": "The whole deposit"
+          },
+          "traced_in": {
+            "type": "number",
+            "title": "Traced In",
+            "description": "The part of it that is the suspect wallet's money"
+          },
+          "dest_chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Chain",
+            "description": "Set when the money came out on a chain this tool reads"
+          },
+          "dest_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dest Name",
+            "description": "The destination as it is said"
+          },
+          "recipient": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient"
+          },
+          "payout_tx": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Tx",
+            "description": "On the destination chain"
+          },
+          "paid_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid By",
+            "description": "The address that paid the recipient in payout_tx (a contract of the bridge)"
+          },
+          "asset_out": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Out"
+          },
+          "amount_out": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Out",
+            "description": "What the recipient received in payout_tx, read on the destination chain. It can be less than the bridge quotes"
+          },
+          "traced_out": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traced Out",
+            "description": "The followed part of amount_out"
+          },
+          "fee": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee",
+            "description": "traced_in - traced_out: what the crossing cost. Counted as a fee in where_funds_went, never as missing money"
+          },
+          "seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds",
+            "description": "From the deposit to the payout"
+          },
+          "deposited_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deposited At"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At"
+          },
+          "matched_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched By",
+            "description": "Who says the two transactions belong together: the host of the bridge's index"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "bridge",
+          "bridge_address",
+          "status",
+          "source_chain",
+          "source_tx",
+          "asset_in",
+          "amount_in",
+          "traced_in"
+        ],
+        "title": "Crossing",
+        "description": "One deposit into a bridge and what became of it (G4).\n\n`followed`: the bridge's index matched the deposit to a payout, the payout was read\non the destination chain and the trace goes on from the recipient. `not_traced`:\nmatched (chain, recipient and payout transaction are set), but the trace could not go\non there; `reason` says why. `unresolved`: no match; the trail ends at the bridge."
+      },
       "Dashboard": {
         "properties": {
           "counts": {
@@ -5119,7 +5471,8 @@
               "not_moved",
               "not_followed",
               "returned",
-              "fee"
+              "fee",
+              "bridge_fee"
             ],
             "title": "Kind"
           },
@@ -5336,6 +5689,41 @@
             ],
             "title": "Direction",
             "default": "outbound"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "The chain tx_hash is on. null on cases stored before G4: the case's chain"
+          },
+          "bridge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Crossing"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on a cross-chain edge: source is the bridge wallet, target the recipient on the destination chain, tx_hash the payout transaction"
           }
         },
         "additionalProperties": false,
@@ -5356,7 +5744,19 @@
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "The address"
+            "description": "The address; for a wallet the money reached on another chain, `chain:address` (an EVM address is the same string on every EVM chain)"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address",
+            "description": "The plain address. null on cases stored before G4, where it equals id"
           },
           "chain": {
             "type": "string",
@@ -5521,6 +5921,63 @@
             "type": "string",
             "title": "To Address"
           },
+          "from_chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Chain",
+            "description": "null on cases stored before G4"
+          },
+          "to_chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Chain"
+          },
+          "bridge": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Crossing"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "tx_hash": {
             "type": "string",
             "title": "Tx Hash"
@@ -5586,7 +6043,7 @@
           "block_time"
         ],
         "title": "Hop",
-        "description": "One step on the Hop Rail: money moved from `from_address` to `to_address`."
+        "description": "One step on the Hop Rail: money moved from `from_address` to `to_address`. On a\ncross-chain step `bridge` is set: `from_address` is the bridge wallet on `from_chain`,\n`to_address` the recipient on `to_chain`, and `tx_hash` the payout transaction."
       },
       "LabelCoverage": {
         "properties": {
@@ -7748,7 +8205,19 @@
           "amount": {
             "type": "number",
             "title": "Amount",
-            "description": "Traced funds through this wallet, in the case's asset"
+            "description": "Traced funds through this wallet, in `asset`"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset",
+            "description": "The asset that reached address. null on cases stored before G4: the case's asset. Over a bridge it can differ from the case's (USDT in, USDC out)"
           },
           "paid_into": {
             "anyOf": [
@@ -7794,6 +8263,30 @@
               }
             ],
             "title": "Label"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "The chain address is on, when the money reached it over a bridge. null: the case's chain"
           },
           "reached_at": {
             "type": "string",
@@ -8790,6 +9283,30 @@
           "wallet": {
             "type": "string",
             "title": "Wallet"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "tron",
+                  "ethereum",
+                  "bsc",
+                  "polygon",
+                  "arbitrum",
+                  "base",
+                  "optimism",
+                  "avalanche",
+                  "bitcoin",
+                  "solana"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "The chain wallet is on. null: the case's chain"
           },
           "text": {
             "type": "string",

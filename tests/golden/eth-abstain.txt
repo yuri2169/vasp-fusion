@@ -163,8 +163,8 @@ vaspfusion.cli verify eth-abstain
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         f4ca080dbf04008b5a9fb382614b8d5cf7fbcf415ede37bab63c3b6ac9c0e41a
-  Receipt SHA-256         abf81de1f833a610fe220f5a830dc4f76a10aa3fc0f3c755198e41d89df2d385
+  Content SHA-256         1fc325af2798a4277bed1e603026cde94a15292cdcb1911b3ddeca948e07d043
+  Receipt SHA-256         08b56be617dc187dc698357518c17e54cbbdeb5f043ffd8bddc072c729c441d7
 
   Chain responses read
     d1cf3197bedffbb9da89547235bed857d685ed9e4b806eaf4faa85e912d7de9d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1712267195

@@ -34,7 +34,7 @@ from ..detect.typologies import ALERT_CATEGORIES, typology_flags
 from ..explain import fmt
 from ..labels.lookup import Label
 from ..labels.normalize import VASP_CATEGORIES
-from ..trace import ZERO, TraceEdge, TraceNode, TraceResult
+from ..trace import ZERO, Crossing, TraceEdge, TraceNode, TraceResult
 
 TIER_WEIGHT = {"published_por": 0.95, "curated": 0.85, "explorer_tag": 0.75, "derived": 0.6}
 UNROUTABLE = "Unidentified exchange"
@@ -79,6 +79,21 @@ def _model_items(address: str, label) -> list[dict]:
         {"kind": "model", "tier": None, "tx_hashes": [], "weight": r["weight"],
          "text": f"Deposit-address model, {'for' if r['weight'] >= 0 else 'against'}: "
                  f"{_it(r['text'])}"} for r in m["reasons"]]
+
+
+def crossing_words(leg: Crossing) -> str:
+    """A followed bridge leg as a sentence: what went in, what came out, where, how
+    fast, and who says the two belong together."""
+    src, dst = fmt.chain_name(leg.deposit.chain), fmt.chain_name(leg.payout.chain)
+    took = int((leg.payout.block_time - leg.deposit.block_time).total_seconds())
+    return (f"Crossed from {src} to {dst} through the {leg.entity} bridge: "
+            f"{fmt.amount(leg.deposit.amount, leg.deposit.asset)} went in and "
+            f"{fmt.amount(leg.payout.amount, leg.payout.asset)} was paid out to "
+            f"{fmt.short(leg.payout.to_addr)}"
+            + (f" {fmt.duration(took)} later" if took >= 0 else "")
+            + f". The two transactions are matched by the bridge's own index "
+              f"({leg.hop.source}); the amount paid out is read from the payout transaction "
+              f"on {dst}")
 
 
 def _label_words(label) -> str:
@@ -173,6 +188,8 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
         last_hop = edges[-1].transfer.from_addr
 
     verb = "reached it" if side == "outbound" else "came from it"
+    # over a bridge a stablecoin may arrive as another one: the sum is in what arrived
+    arrived = edges[-1].transfer.asset
     evidence = [{
         "kind": "label", "tier": main.label.tier, "tx_hashes": [],
         "weight": label_weight(main.label),
@@ -182,11 +199,14 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
     }, *_model_items(main.address, main.label), {
         "kind": "path", "tier": None, "tx_hashes": [e.transfer.tx_hash for e in edges],
         "weight": round(confidence / label_weight(main.label), 4),
-        "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, asset)}) {verb} "
-                f"in {fmt.hops(hops_min, hops_max)}"
+        "text": f"{fmt.pct(share)} of the wallet's {asset} ({fmt.amount(amount, arrived)}) "
+                f"{verb} in {fmt.hops(hops_min, hops_max)}"
                 + (f" within {fmt.duration(took)}" if len(edges) > 1 and hops_max == hops_min
                    else ""),
     }]
+    evidence += [{"kind": "path", "tier": None, "weight": None,
+                  "tx_hashes": [e.crossing.deposit.tx_hash, e.transfer.tx_hash],
+                  "text": crossing_words(e.crossing)} for e in edges if e.crossing is not None]
     passed_all = False
     if last_hop is not None:
         node = tr.nodes[(side, last_hop)]
@@ -200,7 +220,7 @@ def _candidate(tr: TraceResult, side: str, vasp: str, entries: list[TraceNode],
             evidence.append({
                 "kind": "path", "tier": None, "weight": None,
                 "tx_hashes": sorted({e.transfer.tx_hash for e in onward}),
-                "text": f"{fmt.short(last_hop)} passed on all {fmt.amount(passed, asset)} it "
+                "text": f"{fmt.short(last_hop)} passed on all {fmt.amount(passed, arrived)} it "
                         f"received from this trail to {vasp}"
                         + (f", within {fmt.duration(wait)}" if len(onward) == 1 else ""),
             })
@@ -242,6 +262,7 @@ def _request_wallets(tr: TraceResult, entries: list[TraceNode]) -> list[dict]:
         ordered = sorted(arrivals + ([] if arrivals is edges else edges),
                          key=lambda e: (e.transfer.block_time, e.transfer.tx_hash))
         return {"address": address, "amount": sum((e.traced for e in edges), ZERO),
+                "asset": edges[0].transfer.asset,
                 "paid_into": paid_into, "tier": label.tier, "kind": label.kind,
                 "label": label.label,
                 "reached_at": min(e.transfer.block_time for e in arrivals),
@@ -328,20 +349,38 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
                        if side == "outbound" and n.holds.get(reason, ZERO) > 0),
                       key=lambda n: (-n.holds[reason], n.address))
 
+    # what crossed a bridge and was followed on the other side
+    crossed: dict[tuple[str, str], Decimal] = {}
+    for leg in tr.crossings:
+        if leg.status == "followed":
+            key = (leg.entity, fmt.chain_name(leg.payout.chain))
+            crossed[key] = crossed.get(key, ZERO) + leg.traced_in
+    for (entity, chain), went in sorted(crossed.items(), key=lambda kv: (-kv[1], kv[0])):
+        said.append(f"{fmt.pct(went / total)} crossed to {chain} through the {entity} bridge "
+                    "and was followed there")
+
     other: dict[str, Decimal] = {}
     for (side, _), n in tr.nodes.items():
-        if side == "outbound" and n.label is not None and n.held > 0 \
+        stayed = n.held - n.holds.get("bridge_fee", ZERO)     # a bridge's fee is said below
+        if side == "outbound" and n.label is not None and stayed > 0 \
                 and n.label.category not in VASP_CATEGORIES:
             key = {"bridge": "a bridge", "defi": "a DeFi contract", "sanctioned":
                    "a sanctioned address", "mixer": "a mixer", "scam": "an address listed as a "
                    "scam"}.get(n.label.category, "a named wallet that is not an exchange")
             key = f"{key} ({n.label.entity})"
-            other[key] = other.get(key, ZERO) + n.held
+            other[key] = other.get(key, ZERO) + stayed
     for key, held in sorted(other.items(), key=lambda kv: (-kv[1], kv[0])):
         said.append(f"{fmt.pct(held / total)} went into {key}")
         if key.startswith("a bridge"):
-            change.append(f"Following the funds across the bridge ({key[10:-1]}) onto the "
-                          "destination chain")
+            entity = key[10:-1]
+            matched = sorted({(c.hop.dest_name, c.hop.recipient) for c in tr.crossings
+                              if c.entity == entity and c.status == "not_traced"})
+            change += [f"Tracing {fmt.short(recipient)} on {fmt.chain_name(chain)}, where the "
+                       f"{entity} bridge paid out" for chain, recipient in matched]
+            if any(c.entity == entity and c.status == "unresolved" for c in tr.crossings) \
+                    or not any(c.entity == entity for c in tr.crossings):
+                change.append(f"Following the funds across the bridge ({entity}) onto the "
+                              "destination chain")
 
     phrases = {
         "hub": ("stopped at unlabelled high-activity wallets, where funds from many senders mix",
@@ -359,6 +398,9 @@ def _where_it_stopped(tr: TraceResult) -> tuple[list[str], list[str]]:
         "error": ("is in wallets whose transfers could not be fetched",
                   "Fetching {a} again ({p} of the funds; the request failed)"),
         "returned": ("came back to the wallet itself", None),
+        "bridge_fee": ("was kept by the bridge as its fee", None),
+        "asset_changed": ("arrived in a second asset at a wallet that was already followed "
+                          "in another", None),
         # Bitcoin only (chains/btc.py): transactions the money cannot be followed through
         "pooled": ("was spent together with other addresses' coins in transactions that "
                    "paid several addresses, so which of them it paid cannot be told",
@@ -442,10 +484,35 @@ def _bridge_steps(tr: TraceResult, flags: list[dict]) -> list[str]:
                       and n.label.category == "bridge" and n.received > 0),
                      key=lambda n: (-n.received, n.address))
     for node in bridges:
-        f = {"tx_hashes": sorted({e.transfer.tx_hash
-                                  for e in tr.edges_into("outbound", node.address)})}
+        legs = [c for c in tr.crossings if c.bridge_wallet == node.address]
+        # matched, but the trace could not go on where the money came out: name the place
+        places: dict[tuple[str, str, str], list[Crossing]] = {}
+        for c in legs:
+            if c.status == "not_traced":
+                places.setdefault((c.hop.dest_name, c.hop.recipient, c.reason), []).append(c)
+        for (chain, recipient, reason), group in sorted(places.items()):
+            went = sum((c.traced_in for c in group), ZERO)
+            payouts = sorted({c.hop.payout_tx for c in group})
+            steps.append(
+                f"Trace {recipient} on {fmt.chain_name(chain)}: the "
+                f"{fmt.amount(went, group[0].deposit.asset)} that went into the "
+                f"{node.label.entity} bridge at {fmt.short(node.address)} was paid out to it "
+                f"({'transaction' if len(payouts) == 1 else 'transactions'} "
+                f"{', '.join(payouts[:3])}{', …' if len(payouts) > 3 else ''}; matched by "
+                f"{group[0].hop.source}). It was not followed there because {reason}")
+        if legs:
+            unmatched = [c for c in legs if c.status == "unresolved"]
+            if not unmatched:
+                continue
+            went = sum((c.traced_in for c in unmatched), ZERO)
+            f = {"tx_hashes": sorted({c.deposit.tx_hash for c in unmatched})}
+            asset = unmatched[0].deposit.asset
+        else:
+            went, asset = node.received, tr.asset
+            f = {"tx_hashes": sorted({e.transfer.tx_hash
+                                      for e in tr.edges_into("outbound", node.address)})}
         steps.append(
-            f"Follow the {fmt.amount(node.received, tr.asset)} that went into the "
+            f"Follow the {fmt.amount(went, asset)} that went into the "
             f"{node.label.entity} bridge at {fmt.short(node.address)} onto the destination "
             "chain: a bridge is not an exchange and holds no customer account, so no request "
             "is drafted for it. The bridge "
@@ -493,9 +560,19 @@ def attribute(tr: TraceResult, cfg: RuleConfig = RuleConfig()) -> Attribution:
         # a cluster label says the exchange controls the address, not that it is one
         # customer's deposit address
         whose = "the account that received the funds at" if by_cluster else "the account behind"
+        part = "" if c is top else f" ({fmt.pct(c.share)} of the funds)"
+        if c.category == "swap_service":
+            # an instant-swap service pays out from its own pool, often on another chain:
+            # the payout cannot be matched on-chain, but the service knows it
+            att.next_steps.append(
+                f"Draft a request to {c.vasp} for the swap order paid in at {fmt.short(where)}"
+                f"{part}: the payout chain, address and transaction, and what it holds on "
+                f"the customer. {c.vasp} is a swap service: it took custody of the funds and "
+                "paid out from its own pool, so the trail cannot be followed past it on-chain")
+            continue
         att.next_steps.append(
             f"Draft a request to {c.vasp} for KYC and a freeze on {whose} "
-            f"{fmt.short(where)}" + ("" if c is top else f" ({fmt.pct(c.share)} of the funds)"))
+            f"{fmt.short(where)}" + part)
     if clearing:
         att.next_steps.append("Preserve the transaction records listed in the evidence")
     for c in cands:
