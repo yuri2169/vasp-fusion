@@ -115,11 +115,11 @@
       "section": "The system may additionally support",
       "text": "cross-chain transaction mapping",
       "status": "partly",
-      "what": "A bridge or a swap service on the path is detected, flagged and counted in the risk score.",
+      "what": "A deposit into the Across bridge is matched to its payout by the bridge's own public index, the amount is read from the payout transaction on the destination chain, and the trace goes on from the recipient there with the same rules; the crossing counts as a hop and its cost as a fee. The recorded wallet is followed from Ethereum onto Base. A swap service on the path is named as a VASP and its request asks for the payout chain, address and transaction.",
       "where": "/cases",
       "evidence_kind": "test",
-      "evidence": "tests/test_typologies.py::test_label_flags_come_first_and_keep_their_figures",
-      "gap": "The trace stops at the bridge. The funds are not followed onto the other chain.",
+      "evidence": "tests/test_demo_cases.py::test_eth_wallet_whose_money_went_into_a_bridge_is_followed_onto_base",
+      "gap": "Only Across deposits are matched. Stargate / LayerZero, Wormhole, Hop and the rollups' own bridges are recognised and flagged, and the trail ends there with the transaction to follow by hand. A payout in another asset than the deposit (a stablecoin paid out as ETH) is named but not followed. A swap service's payout cannot be matched on-chain at all: it is asked for.",
       "computed": false
     },
     {

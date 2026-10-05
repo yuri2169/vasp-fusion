@@ -84,7 +84,7 @@ The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, th
 make labels          # once: the image bakes data/labels.duckdb in
 make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
 make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
-make docker-smoke    # 79 checks in a throwaway container started with --network none
+make docker-smoke    # 80 checks in a throwaway container started with --network none
 UI=build make docker # the same image with the interface compiled in (what the demo uses)
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
@@ -292,7 +292,7 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 ```
 - **One asset is followed:** the stablecoin the wallet sent most of, else the native coin. Unknown tokens are never followed (this is what keeps address-poisoning spoofs out). Whatever else the wallet sent is listed as "not followed".
 - **Allocation, "first out after arrival":** money that reached a wallet at time *t* is assigned to that wallet's next outgoing transfers at or after *t*, in time order. So every unit the wallet sent ends in exactly one place, and the case says where: an exchange, a sanctioned address, a hub, past the hop limit, or not moved.
-- **Stops** at any labelled address, at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
+- **Stops** at any labelled address (a bridge it can match is the exception: see "Across a bridge"), at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
 - **Chains:** Tron, Bitcoin, Solana, and the EVM chains with a free data source (Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below. **The deposit-address model scores Tron only and the naming bar was measured on Tron only:** on every other chain an answer rests on labels and tracing rules, its confidence is marked "rule confidence", and the case file and the case page say the bar has not been measured on that chain.
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
 - **Confidence:** the average over the traced money of *label weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Label weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75; a derived deposit address weighs its own confidence. A VASP is named at 0.60 or more.
@@ -300,6 +300,18 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 - **Outcomes:** `ATTRIBUTED` · `INSUFFICIENT_EVIDENCE` (with the reason and what would change it) · `SANCTIONED_OR_MIXER_REACHED` (1% or more of the funds reached a sanctioned or mixer label).
 - Demo wallets are real addresses chosen for their on-chain shape; nothing alleges wrongdoing by their owners. Their traces are recorded in `tests/fixtures/demo/` (`scripts/record_demo_fixtures.py`) and replay with no network.
 - Offline replay must pick the same EVM backend as the run that filled the cache: set `ETHERSCAN_API_KEY` to any non-empty value (it is never sent when `OFFLINE=1`).
+
+## Across a bridge
+A bridge takes money in on one chain and pays it out on another, in two transactions that do not refer to each other. When traced money reaches a wallet labelled as a bridge:
+- **The match comes from the bridge's own public index, asked by the deposit transaction** (`vaspfusion/chains/bridges.py`, one `BridgeResolver` per family). Built: **Across** (`app.across.to/api/deposit`, no key). The answer is cached like any chain response, "not found" included, so `OFFLINE=1` replays it.
+- **The amount is read on the destination chain**, from the payout transaction in the recipient's own transfers, not from the bridge. On the recorded wallet Across' index quotes 7,796.88 USDC for a deposit of 7,800 USDT; 7,777.39 USDC arrived, because the deposit's message pays a third party on arrival.
+- **The payout is a cross-chain edge** from the bridge wallet to the recipient, one hop further out, and the trace goes on from the recipient with the same rules, hop limit and budget. What went in and did not come out is the cost of the crossing: it is a `bridge_fee` slice, never missing money.
+- **A wallet on another chain has the id `chain:address`**, because an EVM address is the same string on every EVM chain (on the recorded wallet the recipient on Base is the suspect's own address). Every address the officer reads is the plain address with its chain said in words.
+- **Followed only when it is the same money:** stablecoin to stablecoin, or the same asset. A deposit paid out in another asset is matched, named with its recipient and payout transaction, and not followed.
+- **Not matched, or matched to a chain no adapter reads:** the trail ends at the bridge as before, and the next step names what to follow (for a matched one: the chain, the recipient and the payout transaction).
+- **Not built:** Stargate / LayerZero, Wormhole, Hop and the rollups' own bridges. LayerZero Scan and Wormholescan both answered without a key on 5 Oct 2026; no resolver reads them yet.
+- **Swap services** (FixedFloat, ChangeNOW, SideShift and others, 289 labels) take custody and pay out from a pool, so there is no payout to match. Reaching one is reaching a VASP: it is named, and its request asks for the payout chain, address and transaction.
+- Recorded: `eth-bridge` (`0x2102…f364b0`), two Across deposits followed from Ethereum onto Base. No exchange is reached within 3 hops and the case says so.
 
 ## Bitcoin
 A Bitcoin transaction has many inputs and many outputs and does not record which input paid which output. So an address's coins are followed through a transaction only where that question has one answer, and are otherwise counted as not followed. Nothing is guessed.

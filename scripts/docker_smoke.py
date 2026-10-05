@@ -153,6 +153,17 @@ class Smoke:
             ok(f"{spec['id']}: verified from the cache ({len(verify.get('checks', []))} checks)",
                s == 200 and verify["matches"] is True, (s, verify))
 
+        # a bridge deposit followed onto another chain, from the recorded answers alone
+        s, _, bridged = api.call("GET", "/api/cases/eth-bridge")
+        legs = [x for x in bridged.get("crossings", []) if x["status"] == "followed"] \
+            if s == 200 else []
+        ok(f"eth-bridge: {len(legs)} Across deposits are followed from Ethereum onto Base, "
+           "with no network",
+           s == 200 and bridged["chains"] == ["ethereum", "base"] and len(legs) == 2
+           and all(x["matched_by"] == "app.across.to" and x["dest_chain"] == "base"
+                   and bridged["tx_chains"].get(x["payout_tx"]) == "base" for x in legs),
+           (s, bridged.get("chains") if s == 200 else bridged))
+
         s, headers, pdf = api.call("GET", f"/api/cases/{hero['id']}/pdf")
         ok(f"the case file of {hero['id']} is a PDF ({len(pdf):,} bytes)",
            s == 200 and pdf[:5] == b"%PDF-" and hero["address"].encode() in pdf
