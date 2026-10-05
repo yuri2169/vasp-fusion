@@ -22,6 +22,7 @@ import json
 import os
 import re
 import threading
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
@@ -40,8 +41,9 @@ from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..screening import screen
 from ..store.audit import AuditLog
 from ..store.cases import SUMMARY_KEYS, CaseStore
+from ..store.queue import JobQueue, worker_name
 from .. import risk as R
-from ..trace import TraceConfig
+from ..trace import DEFAULT_WALLETS, TraceConfig
 from . import schemas as S
 from . import security
 
@@ -422,17 +424,63 @@ def _note_progress(case_id: str, snapshot: dict) -> None:
         _PROGRESS[case_id] = snapshot
 
 
+# ------------------------------------------------------------------ the trace queue (G5)
+# Every trace is a row in the queue (store/queue.py, a table in the case store) before it
+# runs, so a restart loses nothing that was waiting. Who runs it depends on WORKERS:
+# 0 (the default): this process, after the request has answered, one at a time;
+# n > 0: n worker processes (workers.py) that claim jobs from the same table.
+WORKERS: int | None = None       # None = VASPFUSION_WORKERS, else 0
+SHARE_PROGRESS = False           # True in a worker process: progress goes to the queue row
+_POOL = None                     # the running WorkerPool, when this server started one
+
+
+def _queue() -> JobQueue:
+    return JobQueue(CASE_DB)
+
+
+def pool_size() -> int:
+    if WORKERS is not None:
+        return max(0, WORKERS)
+    try:
+        return max(0, int(os.environ.get("VASPFUSION_WORKERS", "0") or 0))
+    except ValueError:
+        return 0
+
+
+def _tracing(case_id: str) -> bool:
+    """Is the case waiting for a trace or being traced, here or in a worker?"""
+    with _ACTIVE_LOCK:
+        if case_id in _ACTIVE:
+            return True
+    return _queue().active(case_id)
+
+
 def _run_case(case_id: str, max_hops: int, incident: datetime | None,
-              previous: dict | None = None) -> None:
-    """Trace the wallet and store the result. Runs after the POST has answered.
-    `previous` is the finished case being refreshed: it is kept if the new run fails."""
+              previous: dict | None = None, budget: dict | None = None,
+              stats: dict | None = None, tell=None) -> str | None:
+    """Trace the wallet and store the result. `previous` is the finished case being
+    refreshed: it is kept if the new run fails. `budget` is the officer's (max_wallets,
+    max_seconds); `stats`, when given, is filled with what the run read; `tell` is also
+    told the progress. Returns the error, or None when the case was stored."""
+    fetcher = None
+    last: dict = {}
+
+    def note(snapshot: dict) -> None:
+        last.update(snapshot)
+        _note_progress(case_id, snapshot)
+        if tell is not None:
+            tell(snapshot)
+
     try:
         store = _cases()
         queued = store.get(case_id)
         store.set_status(case_id, "running")
         _note_progress(case_id, dict(_NOTHING_READ))
         fetcher = make_fetcher()
-        cfg = TraceConfig(max_hops=max_hops, since=incident)
+        budget = budget or {}
+        cfg = TraceConfig(max_hops=max_hops, since=incident,
+                          max_nodes=budget.get("max_wallets") or DEFAULT_WALLETS,
+                          max_seconds=budget.get("max_seconds"))
         provider = trace_provider(queued["chain"], fetcher, cfg)
         with LabelStore(LABEL_DB) as labels:
             detail = run_case(
@@ -440,9 +488,15 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
                 meta=queued, cfg=cfg, fetcher=fetcher, label_db_sha256=label_db_sha256(),
                 now=datetime.fromisoformat(queued["created_at"].replace("Z", "+00:00")),
                 demo=bool(queued.get("demo")),      # a demo wallet traced again is still one
-                on_progress=lambda snapshot: _note_progress(case_id, snapshot))
+                on_progress=note)
         store.save(detail)
+        if stats is not None:
+            stats.update(transfers_read=last.get("transfers_read", 0),
+                         wallets_read=last.get("wallets_read", 0),
+                         transfers=len(detail["graph"]["edges"]),
+                         pages=detail["provenance"].get("pages") or 0)
         _notify_sahyog(case_id)
+        return None
     except Exception as e:  # noqa: BLE001 - whatever went wrong, the case must say so
         why = f"{type(e).__name__}: {e}"[:500]
         try:
@@ -454,10 +508,137 @@ def _run_case(case_id: str, max_hops: int, incident: datetime | None,
                 _cases().set_status(case_id, "failed", error=why)
         except Exception:  # noqa: BLE001 - the store itself is down; nothing more to record
             pass
+        return why
     finally:
+        if fetcher is not None:
+            try:
+                fetcher.close()             # a replay holds the cache file open until here
+            except Exception:  # noqa: BLE001
+                pass
         with _ACTIVE_LOCK:
             _ACTIVE.discard(case_id)
             _PROGRESS.pop(case_id, None)
+
+
+def _peak_mb() -> float | None:
+    """This process's peak resident memory, in MB (None where it cannot be read)."""
+    try:
+        import resource
+        import sys
+        peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        return round(peak / (1 << 20 if sys.platform == "darwin" else 1 << 10), 1)
+    except Exception:  # noqa: BLE001 - not on this platform
+        return None
+
+
+def work_one(case_id: str | None = None, worker: str | None = None) -> bool:
+    """Claim one job from the queue (the named case's, or the oldest) and trace it.
+    False when there was nothing to claim. The request's background task, the start-up
+    drain and the worker processes all come through here."""
+    queue = _queue()
+    worker = worker or worker_name()
+    job = queue.claim(worker, case_id)
+    if job is None:
+        if case_id is not None:
+            with _ACTIVE_LOCK:
+                _ACTIVE.discard(case_id)
+        return False
+    cid, params = job["case_id"], job["params"]
+    with _ACTIVE_LOCK:
+        _ACTIVE.add(cid)
+    previous = None
+    if params.get("previous_created_at"):       # a refresh: the stored case is the old result
+        stored = _cases().get(cid)
+        if stored is not None:
+            previous = {**stored, "status": "done", "error": None,
+                        "created_at": params["previous_created_at"]}
+    since = params.get("since")
+    incident = datetime.fromisoformat(since) if since else None
+    stats: dict = {}
+    told = [0.0]
+
+    def tell(snapshot: dict) -> None:           # at most twice a second: it is a write
+        if SHARE_PROGRESS and time.monotonic() - told[0] >= 0.5:
+            told[0] = time.monotonic()
+            try:
+                queue.beat(cid, worker, progress=snapshot)
+            except Exception:  # noqa: BLE001 - a watcher's view is not the trace's problem
+                pass
+
+    started, error = time.perf_counter(), "the worker stopped"
+    try:
+        with queue.working(cid, worker):
+            error = _run_case(cid, params.get("max_hops", 3), incident, previous,
+                              {k: params.get(k) for k in ("max_wallets", "max_seconds")},
+                              stats, tell)
+    finally:
+        stats["seconds"] = round(time.perf_counter() - started, 4)
+        stats["peak_mb"] = _peak_mb()
+        try:
+            queue.finish(cid, worker, "failed" if error else "done", stats=stats, error=error)
+        except Exception:  # noqa: BLE001 - the store is down; the job will be taken again
+            pass
+        with _ACTIVE_LOCK:
+            _ACTIVE.discard(cid)
+            _PROGRESS.pop(cid, None)
+    return True
+
+
+def recover() -> tuple[list[str], list[str]]:
+    """Queue again the jobs whose worker died; a case that has killed its worker three
+    times is marked failed. Returns (requeued, failed)."""
+    again, failed = _queue().requeue_stale()
+    for cid in failed:
+        try:
+            _cases().set_status(cid, "failed", error="The trace stopped three times before it "
+                                "finished. Trace the wallet again, or with a smaller budget.")
+        except Exception:  # noqa: BLE001
+            pass
+    return again, failed
+
+
+def drain() -> int:
+    """Trace everything that is queued, in this process. Returns how many it traced."""
+    done = 0
+    while work_one():
+        done += 1
+    return done
+
+
+@app.on_event("startup")
+def _start_workers() -> None:
+    """Pick up what a previous run left queued or half-traced, then start the workers
+    (or, with none configured, trace the leftovers here)."""
+    global _POOL
+    try:
+        recover()
+        n = pool_size()
+        if n:
+            from ..workers import WorkerPool
+            _POOL = WorkerPool(n, env=worker_env()).start()
+        elif _queue().queued_ids():
+            threading.Thread(target=drain, daemon=True).start()
+    except Exception:  # noqa: BLE001 - a store that is not there yet must not stop the server
+        pass
+
+
+@app.on_event("shutdown")
+def _stop_workers() -> None:
+    global _POOL
+    if _POOL is not None:
+        _POOL.stop()
+        _POOL = None
+
+
+def worker_env() -> dict:
+    """The environment a worker process needs to open the stores this server uses."""
+    env = dict(os.environ)
+    for name, value in (("VASPFUSION_CASE_DB", CASE_DB), ("VASPFUSION_DESK_DB", DESK_DB),
+                        ("VASPFUSION_SAHYOG_OUTBOX", OUTBOX),
+                        ("VASPFUSION_LABEL_DB", LABEL_DB)):
+        if value is not None:
+            env[name] = str(value)
+    return env
 
 
 @app.post("/api/cases", response_model=S.CaseSummary, status_code=202)
@@ -484,11 +665,12 @@ def _start_case(chain: str, address: str, body: S.CaseCreate, background: Backgr
     the SAHYOG intake both come through here, so a case is the same however it began."""
     if not Path(LABEL_DB).exists():
         raise HTTPException(503, "The label database is missing. Run `make labels` first.")
-    store = _cases()
+    store, queue = _cases(), _queue()
     existing = store.find(chain, address)
     cid = existing["id"] if existing else case_id_for(chain, address)
+    waiting = existing is not None and queue.active(cid)     # queued, or a worker has it
     with _ACTIVE_LOCK:
-        tracing = cid in _ACTIVE
+        tracing = cid in _ACTIVE or waiting
         finished = existing is not None and existing["status"] == "done"
         if existing and (tracing or (finished and not refresh)):
             return {k: existing.get(k) for k in SUMMARY_KEYS}
@@ -515,15 +697,28 @@ def _start_case(chain: str, address: str, body: S.CaseCreate, background: Backgr
         else:
             previous = None
             store.save(skeleton(summary))
+        incident = None
+        if body.incident_date is not None:
+            incident = datetime(body.incident_date.year, body.incident_date.month,
+                                body.incident_date.day, tzinfo=timezone.utc)
+        # the default budget is left out, so a job says only what the officer changed
+        params = {"max_hops": body.max_hops,
+                  "since": incident.isoformat() if incident else None,
+                  "previous_created_at": existing["created_at"] if finished else None}
+        if body.max_wallets != DEFAULT_WALLETS:
+            params["max_wallets"] = body.max_wallets
+        if body.max_seconds is not None:
+            params["max_seconds"] = body.max_seconds
+        queue.enqueue(cid, params)
     except Exception:
         with _ACTIVE_LOCK:
             _ACTIVE.discard(cid)
         raise
-    incident = None
-    if body.incident_date is not None:
-        incident = datetime(body.incident_date.year, body.incident_date.month,
-                            body.incident_date.day, tzinfo=timezone.utc)
-    background.add_task(_run_case, cid, body.max_hops, incident, previous)
+    if pool_size():             # a worker process will claim it
+        with _ACTIVE_LOCK:
+            _ACTIVE.discard(cid)
+    else:
+        background.add_task(work_one, cid)
     return summary
 
 
@@ -546,6 +741,150 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
             and (status is None or c["status"] == status) and touches(c)]
     _source(response, "live" if not demo_mode() else "mixed" if live else "mock")
     return {"total": len(live) + len(mock), "items": live + mock}
+
+
+# ------------------------------------------------------------------ batch intake (G5)
+SCALE_METRICS = ROOT / "artifacts" / "scale" / "metrics.json"    # `make bench-scale`
+# What a finished case adds to a batch's result table, kept per (case, the time it was
+# traced): a batch is polled while it runs, and a finished case does not change.
+_ROW_RESULTS: dict[tuple[str, str], dict] = {}
+
+
+def _batches():
+    from ..store.batches import BatchStore
+    return BatchStore(CASE_DB)
+
+
+def _batch_view(head: dict, rows: list[dict]) -> dict:
+    """A stored batch with what its cases say now (`S.BatchDetail`)."""
+    from .. import batch as B
+    store = _cases()
+    heads = store.heads([r["case_id"] for r in rows if r.get("case_id")])
+    key = {cid: (cid, h["created_at"]) for cid, h in heads.items() if h["status"] == "done"}
+    need = [cid for cid, k in key.items() if k not in _ROW_RESULTS]
+    if need:
+        if len(_ROW_RESULTS) > 50_000:
+            _ROW_RESULTS.clear()
+        for cid, case in store.get_many(need).items():
+            _ROW_RESULTS[key[cid]] = B.case_result(case, R.summary(case))
+    table = [B.result_row(r, heads.get(r.get("case_id")),
+                          _ROW_RESULTS.get(key.get(r.get("case_id")))) for r in rows]
+    return {**head, "progress": B.progress(table), "workers": pool_size(),
+            "results_csv": f"/api/batches/{head['id']}/results.csv", "rows": table}
+
+
+def _batch_or_404(batch_id: str) -> dict:
+    found = _batches().get(batch_id) if _SAFE.match(batch_id) else None
+    if found is None:
+        raise HTTPException(404, f"No batch has the id {batch_id[:64]}. Open the batch list "
+                                 "to find it.")
+    return _batch_view(*found)
+
+
+@app.post("/api/cases/batch", response_model=S.BatchDetail, status_code=202)
+def create_batch(body: S.BatchCreate, request: Request, response: Response,
+                 background: BackgroundTasks):
+    """Many wallets at once. Every row is checked on its own: a row that cannot be
+    traced is reported with its reason and the others are queued. A wallet that already
+    has a finished case is linked to it, not traced again."""
+    import secrets
+
+    from pydantic import ValidationError
+
+    from .. import batch as B
+    if (body.rows is None) == (body.csv is None):
+        raise HTTPException(422, "Send the wallets as `rows` or as the text of a CSV file "
+                                 "in `csv`, not both and not neither.")
+    try:
+        given = B.parse_csv(body.csv) if body.csv is not None else [
+            {"row": i, "address": w.address.strip(), "chain": w.chain, "case_ref": w.case_ref}
+            for i, w in enumerate(body.rows, 1)]
+        B.check_size(given)
+    except B.BatchError as e:
+        raise HTTPException(422, str(e)) from None
+    if not Path(LABEL_DB).exists():
+        raise HTTPException(503, LABELS_MISSING)
+    _source(response, "live")
+    seen: dict[tuple[str, str], tuple[int, str]] = {}
+    rows = []
+    for g in given:
+        row = {"row": g["row"], "address": g["address"][:128], "chain": g["chain"],
+               "case_ref": (g["case_ref"] or "")[:120] or None}
+        rows.append(row)
+        if not g["address"]:
+            row["error"] = "This row has no address."
+            continue
+        try:
+            spec = S.CaseCreate(address=g["address"],
+                                chain=(g["chain"] or "").strip().lower() or None,
+                                case_ref=row["case_ref"], max_hops=body.max_hops,
+                                max_wallets=body.max_wallets, max_seconds=body.max_seconds)
+            chain, address = _resolve(spec)
+        except ValidationError:
+            row["error"] = (f"{str(g['chain'])[:32]} is not a chain this tool traces. "
+                            f"Supported chains: {', '.join(TRACEABLE)}.")
+            continue
+        except HTTPException as e:
+            row["error"] = e.detail
+            continue
+        row.update(address=address, chain=chain)
+        if (chain, address) in seen:
+            row["duplicate_of"], row["case_id"] = seen[(chain, address)]
+            continue
+        try:
+            summary = _start_case(chain, address, spec, background)
+        except HTTPException as e:
+            row["error"] = e.detail
+            continue
+        row["case_id"] = summary["id"]
+        seen[(chain, address)] = (g["row"], summary["id"])
+    head = {"id": "b-" + secrets.token_hex(5), "name": (body.name or "").strip() or None,
+            "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "created_by": _by(request), "max_hops": body.max_hops,
+            "max_wallets": body.max_wallets, "max_seconds": body.max_seconds}
+    _batches().save(head, rows)
+    _note(request, target=head["id"], rows=len(rows), accepted=len(seen))
+    return _batch_view(head, rows)
+
+
+@app.get("/api/batches", response_model=S.BatchList)
+def list_batches(response: Response):
+    _source(response, "live")
+    store = _batches()
+    items = []
+    for head in store.list():
+        view = _batch_view(*store.get(head["id"]))
+        items.append({k: v for k, v in view.items() if k != "rows"})
+    return {"total": len(items), "items": items}
+
+
+@app.get("/api/batches/{batch_id}/results.csv", response_class=Response,
+         responses={200: {"content": {"text/csv": {}}, "description": "The result table"}})
+def get_batch_csv(batch_id: str, request: Request):
+    """The result table as a CSV file: one line per uploaded row, in upload order."""
+    from .. import batch as B
+    view = _batch_or_404(batch_id)
+    text = B.to_csv(view["rows"], base_url=str(request.base_url).rstrip("/"))
+    return Response(text, media_type="text/csv; charset=utf-8", headers={
+        "Content-Disposition": f'attachment; filename="batch-{view["id"]}.csv"'})
+
+
+@app.get("/api/batches/{batch_id}", response_model=S.BatchDetail)
+def get_batch(batch_id: str, response: Response):
+    _source(response, "live")
+    return _batch_or_404(batch_id)
+
+
+@app.get("/api/scale", response_model=S.ScaleMetrics)
+def get_scale(response: Response):
+    """Measured throughput, read from the file `make bench-scale` writes. Not measured
+    on this installation = it says so; no figure is made up."""
+    _source(response, "live")
+    if not Path(SCALE_METRICS).exists():
+        return {"status": "not_measured",
+                "notes": ["Throughput has not been measured on this installation. "
+                          "`make bench-scale` measures it."]}
+    return {"status": "measured", **json.loads(Path(SCALE_METRICS).read_text())}
 
 
 # ------------------------------------------------------------------ case file, receipt, verify (B9)
@@ -598,6 +937,9 @@ def get_case(case_id: str, response: Response):
         if live["status"] in ("queued", "running"):
             with _ACTIVE_LOCK:
                 snapshot = _PROGRESS.get(case_id)
+            if snapshot is None and pool_size():    # a worker process is tracing it
+                job = _queue().get(case_id)
+                snapshot = job["progress"] if job and job["state"] == "running" else None
             if snapshot is not None:
                 live["progress"] = {**snapshot,
                                     "message": progress_sentence(live["chain"], snapshot)}
@@ -966,8 +1308,8 @@ def _watch_item(entry: dict, labels: LabelStore | None = None) -> dict:
     a wallet added before it had one becomes its baseline: it is not news."""
     from ..watch import snapshot, watch_item
     case = _cases().find(entry["chain"], entry["address"])
-    with _ACTIVE_LOCK:
-        tracing = case is not None and case["id"] in _ACTIVE
+    tracing = case is not None and case.get("status") in ("queued", "running") \
+        and _tracing(case["id"])
     if entry.get("baseline") is None and _finished(case) and not tracing:
         entry = {**entry, "baseline": snapshot(case)}
         _watch().save(entry)

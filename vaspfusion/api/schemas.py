@@ -147,6 +147,111 @@ class CaseCreate(_M):
         "Trace budget: stop reading new wallets after this many seconds"))
 
 
+# ------------------------------------------------------------------ batch intake (G5)
+class BatchWallet(_M):
+    address: str
+    chain: str | None = Field(None, description="Omit to auto-detect")
+    case_ref: str | None = None
+
+
+class BatchCreate(_M):
+    """Many wallets at once: `rows`, or the text of a CSV file in `csv` (columns address,
+    chain, case_ref; a header line is optional). At most 2,000 rows."""
+    name: str | None = Field(None, max_length=120, description="What the officer calls it")
+    rows: list[BatchWallet] | None = None
+    csv: str | None = Field(None, description="The CSV file's text")
+    max_hops: int = Field(3, ge=1, le=5)
+    max_wallets: int = Field(40, ge=1, le=2000)
+    max_seconds: float | None = Field(None, ge=1, le=3600)
+
+
+class BatchRow(_M):
+    """One uploaded row and what became of it."""
+    row: int = Field(description="Its number in the upload (a CSV's line number)")
+    address: str
+    chain: str | None = None
+    case_ref: str | None = None
+    accepted: bool
+    error: str | None = Field(None, description="Why the row was refused, or why its "
+                                               "trace failed")
+    duplicate_of: int | None = Field(None, description="The earlier row with the same wallet")
+    case_id: str | None = None
+    case_url: str | None = None
+    status: CaseStatus | None = None
+    outcome: Outcome | None = None
+    top_vasp: str | None = Field(None, description="The exchange the case names")
+    hops: int | None = Field(None, description="Proximity: hops to that exchange")
+    proximity_rank: int | None = None
+    share_of_funds: float | None = None
+    confidence: float | None = None
+    risk_class: RiskClass | None = None
+    budget_ended: bool = Field(False, description="The trace budget, not the evidence, "
+                                                 "ended this wallet's trace")
+
+
+class BatchProgress(_M):
+    total: int = Field(description="Rows uploaded")
+    accepted: int = Field(description="Wallets with a case (each wallet once)")
+    duplicates: int
+    refused: int
+    queued: int
+    running: int
+    done: int
+    failed: int
+    by_outcome: dict[str, int] = {}
+    finished: bool
+
+
+class BatchSummary(_M):
+    id: str
+    name: str | None = None
+    created_at: datetime
+    created_by: str | None = None
+    max_hops: int
+    max_wallets: int
+    max_seconds: float | None = None
+    progress: BatchProgress
+    workers: int = Field(description="Worker processes tracing the queue; 0 = traced one "
+                                     "at a time in the server process")
+    results_csv: str = Field(description="Where the result table downloads from")
+
+
+class BatchDetail(BatchSummary):
+    rows: list[BatchRow]
+
+
+class BatchList(_M):
+    total: int
+    items: list[BatchSummary]
+
+
+class ScaleRun(_M):
+    workers: int
+    cases: int
+    seconds: float
+    cases_per_minute: float
+    median_seconds_per_case: float
+    p95_seconds_per_case: float
+    transfers_per_second: float
+    peak_memory_mb: float | None = Field(None, description="Sum of every worker's peak")
+    speedup: float = Field(description="Cases per minute over the one-worker run's")
+
+
+class ScaleMetrics(_M):
+    """Measured throughput (`make bench-scale`, artifacts/scale/metrics.json)."""
+    status: Literal["measured", "not_measured"]
+    measured_on: str | None = None
+    machine: str | None = None
+    chain_data: str | None = Field(None, description="Where the chain responses came from")
+    wallets: int | None = Field(None, description="Distinct recorded wallets replayed")
+    runs: list[ScaleRun] = []
+    baseline: dict | None = Field(None, description="The same replay before the queue and "
+                                                    "the worker pool existed")
+    intake: dict | None = Field(None, description="Batch upload through the API, timed")
+    limits: list[str] = []
+    notes: list[str] = []
+
+
 class Screening(_M):
     """The check of the case's own address against the threat tags, made when the case
     is opened and before the trace starts."""

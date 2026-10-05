@@ -30,6 +30,11 @@ HEADERS = {"X-Content-Type-Options": "nosniff", "X-Frame-Options": "DENY",
 ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("POST", "/api/cases"): ("case.open", None),                # target set by the handler
     ("GET", "/api/cases"): ("case.list", None),
+    ("POST", "/api/cases/batch"): ("batch.upload", None),       # target set by the handler
+    ("GET", "/api/batches"): ("batch.list", None),
+    ("GET", "/api/batches/{batch_id}"): ("batch.view", "batch_id"),
+    ("GET", "/api/batches/{batch_id}/results.csv"): ("batch.export", "batch_id"),
+    ("GET", "/api/scale"): ("scale.view", None),
     ("GET", "/api/cases/{case_id}"): ("case.view", "case_id"),
     ("GET", "/api/cases/{case_id}.pdf"): ("case.export", "case_id"),
     ("GET", "/api/cases/{case_id}/pdf"): ("case.export", "case_id"),

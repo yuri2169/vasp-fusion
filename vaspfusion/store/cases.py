@@ -99,6 +99,32 @@ class CaseStore:
             row = con.execute("SELECT detail FROM cases WHERE id = ?", [case_id]).fetchone()
         return json.loads(row[0]) if row else None
 
+    def heads(self, case_ids: list[str]) -> dict[str, dict]:
+        """id -> {status, outcome, created_at, error} of many cases in one read, without
+        parsing any result (a batch of thousands is polled while it runs)."""
+        if not case_ids:
+            return {}
+        with self._con() as con:
+            con.execute("CREATE TEMP TABLE wanted (id VARCHAR)")
+            con.executemany("INSERT INTO wanted VALUES (?)", [[c] for c in set(case_ids)])
+            rows = con.execute(
+                "SELECT c.id, c.status, c.outcome, c.created_at, "
+                "json_extract_string(c.detail, '$.error') FROM cases c "
+                "JOIN wanted w ON w.id = c.id").fetchall()
+        return {r[0]: {"status": r[1], "outcome": r[2], "created_at": str(r[3]), "error": r[4]}
+                for r in rows}
+
+    def get_many(self, case_ids: list[str]) -> dict[str, dict]:
+        """id -> the whole case, for many cases in one read."""
+        if not case_ids:
+            return {}
+        with self._con() as con:
+            con.execute("CREATE TEMP TABLE wanted (id VARCHAR)")
+            con.executemany("INSERT INTO wanted VALUES (?)", [[c] for c in set(case_ids)])
+            rows = con.execute("SELECT c.id, c.detail FROM cases c "
+                               "JOIN wanted w ON w.id = c.id").fetchall()
+        return {r[0]: json.loads(r[1]) for r in rows}
+
     def find(self, chain: str, address: str) -> dict | None:
         """The newest case opened on this wallet, if any."""
         with self._con() as con:

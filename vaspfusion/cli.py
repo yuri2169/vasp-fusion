@@ -963,8 +963,20 @@ def cmd_audit(args) -> None:
 
 
 def cmd_serve(args) -> None:
+    import os
+
     import uvicorn
+    if args.workers is not None:            # the server starts them (api/main.py)
+        os.environ["VASPFUSION_WORKERS"] = str(args.workers)
     uvicorn.run("vaspfusion.api.main:app", host=args.host, port=args.port)
+
+
+def cmd_worker(args) -> None:
+    """One worker process: claim wallets from the trace queue and trace them."""
+    from .workers import run_worker
+    done = run_worker(args.n, drain=args.drain)
+    if args.drain:
+        print(f"worker {args.n}: traced {done} cases; the queue is empty")
 
 
 def cmd_openapi(args) -> None:
@@ -1184,7 +1196,17 @@ def main(argv: list[str] | None = None) -> None:
     s = sub.add_parser("serve", help="run the API")
     s.add_argument("--host", default="127.0.0.1")
     s.add_argument("--port", type=int, default=8000)
+    s.add_argument("--workers", type=int, default=None,
+                   help="worker processes that trace queued wallets (default: "
+                        "VASPFUSION_WORKERS, else 0 = traced in the server process)")
     s.set_defaults(fn=cmd_serve)
+
+    s = sub.add_parser("worker", help="trace wallets from the queue (the server starts "
+                                      "these itself with --workers)")
+    s.add_argument("--n", type=int, default=0, help="this worker's number")
+    s.add_argument("--drain", action="store_true",
+                   help="stop when nothing is queued or running any more")
+    s.set_defaults(fn=cmd_worker)
 
     s = sub.add_parser("openapi", help="write the OpenAPI schema")
     s.add_argument("--out", default=str(ROOT / "docs" / "openapi.json"))
