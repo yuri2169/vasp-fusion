@@ -220,6 +220,9 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"fx", S.FxRate),
     (r"coverage", S.PsCoverage),
     (r"sahyog-sim", S.SahyogSim),
+    (r"batches", S.BatchList),
+    (r"batches/[^/]+", S.BatchDetail),
+    (r"scale", S.ScaleMetrics),
 ]
 
 _SAFE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 ._&-]{0,99}$")

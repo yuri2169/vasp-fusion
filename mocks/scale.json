@@ -1,0 +1,186 @@
+{
+  "_demo": true,
+  "_notice": "UI fixture. Unlike the other mock files these figures are real: the throughput `make bench-scale` measured (artifacts/scale/metrics.json), on the machine and the date the file names.",
+  "status": "measured",
+  "measured_on": "2026-10-05",
+  "machine": "Darwin arm64, 10 cores, Python 3.12.14",
+  "chain_data": "replayed from the recorded demo cache (tests/fixtures/demo); no network",
+  "wallets": 12,
+  "rounds": 25,
+  "runs": [
+    {
+      "workers": 1,
+      "cases": 300,
+      "seconds": 43.96,
+      "cases_per_minute": 409.5,
+      "median_seconds_per_case": 0.14,
+      "p95_seconds_per_case": 0.193,
+      "median_trace_seconds": 0.117,
+      "transfers_analysed": 53675,
+      "transfers_per_second": 1221.1,
+      "chain_responses_read": 4475,
+      "peak_memory_mb": 385.2,
+      "peak_memory_mb_per_worker": 385.2,
+      "workers_that_traced": 1,
+      "cases_per_worker": [
+        300
+      ],
+      "worker_startup_seconds": 2.62,
+      "golden_fingerprints_reproduced": "300 of 300",
+      "speedup": 1.0
+    },
+    {
+      "workers": 2,
+      "cases": 300,
+      "seconds": 27.32,
+      "cases_per_minute": 658.9,
+      "median_seconds_per_case": 0.165,
+      "p95_seconds_per_case": 0.315,
+      "median_trace_seconds": 0.134,
+      "transfers_analysed": 53675,
+      "transfers_per_second": 1964.8,
+      "chain_responses_read": 4475,
+      "peak_memory_mb": 811.0,
+      "peak_memory_mb_per_worker": 409.5,
+      "workers_that_traced": 2,
+      "cases_per_worker": [
+        143,
+        157
+      ],
+      "worker_startup_seconds": 2.93,
+      "golden_fingerprints_reproduced": "300 of 300",
+      "speedup": 1.61
+    },
+    {
+      "workers": 4,
+      "cases": 300,
+      "seconds": 19.98,
+      "cases_per_minute": 900.9,
+      "median_seconds_per_case": 0.246,
+      "p95_seconds_per_case": 0.326,
+      "median_trace_seconds": 0.188,
+      "transfers_analysed": 53675,
+      "transfers_per_second": 2686.6,
+      "chain_responses_read": 4475,
+      "peak_memory_mb": 1601.5,
+      "peak_memory_mb_per_worker": 415.8,
+      "workers_that_traced": 4,
+      "cases_per_worker": [
+        73,
+        74,
+        76,
+        77
+      ],
+      "worker_startup_seconds": 3.16,
+      "golden_fingerprints_reproduced": "300 of 300",
+      "speedup": 2.2
+    },
+    {
+      "workers": 8,
+      "cases": 300,
+      "seconds": 20.49,
+      "cases_per_minute": 878.5,
+      "median_seconds_per_case": 0.402,
+      "p95_seconds_per_case": 0.923,
+      "median_trace_seconds": 0.284,
+      "transfers_analysed": 53675,
+      "transfers_per_second": 2619.5,
+      "chain_responses_read": 4475,
+      "peak_memory_mb": 3039.8,
+      "peak_memory_mb_per_worker": 386.8,
+      "workers_that_traced": 8,
+      "cases_per_worker": [
+        36,
+        37,
+        37,
+        37,
+        38,
+        38,
+        38,
+        39
+      ],
+      "worker_startup_seconds": 3.73,
+      "golden_fingerprints_reproduced": "300 of 300",
+      "speedup": 2.15
+    }
+  ],
+  "one_process": {
+    "cases": 60,
+    "seconds": 9.81,
+    "cases_per_minute": 366.9,
+    "median_seconds_per_case": 0.169,
+    "p95_seconds_per_case": 0.264,
+    "where_the_time_goes": [
+      {
+        "part": "label lookups",
+        "seconds": 3.33,
+        "share": 0.34
+      },
+      {
+        "part": "deposit model on the trail",
+        "seconds": 2.19,
+        "share": 0.223
+      },
+      {
+        "part": "storing the case",
+        "seconds": 1.28,
+        "share": 0.13
+      },
+      {
+        "part": "chain responses: read from the cache file",
+        "seconds": 1.12,
+        "share": 0.114
+      },
+      {
+        "part": "everything else",
+        "seconds": 0.81,
+        "share": 0.083
+      },
+      {
+        "part": "the walk and the allocation",
+        "seconds": 0.45,
+        "share": 0.045
+      },
+      {
+        "part": "chain responses: parse and check",
+        "seconds": 0.39,
+        "share": 0.04
+      },
+      {
+        "part": "counterfactual re-traces",
+        "seconds": 0.19,
+        "share": 0.02
+      },
+      {
+        "part": "assembling and validating the case",
+        "seconds": 0.04,
+        "share": 0.004
+      },
+      {
+        "part": "attribution rules",
+        "seconds": 0.02,
+        "share": 0.002
+      }
+    ]
+  },
+  "intake": {
+    "rows": 500,
+    "seconds": 3.13,
+    "rows_per_second": 159.9,
+    "progress_poll_seconds": 0.156,
+    "what": "one CSV upload of real labelled Tron addresses: every row validated, screened against the threat tags, given a case and queued; none traced"
+  },
+  "baseline": null,
+  "limits": [
+    "Chain responses were replayed from a cache. A live trace waits on the public chain APIs, whose free keys are rate-limited; the limiter shares that limit between workers, so more workers do not make a live trace faster once the limit is reached. Live throughput was not measured.",
+    "The case store and the queue are one DuckDB file with one writing process: the pool stores every result itself, one at a time.",
+    "The recorded wallets are small traces (at most 9 wallets read each). Larger traces take longer per case.",
+    "One machine. Nothing here was run on more than one host."
+  ],
+  "notes": [
+    "Cases per minute is counted from the first case handed to a worker to the last result stored, with the workers already started; their start-up (imports, the model) is reported beside it.",
+    "A case's seconds run from the moment a worker is given it to its stored result.",
+    "Transfers analysed are the transfers the traces read from the listings, counted once per case.",
+    "Peak memory is the sum of every worker process's peak resident memory; the process that owns the store is not included."
+  ]
+}

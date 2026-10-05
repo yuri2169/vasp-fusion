@@ -235,6 +235,16 @@ class ScaleRun(_M):
     transfers_per_second: float
     peak_memory_mb: float | None = Field(None, description="Sum of every worker's peak")
     speedup: float = Field(description="Cases per minute over the one-worker run's")
+    median_trace_seconds: float | None = Field(None, description=(
+        "Median time a worker spent tracing one case, without the storing"))
+    transfers_analysed: int | None = None
+    chain_responses_read: int | None = None
+    peak_memory_mb_per_worker: float | None = None
+    workers_that_traced: int | None = None
+    cases_per_worker: list[int] = []
+    worker_startup_seconds: float | None = None
+    golden_fingerprints_reproduced: str | None = Field(None, description=(
+        "How many of the run's cases have the findings fingerprint the repository records"))
 
 
 class ScaleMetrics(_M):
@@ -244,7 +254,10 @@ class ScaleMetrics(_M):
     machine: str | None = None
     chain_data: str | None = Field(None, description="Where the chain responses came from")
     wallets: int | None = Field(None, description="Distinct recorded wallets replayed")
+    rounds: int | None = Field(None, description="Times each wallet was replayed per run")
     runs: list[ScaleRun] = []
+    one_process: dict | None = Field(None, description=(
+        "The same cases in one process, in order, and where one case's time goes"))
     baseline: dict | None = Field(None, description="The same replay before the queue and "
                                                     "the worker pool existed")
     intake: dict | None = Field(None, description="Batch upload through the API, timed")
@@ -1128,6 +1141,7 @@ AuditAction = Literal[
     "watch.list", "watch.add", "watch.check", "watch.seen", "watch.remove", "label.coverage",
     "coverage.view", "sahyog.complaint", "sahyog.status", "sahyog.reply", "sim.view",
     "sim.complaint", "sim.reply",
+    "batch.upload", "batch.list", "batch.view", "batch.export", "scale.view",
     "auth.login", "auth.logout", "api.other"]
 
 

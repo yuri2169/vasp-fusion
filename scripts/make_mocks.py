@@ -456,6 +456,9 @@ def vasp(store: LabelStore, name: str, wallets: list[dict], requests: list[dict]
 FX_NOTICE = ("UI fixture. Unlike the other mock files this is real: the reference rate in "
              "config/fx.yaml, copied when `make mocks` last ran. /api/fx serves the current one.")
 
+SCALE_NOTICE = ("UI fixture. Unlike the other mock files these figures are real: the "
+                "throughput `make bench-scale` measured (artifacts/scale/metrics.json), on "
+                "the machine and the date the file names.")
 MODEL_NOTICE = ("UI fixture. Unlike the other mock files these figures are real: the "
                 "deposit-address model's measurements, copied from "
                 "artifacts/model_v1/tron/metrics.json when `make mocks` last ran. "
@@ -474,6 +477,39 @@ def model_mock() -> dict:
                 "feature_importance": [],
                 "notes": ["No model has been measured yet: run `make model`."]}
     return model_info(metrics)
+
+
+BATCH_ID = "b-demo"
+
+
+def batch_mock(cases: list[dict]) -> dict:
+    """A batch whose rows are the three demo cases and one row that was refused, shaped
+    by the same functions the live route uses (vaspfusion/batch.py)."""
+    from vaspfusion import batch as B
+    rows = [{"row": i, "address": c["address"], "chain": c["chain"], "case_ref": c["case_ref"],
+             "case_id": c["id"]} for i, c in enumerate(cases, 2)]
+    rows.append({"row": len(cases) + 2, "address": "not-an-address", "chain": None,
+                 "case_ref": None, "error": "Could not tell which chain this address is on. "
+                                            "Pick the chain and try again."})
+    by_id = {c["id"]: c for c in cases}
+    table = [B.result_row(r, {"status": "done"} if r.get("case_id") else None,
+                          B.case_result(by_id[r["case_id"]], R.summary(by_id[r["case_id"]]))
+                          if r.get("case_id") else None) for r in rows]
+    return {"id": BATCH_ID, "name": "Demonstration batch", "created_at": at(-20),
+            "created_by": "demo.officer", "max_hops": 3, "max_wallets": 40, "max_seconds": None,
+            "progress": B.progress(table), "workers": 0,
+            "results_csv": f"/api/batches/{BATCH_ID}/results.csv", "rows": table}
+
+
+def scale_mock() -> dict:
+    """The measured throughput, exactly as `make bench-scale` last wrote it. It is a
+    measurement, not a demo value; without the file the page says "not measured"."""
+    path = ROOT / "artifacts" / "scale" / "metrics.json"
+    if not path.exists():
+        return {"status": "not_measured", "notes": [
+            "Throughput has not been measured on this installation. `make bench-scale` "
+            "measures it."]}
+    return {"status": "measured", **json.loads(path.read_text())}
 
 
 def fx_mock() -> dict:
@@ -555,6 +591,10 @@ def main() -> None:
             "labels/coverage": coverage,
             "coverage": ps_coverage.build(TRACEABLE),
             "sahyog-sim": sim_mock(c1, req),
+            "batches": {"total": 1, "items": [
+                {k: v for k, v in batch_mock(as_json).items() if k != "rows"}]},
+            f"batches/{BATCH_ID}": batch_mock(as_json),
+            "scale": scale_mock(),
             "watchlist": {"items": []},
             "fx": fx_mock(),
             "model": model_mock(),
@@ -574,6 +614,8 @@ def main() -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         measured = rel == "model" and body["status"] == "measured"
         notice = MODEL_NOTICE if measured else FX_NOTICE if rel == "fx" else NOTICE
+        if rel == "scale" and body["status"] == "measured":
+            notice = SCALE_NOTICE
         path.write_text(json.dumps({"_demo": True, "_notice": notice, **body},
                                    indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {len(files)} mock files to {MOCKS.relative_to(ROOT)}/")

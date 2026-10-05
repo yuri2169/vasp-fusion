@@ -142,6 +142,103 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cases/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Batch
+         * @description Many wallets at once. Every row is checked on its own: a row that cannot be
+         *     traced is reported with its reason and the others are queued. A wallet that already
+         *     has a finished case is linked to it, not traced again.
+         */
+        post: operations["create_batch_api_cases_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Batches */
+        get: operations["list_batches_api_batches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/batches/{batch_id}/results.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Batch Csv
+         * @description The result table as a CSV file: one line per uploaded row, in upload order.
+         */
+        get: operations["get_batch_csv_api_batches__batch_id__results_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Batch */
+        get: operations["get_batch_api_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/scale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Scale
+         * @description Measured throughput, read from the file `make bench-scale` writes. Not measured
+         *     on this installation = it says so; no figure is made up.
+         */
+        get: operations["get_scale_api_scale_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cases/{case_id}": {
         parameters: {
             query?: never;
@@ -783,7 +880,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "auth.login" | "auth.logout" | "api.other";
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "batch.upload" | "batch.list" | "batch.view" | "batch.export" | "scale.view" | "auth.login" | "auth.logout" | "api.other";
             /**
              * Target
              * @description case id, `chain:address`, exchange name, request id, search text or user name, by action
@@ -836,6 +933,215 @@ export interface components {
             items: components["schemas"]["AuditEntry"][];
             /** @description With `?verify=true`: every hash recomputed */
             chain?: components["schemas"]["ChainCheck"] | null;
+        };
+        /**
+         * BatchCreate
+         * @description Many wallets at once: `rows`, or the text of a CSV file in `csv` (columns address,
+         *     chain, case_ref; a header line is optional). At most 2,000 rows.
+         */
+        BatchCreate: {
+            /**
+             * Name
+             * @description What the officer calls it
+             */
+            name?: string | null;
+            /** Rows */
+            rows?: components["schemas"]["BatchWallet"][] | null;
+            /**
+             * Csv
+             * @description The CSV file's text
+             */
+            csv?: string | null;
+            /**
+             * Max Hops
+             * @default 3
+             */
+            max_hops: number;
+            /**
+             * Max Wallets
+             * @default 40
+             */
+            max_wallets: number;
+            /** Max Seconds */
+            max_seconds?: number | null;
+        };
+        /** BatchDetail */
+        BatchDetail: {
+            /** Id */
+            id: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by?: string | null;
+            /** Max Hops */
+            max_hops: number;
+            /** Max Wallets */
+            max_wallets: number;
+            /** Max Seconds */
+            max_seconds?: number | null;
+            progress: components["schemas"]["BatchProgress"];
+            /**
+             * Workers
+             * @description Worker processes tracing the queue; 0 = traced one at a time in the server process
+             */
+            workers: number;
+            /**
+             * Results Csv
+             * @description Where the result table downloads from
+             */
+            results_csv: string;
+            /** Rows */
+            rows: components["schemas"]["BatchRow"][];
+        };
+        /** BatchList */
+        BatchList: {
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["BatchSummary"][];
+        };
+        /** BatchProgress */
+        BatchProgress: {
+            /**
+             * Total
+             * @description Rows uploaded
+             */
+            total: number;
+            /**
+             * Accepted
+             * @description Wallets with a case (each wallet once)
+             */
+            accepted: number;
+            /** Duplicates */
+            duplicates: number;
+            /** Refused */
+            refused: number;
+            /** Queued */
+            queued: number;
+            /** Running */
+            running: number;
+            /** Done */
+            done: number;
+            /** Failed */
+            failed: number;
+            /**
+             * By Outcome
+             * @default {}
+             */
+            by_outcome: {
+                [key: string]: number;
+            };
+            /** Finished */
+            finished: boolean;
+        };
+        /**
+         * BatchRow
+         * @description One uploaded row and what became of it.
+         */
+        BatchRow: {
+            /**
+             * Row
+             * @description Its number in the upload (a CSV's line number)
+             */
+            row: number;
+            /** Address */
+            address: string;
+            /** Chain */
+            chain?: string | null;
+            /** Case Ref */
+            case_ref?: string | null;
+            /** Accepted */
+            accepted: boolean;
+            /**
+             * Error
+             * @description Why the row was refused, or why its trace failed
+             */
+            error?: string | null;
+            /**
+             * Duplicate Of
+             * @description The earlier row with the same wallet
+             */
+            duplicate_of?: number | null;
+            /** Case Id */
+            case_id?: string | null;
+            /** Case Url */
+            case_url?: string | null;
+            /** Status */
+            status?: ("queued" | "running" | "done" | "failed") | null;
+            /** Outcome */
+            outcome?: ("ATTRIBUTED" | "INSUFFICIENT_EVIDENCE" | "SANCTIONED_OR_MIXER_REACHED") | null;
+            /**
+             * Top Vasp
+             * @description The exchange the case names
+             */
+            top_vasp?: string | null;
+            /**
+             * Hops
+             * @description Proximity: hops to that exchange
+             */
+            hops?: number | null;
+            /** Proximity Rank */
+            proximity_rank?: number | null;
+            /** Share Of Funds */
+            share_of_funds?: number | null;
+            /** Confidence */
+            confidence?: number | null;
+            /** Risk Class */
+            risk_class?: ("low" | "medium" | "high" | "severe") | null;
+            /**
+             * Budget Ended
+             * @description The trace budget, not the evidence, ended this wallet's trace
+             * @default false
+             */
+            budget_ended: boolean;
+        };
+        /** BatchSummary */
+        BatchSummary: {
+            /** Id */
+            id: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by?: string | null;
+            /** Max Hops */
+            max_hops: number;
+            /** Max Wallets */
+            max_wallets: number;
+            /** Max Seconds */
+            max_seconds?: number | null;
+            progress: components["schemas"]["BatchProgress"];
+            /**
+             * Workers
+             * @description Worker processes tracing the queue; 0 = traced one at a time in the server process
+             */
+            workers: number;
+            /**
+             * Results Csv
+             * @description Where the result table downloads from
+             */
+            results_csv: string;
+        };
+        /** BatchWallet */
+        BatchWallet: {
+            /** Address */
+            address: string;
+            /**
+             * Chain
+             * @description Omit to auto-detect
+             */
+            chain?: string | null;
+            /** Case Ref */
+            case_ref?: string | null;
         };
         /** Candidate */
         Candidate: {
@@ -941,6 +1247,17 @@ export interface components {
              * @default 3
              */
             max_hops: number;
+            /**
+             * Max Wallets
+             * @description Trace budget: wallets read per direction. The largest shares are read first
+             * @default 40
+             */
+            max_wallets: number;
+            /**
+             * Max Seconds
+             * @description Trace budget: stop reading new wallets after this many seconds
+             */
+            max_seconds?: number | null;
         };
         /** CaseDetail */
         CaseDetail: {
@@ -1080,6 +1397,21 @@ export interface components {
             max_hops: number;
             /** Since */
             since?: string | null;
+            /**
+             * Max Wallets
+             * @description The wallet budget, present only when it was not the default of 40
+             */
+            max_wallets?: number | null;
+            /**
+             * Max Seconds
+             * @description The time budget, when one was set
+             */
+            max_seconds?: number | null;
+            /**
+             * Stopped After
+             * @description When the time budget ended the trace: how many wallets it had asked for by then, [outbound, inbound]. `verify` replays the trace to exactly there
+             */
+            stopped_after?: (number | null)[] | null;
         };
         /** CaseList */
         CaseList: {
@@ -2393,6 +2725,8 @@ export interface components {
              * @description true: the code had uncommitted changes
              */
             git_dirty?: boolean | null;
+            /** @description The trace budget and whether it ended the trace; null in a case stored before budgets could be changed */
+            budget?: components["schemas"]["TraceBudget"] | null;
         };
         /** PsCoverage */
         PsCoverage: {
@@ -2865,6 +3199,124 @@ export interface components {
             requests: components["schemas"]["SimRequest"][];
         };
         /**
+         * ScaleMetrics
+         * @description Measured throughput (`make bench-scale`, artifacts/scale/metrics.json).
+         */
+        ScaleMetrics: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "measured" | "not_measured";
+            /** Measured On */
+            measured_on?: string | null;
+            /** Machine */
+            machine?: string | null;
+            /**
+             * Chain Data
+             * @description Where the chain responses came from
+             */
+            chain_data?: string | null;
+            /**
+             * Wallets
+             * @description Distinct recorded wallets replayed
+             */
+            wallets?: number | null;
+            /**
+             * Rounds
+             * @description Times each wallet was replayed per run
+             */
+            rounds?: number | null;
+            /**
+             * Runs
+             * @default []
+             */
+            runs: components["schemas"]["ScaleRun"][];
+            /**
+             * One Process
+             * @description The same cases in one process, in order, and where one case's time goes
+             */
+            one_process?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Baseline
+             * @description The same replay before the queue and the worker pool existed
+             */
+            baseline?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Intake
+             * @description Batch upload through the API, timed
+             */
+            intake?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Limits
+             * @default []
+             */
+            limits: string[];
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+        };
+        /** ScaleRun */
+        ScaleRun: {
+            /** Workers */
+            workers: number;
+            /** Cases */
+            cases: number;
+            /** Seconds */
+            seconds: number;
+            /** Cases Per Minute */
+            cases_per_minute: number;
+            /** Median Seconds Per Case */
+            median_seconds_per_case: number;
+            /** P95 Seconds Per Case */
+            p95_seconds_per_case: number;
+            /** Transfers Per Second */
+            transfers_per_second: number;
+            /**
+             * Peak Memory Mb
+             * @description Sum of every worker's peak
+             */
+            peak_memory_mb?: number | null;
+            /**
+             * Speedup
+             * @description Cases per minute over the one-worker run's
+             */
+            speedup: number;
+            /**
+             * Median Trace Seconds
+             * @description Median time a worker spent tracing one case, without the storing
+             */
+            median_trace_seconds?: number | null;
+            /** Transfers Analysed */
+            transfers_analysed?: number | null;
+            /** Chain Responses Read */
+            chain_responses_read?: number | null;
+            /** Peak Memory Mb Per Worker */
+            peak_memory_mb_per_worker?: number | null;
+            /** Workers That Traced */
+            workers_that_traced?: number | null;
+            /**
+             * Cases Per Worker
+             * @default []
+             */
+            cases_per_worker: number[];
+            /** Worker Startup Seconds */
+            worker_startup_seconds?: number | null;
+            /**
+             * Golden Fingerprints Reproduced
+             * @description How many of the run's cases have the findings fingerprint the repository records
+             */
+            golden_fingerprints_reproduced?: string | null;
+        };
+        /**
          * Screening
          * @description The check of the case's own address against the threat tags, made when the case
          *     is opened and before the trace starts.
@@ -2960,6 +3412,43 @@ export interface components {
              * @description The source's own words: list entry, programme codes, pack fields
              */
             evidence?: string | null;
+        };
+        /**
+         * TraceBudget
+         * @description What the trace was allowed to read and whether that, not the evidence, ended it.
+         */
+        TraceBudget: {
+            /**
+             * Max Wallets
+             * @description Wallets it may read per direction
+             */
+            max_wallets: number;
+            /** Max Hops */
+            max_hops: number;
+            /** Max Seconds */
+            max_seconds?: number | null;
+            /**
+             * Ended By
+             * @description Set when the budget stopped the walk; null when the evidence did
+             */
+            ended_by?: ("wallets" | "time") | null;
+            /** Ended Side */
+            ended_side?: ("outbound" | "inbound") | null;
+            /**
+             * Wallets Read
+             * @description Wallets read on the way out
+             */
+            wallets_read: number;
+            /**
+             * Share Not Followed
+             * @description Share of the funds in wallets the budget left unread
+             */
+            share_not_followed: number;
+            /**
+             * Text
+             * @description One sentence to show as it is
+             */
+            text: string;
         };
         /** TypologyFlag */
         TypologyFlag: {
@@ -3500,6 +3989,141 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_batch_api_cases_batch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_batches_api_batches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchList"];
+                };
+            };
+        };
+    };
+    get_batch_csv_api_batches__batch_id__results_csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The result table */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_batch_api_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scale_api_scale_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScaleMetrics"];
                 };
             };
         };

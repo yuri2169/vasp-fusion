@@ -390,6 +390,157 @@
         }
       }
     },
+    "/api/cases/batch": {
+      "post": {
+        "summary": "Create Batch",
+        "description": "Many wallets at once. Every row is checked on its own: a row that cannot be\ntraced is reported with its reason and the others are queued. A wallet that already\nhas a finished case is linked to it, not traced again.",
+        "operationId": "create_batch_api_cases_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batches": {
+      "get": {
+        "summary": "List Batches",
+        "operationId": "list_batches_api_batches_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batches/{batch_id}/results.csv": {
+      "get": {
+        "summary": "Get Batch Csv",
+        "description": "The result table as a CSV file: one line per uploaded row, in upload order.",
+        "operationId": "get_batch_csv_api_batches__batch_id__results_csv_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The result table",
+            "content": {
+              "text/csv": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batches/{batch_id}": {
+      "get": {
+        "summary": "Get Batch",
+        "operationId": "get_batch_api_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scale": {
+      "get": {
+        "summary": "Get Scale",
+        "description": "Measured throughput, read from the file `make bench-scale` writes. Not measured\non this installation = it says so; no figure is made up.",
+        "operationId": "get_scale_api_scale_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScaleMetrics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}": {
       "get": {
         "summary": "Get Case",
@@ -1839,6 +1990,11 @@
               "sim.view",
               "sim.complaint",
               "sim.reply",
+              "batch.upload",
+              "batch.list",
+              "batch.view",
+              "batch.export",
+              "scale.view",
               "auth.login",
               "auth.logout",
               "api.other"
@@ -1992,6 +2148,576 @@
           "items"
         ],
         "title": "AuditPage"
+      },
+      "BatchCreate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "What the officer calls it"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/BatchWallet"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rows"
+          },
+          "csv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Csv",
+            "description": "The CSV file's text"
+          },
+          "max_hops": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Max Hops",
+            "default": 3
+          },
+          "max_wallets": {
+            "type": "integer",
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Max Wallets",
+            "default": 40
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3600.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "BatchCreate",
+        "description": "Many wallets at once: `rows`, or the text of a CSV file in `csv` (columns address,\nchain, case_ref; a header line is optional). At most 2,000 rows."
+      },
+      "BatchDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "max_hops": {
+            "type": "integer",
+            "title": "Max Hops"
+          },
+          "max_wallets": {
+            "type": "integer",
+            "title": "Max Wallets"
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/BatchProgress"
+          },
+          "workers": {
+            "type": "integer",
+            "title": "Workers",
+            "description": "Worker processes tracing the queue; 0 = traced one at a time in the server process"
+          },
+          "results_csv": {
+            "type": "string",
+            "title": "Results Csv",
+            "description": "Where the result table downloads from"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/BatchRow"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "max_hops",
+          "max_wallets",
+          "progress",
+          "workers",
+          "results_csv",
+          "rows"
+        ],
+        "title": "BatchDetail"
+      },
+      "BatchList": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchSummary"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "BatchList"
+      },
+      "BatchProgress": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Rows uploaded"
+          },
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted",
+            "description": "Wallets with a case (each wallet once)"
+          },
+          "duplicates": {
+            "type": "integer",
+            "title": "Duplicates"
+          },
+          "refused": {
+            "type": "integer",
+            "title": "Refused"
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued"
+          },
+          "running": {
+            "type": "integer",
+            "title": "Running"
+          },
+          "done": {
+            "type": "integer",
+            "title": "Done"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "by_outcome": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Outcome",
+            "default": {}
+          },
+          "finished": {
+            "type": "boolean",
+            "title": "Finished"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "accepted",
+          "duplicates",
+          "refused",
+          "queued",
+          "running",
+          "done",
+          "failed",
+          "finished"
+        ],
+        "title": "BatchProgress"
+      },
+      "BatchRow": {
+        "properties": {
+          "row": {
+            "type": "integer",
+            "title": "Row",
+            "description": "Its number in the upload (a CSV's line number)"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Why the row was refused, or why its trace failed"
+          },
+          "duplicate_of": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Of",
+            "description": "The earlier row with the same wallet"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "case_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Url"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "running",
+                  "done",
+                  "failed"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "ATTRIBUTED",
+                  "INSUFFICIENT_EVIDENCE",
+                  "SANCTIONED_OR_MIXER_REACHED"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "top_vasp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Vasp",
+            "description": "The exchange the case names"
+          },
+          "hops": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hops",
+            "description": "Proximity: hops to that exchange"
+          },
+          "proximity_rank": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proximity Rank"
+          },
+          "share_of_funds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Of Funds"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "risk_class": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "severe"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Class"
+          },
+          "budget_ended": {
+            "type": "boolean",
+            "title": "Budget Ended",
+            "description": "The trace budget, not the evidence, ended this wallet's trace",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "row",
+          "address",
+          "accepted"
+        ],
+        "title": "BatchRow",
+        "description": "One uploaded row and what became of it."
+      },
+      "BatchSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "max_hops": {
+            "type": "integer",
+            "title": "Max Hops"
+          },
+          "max_wallets": {
+            "type": "integer",
+            "title": "Max Wallets"
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/BatchProgress"
+          },
+          "workers": {
+            "type": "integer",
+            "title": "Workers",
+            "description": "Worker processes tracing the queue; 0 = traced one at a time in the server process"
+          },
+          "results_csv": {
+            "type": "string",
+            "title": "Results Csv",
+            "description": "Where the result table downloads from"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "max_hops",
+          "max_wallets",
+          "progress",
+          "workers",
+          "results_csv"
+        ],
+        "title": "BatchSummary"
+      },
+      "BatchWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain",
+            "description": "Omit to auto-detect"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address"
+        ],
+        "title": "BatchWallet"
       },
       "Candidate": {
         "properties": {
@@ -2265,6 +2991,28 @@
             "minimum": 1.0,
             "title": "Max Hops",
             "default": 3
+          },
+          "max_wallets": {
+            "type": "integer",
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Max Wallets",
+            "description": "Trace budget: wallets read per direction. The largest shares are read first",
+            "default": 40
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3600.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds",
+            "description": "Trace budget: stop reading new wallets after this many seconds"
           }
         },
         "additionalProperties": false,
@@ -2671,6 +3419,52 @@
               }
             ],
             "title": "Since"
+          },
+          "max_wallets": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Wallets",
+            "description": "The wallet budget, present only when it was not the default of 40"
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds",
+            "description": "The time budget, when one was set"
+          },
+          "stopped_after": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stopped After",
+            "description": "When the time budget ended the trace: how many wallets it had asked for by then, [outbound, inbound]. `verify` replays the trace to exactly there"
           }
         },
         "additionalProperties": false,
@@ -6115,6 +6909,17 @@
             ],
             "title": "Git Dirty",
             "description": "true: the code had uncommitted changes"
+          },
+          "budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TraceBudget"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The trace budget and whether it ended the trace; null in a case stored before budgets could be changed"
           }
         },
         "additionalProperties": false,
@@ -7318,6 +8123,295 @@
         "title": "SahyogSim",
         "description": "Everything the simulator screen shows. A simulator for demonstration, not the\nSAHYOG portal."
       },
+      "ScaleMetrics": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "not_measured"
+            ],
+            "title": "Status"
+          },
+          "measured_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured On"
+          },
+          "machine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Machine"
+          },
+          "chain_data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain Data",
+            "description": "Where the chain responses came from"
+          },
+          "wallets": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallets",
+            "description": "Distinct recorded wallets replayed"
+          },
+          "rounds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rounds",
+            "description": "Times each wallet was replayed per run"
+          },
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/ScaleRun"
+            },
+            "type": "array",
+            "title": "Runs",
+            "default": []
+          },
+          "one_process": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "One Process",
+            "description": "The same cases in one process, in order, and where one case's time goes"
+          },
+          "baseline": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline",
+            "description": "The same replay before the queue and the worker pool existed"
+          },
+          "intake": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Intake",
+            "description": "Batch upload through the API, timed"
+          },
+          "limits": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limits",
+            "default": []
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ScaleMetrics",
+        "description": "Measured throughput (`make bench-scale`, artifacts/scale/metrics.json)."
+      },
+      "ScaleRun": {
+        "properties": {
+          "workers": {
+            "type": "integer",
+            "title": "Workers"
+          },
+          "cases": {
+            "type": "integer",
+            "title": "Cases"
+          },
+          "seconds": {
+            "type": "number",
+            "title": "Seconds"
+          },
+          "cases_per_minute": {
+            "type": "number",
+            "title": "Cases Per Minute"
+          },
+          "median_seconds_per_case": {
+            "type": "number",
+            "title": "Median Seconds Per Case"
+          },
+          "p95_seconds_per_case": {
+            "type": "number",
+            "title": "P95 Seconds Per Case"
+          },
+          "transfers_per_second": {
+            "type": "number",
+            "title": "Transfers Per Second"
+          },
+          "peak_memory_mb": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Memory Mb",
+            "description": "Sum of every worker's peak"
+          },
+          "speedup": {
+            "type": "number",
+            "title": "Speedup",
+            "description": "Cases per minute over the one-worker run's"
+          },
+          "median_trace_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Trace Seconds",
+            "description": "Median time a worker spent tracing one case, without the storing"
+          },
+          "transfers_analysed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transfers Analysed"
+          },
+          "chain_responses_read": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chain Responses Read"
+          },
+          "peak_memory_mb_per_worker": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak Memory Mb Per Worker"
+          },
+          "workers_that_traced": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Workers That Traced"
+          },
+          "cases_per_worker": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Cases Per Worker",
+            "default": []
+          },
+          "worker_startup_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Worker Startup Seconds"
+          },
+          "golden_fingerprints_reproduced": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Golden Fingerprints Reproduced",
+            "description": "How many of the run's cases have the findings fingerprint the repository records"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "workers",
+          "cases",
+          "seconds",
+          "cases_per_minute",
+          "median_seconds_per_case",
+          "p95_seconds_per_case",
+          "transfers_per_second",
+          "speedup"
+        ],
+        "title": "ScaleRun"
+      },
       "Screening": {
         "properties": {
           "hit": {
@@ -7580,6 +8674,89 @@
         ],
         "title": "ThreatTag",
         "description": "What a public source says an address belongs to (config/threats.yaml has the rule\nthat produced it). Never an inference of this tool."
+      },
+      "TraceBudget": {
+        "properties": {
+          "max_wallets": {
+            "type": "integer",
+            "title": "Max Wallets",
+            "description": "Wallets it may read per direction"
+          },
+          "max_hops": {
+            "type": "integer",
+            "title": "Max Hops"
+          },
+          "max_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Seconds"
+          },
+          "ended_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "wallets",
+                  "time"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended By",
+            "description": "Set when the budget stopped the walk; null when the evidence did"
+          },
+          "ended_side": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "outbound",
+                  "inbound"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended Side"
+          },
+          "wallets_read": {
+            "type": "integer",
+            "title": "Wallets Read",
+            "description": "Wallets read on the way out"
+          },
+          "share_not_followed": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share Not Followed",
+            "description": "Share of the funds in wallets the budget left unread"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "One sentence to show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "max_wallets",
+          "max_hops",
+          "wallets_read",
+          "share_not_followed",
+          "text"
+        ],
+        "title": "TraceBudget",
+        "description": "What the trace was allowed to read and whether that, not the evidence, ended it."
       },
       "TypologyFlag": {
         "properties": {
