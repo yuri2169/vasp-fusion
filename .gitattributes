@@ -1,0 +1,14 @@
+# Same line endings on every machine. Without this, Git for Windows can rewrite
+# files to CRLF on checkout, which breaks the Makefile, the shell scripts and the
+# fingerprints computed over the recorded fixtures.
+* text=auto eol=lf
+
+# Stored with CRLF line endings: keep them byte for byte.
+tests/fixtures/labels/wa/*.csv -text
+
+*.duckdb binary
+*.png binary
+*.pdf binary
+*.webp binary
+*.gif binary
+*.woff2 binary
