@@ -1,0 +1,14 @@
+{
+ "_recorded": "2026-10-05",
+ "_result": "1 answers",
+ "_source": "app.across.to deposit index, origin chain 1, 0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636 (not an Across deposit: HTTP 404)",
+ "responses": {
+  "https://app.across.to/api/deposit?depositTxHash=0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636&originChainId=1": {
+   "body": {
+    "error": "DepositNotFoundException",
+    "message": "Deposit not found given the provided constraints"
+   },
+   "status": 404
+  }
+ }
+}

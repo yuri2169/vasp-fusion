@@ -11,8 +11,23 @@ TIER_WORDS = {
 }
 
 
+CHAIN_NAMES = {"tron": "Tron", "ethereum": "Ethereum", "bsc": "BNB Smart Chain",
+               "polygon": "Polygon", "arbitrum": "Arbitrum", "base": "Base",
+               "optimism": "Optimism", "avalanche": "Avalanche", "bitcoin": "Bitcoin",
+               "solana": "Solana"}
+
+
+def chain_name(chain: str) -> str:
+    return CHAIN_NAMES.get(chain, chain.title())
+
+
 def short(address: str) -> str:
-    """TVZpWt…KjUtzR. Short names (and anything under 16 characters) are kept whole."""
+    """TVZpWt…KjUtzR. Short names (and anything under 16 characters) are kept whole. A
+    wallet the money reached on another chain (id `chain:address`, chains/base.py) is
+    written with its chain: 0x2102…f364b0 on Base."""
+    chain, sep, plain = address.partition(":")
+    if sep:
+        return f"{short(plain)} on {chain_name(chain)}"
     return address if len(address) <= 16 else f"{address[:6]}…{address[-6:]}"
 
 

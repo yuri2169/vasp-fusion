@@ -100,6 +100,19 @@ class TransferList(list):
         self.complete = complete
 
 
+def qualify(chain: str, address: str, home: str) -> str:
+    """The id of a wallet in a trace that started on `home`. On the home chain it is the
+    plain address. On any other chain it is `chain:address`: an EVM address is the same
+    string on every EVM chain, so the address alone would make two wallets one."""
+    return address if chain == home else f"{chain}:{address}"
+
+
+def split_id(wallet_id: str, home: str) -> tuple[str, str]:
+    """(chain, address) of a wallet id. No address format here contains a colon."""
+    chain, sep, address = wallet_id.partition(":")
+    return (chain, address) if sep else (home, wallet_id)
+
+
 def _dec(d: Decimal) -> str:
     """Plain notation, no exponent, no trailing zeros: Decimal('1.500E+3') -> '1500'."""
     s = format(d, "f")

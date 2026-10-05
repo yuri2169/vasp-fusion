@@ -52,7 +52,7 @@ def _run(name: str, source: str, fn) -> None:
         fetcher = Fetcher(ChainCache(Path(d) / "c.duckdb"), rec, offline=False)
         try:
             rows = fn(fetcher)
-            note = f"{len(rows)} transfers"
+            note = f"{len(rows)} {'answers' if name.startswith('across') else 'transfers'}"
         except ProviderError as e:
             note = f"raised {type(e).__name__}: {e}"
     OUT.mkdir(parents=True, exist_ok=True)
@@ -184,7 +184,39 @@ def btc_pages(f):
     return BtcProvider(f, max_pages=3).transfers(BTC_ADDR, "both", limit=500)
 
 
+# Across deposits of the recorded `eth-bridge` wallet, and a transaction of the same
+# wallet that is not an Across deposit (it pays another bridge)
+ACROSS_DEPOSIT = "0xa72833c9a0c3f13cf1939a230adb33b01a29c8019629caf014c11b5509d50f3f"
+ACROSS_SMALL = "0x60c782f004d2fd08ab7fc97ac2a5fc1be493536a84879371a1f97f9b2c239249"
+NOT_ACROSS = "0x23922cd41aadb2ac494e52450a034a8a7726042056eaaceb2bc9169189aca636"
+
+
+def _deposit(tx_hash: str):
+    from decimal import Decimal
+
+    from vaspfusion.chains.base import Transfer
+    return Transfer("ethereum", tx_hash, datetime(2026, 6, 1, tzinfo=timezone.utc),
+                    "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
+                    "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5", "USDT", Decimal(1), Decimal(1),
+                    None)
+
+
+def across_filled(f):
+    from vaspfusion.chains.bridges import AcrossResolver
+    r = AcrossResolver(f)
+    return [r.resolve(_deposit(ACROSS_DEPOSIT)), r.resolve(_deposit(ACROSS_SMALL))]
+
+
+def across_unknown(f):
+    from vaspfusion.chains.bridges import AcrossResolver
+    return [AcrossResolver(f).resolve(_deposit(NOT_ACROSS))]
+
+
 SCENARIOS = {
+    "across_filled": (f"app.across.to deposit index, origin chain 1, {ACROSS_DEPOSIT} and "
+                      f"{ACROSS_SMALL}", across_filled),
+    "across_unknown": (f"app.across.to deposit index, origin chain 1, {NOT_ACROSS} (not an "
+                       "Across deposit: HTTP 404)", across_unknown),
     "btc_pages": (f"mempool.space, {BTC_ADDR}, full history (50 + 22 txs)", btc_pages),
     "eth_etherscan": (f"Etherscan v2 chainid=1, {ETH_ADDR}, page_size=3", eth_etherscan),
     "eth_usdt": (f"Etherscan v2 chainid=1, {ETH_USDT_ADDR}, page_size=3", eth_usdt),

@@ -211,10 +211,13 @@ class Fetcher:
 
     def get_json(self, chain: str, address: str, direction: str, url: str, params: dict,
                  headers: dict | None = None, check: Callable[[Any], None] | None = None,
-                 refresh: bool = False, rpc: bool = False, secret: str | None = None) -> Any:
+                 refresh: bool = False, rpc: bool = False, secret: str | None = None,
+                 accept: tuple[int, ...] = ()) -> Any:
         """`rpc=True` sends the request as a JSON-RPC POST (see Transport.rpc); `secret`
         is a key the provider wants in the URL path. It is handed to the transport only:
-        `url` and `params`, which make the cache key, never hold it."""
+        `url` and `params`, which make the cache key, never hold it. `accept` lists HTTP
+        statuses other than 200 that are an answer too (an index saying "not found"):
+        their body is checked and cached like any other, so a replay gives it again."""
         query = request_key(url, params)
         if not (refresh or self.refresh):
             hit = self.cache.get(chain, address, direction, query)
@@ -239,7 +242,7 @@ class Fetcher:
             try:
                 if status == 429 or status >= 500 or (status == 403 and b"limit" in body.lower()):
                     raise Retryable(f"HTTP {status}")
-                if status != 200:
+                if status != 200 and status not in accept:
                     raise ProviderError(f"HTTP {status} from {host}: {body[:200]!r}")
                 try:
                     data = json.loads(body)

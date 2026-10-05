@@ -12,10 +12,7 @@ from ..attribute.rules import Attribution, Candidate, RuleConfig
 from ..trace import TraceResult
 from . import fmt
 
-CHAIN_NAMES = {"tron": "Tron", "ethereum": "Ethereum", "bsc": "BNB Smart Chain",
-               "polygon": "Polygon", "arbitrum": "Arbitrum", "base": "Base",
-               "optimism": "Optimism", "avalanche": "Avalanche", "bitcoin": "Bitcoin",
-               "solana": "Solana"}
+CHAIN_NAMES = fmt.CHAIN_NAMES
 MAX_CANDIDATES = 3
 
 
