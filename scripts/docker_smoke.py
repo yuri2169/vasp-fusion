@@ -180,8 +180,17 @@ class Smoke:
            s == 200 and vasp["directory"]["legal_name"] == "Neblio Technologies Private Limited",
            vasp.get("directory"))
         s, _, found = api.call("GET", "/api/labels/search?q=coindcx&chain=tron&limit=5")
-        ok(f"label search works ({found.get('total')} CoinDCX labels on Tron)",
-           s == 200 and found["total"] > 100, (s, found.get("total")))
+        # The image holds the full label database, or (built from a clone without the label
+        # sets, `make demo-labels`) only the labels the recorded demo read. Either way the
+        # search must find CoinDCX's; the full one holds over a hundred of them.
+        _, _, held = api.call("GET", "/api/labels/coverage")
+        full = held.get("total", 0) > 1000
+        ok(f"label search works ({found.get('total')} CoinDCX labels on Tron; "
+           f"{'the full label database' if full else 'the recorded demo labels only'}, "
+           f"{held.get('total')} labels)",
+           s == 200 and found["total"] > (100 if full else 0)
+           and all(i["entity"] == "CoinDCX" for i in found["items"]),
+           (s, found.get("total"), held.get("total")))
         s, _, model = api.call("GET", "/api/model")
         ok("the model page has measured figures and the abstain check",
            s == 200 and model["status"] == "measured" and model["abstain"] is not None,

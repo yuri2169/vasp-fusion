@@ -65,7 +65,9 @@ make offline-serve         # http://127.0.0.1:8000, with no network
 ```
 - `make offline-demo` must end with "12/12 as expected" and "12/12 golden fingerprints reproduced". Everything it reads is tracked: the chain responses the traces read (`tests/fixtures/demo/`) and the label rows those traces were answered with (`tests/fixtures/demo/labels.json`).
 - **What that label database is.** `make demo-labels` (run by `offline-demo` when there is no `data/labels.duckdb`) writes the 24 real label rows the recorded traces read, exactly as the full label database returned them. The recorded cases give the same findings on it. It is **not** the full label store: the label counts in "Label store" below do not apply to it, the Labels page lists 24 labels, and a wallet that was not recorded meets almost no label. It never replaces a database that is already there.
-- With Docker instead: `make demo-labels && UI=build make docker && make docker-up && make docker-smoke`.
+- Served this way the tool asks for no sign-in (there is no officer account on the machine). The Docker image has the demonstration account in `demo/officer.json`.
+- With Docker instead: `make demo-labels && UI=build make docker && make docker-up && make docker-smoke`. The smoke test says which label database the image holds.
+- `make test` and `make reproduce` in such a clone: see the note under the prerequisites below.
 
 ### Prerequisites for the full label database (`make labels`)
 `data/labels.duckdb` is not tracked (73 MB, rebuilt in seconds) and `make labels` builds it from third-party label sets that are **not in this repository**. It reads them from `../research/data` (or `make labels RESEARCH=<path>`):
@@ -77,7 +79,7 @@ make offline-serve         # http://127.0.0.1:8000, with no network
 | optional | `graphsense_tagpacks_exchange.csv` | written by `make tagpacks` from `graphsense-tagpacks/packs` (GraphSense TagPacks, MIT, pinned commit) |
 | optional | `threats/` | raw files for `make threats`; its output, `data/threat_tags.csv`, **is** tracked |
 
-Tracked and merged in from this repository: `derived/*.csv` (the derived deposit addresses), `artifacts/model_v1/` (their scores), `data/threat_tags.csv`. Without the two needed sets `make labels` stops and says which is missing. The figures in this README that count labels, and `make reproduce`, need the full database.
+Tracked and merged in from this repository: `derived/*.csv` (the derived deposit addresses), `artifacts/model_v1/` (their scores), `data/threat_tags.csv`. Without the two needed sets `make labels` stops and says which is missing. The figures in this README that count labels, and `make reproduce`, need the full database. `make test` does not: in a clone with only the recorded demo's labels it passes, and skips the four tests that read the full database.
 
 ## Quickstart
 ```bash

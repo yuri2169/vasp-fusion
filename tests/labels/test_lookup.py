@@ -109,7 +109,18 @@ def test_module_level_helpers_accept_a_db_path(fixture_db):
 
 
 # --------------------------------------------------------------- the real DB
-real = pytest.mark.skipif(not Path(DEFAULT_DB).exists(), reason="run `make labels` first")
+def _full_label_db() -> bool:
+    """The full label database is there: not missing, and not the recorded demo's 24
+    labels that `make demo-labels` writes in a clone without the label sets."""
+    if not Path(DEFAULT_DB).exists():
+        return False
+    with LabelStore(DEFAULT_DB) as s:
+        return s.con.execute("SELECT count(*) FROM labels").fetchone()[0] > 1000
+
+
+real = pytest.mark.skipif(not _full_label_db(), reason=(
+    "needs the full label database: `make labels` (the label sets are outside this "
+    "repository; `make demo-labels` builds only the recorded demo's labels)"))
 
 
 @real
