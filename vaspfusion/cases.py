@@ -24,7 +24,8 @@ from .labels.normalize import VASP_CATEGORIES
 from .labels.threats import tag_of
 from .screening import case_threats, screen
 from .provenance import case_headline, file_sha256  # noqa: F401 - re-exported
-from .trace import ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult, trace
+from .trace import (DEFAULT_WALLETS, ZERO, TraceConfig, TraceEdge, TraceNode, TraceResult,
+                    replay_config, trace)
 
 SEED = 26182
 CODE_VERSION = "b5-bitcoin-1"
@@ -181,6 +182,36 @@ def _where(tr: TraceResult) -> list[dict]:
              "amount": float(amount)} for (kind, name), amount in ranked]
 
 
+def budget_of(tr: TraceResult) -> dict:
+    """What the trace was allowed to read, what it read, and whether the allowance, not
+    the evidence, is what ended it (`S.TraceBudget`)."""
+    cfg = tr.config
+    side = next((s for s in ("outbound", "inbound") if s in tr.budget_ended), None)
+    by = tr.budget_ended.get(side) if side else None
+    left = tr.stopped.get("budget", ZERO)
+    share = float(left / tr.total_out) if tr.total_out else 0.0
+    read = tr.expanded("outbound")
+    if by is None:
+        text = (f"The budget did not end this trace: it read {read} of the {cfg.max_nodes} "
+                "wallets it may read on the way out.")
+    else:
+        limit = f"its budget of {cfg.max_nodes} wallets" if by == "wallets" \
+            else f"its time budget of {cfg.max_seconds:g} seconds"
+        where = "on the way out" if side == "outbound" else "looking at who funded the wallet"
+        text = f"The budget, not the evidence, ended this trace: it reached {limit} {where}."
+        if left > 0:
+            text += (f" {share:.0%} of the funds ({fmt_amount(left)} {tr.asset}) is in "
+                     "wallets it did not read.")
+        text += " Trace the wallet again with a larger budget to follow them."
+    return {"max_wallets": cfg.max_nodes, "max_hops": cfg.max_hops,
+            "max_seconds": cfg.max_seconds, "ended_by": by, "ended_side": side,
+            "wallets_read": read, "share_not_followed": round(share, 4), "text": text}
+
+
+def fmt_amount(d: Decimal) -> str:
+    return f"{d:,.2f}".rstrip("0").rstrip(".") if d % 1 else f"{d:,.0f}"
+
+
 def skeleton(summary: dict) -> dict:
     """A CaseDetail for a case that has no result yet (queued, running or failed)."""
     return {**summary, "hop_rail": [], "graph": {"nodes": [], "edges": []}, "candidates": [],
@@ -246,21 +277,27 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
         except Exception:  # noqa: BLE001 - a watcher that broke must not break the case
             pass
     att = attribute(tr, rules)
-    add_counterfactuals(tr, att, provider, labels, cfg, rules)
+    # checked without the clock: the re-traces stop where the trace itself stopped
+    add_counterfactuals(tr, att, provider, labels, replay_config(cfg, tr), rules)
     if scorer == "auto":
         from .classify.runtime import make_scorer
         scorer = make_scorer(chain, fetcher) if fetcher is not None else None
     notes = add_leads(tr, att, scorer, labels)
     now = now or datetime.now(timezone.utc)
-    prov: dict = {"label_db_sha256": label_db_sha256, "notes": notes}
+    prov: dict = {"label_db_sha256": label_db_sha256, "notes": notes, "budget": budget_of(tr)}
     trail = fetcher.trail[pages_before:] if fetcher is not None else []
     if fetcher is not None:
         went_live = fetcher.stats["live"] > live_before
         hosts = sorted({urlsplit(p["query"]).netloc for p in trail})
         prov.update(offline_replay=not went_live, fetched_at=now if went_live else None,
                     data_sources=hosts + ["label store"])
-    prov.update(P.run_provenance(P.case_input(address, chain, cfg.max_hops, cfg.since), trail,
-                                 model_dir=getattr(scorer, "model_dir", None)))
+    cut = [tr.stopped_after.get("outbound"), tr.stopped_after.get("inbound")] \
+        if tr.stopped_after else None
+    prov.update(P.run_provenance(
+        P.case_input(address, chain, cfg.max_hops, cfg.since,
+                     max_wallets=cfg.max_nodes if cfg.max_nodes != DEFAULT_WALLETS else None,
+                     max_seconds=cfg.max_seconds, stopped_after=cut),
+        trail, model_dir=getattr(scorer, "model_dir", None)))
     detail = build_case(tr, att, case_id=case_id or case_id_for(chain, address), meta=meta,
                         rules=rules, now=now, demo=demo, provenance=prov)
     # the fingerprint is taken from the case as it is stored and served (JSON form)
@@ -276,7 +313,12 @@ def replay_case(case_in: dict, fetcher, labels, *, label_db_sha256: str | None =
     since = case_in.get("since")
     if isinstance(since, str):
         since = datetime.fromisoformat(since.replace("Z", "+00:00"))
-    cfg = TraceConfig(max_hops=case_in["max_hops"], since=since)
+    # a trace that a time limit ended is replayed to where it stopped, without a clock
+    cut, seconds = case_in.get("stopped_after"), case_in.get("max_seconds")
+    cfg = TraceConfig(max_hops=case_in["max_hops"], since=since,
+                      max_nodes=case_in.get("max_wallets") or DEFAULT_WALLETS,
+                      max_seconds=seconds,
+                      stop_after=tuple(cut) if cut else (None, None) if seconds else None)
     chain = case_in["chain"]
     scorer = "auto"
     if provider_opts:

@@ -16,14 +16,27 @@ A wallet is not expanded when it is labelled (an exchange, bridge, mixer, any
 named party), is a hub (many distinct counterparties: commingled funds), sits at
 the hop limit, holds too little of the funds, or the budget is spent.
 
+The budget is the officer's to raise: how many wallets are read per direction
+(`max_nodes`, 40 unless raised), how deep (`max_hops`) and for how long
+(`max_seconds`). The walk goes hop by hop, and within a hop the wallet holding the
+largest share of the suspect's funds is read first, so whatever the budget, it is spent
+where most of the money went. When the budget, not the evidence, is what stopped the
+walk, the result says so (`TraceResult.budget_ended`) and the money left behind is
+counted under the reason `budget`.
+
+A time limit depends on the clock, so a trace it ended also records how many wallets
+each direction had asked for by then (`stopped_after`). The same trace with that count
+as `stop_after` stops at exactly the same wallet: this is how `verify` replays it.
+
 Backward is the mirror image (the latest inflows before a payment explain it),
 and a funder is only expanded when its whole inbound history came back, because
 the adapters page oldest-first and cannot ask for "the transfers before t".
 """
 from __future__ import annotations
 
+import time
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from decimal import ROUND_DOWN, Decimal
 from typing import Callable, Iterable, Protocol
@@ -33,6 +46,8 @@ from .labels.lookup import Label
 from .labels.normalize import VASP_CATEGORIES
 
 ZERO = Decimal(0)
+DEFAULT_WALLETS = 40             # the wallet budget every recorded case was traced with
+MAX_WALLETS = 2000               # what the interface draws (`make ui-perf`)
 _UNIT = Decimal("0.00000001")    # a satoshi: proportional parts on Bitcoin are whole satoshis
 # Native-coin transfers below this are dust (address poisoning, gas refunds).
 DUST_NATIVE = {"TRX": Decimal(1), "BTC": Decimal("0.00001")}
@@ -51,8 +66,18 @@ class TraceConfig:
     min_share: Decimal = Decimal("0.01")
     max_nodes: int = 40          # wallets expanded per direction
     since: datetime | None = None
+    max_seconds: float | None = None     # None = no time limit
+    # (outbound, inbound): stop asking for new wallets after this many, None = no stop.
+    # Set from a finished trace's `stopped_after` to replay a time-limited trace exactly:
+    # when it is set the clock is not consulted, and `max_seconds` only records what the
+    # officer asked for.
+    stop_after: tuple[int | None, int | None] | None = None
 
     def __post_init__(self):
+        if not 1 <= self.max_nodes <= MAX_WALLETS:
+            raise ValueError(f"the wallet budget must be 1..{MAX_WALLETS}, not {self.max_nodes}")
+        if self.max_seconds is not None and self.max_seconds <= 0:
+            raise ValueError(f"the time budget must be positive, not {self.max_seconds}")
         if not 1 <= self.max_hops <= 5:
             raise ValueError(f"max_hops must be 1..5, not {self.max_hops}")
         if not 0 <= self.inbound_hops <= 5:
@@ -105,6 +130,14 @@ class TraceResult:
     origin_label: Label | None = None
     notes: list[str] = field(default_factory=list)
     config: TraceConfig = field(default_factory=TraceConfig)
+    # side -> "wallets" | "time": the budget, not the evidence, stopped that direction
+    budget_ended: dict[str, str] = field(default_factory=dict)
+    # side -> wallets it had asked for when the time ran out (see TraceConfig.stop_after)
+    stopped_after: dict[str, int] = field(default_factory=dict)
+    seconds: float | None = None     # how long the walk took, when a time budget was set
+
+    def expanded(self, side: str) -> int:
+        return sum(1 for (s, _), n in self.nodes.items() if s == side and n.state == "expanded")
 
     def edges_into(self, side: str, address: str) -> list[TraceEdge]:
         """Traced transfers that reach `address`, walking away from the origin."""
@@ -229,9 +262,14 @@ class _Walk:
     """One direction of the trace. `sign` = +1 forward in time (outbound), -1 backward."""
 
     def __init__(self, result: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
-                 side: str, report: _Reporter | None = None):
+                 side: str, report: _Reporter | None = None,
+                 out_of_time: Callable[[], bool] | None = None):
         self.r, self.provider, self.labels, self.cfg, self.side = result, provider, labels, cfg, side
         self.report = report or _Reporter(None)
+        self.out_of_time = out_of_time or (lambda: False)
+        self.stop_at = None if cfg.stop_after is None \
+            else cfg.stop_after[0 if side == "outbound" else 1]
+        self.tried: set[str] = set()     # wallets whose listing this walk asked for
         self.sign = 1 if side == "outbound" else -1
         self.direction = "out" if side == "outbound" else "in"
         self.max_hops = cfg.max_hops if side == "outbound" else cfg.inbound_hops
@@ -363,7 +401,17 @@ class _Walk:
         if self.total and node.received / self.total < self.cfg.min_share:
             return "small"
         if len(self.expanded) >= self.cfg.max_nodes:
+            self.r.budget_ended.setdefault(self.side, "wallets")
             return "budget"
+        if self.stop_at is not None and len(self.tried) >= self.stop_at:
+            self.r.budget_ended.setdefault(self.side, "time")
+            self.r.stopped_after.setdefault(self.side, self.stop_at)
+            return "budget"
+        if self.out_of_time():
+            self.r.budget_ended.setdefault(self.side, "time")
+            self.r.stopped_after.setdefault(self.side, len(self.tried))
+            return "budget"
+        self.tried.add(node.address)
         return None
 
     def fetch(self, addr: str, edges: list[TraceEdge]) -> tuple[list[Transfer], bool]:
@@ -492,9 +540,19 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
     return chosen, rows, truncated, untraced
 
 
+def replay_config(cfg: TraceConfig, result: TraceResult) -> TraceConfig:
+    """`cfg` with its clock switched off: the same walk as `result`, stopping where it
+    stopped. A trace with no time limit is its own replay."""
+    if cfg.max_seconds is None:
+        return cfg
+    cut = result.stopped_after
+    return replace(cfg, stop_after=(cut.get("outbound"), cut.get("inbound")))
+
+
 def trace(address: str, chain: str, provider, labels: LabelLookup,
           cfg: TraceConfig = TraceConfig(),
-          on_progress: Callable[[dict], None] | None = None) -> TraceResult:
+          on_progress: Callable[[dict], None] | None = None,
+          clock: Callable[[], float] = time.monotonic) -> TraceResult:
     """`on_progress`, when given, is called with a snapshot each time the trace has read
     another wallet or reached a labelled one: `phase` (outbound, then inbound), `asset`,
     `hop` (how far out), `wallets_read`, `transfers_read`, `reached` (entity, category,
@@ -511,14 +569,21 @@ def trace(address: str, chain: str, provider, labels: LabelLookup,
         return r
     if hasattr(provider, "trace_from"):
         provider.trace_from(address)    # Bitcoin: whose multi-address spends may be split
-    _walks(r, provider, labels, cfg, _Reporter(on_progress))
+    out_of_time = None
+    timed = cfg.max_seconds is not None and cfg.stop_after is None
+    if timed:
+        start = clock()
+        out_of_time = lambda: clock() - start >= cfg.max_seconds     # noqa: E731
+    _walks(r, provider, labels, cfg, _Reporter(on_progress), out_of_time)
+    if timed:
+        r.seconds = clock() - start
     # what the label layer could not settle (Bitcoin clusters: an unread listing, two owners)
     r.notes += [n for n in getattr(labels, "notes", ()) if n not in r.notes]
     return r
 
 
 def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
-           report: _Reporter) -> None:
+           report: _Reporter, out_of_time: Callable[[], bool] | None = None) -> None:
     address = r.address
     # an adapter that lists newest-first cuts off the old end of a long history
     which = "most recent" if getattr(provider, "newest_first", False) and cfg.since is None \
@@ -537,7 +602,8 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
         r.notes.append(f"Only the {which} {len(rows)} outgoing {asset} transfers were traced; "
                        "the wallet has more.")
     if asset is not None:
-        _Walk(r, provider, labels, cfg, "outbound", report).start(asset, rows, r.total_out)
+        _Walk(r, provider, labels, cfg, "outbound", report, out_of_time).start(
+            asset, rows, r.total_out)
 
     if cfg.inbound_hops == 0:
         return
@@ -550,4 +616,5 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
         r.notes.append(f"Only the {which} {len(rows)} incoming {in_asset} transfers were "
                        "looked at; the wallet has more.")
     if in_asset is not None:
-        _Walk(r, provider, labels, cfg, "inbound", report).start(in_asset, rows, r.total_in)
+        _Walk(r, provider, labels, cfg, "inbound", report, out_of_time).start(
+            in_asset, rows, r.total_in)

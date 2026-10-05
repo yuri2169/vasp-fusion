@@ -353,6 +353,10 @@ def _lists(case: dict) -> list[dict]:
 def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
     asset = case.get("asset") or "one asset"
     hops = (case["provenance"].get("input") or {}).get("max_hops") or trace.max_hops
+    wallets = (case["provenance"].get("input") or {}).get("max_wallets") or trace.max_nodes
+    budget = case["provenance"].get("budget") or {}
+    # said only when the budget, not the evidence, is what ended the trace
+    ended = [budget["text"]] if budget.get("ended_by") else []
     bitcoin = case["chain"] == "bitcoin"
     utxo = [
         "A Bitcoin transaction has many inputs and many outputs and does not record which "
@@ -390,9 +394,10 @@ def limitations(case: dict, trace: TraceConfig = TraceConfig()) -> list[str]:
         "this file.",
         f"The trace stops at any labelled address, at a wallet with {trace.hub_degree} or more "
         f"counterparties (too busy to follow one person's money through), after {hops} "
-        f"hops, at shares under {fmt.pct(trace.min_share)}, and after {trace.max_nodes} "
+        f"hops, at shares under {fmt.pct(trace.min_share)}, and after {wallets} "
         "wallets. Funds beyond those points are counted under 'Where the funds went' and "
         "not followed.",
+        *ended,
         matching,
         *utxo,
         "Flags and leads describe patterns. They never decide the result.",
@@ -414,7 +419,11 @@ def _receipt(case: dict) -> list[dict]:
     rows = [("Findings fingerprint", r["findings_sha256"]),
             ("Input", f"{r['input']['chain']} {r['input']['address']}, hop limit "
                       f"{r['input']['max_hops']}"
-                      + (f", from {when(r['input']['since'])}" if r["input"].get("since") else "")),
+                      + (f", from {when(r['input']['since'])}" if r["input"].get("since") else "")
+                      + (f", budget {r['input']['max_wallets']} wallets"
+                         if r["input"].get("max_wallets") else "")
+                      + (f", time budget {r['input']['max_seconds']:g} s"
+                         if r["input"].get("max_seconds") else "")),
             ("Input SHA-256", r["input_sha256"]),
             ("Chain responses", f"{r['pages']} read from " + ", ".join(
                 s for s in r["data_sources"] if s != "label store")),

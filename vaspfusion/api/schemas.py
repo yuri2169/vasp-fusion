@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_serializer
 
 # ------------------------------------------------------------------ enums
 TraceChain = Literal["tron", "ethereum", "bsc", "polygon", "arbitrum", "base",
@@ -141,6 +141,10 @@ class CaseCreate(_M):
     amount_lost_inr: float | None = Field(None, ge=0)
     incident_date: date | None = None
     max_hops: int = Field(3, ge=1, le=5)
+    max_wallets: int = Field(40, ge=1, le=2000, description=(
+        "Trace budget: wallets read per direction. The largest shares are read first"))
+    max_seconds: float | None = Field(None, ge=1, le=3600, description=(
+        "Trace budget: stop reading new wallets after this many seconds"))
 
 
 class Screening(_M):
@@ -312,6 +316,36 @@ class CaseInput(_M):
     chain: str
     max_hops: int
     since: datetime | None = None
+    max_wallets: int | None = Field(None, description=(
+        "The wallet budget, present only when it was not the default of 40"))
+    max_seconds: float | None = Field(None, description="The time budget, when one was set")
+    stopped_after: list[int | None] | None = Field(None, description=(
+        "When the time budget ended the trace: how many wallets it had asked for by then, "
+        "[outbound, inbound]. `verify` replays the trace to exactly there"))
+
+    @model_serializer(mode="wrap")
+    def _only_a_changed_budget(self, handler):
+        """A case traced with the default budget keeps the four-field input (and so the
+        input digest) it has always had."""
+        out = handler(self)
+        for key in ("max_wallets", "max_seconds", "stopped_after"):
+            if out.get(key) is None:
+                out.pop(key, None)
+        return out
+
+
+class TraceBudget(_M):
+    """What the trace was allowed to read and whether that, not the evidence, ended it."""
+    max_wallets: int = Field(description="Wallets it may read per direction")
+    max_hops: int
+    max_seconds: float | None = None
+    ended_by: Literal["wallets", "time"] | None = Field(None, description=(
+        "Set when the budget stopped the walk; null when the evidence did"))
+    ended_side: Literal["outbound", "inbound"] | None = None
+    wallets_read: int = Field(description="Wallets read on the way out")
+    share_not_followed: float = Field(ge=0, le=1, description=(
+        "Share of the funds in wallets the budget left unread"))
+    text: str = Field(description="One sentence to show as it is")
 
 
 class PageDigest(_M):
@@ -346,6 +380,9 @@ class Provenance(_M):
     model_sha256: str | None = None
     git_commit: str | None = None
     git_dirty: bool | None = Field(None, description="true: the code had uncommitted changes")
+    budget: TraceBudget | None = Field(None, description=(
+        "The trace budget and whether it ended the trace; null in a case stored before "
+        "budgets could be changed"))
 
 
 class FundsSlice(_M):

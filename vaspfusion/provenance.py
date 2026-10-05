@@ -72,10 +72,24 @@ def sha256_of(obj) -> str:
 
 
 # ------------------------------------------------------------------ the parts
-def case_input(address: str, chain: str, max_hops: int, since: datetime | None) -> dict:
-    """The question a case answers. Everything else a trace depends on is code."""
-    return {"address": address, "chain": chain, "max_hops": max_hops,
-            "since": iso(since) if since is not None else None}
+def case_input(address: str, chain: str, max_hops: int, since: datetime | None, *,
+               max_wallets: int | None = None, max_seconds: float | None = None,
+               stopped_after: list | None = None) -> dict:
+    """The question a case answers. Everything else a trace depends on is code.
+
+    The budget is part of the question only when the officer changed it: a case traced
+    with the default budget has the same input, and the same input digest, as before
+    budgets could be changed. `stopped_after` is where a time limit ended the walk
+    (trace.py), which is what lets `verify` replay a trace that a clock ended."""
+    out = {"address": address, "chain": chain, "max_hops": max_hops,
+           "since": iso(since) if since is not None else None}
+    if max_wallets is not None:
+        out["max_wallets"] = max_wallets
+    if max_seconds is not None:
+        out["max_seconds"] = max_seconds
+    if stopped_after is not None:
+        out["stopped_after"] = list(stopped_after)
+    return out
 
 
 def responses(trail: list[dict]) -> list[dict]:
