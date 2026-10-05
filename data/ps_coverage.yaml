@@ -151,7 +151,7 @@ rows:
     section: Expected solution
     text: "Real-time generation of investigative intelligence."
     status: partly
-    what: "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 8 recorded wallets went from intake to 8 results in 4.4 seconds (artifacts/intake_timing.json)."
+    what: "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 11 recorded wallets, on six chains, went from intake to 11 results in 6.4 seconds (5.9 to 10.3 over four runs, the first the slowest; artifacts/intake_timing.json)."
     where: /cases/new
     evidence: {test: "tests/api/test_cases_live.py::test_a_running_case_says_what_the_trace_has_read_so_far"}
     gap: "That figure replays recorded chain responses with no network. A live trace also waits on the public chain APIs and their rate limits, which was not timed. Nothing watches a chain continuously: a watched wallet is checked when the officer asks."
@@ -179,7 +179,7 @@ rows:
     what: "Chain responses are cached, traces run in the background and a complaint's wallets are worked through a queue."
     where: /dashboard
     evidence: {make: intake-timing}
-    gap: "Measured only at small volume: 8 recorded wallets, 105 transfers, 114 chain responses, 4.4 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built."
+    gap: "Measured only at small volume: 11 recorded wallets, 137 transfers, 155 chain responses, 6.4 seconds, one process, no network (artifacts/intake_timing.json). A trace expands at most 40 wallets per direction and reads 100 transfers per wallet, and traces run one after another. Batch intake and a worker pool are not built."
 
   # ---------------------------------------------------------------- The solution should aim to
   - id: aim-time

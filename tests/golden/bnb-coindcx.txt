@@ -102,6 +102,30 @@ PATH TO THE NAMED EXCHANGE
   Hop | From -> to | Traced funds | Time | After | Transaction
   1 | W0 -> W1 | 200 USDT (Rs 19,158) | 27 Oct 2022, 10:24:41 UTC | - | 0xa7e17a3b1305cb85bf5f6022744ab7dbfc6d01d7d2254afc72a6223bc18b58fc
 
+RISK INDICATORS
+---------------
+Risk class: Low (score 15 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+    [Most funds stopped at an unlabelled high-activity wallet (+15)] 55% of the funds stopped at
+    unlabelled wallets with a great many counterparties, where the trail cannot be followed
+    further
+        tx 0x55adb43b6bf5058e358c80ccee790555680bb2e842f4922a652c46fce5344dee
+        tx 0x5ac5600fab5d0feb9837a3dbd51cebccc628f8b58a7945d0a6b53dc61a95bf03
+        tx 0x6a335c50a18a721a59340c179e0c532f57b1f12303e6b0e12aa068fc4c2546fa
+        tx 0x6f761eba70607748db8e3380e2c3ff7ad0546e193eb77cde469c69464eb585f1
+        tx 0x75e23cab2fa4b95099b13b45e75f8497f95f926bb16de6129212e8db4e9fe731
+        tx 0x7ae59fe363d75826327975276cfc1344059b895286b972ed55ebc82239e56057
+        tx 0x9d585a0877cc10c2a3b5f926fb4a240fe963adfa41176d9b2ffce18ba2a45f7d
+        tx 0xb24ac1ebedd809cd385c5c6bcd7d3c6f89497f234a272fdf8784d27a33afbc89
+        tx 0xcbdece5305c783a2d36442b27bf1c9149b47580bf4bc3d9614a5057b2b3c4dd0
+        tx 0xdb2cb5ebe7a255f1f75c2247737cb59d8be6615ad85e23c07c3793150f349b67
+        tx 0xe8cf2f32400360cb0ed840bbdd038828d7e42fd55b737b06c53ae3a9021899f1
+Transaction flows: All 23 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each

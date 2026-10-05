@@ -81,6 +81,18 @@ PATH TO THE NAMED EXCHANGE
   Hop | From -> to | Traced funds | Time | After | Transaction
   1 | W0 -> W1 | 476 USDT (Rs 45,596) | 28 Sep 2026, 05:34:36 UTC | - | 0x66fd7739c521b3eaee1a40a13d2d6602d9b314e1d4a5aeaf7767661254324fbe
 
+RISK INDICATORS
+---------------
+Risk class: Low (score 0 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+No indicator is present in the traced funds.
+
+Transaction flows: All 4 transfers read are Low. The path shown above is Low.
+
+
 HOW THE CONFIDENCE WAS WORKED OUT
 ---------------------------------
 Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
