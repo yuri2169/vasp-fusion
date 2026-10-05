@@ -105,3 +105,41 @@ def test_a_case_a_time_limit_ended_records_where_and_verifies(cache, default, mo
     result = verify(case, cache)                 # replayed with no clock at all
     assert result["matches"] is True, (result["summary"], result["checks"])
     assert prov["findings_sha256"] != default["provenance"]["findings_sha256"]
+
+
+# ------------------------------------------------------------ across a bridge
+BRIDGED = "eth-bridge"          # real: 60% of it came out on Base
+
+
+def run_bridged(cache, **budget) -> dict:
+    spec = SPECS[BRIDGED]
+    fetcher = demo_fetcher(cache, BRIDGED)
+    cfg = TraceConfig(max_hops=spec["max_hops"], **budget)
+    return C.run_case(spec["address"], spec["chain"], demo_provider(spec["chain"], fetcher, cfg),
+                      DemoLabels(), case_id=BRIDGED, cfg=cfg, fetcher=fetcher, now=NOW,
+                      scorer=make_scorer(spec["chain"], fetcher, key="test-key"),
+                      provider_opts={"key": "test-key"})
+
+
+def test_the_wallets_read_past_a_bridge_come_out_of_the_same_budget(cache):
+    whole = run_bridged(cache)
+    assert whole["chains"] == ["ethereum", "base"]
+    read = whole["provenance"]["budget"]["wallets_read"]
+    case = run_bridged(cache, max_nodes=read - 1)
+    budget = case["provenance"]["budget"]
+    assert (budget["ended_by"], budget["wallets_read"]) == ("wallets", read - 1)
+    assert case["chains"] == ["ethereum", "base"]        # the crossing itself is still shown
+    result = verify(case, cache)
+    assert result["matches"] is True, result["summary"]
+
+
+def test_a_time_limit_that_ends_a_bridged_trace_replays_exactly(cache, monkeypatch):
+    clock = Ticks()
+    monkeypatch.setattr(C, "trace", lambda *a, **k: trace(*a, **k, clock=clock))
+    case = run_bridged(cache, max_seconds=2.5)
+    monkeypatch.undo()
+    prov = case["provenance"]
+    assert prov["budget"]["ended_by"] == "time" and prov["input"]["stopped_after"] == [2, None]
+    assert case["chains"] == ["ethereum", "base"]
+    result = verify(case, cache)                 # replayed with no clock at all
+    assert result["matches"] is True, (result["summary"], result["checks"])
