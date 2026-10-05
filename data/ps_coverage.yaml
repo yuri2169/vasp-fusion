@@ -117,7 +117,7 @@ rows:
     section: The system may additionally support
     text: "alerting for high-risk wallets linked to ransomware, darknet, terrorism financing, or fraud ecosystems"
     status: built
-    what: "Labels carry threat tags from cited public sources (the OFAC SDN list, Ransomwhere, GraphSense TagPacks, scam lists): ransomware, darknet market, terrorism financing, fraud. A case is screened when it is opened, a link to a tagged address is an alert that names the threat and the source, and a watched wallet raises a change on a new link or a higher risk class. A wallet none of those sources lists raises nothing: the alert is only as wide as the lists."
+    what: "Labels carry threat tags from cited public sources (the OFAC SDN list, Ransomwhere, GraphSense TagPacks, scam lists): ransomware, darknet market, terrorism financing, fraud. A case is screened when it is opened, a link to a tagged address is an alert that names the threat and the source, and a watched wallet raises a change on a new link or a higher risk class. A wallet none of those sources lists raises nothing: the alert is only as wide as the lists, and they are uneven by chain (the Tron tags are terrorism financing and sanctions only; the ransomware and darknet tags are Bitcoin; fraud is mostly Ethereum)."
     where: /watchlist
     evidence: {test: "tests/test_wallets_watch.py::test_a_recheck_that_finds_a_new_link_to_a_tagged_address_is_a_high_change"}
 
