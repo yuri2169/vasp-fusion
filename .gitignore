@@ -6,7 +6,8 @@ __pycache__/
 .pytest_cache/
 wheels/
 
-# Built from ../research/data by `make labels`; ~115k rows, rebuilt in seconds.
+# Built from ../research/data by `make labels` (the label sets are not in this repository),
+# or by `make demo-labels` from tracked files (only the labels the recorded demo read).
 data/labels.duckdb
 data/*.duckdb.tmp
 data/case.duckdb

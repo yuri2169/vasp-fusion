@@ -177,3 +177,36 @@ def test_the_demo_seeds_the_watchlist_once_each_with_a_real_first_check(machine,
     assert "5 wallets on the watchlist (0 added)" in capsys.readouterr().out
     again = {e["address"]: e for e in WatchStore().list()}
     assert {a: e["added_at"] for a, e in again.items()} == {a: e["added_at"] for a, e in entries.items()}
+
+
+# ------------------------------------------------------------------ a clone without the label sets
+def test_demo_labels_builds_the_database_the_recorded_demo_needs(tmp_path, capsys):
+    db = tmp_path / "labels.duckdb"
+    cli.main(["demo-labels", "--db", str(db)])
+    said = capsys.readouterr().out
+    assert "24 labels" in said and "NOT the full label database" in said
+    from vaspfusion.labels.lookup import LabelStore
+    with LabelStore(db) as store:       # a real label store: the CoinDCX wallet is in it
+        got = store.lookup_many([("TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs", "tron")])
+    assert [lab.entity for lab in got.values()] == ["CoinDCX"]
+
+
+def test_demo_labels_never_replaces_a_database_that_is_there(tmp_path, capsys):
+    db = tmp_path / "labels.duckdb"
+    db.write_bytes(b"the full label database")
+    cli.main(["demo-labels", "--db", str(db)])
+    assert db.read_bytes() == b"the full label database"
+    assert "left alone" in capsys.readouterr().out
+    cli.main(["demo-labels", "--db", str(db), "--force"])
+    assert db.read_bytes() != b"the full label database"
+
+
+def test_labels_without_the_label_sets_says_what_is_missing_and_what_to_do(tmp_path, capsys):
+    with pytest.raises(SystemExit) as stop:
+        cli.main(["labels", "--research", str(tmp_path / "nowhere"),
+                  "--db", str(tmp_path / "labels.duckdb")])
+    assert stop.value.code == 1
+    said = capsys.readouterr().err
+    assert "wallet-attribution" in said and "indian_vasps_dune_spellbook.csv" in said
+    assert "make demo-labels" in said and "RESEARCH=" in said
+    assert not (tmp_path / "labels.duckdb").exists()

@@ -2,8 +2,11 @@
 PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.venv/bin/python)
 PORT    ?= 8000
 RESEARCH ?= ../research/data
+# The recorded demo, with no network and no key: the cache built from the tracked recordings.
+# Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
+OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -12,8 +15,20 @@ setup:            ## create the venv and install everything (needs network ONCE)
 	uv venv --python 3.12
 	uv pip install -e ".[dev]"
 
-labels:           ## build data/labels.duckdb from the research label CSVs + derived/, print stats
+labels:           ## build data/labels.duckdb from the research label CSVs + derived/, print stats (needs $(RESEARCH), which is not in this repository: see the README)
 	$(PY) -m vaspfusion.cli labels --research "$(RESEARCH)" --db data/labels.duckdb
+
+demo-labels:      ## data/labels.duckdb with only the labels the recorded demo read (tracked; no research data needed). Leaves an existing database alone
+	$(PY) -m vaspfusion.cli demo-labels
+
+offline-demo:     ## from a fresh clone, no network, no keys, no research data: labels (if none), the demo cache, the twelve recorded cases checked against their fingerprints, verify
+	@test -f data/labels.duckdb || $(PY) -m vaspfusion.cli demo-labels
+	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli demo-cache
+	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli demo --golden tests/golden/fingerprints.json
+	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli verify --all
+
+offline-serve:    ## serve what `make offline-demo` stored on :$(PORT), still with no network (the interface too, after `make ui-setup ui-build`)
+	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli serve --port $(PORT)
 
 tagpacks:         ## flatten the GraphSense exchange TagPacks ($(RESEARCH)/graphsense-tagpacks/packs) into the CSV `make labels` reads
 	$(PY) -m vaspfusion.cli tagpacks --packs "$(RESEARCH)/graphsense-tagpacks/packs" \
@@ -137,7 +152,7 @@ reproduce:        ## regenerate every artifact that comes from tracked files and
 GIT_COMMIT := $(shell git rev-parse HEAD 2>/dev/null || echo unknown)
 IMAGE   ?= vasp-fusion:offline
 docker:           ## build the offline image (needs data/labels.duckdb: `make labels`); UI=build adds the interface
-	@test -f data/labels.duckdb || (echo "data/labels.duckdb is missing: run 'make labels' first" && exit 1)
+	@test -f data/labels.duckdb || (echo "data/labels.duckdb is missing: run 'make labels' (the full label database, needs the label sets) or 'make demo-labels' (the recorded demo's labels, from tracked files)" && exit 1)
 	GIT_COMMIT=$(GIT_COMMIT) docker compose build
 
 docker-up:        ## run it on http://127.0.0.1:$(PORT) (sign in with the account in demo/officer.json)

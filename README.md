@@ -55,10 +55,34 @@ A named exchange is a lead to confirm with the exchange, not proof. The wrongly-
 
 Rupee amounts are shown beside US dollars at one dated reference rate (`config/fx.yaml`: the RBI reference rate, with its source).
 
+## Run it from a fresh clone
+Needs: Python 3.12 with [uv](https://docs.astral.sh/uv/), `make`, and Node 22 for the interface. No API key, no network after the install, and **no data from outside this repository**.
+```bash
+make setup                 # uv venv (Python 3.12) + install (network once)
+make offline-demo          # the recorded labels, the demo cache, the 12 recorded cases checked against their fingerprints, verify
+make ui-setup ui-build     # the interface (network once, for npm)
+make offline-serve         # http://127.0.0.1:8000, with no network
+```
+- `make offline-demo` must end with "12/12 as expected" and "12/12 golden fingerprints reproduced". Everything it reads is tracked: the chain responses the traces read (`tests/fixtures/demo/`) and the label rows those traces were answered with (`tests/fixtures/demo/labels.json`).
+- **What that label database is.** `make demo-labels` (run by `offline-demo` when there is no `data/labels.duckdb`) writes the 24 real label rows the recorded traces read, exactly as the full label database returned them. The recorded cases give the same findings on it. It is **not** the full label store: the label counts in "Label store" below do not apply to it, the Labels page lists 24 labels, and a wallet that was not recorded meets almost no label. It never replaces a database that is already there.
+- With Docker instead: `make demo-labels && UI=build make docker && make docker-up && make docker-smoke`.
+
+### Prerequisites for the full label database (`make labels`)
+`data/labels.duckdb` is not tracked (73 MB, rebuilt in seconds) and `make labels` builds it from third-party label sets that are **not in this repository**. It reads them from `../research/data` (or `make labels RESEARCH=<path>`):
+
+| Needed | File or folder under `RESEARCH` | Source |
+|---|---|---|
+| yes | `wallet-attribution/data/*.csv` (one CSV per chain) | the wallet-attribution label set (MIT) |
+| yes | `indian_vasps_dune_spellbook.csv` | the Dune spellbook extract of CoinDCX, WazirX and CoinSwitch addresses |
+| optional | `graphsense_tagpacks_exchange.csv` | written by `make tagpacks` from `graphsense-tagpacks/packs` (GraphSense TagPacks, MIT, pinned commit) |
+| optional | `threats/` | raw files for `make threats`; its output, `data/threat_tags.csv`, **is** tracked |
+
+Tracked and merged in from this repository: `derived/*.csv` (the derived deposit addresses), `artifacts/model_v1/` (their scores), `data/threat_tags.csv`. Without the two needed sets `make labels` stops and says which is missing. The figures in this README that count labels, and `make reproduce`, need the full database.
+
 ## Quickstart
 ```bash
 make setup     # uv venv (Python 3.12) + install
-make labels    # build data/labels.duckdb from ../research/data and print the stats
+make labels    # build data/labels.duckdb from ../research/data and print the stats (see the prerequisites above; `make demo-labels` without them)
 make test      # pytest
 make serve     # API on http://127.0.0.1:8000  (docs at /docs)
 make fetch ADDR=TGjpmhAFT6d7eBKvaFwPVN6H2pDKgLLZiw   # transfers, cached; OFFLINE=1 = cache only
@@ -81,7 +105,7 @@ The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, th
 
 ## Offline demo in Docker
 ```bash
-make labels          # once: the image bakes data/labels.duckdb in
+make labels          # once: the image bakes data/labels.duckdb in (`make demo-labels` in a clone without the label sets)
 make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
 make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
 make docker-smoke    # 80 checks in a throwaway container started with --network none

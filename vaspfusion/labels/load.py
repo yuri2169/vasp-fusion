@@ -339,6 +339,46 @@ def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
                 "SELECT source, tier, count(*) FROM labels GROUP BY 1, 2").fetchall())}
 
 
+RECORDED_LABELS = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "demo" / "labels.json"
+
+
+def missing_sources(wa_dir: Path, dune_csv: Path) -> list[str]:
+    """The label sources `build_labels` cannot do without and that are not there."""
+    missing = []
+    if not any(Path(wa_dir).glob("*.csv")):
+        missing.append(f"{wa_dir}/*.csv (the wallet-attribution set, one CSV per chain)")
+    if not Path(dune_csv).is_file():
+        missing.append(f"{dune_csv} (the Dune spellbook extract of Indian exchanges)")
+    return missing
+
+
+def build_recorded_labels(db_path: Path, json_path: Path = RECORDED_LABELS) -> dict:
+    """A label database holding only the rows the recorded demo wallets' traces read.
+
+    The full database is built from label sets that are not part of this repository.
+    What is tracked is every row of it that the twelve recorded traces (and the two
+    watchlist traces) were answered with, kept as they were returned
+    (tests/fixtures/demo/labels.json). A database of just those rows gives the same
+    answer for those wallets: the same findings fingerprints, checked by
+    `cli demo --golden`. It is not a label store for anything else: a wallet that was
+    not recorded meets almost no label here."""
+    import json
+    from ..labels.lookup import Label
+    rows = json.loads(Path(json_path).read_text())["labels"].values()
+    labels = [Label.from_dict(r) for r in rows]        # rows of any vintage, model as JSON
+    db_path = Path(db_path)
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = db_path.with_name(db_path.name + ".tmp")
+    tmp.unlink(missing_ok=True)
+    with duckdb.connect(str(tmp)) as con:
+        con.execute(_DDL)
+        con.executemany(f"INSERT INTO labels VALUES ({', '.join('?' * len(LABEL_COLUMNS))})",
+                        [[getattr(lab, c) for c in LABEL_COLUMNS] for lab in labels])
+        stats = label_stats(con)
+    tmp.replace(db_path)
+    return stats
+
+
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
                  derived_dir: Path | None = None, model_dir: Path | None = None,
                  tagpacks_csv: Path | None = None, threats_csv: Path | None = None) -> dict:

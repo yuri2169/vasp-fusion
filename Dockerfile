@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 # VASP-FUSION, the offline demo image: one container, one port, no network at run time.
 #
-#   make docker        build it (needs data/labels.duckdb: `make labels` first)
+#   make docker        build it (needs data/labels.duckdb: `make labels` first, or
+#                      `make demo-labels` in a clone without the label sets)
 #   make docker-up     http://127.0.0.1:8000
 #   make docker-smoke  drive the whole demo inside a container that has no network
 #

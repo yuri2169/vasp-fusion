@@ -63,16 +63,8 @@ def demo_provider(chain: str, fetcher: Fetcher, cfg: TraceConfig = TraceConfig()
 
 def demo_label_db(path) -> Path:
     """A real label DB file holding just the rows in labels.json (for the API tests)."""
-    import duckdb
-
-    from vaspfusion.labels.load import _DDL, LABEL_COLUMNS
-    rows = json.loads((FIX / "labels.json").read_text())["labels"].values()
-    con = duckdb.connect(str(path))
-    con.execute(_DDL)
-    labels = [Label.from_dict(r) for r in rows]        # rows of any vintage, model as JSON
-    con.executemany(f"INSERT INTO labels VALUES ({', '.join('?' * len(LABEL_COLUMNS))})",
-                    [[getattr(l, c) for c in LABEL_COLUMNS] for l in labels])
-    con.close()
+    from vaspfusion.labels.load import build_recorded_labels
+    build_recorded_labels(Path(path), FIX / "labels.json")     # what `cli demo-labels` runs
     return Path(path)
 
 

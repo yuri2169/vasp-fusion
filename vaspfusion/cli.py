@@ -65,8 +65,20 @@ def cmd_threats(args) -> None:
 
 
 def cmd_labels(args) -> None:
-    from .labels.load import build_labels
+    import sys
+
+    from .labels.load import build_labels, missing_sources
     research = Path(args.research)
+    missing = missing_sources(research / "wallet-attribution" / "data",
+                              research / "indian_vasps_dune_spellbook.csv")
+    if missing:
+        print(f"The label sources are not at {research}:\n  " + "\n  ".join(missing) + "\n"
+              "They are third-party label sets kept outside this repository (README, "
+              "\"Label store\"). Give their folder with `make labels RESEARCH=<path>`.\n"
+              "To run the recorded demo without them: `make demo-labels` builds a database "
+              "of the labels the recorded traces read (see `make offline-demo`).",
+              file=sys.stderr)
+        raise SystemExit(1)
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
                          research / "indian_vasps_dune_spellbook.csv",
                          derived_dir=Path(args.derived), model_dir=Path(args.model),
@@ -601,6 +613,22 @@ def cmd_trace(args) -> None:
           f"case id {case['id']}" + (" (saved)" if args.save else ""))
 
 
+def cmd_demo_labels(args) -> None:
+    """A label database of only the rows the recorded demo read (no research data needed)."""
+    from .labels.load import build_recorded_labels
+    db = Path(args.db)
+    if db.exists() and not args.force:
+        print(f"{db} is already there and was left alone (it may be the full label database). "
+              "`--force` replaces it.")
+        return
+    stats = build_recorded_labels(db, Path(args.file))
+    print(f"labels -> {db}\n  {stats['total']:,} labels: the rows the recorded demo wallets' "
+          f"traces read, from {args.file}\n  This is NOT the full label database (which "
+          "`make labels` builds from label sets kept outside this repository). "
+          "The recorded cases reproduce their fingerprints on it; a wallet that was not "
+          "recorded meets almost no label, and the label counts in the README do not apply.")
+
+
 def cmd_demo(args) -> None:
     """Run every wallet in demo/cases.json into the case store and check the results."""
     import sys
@@ -1112,6 +1140,13 @@ def main(argv: list[str] | None = None) -> None:
                    help="no tracing: measure again from the tracked claims.csv")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_abstain_eval)
+
+    s = sub.add_parser("demo-labels", help="a label database of only the rows the recorded "
+                                           "demo read (no research data needed)")
+    s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.add_argument("--file", default=str(ROOT / "tests" / "fixtures" / "demo" / "labels.json"))
+    s.add_argument("--force", action="store_true", help="replace a database that is there")
+    s.set_defaults(fn=cmd_demo_labels)
 
     s = sub.add_parser("demo", help="run the demo wallets into the case store and check them")
     s.add_argument("--file", default=str(ROOT / "demo" / "cases.json"))
