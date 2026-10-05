@@ -3,7 +3,7 @@ PY      := $(if $(wildcard .venv/Scripts/python.exe),.venv/Scripts/python.exe,.v
 PORT    ?= 8000
 RESEARCH ?= ../research/data
 
-.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -47,8 +47,8 @@ abstain-eval:     ## measure the abstain threshold on label-hidden traces of rea
 test:             ## unit + integration tests
 	$(PY) -m pytest -q
 
-serve:            ## run the API on :$(PORT)
-	$(PY) -m vaspfusion.cli serve --port $(PORT)
+serve:            ## run the API on :$(PORT); WORKERS=4 traces queued wallets in 4 worker processes
+	$(PY) -m vaspfusion.cli serve --port $(PORT) $(if $(WORKERS),--workers $(WORKERS))
 
 fetch:            ## transfers for ADDR=<address> [CHAIN=..] (cached; OFFLINE=1 = cache only)
 	$(PY) -m vaspfusion.cli fetch "$(ADDR)" $(if $(CHAIN),--chain $(CHAIN))
@@ -117,6 +117,10 @@ ui-shots:         ## screenshots of /kit and the shell into docs/screenshots/ (n
 
 intake-timing:    ## time the SAHYOG intake end to end on the recorded wallets (no network; after `make demo-cache`)
 	$(PY) scripts/intake_timing.py --out artifacts/intake_timing.json
+
+ROUNDS ?= 25
+bench-scale:      ## measure throughput at 1, 2, 4 and 8 workers on the recorded wallets -> artifacts/scale/metrics.json (no network; after `make demo-cache`)
+	$(PY) scripts/bench_scale.py --rounds $(ROUNDS) --out artifacts/scale/metrics.json
 
 offline-check:    ## fail if code outside vaspfusion/chains/ can reach the network
 	@! grep -rnE "https?://" --include=*.py --exclude-dir=chains vaspfusion/ \

@@ -180,6 +180,26 @@ class JobQueue:
             return bool(got)
         return self._tx(fn)
 
+    def release(self, case_id: str, worker: str) -> str | None:
+        """Give a running job back (the process tracing it died under `worker`): it is
+        queued again, or failed once it has been claimed `MAX_ATTEMPTS` times. Returns
+        "queued", "failed", or None when the job was not the worker's."""
+        def fn(con):
+            row = con.execute("SELECT attempts FROM trace_jobs WHERE case_id = ? AND "
+                              "worker = ? AND state = 'running'", [case_id, worker]).fetchone()
+            if row is None:
+                return None
+            if row[0] >= MAX_ATTEMPTS:
+                con.execute("UPDATE trace_jobs SET state = 'failed', finished_at = ?, "
+                            "error = ? WHERE case_id = ?",
+                            [self.clock(), f"The trace stopped {row[0]} times before it "
+                             "finished.", case_id])
+                return "failed"
+            con.execute("UPDATE trace_jobs SET state = 'queued', worker = NULL, "
+                        "progress = NULL WHERE case_id = ?", [case_id])
+            return "queued"
+        return self._tx(fn)
+
     def requeue_stale(self) -> tuple[list[str], list[str]]:
         """Queue again every running job whose worker is gone; a job that has already
         been claimed `MAX_ATTEMPTS` times fails instead. Returns (requeued, failed)."""
