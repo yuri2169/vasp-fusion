@@ -84,7 +84,7 @@ The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, th
 make labels          # once: the image bakes data/labels.duckdb in
 make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
 make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
-make docker-smoke    # 75 checks in a throwaway container started with --network none
+make docker-smoke    # 79 checks in a throwaway container started with --network none
 UI=build make docker # the same image with the interface compiled in (what the demo uses)
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
