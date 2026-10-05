@@ -4,7 +4,7 @@ import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CaseDetail } from '../api/models'
 import { readCase, readMock } from '../test/files'
-import { bigCase } from '../../scripts/big-graph.mjs'
+import { bigCase, fanCase } from '../../scripts/big-graph.mjs'
 import { FlowGraph } from './FlowGraph'
 
 /** jsdom has no canvas, so Cytoscape itself is stood in for here: the test checks what the
@@ -368,5 +368,35 @@ describe('FlowGraph on a large graph (2,000 wallets, a synthetic shape)', () => 
   it('leaves a small case exactly as it was: no note, every wallet drawn', () => {
     render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
     expect(screen.queryByRole('group', { name: 'Parts of the graph not drawn' })).not.toBeInTheDocument()
+  })
+})
+
+describe('FlowGraph: a fan of payers (a synthetic shape of 10)', () => {
+  const ten = fanCase(10)
+  const fan = `fan:in:${ten.address}`
+  const drawn = () => fake.state.added.at(-1)!.map((e) => e.data.id).filter((id) => /^p\d+$/.test(id))
+
+  it('draws four payers and one group, and says so in the legend', () => {
+    render(<FlowGraph c={ten} selected={null} onSelect={() => {}} />)
+    expect(drawn()).toHaveLength(4)
+    expect(fake.state.added.at(-1)!.some((e) => e.data.id === fan)).toBe(true)
+    expect(within(screen.getByRole('group', { name: 'How to read the graph' })).getByText(/Several small wallets drawn as one/)).toBeInTheDocument()
+  })
+
+  it('opens the group in place on a click, without selecting anything, and Collapse closes it', async () => {
+    const onSelect = vi.fn()
+    render(<FlowGraph c={ten} selected={null} onSelect={onSelect} />)
+    fire('tap', 'node', element(fan))
+    expect(onSelect).not.toHaveBeenCalled()
+    expect(drawn()).toHaveLength(10)
+    expect(fake.state.added.at(-1)!.some((e) => e.data.id === fan)).toBe(false)
+    await userEvent.click(screen.getByRole('button', { name: 'Collapse the wallets that paid the suspect wallet' }))
+    expect(drawn()).toHaveLength(4)
+    expect(screen.queryByRole('button', { name: /^Collapse the wallets/ })).not.toBeInTheDocument()
+  })
+
+  it('counts every wallet for a screen reader, grouped or not', () => {
+    render(<FlowGraph c={ten} selected={null} onSelect={() => {}} />)
+    expect(screen.getByRole('img', { name: new RegExp(`${ten.graph.nodes.length} wallets and ${ten.graph.edges.length} transfers`) })).toBeInTheDocument()
   })
 })

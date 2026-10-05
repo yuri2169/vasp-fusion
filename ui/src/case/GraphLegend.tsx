@@ -75,7 +75,8 @@ const item = 'flex items-center gap-1.5 whitespace-nowrap text-sm text-fg'
 
 /** How to read the picture, in words: only the shapes and borders this case uses. */
 export function GraphLegend({ view, named, flagged = false }: { view: FlowView; named?: string | null; flagged?: boolean }) {
-  const wallets = view.nodes.filter((n) => n.kind !== 'more')
+  const wallets = view.nodes.filter((n) => n.kind !== 'more' && n.kind !== 'fan')
+  const hasFan = view.nodes.some((n) => n.kind === 'fan')
   const roles = ROLE_ORDER.filter((role) => wallets.some((n) => n.role === role))
   const tiers = TIER_ORDER.filter((tier) => wallets.some((n) => n.role !== 'suspect' && (n.tier ?? 'none') === tier))
   const hasMore = view.nodes.some((n) => n.kind === 'more')
@@ -106,6 +107,14 @@ export function GraphLegend({ view, named, flagged = false }: { view: FlowView; 
               <rect x={2} y={4} width={26} height={12} fill="var(--surface-2)" stroke="var(--ink-soft)" strokeWidth={1} strokeDasharray="4 3" />
             </svg>
             The rest of a hop, not drawn one by one
+          </li>
+        )}
+        {hasFan && (
+          <li className={item}>
+            <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
+              <rect x={2} y={4} width={26} height={12} fill="var(--surface-2)" stroke="var(--chain)" strokeWidth={1} strokeDasharray="4 3" />
+            </svg>
+            Several small wallets drawn as one (click it to open them)
           </li>
         )}
       </ul>

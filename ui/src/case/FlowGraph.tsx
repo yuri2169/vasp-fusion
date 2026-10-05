@@ -5,17 +5,17 @@ import type { CaseDetail, FlowRisk } from '../api/models'
 import { Button } from '../components/Button'
 import { TIERS } from '../components/TierTag'
 import { Tip } from '../components/Tip'
-import { BIG_GRAPH, buildFlow, clusterable, focusOf, foldFlow, pathTo, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
+import { BIG_GRAPH, buildFlow, clusterable, FAN_KEEP, focusOf, foldFlow, pathTo, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
 import { cx } from '../lib/cx'
 import { downloadText, downloadUrl } from '../lib/download'
-import { formatAmount, formatDateTime } from '../lib/format'
+import { formatAmount, formatDateTime, truncateMiddle } from '../lib/format'
 import { count, plural } from '../overview/words'
 import { toGraphML } from '../lib/graphml'
 import { replaySteps, shownAt, type ReplayStep } from '../lib/replay'
 import { ROLE_NAMES } from './caseText'
 import { GraphLegend } from './GraphLegend'
 import { RISK_WORDS } from '../components/RiskTag'
-import { captionY, edgeRisk, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
+import { captionY, edgeRisk, fanWords, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
 
 /** The page's colours as the canvas needs them, read again whenever the theme changes. */
 function useThemeColors(): ThemeColors {
@@ -101,8 +101,13 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const [hops, setHops] = useState<number | null>(null)
   const [opened, setOpened] = useState<ReadonlyMap<number, number>>(new Map())
 
+  // The fans the officer opened: the wallets of each are drawn one by one until it is collapsed.
+  const [openFans, setOpenFans] = useState<ReadonlySet<string>>(new Set())
+  const openFan = (id: string) => setOpenFans((was) => new Set(was).add(id))
+  const closeFan = (id: string) => setOpenFans((was) => new Set([...was].filter((x) => x !== id)))
+
   const canGroup = clusterable(c)
-  const full = useMemo(() => buildFlow(c, { collapse: collapse && canGroup }), [c, collapse, canGroup])
+  const full = useMemo(() => buildFlow(c, { collapse: collapse && canGroup, openFans }), [c, collapse, canGroup, openFans])
   const pathEnds = useMemo(() => full.nodes.reduce((max, n) => (n.onPath ? Math.max(max, n.column) : max), 2), [full])
   const folded = useMemo(() => {
     if (!big) return null
@@ -124,7 +129,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   // How many transfers are drawn. All of them, unless the officer is replaying.
   // It belongs to one picture: another case, a grouping or an opened hop starts it over.
   const [replay, setReplay] = useState<{ shape: string; at: number | null; play: boolean }>({ shape: '', at: null, play: false })
-  const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}`
+  const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}|${[...openFans].join()}`
   const fitted = useRef<string | null>(null)
 
   const mine = replay.shape === shape
@@ -145,9 +150,9 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
 
   // The canvas's handlers outlive a render: they read what is current through these.
-  const live = useRef({ view, onSelect, openMore })
+  const live = useRef({ view, onSelect, openMore, openFan })
   useEffect(() => {
-    live.current = { view, onSelect, openMore }
+    live.current = { view, onSelect, openMore, openFan }
   })
 
   const fit = (onlyPath = false) => {
@@ -198,12 +203,18 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       maxZoom: 3,
     })
     cyRef.current = cy
+    // a new canvas has not been fitted, whatever the last one was
+    fitted.current = null
+    // For the scripts that drive the page in a real browser (ui/scripts): where a wallet is drawn.
+    ;(window as { __flowCy?: Core }).__flowCy = cy
 
     const frame = () => container.current!.getBoundingClientRect()
     cy.on('tap', 'node', (e: EventObject) => {
       const id: string = e.target.id()
       // The rest of a hop is not a wallet to open: a click draws more of that hop.
       if (id.startsWith('more:')) live.current.openMore(Number(id.slice('more:'.length)))
+      // nor is a fan's group: a click draws its wallets one by one, in place
+      else if (id.startsWith('fan:')) live.current.openFan(id)
       else live.current.onSelect(id)
     })
     cy.on('tap', (e: EventObject) => {
@@ -258,6 +269,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       observer?.disconnect()
       cy.destroy()
       cyRef.current = null
+      delete (window as { __flowCy?: Core }).__flowCy
     }
   }, [drawable, big])
 
@@ -342,7 +354,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     ? `Transfer ${now} of ${steps.length}: ${formatAmount(current.amount, current.asset)}${current.time ? `, ${formatDateTime(current.time)}` : ''}`
     : `Before the first of ${plural(steps.length, 'transfer')}`
 
-  const rows = view.nodes.reduce((max, n) => Math.max(max, n.row), 0) + 1
+  const rows = view.nodes.reduce((max, n) => Math.max(max, n.row), 0) - view.nodes.reduce((min, n) => Math.min(min, n.row), 0) + 1
   const height = Math.min(640, Math.max(320, rows * 90 + 96))
   const transfers = view.edges.reduce((n, e) => n + e.transfers.length, 0)
   const wallets = view.nodes.reduce((n, node) => n + node.members.length, 0)
@@ -484,6 +496,23 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         </div>
       )}
 
+      {openFans.size > 0 && (
+        <div role="group" aria-label="Opened groups of wallets" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-sm text-muted">
+          {[...openFans].map((id) => {
+            const [, side, of] = id.split(/:(in|out):/)
+            const whose = of === c.address ? 'the suspect wallet' : truncateMiddle(of, 6, 4)
+            return (
+              <span key={id} className="flex items-center gap-2">
+                {side === 'in' ? `Every wallet that paid ${whose} is drawn.` : `Every wallet ${whose} paid is drawn.`}
+                <Button size="sm" variant="secondary" aria-label={side === 'in' ? `Collapse the wallets that paid ${whose}` : `Collapse the wallets ${whose} paid`} onClick={() => closeFan(id)}>
+                  Collapse
+                </Button>
+              </span>
+            )
+          })}
+        </div>
+      )}
+
       <div
         ref={container}
         role="img"
@@ -554,6 +583,16 @@ function NodeCard({ node }: { node: FlowNode }) {
         </span>
         <span className="mt-1 block text-muted">Not drawn one by one. Labelled wallets and the largest of the hop are.</span>
         <span className="mt-1 block text-muted">Click to draw {Math.min(MORE, node.members.length)} more. All are in the Wallets tab.</span>
+      </>
+    )
+  if (node.kind === 'fan')
+    return (
+      <>
+        <span className="block font-medium">{fanWords(node)}</span>
+        <span className="mt-1 block text-muted">
+          Unlabelled wallets that only {node.fan?.side === 'out' ? 'received from' : 'paid'} this one wallet. The largest {FAN_KEEP} are drawn beside it.
+        </span>
+        <span className="mt-1 block text-muted">Click to draw every one. All are in the Wallets tab.</span>
       </>
     )
   return (

@@ -56,7 +56,7 @@ function markedFor(c: CaseDetail, selected: string | null): ReadonlySet<string> 
     const name = selected.slice('cluster:'.length)
     return new Set(c.graph.nodes.filter((n) => n.cluster === name).map((n) => n.id))
   }
-  return pathTo(buildFlow(c), selected).nodes
+  return pathTo(buildFlow(c, { fans: false }), selected).nodes
 }
 
 const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'audit'] as const

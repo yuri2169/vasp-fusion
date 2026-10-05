@@ -14,7 +14,7 @@ import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
 import { THREATS } from '../components/ThreatChip'
 import type { FlowRisk, RiskClass } from '../api/models'
 import { RISK_ORDER, RISK_WORDS } from '../components/RiskTag'
-import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
+import { COLUMN_GAP, edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { CHAINS } from '../lib/chains'
 import { formatAmount, truncateMiddle } from '../lib/format'
 import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
@@ -140,7 +140,7 @@ export function edgeRisk(transferIds: string[], flows?: ReadonlyMap<string, Flow
  *  one is marked and says its class in words; High and Severe are also drawn in the danger colour. */
 export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>): ElementDefinition[] {
   const elements: ElementDefinition[] = []
-  const most = view.nodes.reduce((max, n) => (n.kind === 'more' ? max : Math.max(max, through(n))), 0)
+  const most = view.nodes.reduce((max, n) => (n.kind === 'more' || n.kind === 'fan' ? max : Math.max(max, through(n))), 0)
   for (const n of view.nodes) {
     const position = nodeXY(n)
     const side = sideOf(n, most)
@@ -157,7 +157,9 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
         label:
           n.kind === 'more'
             ? `+${n.members.length.toLocaleString('en-US')} wallets`
-            : n.kind === 'cluster'
+            : n.kind === 'fan'
+              ? `${fanWords(n)}\n${formatAmount(through(n), view.asset)}`
+              : n.kind === 'cluster'
               ? `${n.members.length} wallets`
               : tileLabel(n.id),
       },
@@ -187,8 +189,13 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
         inbound: e.direction === 'inbound' ? 1 : 0,
         onPath: e.onPath ? 1 : 0,
         ...(e.bridge ? { bridge: 1 } : {}),
+        // A line of a fan says its amount beside its own wallet, never on the shared trunk; the
+        // group's line says nothing, its node carries the total.
+        ...(e.fan ? { fan: e.fan, ...(fanEnd(e).startsWith('fan:') ? {} : { stub: formatAmount(e.amount, e.asset) }) } : {}),
         // Written on the main path and on the larger flows; the rest say it on hover.
-        label: e.bridge
+        label: e.fan
+          ? ''
+          : e.bridge
           ? // a crossing always says so: both chains and what arrived (the bridge tile it leaves is named)
             `${BRIDGE_MARK} ${chainCode(e.bridge.source_chain)} ${ARROW} ${e.bridge.dest_chain ? chainCode(e.bridge.dest_chain) : '?'}\n${formatAmount(e.amount, e.asset)}`
           : risk
@@ -200,6 +207,83 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
         ...(risk ? { risk } : {}),
       },
     })
+  }
+  return placeLabels(elements)
+}
+
+const fanEnd = (e: { fan?: 'in' | 'out'; source: string; target: string }) => (e.fan === 'in' ? e.source : e.target)
+
+/** What a fan's node says: how many wallets it stands for and which way their money went. */
+export function fanWords(n: Pick<FlowNode, 'members' | 'fan'>): string {
+  const wallets = `${n.members.length.toLocaleString('en-US')} ${n.members.length === 1 ? 'wallet' : 'wallets'}`
+  return n.fan?.side === 'out' ? `${wallets} paid` : `${wallets} paid in`
+}
+
+export type Box = { x1: number; y1: number; x2: number; y2: number }
+const overlap = (a: Box, b: Box) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2
+const lines = (text: string) => text.split('\n')
+const widest = (text: string) => lines(text).reduce((max, l) => Math.max(max, l.length), 0)
+const wide = (kind: unknown) => kind === 'more' || kind === 'fan'
+
+/** Where the text of the picture is: each tile, what is written under and over it, the amount
+ *  beside each wallet of a fan, and (`labels`) the amount written on each line. The sizes are
+ *  the stylesheet's (mono 12 on a line, 13 under a tile, bold 14 over it), a little generous. */
+export function textBoxes(elements: ElementDefinition[]): { fixed: Box[]; labels: Map<string, Box> } {
+  const fixed: Box[] = []
+  const at = new Map<string, { x: number; y: number }>()
+  for (const el of elements) {
+    if (el.group !== 'nodes' || !el.position) continue
+    const { x, y } = el.position
+    const text: string = el.data.label ?? ''
+    if (el.data.owner) {
+      const half = (text.length * 8.4) / 2 + 3
+      fixed.push({ x1: x - half, y1: y - 20, x2: x + half, y2: y })
+      continue
+    }
+    at.set(el.data.id!, el.position)
+    const side = wide(el.data.kind) ? 58 : (el.data.side ?? 28)
+    const tall = wide(el.data.kind) ? 26 : side
+    fixed.push({ x1: x - side / 2, y1: y - tall / 2, x2: x + side / 2, y2: y + tall / 2 })
+    const half = (widest(text) * 7.9) / 2
+    if (text) fixed.push({ x1: x - half, y1: y + tall / 2 + 4, x2: x + half, y2: y + tall / 2 + 6 + lines(text).length * 16 })
+  }
+  const labels = new Map<string, Box>()
+  for (const el of elements) {
+    if (el.group !== 'edges') continue
+    if (el.data.stub) {
+      // beside the fan's own wallet, on the level part of its line
+      const end = at.get(el.data.fan === 'in' ? el.data.source : el.data.target)
+      if (!end) continue
+      const cx = end.x + (el.data.fan === 'in' ? 1 : -1) * (COLUMN_GAP / 2 - 12)
+      const half = (el.data.stub.length * 6.7) / 2 + 3
+      fixed.push({ x1: cx - half, y1: end.y - 9, x2: cx + half, y2: end.y + 9 })
+      continue
+    }
+    const a = at.get(el.data.source)
+    const b = at.get(el.data.target)
+    const text: string = el.data.label ?? ''
+    if (!a || !b || !text) continue
+    const half = (widest(text) * 7.3) / 2 + 3
+    const tall = (lines(text).length * 15) / 2 + 3
+    labels.set(el.data.id!, { x1: (a.x + b.x) / 2 - half, y1: (a.y + b.y) / 2 - tall, x2: (a.x + b.x) / 2 + half, y2: (a.y + b.y) / 2 + tall })
+  }
+  return { fixed, labels }
+}
+
+/** An amount is written on a line only where there is room for it: a label that would sit on a
+ *  tile, on the text under or over a tile, or on a label already placed is left to the hover
+ *  card. The crossing of a bridge, a flagged transfer and the Hop Rail's path are placed first,
+ *  then the larger amounts. */
+export function placeLabels(elements: ElementDefinition[]): ElementDefinition[] {
+  const { fixed, labels } = textBoxes(elements)
+  const rank = (d: ElementDefinition['data']) => (d.bridge ? 4 : d.risk ? 3 : d.onPath ? 2 : 1)
+  const order = elements
+    .filter((el) => labels.has(el.data.id!))
+    .sort((a, b) => rank(b.data) - rank(a.data) || (b.data.width ?? 0) - (a.data.width ?? 0) || String(a.data.id).localeCompare(String(b.data.id)))
+  for (const el of order) {
+    const box = labels.get(el.data.id!)!
+    if (fixed.some((t) => overlap(t, box))) el.data = { ...el.data, label: '', crowded: 1 }
+    else fixed.push(box)
   }
   return elements
 }
@@ -296,7 +380,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
 
     // --- the rest of a hop in a large graph: one quiet node, not a wallet -----
     {
-      selector: 'node[kind = "more"]',
+      selector: 'node[kind = "more"], node[kind = "fan"]',
       style: {
         shape: 'rectangle',
         width: 58,
@@ -310,6 +394,9 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
         color: t.fg,
       },
     },
+
+    // --- the many small wallets that paid one wallet, drawn as one: it says how many and how much
+    { selector: 'node[kind = "fan"]', style: { 'text-wrap': 'wrap', 'border-color': t.chain } },
 
     // --- the owner's name over a node -------------------------------------
     // (a threat-tagged wallet's caption is in the danger colour, after the plain rule below)
@@ -363,6 +450,18 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     { selector: 'edge[risk = "high"], edge[risk = "severe"]', style: { 'line-color': t.seal, 'target-arrow-color': t.seal, color: t.seal, 'font-weight': 600 } },
     { selector: 'edge[risk]', style: { 'text-wrap': 'wrap', 'font-size': 11 } },
     { selector: 'edge[inbound = 1]', style: { 'line-style': 'dashed', 'line-dash-pattern': [7, 5], 'line-opacity': 0.7 } },
+    // A fan: many wallets and one wallet. Each line leaves its own wallet level, joins a trunk
+    // between the columns and comes in along the wallet's own line, so none of them rises
+    // through the text under a tile. All of them are that one wallet's, so the shared trunk
+    // cannot be misread. The amount is written beside the wallet it belongs to.
+    {
+      selector: 'edge[fan]',
+      style: { 'curve-style': 'taxi', 'taxi-direction': 'rightward', 'taxi-turn': `${COLUMN_GAP / 2}px`, 'taxi-turn-min-distance': 8, 'font-size': 11 },
+    },
+    { selector: 'edge[fan = "in"][stub]', style: { 'source-label': 'data(stub)', 'source-text-offset': COLUMN_GAP / 2 - 30 } },
+    // the group's tile is wider than a wallet's: its line turns sooner, onto the same trunk
+    { selector: 'edge[fan = "in"][^stub]', style: { 'taxi-turn': `${COLUMN_GAP / 2 - 21}px` } },
+    { selector: 'edge[fan = "out"][stub]', style: { 'target-label': 'data(stub)', 'target-text-offset': COLUMN_GAP / 2 - 30 } },
     // A bridge's payout joins two chains: a dotted line in the label colour (a bridge is a
     // named party), always captioned with the bridge and both chains.
     {

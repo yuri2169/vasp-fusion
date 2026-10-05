@@ -59,3 +59,25 @@ export function bigCase(n = 2000, hops = 5) {
     },
   }
 }
+
+// A fan: `payers` wallets that each paid the suspect wallet once, and `payees` it paid. Like
+// bigCase it is a SHAPE for checking the layout ("a synthetic fan of 50 payers"), not data.
+export function fanCase(payers = 50, payees = 3) {
+  const c = bigCase(1 + payees, 1)
+  const suspect = c.address
+  const paid = new Set(c.graph.edges.filter((e) => e.direction === 'outbound').map((e) => e.target))
+  const nodes = c.graph.nodes.filter((n) => n.id === suspect || paid.has(n.id))
+  const edges = c.graph.edges.filter((e) => e.direction === 'outbound')
+  const t0 = Date.UTC(2026, 7, 1)
+  for (let i = 1; i <= payers; i++) {
+    const id = `p${String(i).padStart(4, '0')}`
+    const amount = 1000 - i * 7
+    nodes.push({ id, chain: 'tron', role: 'unknown', hop: 1, label: null, cluster: null, is_hub: false })
+    edges.push({
+      id: `in${i}`, source: id, target: suspect, direction: 'inbound', asset: 'USDT', amount, traced_amount: amount, amount_usd: amount,
+      tx_hash: (0xf000 + i).toString(16).padStart(64, '0'), block_time: new Date(t0 + i * 60_000).toISOString(),
+    })
+  }
+  const received = edges.filter((e) => e.direction === 'inbound').reduce((sum, e) => sum + e.amount, 0)
+  return { ...c, id: `fan-${payers}`, case_ref: `Synthetic shape, ${payers} payers`, total_received: received, graph: { nodes, edges } }
+}

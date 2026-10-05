@@ -10,10 +10,11 @@ import { walletId } from './chains'
 export type Role = GraphNode['role']
 
 export interface FlowNode {
-  /** The address, `cluster:<name>` for the grouped wallets of one exchange, or `more:<column>`
-   *  for the wallets of one hop that a large graph does not draw one by one (foldFlow). */
+  /** The address, `cluster:<name>` for the grouped wallets of one exchange, `more:<column>`
+   *  for the wallets of one hop that a large graph does not draw one by one (foldFlow), or
+   *  `fan:<in|out>:<wallet>` for the many small wallets that paid one wallet (or were paid by it). */
   id: string
-  kind: 'wallet' | 'cluster' | 'more'
+  kind: 'wallet' | 'cluster' | 'more' | 'fan'
   role: Role
   /** 0 = the wallet the case is about, 1.. = hops out, -1.. = funders. */
   column: number
@@ -33,7 +34,13 @@ export interface FlowNode {
   /** Traced amounts in and out, in the case's asset. */
   received: number
   sent: number
+  /** A fan node: which way its wallets' money went, and the wallet they share. */
+  fan?: { side: FanSide; of: string }
+  /** Where the layout put it, when that is not its column and row (an opened fan's grid). */
+  at?: { x: number; y: number }
 }
+
+export type FanSide = 'in' | 'out'
 
 export interface FlowEdge {
   /** `${source}>${target}` */
@@ -49,6 +56,8 @@ export interface FlowEdge {
   onPath: boolean
   /** Set when this line is a bridge's payout: it joins two chains. */
   bridge?: Crossing
+  /** One line of a fan: drawn square, along a shared trunk, so it stays off the tile's text. */
+  fan?: FanSide
 }
 
 export interface FlowView {
@@ -58,8 +67,8 @@ export interface FlowView {
   asset: string
 }
 
-const COLUMN_GAP = 184
-const ROW_GAP = 90
+export const COLUMN_GAP = 184
+export const ROW_GAP = 90
 
 /** The part of a transfer that is the suspect wallet's money (the whole of it when the trace did not split it). */
 export const traced = (e: { amount: number; traced_amount?: number | null }): number => e.traced_amount ?? e.amount
@@ -83,7 +92,23 @@ export function clusterable(c: CaseDetail): boolean {
   return [...sizes.values()].some((n) => n > 1)
 }
 
-export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): FlowView {
+/** Of the unlabelled wallets that only paid one wallet (or were only paid by it), this many are
+ *  drawn; the rest are one node until it is opened. */
+export const FAN_KEEP = 4
+/** An opened fan of payers is a grid: this many wallets a column, half above the line and half under. */
+export const FAN_COLUMN = 10
+
+export const fanId = (side: FanSide, of: string) => `fan:${side}:${of}`
+
+export interface FlowOptions {
+  collapse?: boolean
+  /** Fans the officer opened (ids as `fanId` gives them). */
+  openFans?: ReadonlySet<string>
+  /** false = every wallet is its own node, whatever the fan (to find a wallet's path). */
+  fans?: boolean
+}
+
+export function buildFlow(c: CaseDetail, opts: FlowOptions = {}): FlowView {
   const raw = c.graph.nodes
   const edges = c.graph.edges
   const suspect = c.address
@@ -160,6 +185,8 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
     if (edge) edge.onPath = true
   }
 
+  if (opts.fans !== false && raw.length <= BIG_GRAPH) groupFans(nodes, flowEdges, opts.openFans)
+
   // --- rows: the path on line 0, the rest under it, each near what pays it --
   const columns = new Map<number, FlowNode[]>()
   // Appended in place: copying the list for every wallet is quadratic in a hop's wallets.
@@ -188,6 +215,7 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
     rest.forEach(({ n }, i) => (n.row = first + i))
     for (const n of inColumn) placed.add(n.id)
   }
+  placeFunders(columns)
 
   const view = [...flowEdges.values()]
   return {
@@ -196,6 +224,89 @@ export function buildFlow(c: CaseDetail, opts: { collapse?: boolean } = {}): Flo
     maxAmount: view.reduce((max, e) => Math.max(max, e.amount), 0),
     asset: c.asset ?? edges[0]?.asset ?? '',
   }
+}
+
+/** Fans. A wallet whose every transfer here is with one other wallet, all the same way, is a
+ *  leaf of that wallet. Many leaves make a fan: their lines converge on one tile and cover its
+ *  name. So the lines of a fan are marked (they are drawn along a shared trunk), and of the
+ *  unlabelled leaves only the FAN_KEEP largest are drawn; the rest are one node that says how
+ *  many it stands for and what they moved, until the officer opens it. A labelled wallet is
+ *  never put in the group. Nothing is dropped: the group's amount is its wallets' sum. */
+function groupFans(nodes: Map<string, FlowNode>, edges: Map<string, FlowEdge>, open?: ReadonlySet<string>) {
+  const touching = new Map<string, FlowEdge[]>()
+  for (const e of edges.values())
+    for (const id of [e.source, e.target]) {
+      const list = touching.get(id)
+      if (list) list.push(e)
+      else touching.set(id, [e])
+    }
+  const fans = new Map<string, { side: FanSide; of: string; leaves: FlowNode[] }>()
+  for (const n of nodes.values()) {
+    const mine = touching.get(n.id) ?? []
+    if (n.onPath || n.column === 0 || n.kind !== 'wallet' || mine.length !== 1 || mine[0].bridge) continue
+    const side: FanSide = mine[0].source === n.id ? 'in' : 'out'
+    const of = side === 'in' ? mine[0].target : mine[0].source
+    const id = fanId(side, of)
+    const fan = fans.get(id)
+    if (fan) fan.leaves.push(n)
+    else fans.set(id, { side, of, leaves: [n] })
+  }
+  const moved = (n: FlowNode, side: FanSide) => (side === 'in' ? n.sent : n.received)
+  for (const [id, { side, of, leaves }] of fans) {
+    // Two payers already meet at the tile; payees spread out, so only a real fan of them is squared.
+    if (side === 'in' ? leaves.length < 2 : leaves.length <= FAN_KEEP) continue
+    for (const n of leaves) touching.get(n.id)![0].fan = side
+    const plain = leaves.filter((n) => !n.label).sort((a, b) => moved(b, side) - moved(a, side) || a.id.localeCompare(b.id))
+    if (plain.length <= FAN_KEEP || open?.has(id)) continue
+    const rest = plain.slice(FAN_KEEP)
+    const first = touching.get(rest[0].id)![0]
+    const group: FlowEdge = { ...first, id: side === 'in' ? `${id}>${of}` : `${of}>${id}`, source: side === 'in' ? id : of, target: side === 'in' ? of : id, amount: 0, transfers: [], onPath: false, fan: side }
+    for (const n of rest) {
+      const e = touching.get(n.id)![0]
+      group.amount += e.amount
+      group.transfers.push(...e.transfers)
+      edges.delete(e.id)
+      nodes.delete(n.id)
+    }
+    group.transfers.sort(byTime)
+    edges.set(group.id, group)
+    nodes.set(id, {
+      id,
+      kind: 'fan',
+      role: 'unknown',
+      column: rest[0].column,
+      row: 0,
+      onPath: false,
+      funder: rest[0].funder,
+      label: null,
+      entity: null,
+      tier: null,
+      named: false,
+      members: rest.flatMap((n) => n.members),
+      received: side === 'out' ? group.amount : 0,
+      sent: side === 'in' ? group.amount : 0,
+      fan: { side, of },
+    })
+  }
+}
+
+/** The wallets that paid the suspect wallet stand either side of its line, the largest nearest,
+ *  and the line itself is left free: their lines then come in along it from the left and never
+ *  rise through the tile's address. More than FAN_COLUMN of them (an opened fan) become a grid
+ *  further to the left, and whoever funded the funders moves left to make room. */
+function placeFunders(columns: Map<number, FlowNode[]>) {
+  // the group of the rest stands furthest out, after the wallets that are drawn
+  const payers = (columns.get(-1) ?? []).filter((n) => !n.onPath).sort((a, b) => Number(a.kind === 'fan') - Number(b.kind === 'fan') || a.row - b.row)
+  if (payers.length < 2) return
+  const extra = Math.ceil(payers.length / FAN_COLUMN) - 1
+  payers.forEach((n, i) => {
+    const k = i % FAN_COLUMN
+    n.row = (k % 2 === 0 ? 1 : -1) * (Math.floor(k / 2) + 1)
+    if (extra > 0) n.at = { x: -(1 + Math.floor(i / FAN_COLUMN)) * COLUMN_GAP, y: n.row * ROW_GAP }
+  })
+  if (extra > 0)
+    for (const [column, list] of columns)
+      if (column < -1) for (const n of list) n.at = { x: (column - extra) * COLUMN_GAP, y: n.row * ROW_GAP }
 }
 
 /** The wallets and transfers between the suspect wallet and one wallet: the fewest hops,
@@ -370,8 +481,8 @@ export function focusOf(view: FlowView, id: string | null): { nodes: Set<string>
   return pathTo(view, id)
 }
 
-export function nodeXY(n: Pick<FlowNode, 'column' | 'row'>): { x: number; y: number } {
-  return { x: n.column * COLUMN_GAP, y: n.row * ROW_GAP }
+export function nodeXY(n: Pick<FlowNode, 'column' | 'row' | 'at'>): { x: number; y: number } {
+  return n.at ? { ...n.at } : { x: n.column * COLUMN_GAP, y: n.row * ROW_GAP }
 }
 
 /** Edge width in pixels: 1.5 for nothing, 8 for the largest flow, by the square root (a

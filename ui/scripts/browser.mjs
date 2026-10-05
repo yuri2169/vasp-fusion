@@ -69,14 +69,16 @@ function session(wsUrl) {
   return { send, evaluate, on, close: () => ws.close() }
 }
 
-/** Start the browser with a throwaway profile. `await close()` when done. */
-export async function launch({ port = 9335 } = {}) {
+/** Start the browser with a throwaway profile. `await close()` when done.
+ *  `gl`: draw WebGL in software, for the pages that need it (the 3D view); without it the
+ *  browser has no WebGL at all, which is how the "3D is not available" state is reached. */
+export async function launch({ port = 9335, gl = false } = {}) {
   const path = CANDIDATES.find((p) => existsSync(p))
   if (!path) throw new Error('No Chromium-family browser found. Set BROWSER=/path/to/chrome and run again.')
   const profile = mkdtempSync(join(tmpdir(), 'vaspfusion-browser-'))
   const child = spawn(
     path,
-    ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', '--disable-gpu', 'about:blank'],
+    ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--hide-scrollbars', ...(gl ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : ['--disable-gpu']), 'about:blank'],
     { stdio: 'ignore' },
   )
   const targets = await waitFor(async () => (await fetch(`http://127.0.0.1:${port}/json`)).json(), 'the browser to start')

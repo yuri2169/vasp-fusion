@@ -56,7 +56,9 @@ describe('buildFlow', () => {
     expect(funders.map((n) => n.id.slice(0, 6)).sort()).toEqual(['TJ5usJ', 'TT9b4u', 'TYASr5'])
     expect(funders.every((n) => n.column === -1)).toBe(true)
     // the largest funder is nearest the suspect wallet's line
-    expect(funders.sort((a, b) => a.row - b.row).map((n) => n.id.slice(0, 6))).toEqual(['TT9b4u', 'TJ5usJ', 'TYASr5'])
+    // ... either side of it, and the line itself is left to the money coming in
+    expect(funders.sort((a, b) => Math.abs(a.row) - Math.abs(b.row) || b.row - a.row).map((n) => n.id.slice(0, 6))).toEqual(['TT9b4u', 'TJ5usJ', 'TYASr5'])
+    expect(funders.map((n) => n.row)).toEqual([1, -1, 2])
     expect(view.nodes.filter((n) => !n.funder && n.id !== hero.address).every((n) => n.column > 0)).toBe(true)
   })
 
@@ -88,6 +90,11 @@ describe('buildFlow', () => {
       for (const n of view.nodes) columns.set(n.column, [...(columns.get(n.column) ?? []), n.row])
       for (const [column, rows] of columns) {
         const sorted = [...rows].sort((a, b) => a - b)
+        if (column === -1 && rows.length > 1) {
+          // payers stand either side of the suspect wallet's line, nearest first
+          expect(sorted, `${id} payers`).toEqual(rows.map((_, i) => (i % 2 === 0 ? 1 : -1) * (Math.floor(i / 2) + 1)).sort((a, b) => a - b))
+          continue
+        }
         const first = column > 0 && !view.nodes.some((n) => n.column === column && n.onPath) ? 1 : 0
         expect(sorted, `${id} column ${column}`).toEqual(sorted.map((_, i) => first + i))
       }
