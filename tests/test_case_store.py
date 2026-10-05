@@ -106,3 +106,13 @@ def test_writers_on_several_threads_do_not_collide(store):
         t.join()
     assert errors == []
     assert len(store.list()) == 1
+
+
+def test_a_wallet_reached_over_a_bridge_is_found_on_its_own_chain(store, tmp_path):
+    """Real: the eth-bridge wallet's money came out on Base at the same address."""
+    case = run_demo("eth-bridge", tmp_path / "c.duckdb")
+    store.save(case)
+    me = case["address"]
+    assert [(r["role"], r["hop"]) for r in store.wallet_cases(me, "ethereum")] == [("suspect", 0)]
+    assert [(r["role"], r["hop"]) for r in store.wallet_cases(me, "base")] == [("intermediary", 2)]
+    assert store.wallet_cases(f"base:{me}", "base") == []

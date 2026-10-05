@@ -64,7 +64,9 @@ class CaseStore:
     def save(self, detail: dict) -> None:
         """Insert or replace a case (a full CaseDetail, or `cases.skeleton()` of one)."""
         created = datetime.fromisoformat(str(detail["created_at"]).replace("Z", "+00:00"))
-        wallets = [(detail["id"], n["id"], n["chain"], n["role"], n["hop"])
+        # by plain address and its own chain: a wallet reached over a bridge has the graph
+        # id `chain:address`, and is looked up like any wallet of that chain
+        wallets = [(detail["id"], n.get("address") or n["id"], n["chain"], n["role"], n["hop"])
                    for n in detail.get("graph", {}).get("nodes", [])]
         row = [detail["id"], detail["address"], detail["chain"], detail["status"],
                detail.get("outcome"), created.replace(tzinfo=None),
