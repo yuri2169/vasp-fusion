@@ -198,8 +198,8 @@ vaspfusion.cli verify btc-htx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         f6bf056c8a6339233beb18f2b27b9ae217003467cb27f5dd37cf8a064526996b
-  Receipt SHA-256         d51083fff67e1cf1de3b2863bce9c0d2cbe068595e549be0f3d6cd5f59bacb6b
+  Content SHA-256         9cf3a4159b0f9044ed6028c38e90fb52683b8e17fcc132ab0d001d052fa9c26c
+  Receipt SHA-256         a7c8abedb85f387fd36f6f1213f4b0c9ee7475833aa367923bbcad2ef83c703f
 
   Chain responses read
     a52a243a8c1dbbbd74a6e77afc92df258b145169adf565a5ad3fd8d3c1ca57dc  https://blockstream.info/api/address/19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV/txs

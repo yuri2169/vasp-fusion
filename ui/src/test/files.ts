@@ -15,6 +15,11 @@ export function readCase<T>(id: string): T {
   return JSON.parse(readFileSync(resolve(process.cwd(), 'src', 'test', 'fixtures', 'cases', `${id}.json`), 'utf8')) as T
 }
 
+/** The context the real API gave for one of those stored cases (`GET /api/cases/<id>/context`). */
+export function readContext<T>(id: string): T {
+  return JSON.parse(readFileSync(resolve(process.cwd(), 'src', 'test', 'fixtures', 'context', `${id}.json`), 'utf8')) as T
+}
+
 /** An answer of the real API about the desk, recorded on the real demo cases (src/test/fixtures/desk/README.md). */
 export function readDesk<T>(name: string): T {
   return JSON.parse(readFileSync(resolve(process.cwd(), 'src', 'test', 'fixtures', 'desk', `${name}.json`), 'utf8')) as T

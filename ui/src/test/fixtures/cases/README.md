@@ -10,7 +10,7 @@ Each file is `GET /api/cases/<id>` as the API answered it on 2 Oct 2026 (code `b
 | `tron-ofac.json` | SANCTIONED_OR_MIXER_REACHED with no exchange |
 | `eth-bridge.json` | INSUFFICIENT_EVIDENCE: two Across deposits followed from Ethereum onto Base, one bridge deposit not matched; 21 wallets, 45 transfers. Refreshed 5 Oct 2026 (G4) |
 
-Each carries the `trace_summary` the API gave for it on 5 Oct 2026 (added to the stored result; nothing else in the four older files was refreshed). `tron-coindcx.context.json` is `GET /api/cases/tron-coindcx/context` of the same day: the 152 transfers that trace read and did not follow.
+Each carries the `trace_summary` the API gave for it on 5 Oct 2026 (added to the stored result; nothing else in the four older files was refreshed). `../context/tron-coindcx.json` is `GET /api/cases/tron-coindcx/context` of the same day: the 152 transfers that trace read and did not follow.
 
 They are test data for the interface only. Nothing reads them at runtime.
 

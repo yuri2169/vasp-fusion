@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CaseContext, CaseDetail } from '../api/models'
-import { readCase, readMock } from '../test/files'
+import { readCase, readContext, readMock } from '../test/files'
 import { bigCase, fanCase } from '../../scripts/big-graph.mjs'
 import { FlowGraph } from './FlowGraph'
 
@@ -446,7 +446,7 @@ describe('FlowGraph: what the trace saw', () => {
 })
 
 describe('FlowGraph: context on demand (a recorded case and its recorded context)', () => {
-  const context = readCase<CaseContext>('tron-coindcx.context')
+  const context = readContext<CaseContext>('tron-coindcx')
   const drawn = () => fake.state.added.at(-1)! as unknown as { data: { id: string; context?: number } }[]
   const contextDrawn = () => drawn().filter((e) => e.data.context)
   const trailDrawn = () => drawn().filter((e) => !e.data.context).map((e) => e.data.id)

@@ -250,8 +250,8 @@ vaspfusion.cli verify tron-htx-coindcx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         fd7beadb06f0fd10ab15316372431037ffc8b5fedf5ea5c3538814fe7a51bd07
-  Receipt SHA-256         38d26d53241aec686ab63041bf52312ab22b07c4d711afb0744b14f787ff068d
+  Content SHA-256         dcd128fcf1135f213063d5fae7169814d84d02a94716bac27948a94aae0f8d69
+  Receipt SHA-256         1e9b98243a9d0e965e79e7897760b63e24f2ef8920790c61b32b2ad4f365dd34
 
   Chain responses read
     0f711c046cd64e3c1ead3e5aeae5f9fb0e25a4702c8a7f7ab0a6b70abd821e9a  https://api.trongrid.io/v1/accounts/TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1722524721000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

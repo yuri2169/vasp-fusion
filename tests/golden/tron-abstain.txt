@@ -329,8 +329,8 @@ vaspfusion.cli verify tron-abstain
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         e5b25c02e6b47ee774c38c804599bc44f2a92984047eb77d93483ae8ae51b940
-  Receipt SHA-256         11b608b953c6366995a8efd148d99090e6358bd9cfdae727fc659729c5032400
+  Content SHA-256         1a2442b78489d90488cc81dbd04b2c8d63d893f05292549b512bf021e8f46c41
+  Receipt SHA-256         c07e936fc76273f165245f9193b6c45a3ba44e877698577c4237b95e8b510bf8
 
   Chain responses read
     41af7419b1a67ba8c60255447fc67248388bc4e6021394dd196ab54e38d262f3  https://api.trongrid.io/v1/accounts/TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1775665866000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

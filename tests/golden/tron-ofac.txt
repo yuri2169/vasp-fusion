@@ -188,8 +188,8 @@ vaspfusion.cli verify tron-ofac
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         4222484ad54a6d76fc6d7ce4de40d49f8b2c9abc2a678dd6bbb6c5a57e7add85
-  Receipt SHA-256         bfed36534c7be953f8f51e61dad15ebd81da76b40f5adc5ea996878db091df26
+  Content SHA-256         65820350739a3c6bcabe10b327bd5609d4a2d4214e8c638e222e8acd37a86808
+  Receipt SHA-256         081326a195261f4d6c65a1cfd2dd86ff517cd33f418a255f68388b9b04184c50
 
   Chain responses read
     504ae4b2812e8569a0b820842873403b0f2ffca06ffbc94313a9eddc1502eafa  https://api.trongrid.io/v1/accounts/TDWjm2MrHmENKUaryEUP3PvFU4bg5jVduC/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1733483190000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest'
 import type { CaseContext, CaseDetail } from '../api/models'
 import { buildFlow, nodeXY } from '../lib/caseGraph'
 import { mergeContext, withContext } from '../lib/context'
-import { REAL_CASES, readCase } from '../test/files'
+import { REAL_CASES, readCase, readContext } from '../test/files'
 import { homeView, moveCamera, to3D } from './flowSpace'
 import { toElements } from './flowStyle'
 
 const hero = readCase<CaseDetail>('tron-coindcx')
-const context = readCase<CaseContext>('tron-coindcx.context')
+const context = readContext<CaseContext>('tron-coindcx')
 const space = (c: CaseDetail, withCtx = false) => {
   const trail = buildFlow(c)
   const view = withCtx ? withContext(trail, mergeContext([context])) : trail

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { CaseContext, CaseDetail } from '../api/models'
 import { toElements } from '../case/flowStyle'
-import { readCase } from '../test/files'
+import { readCase, readContext } from '../test/files'
 import { buildFlow, focusOf, nodeXY, pathTo } from './caseGraph'
 import { CONTEXT_KEEP, CONTEXT_MORE, contextMoreId, mergeContext, withContext, withoutContext } from './context'
 import { replaySteps, shownAt } from './replay'
 
 /** A recorded case and the context the API gave for it (src/test/fixtures/cases/README.md). */
 const hero = readCase<CaseDetail>('tron-coindcx')
-const ctx = readCase<CaseContext>('tron-coindcx.context')
+const ctx = readContext<CaseContext>('tron-coindcx')
 const trail = buildFlow(hero)
 const merged = mergeContext([ctx])
 const view = withContext(trail, merged)

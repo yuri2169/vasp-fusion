@@ -153,6 +153,20 @@ class Smoke:
             ok(f"{spec['id']}: verified from the cache ({len(verify.get('checks', []))} checks)",
                s == 200 and verify["matches"] is True, (s, verify))
 
+        # what the trace saw against what it followed, and the rest of it as context
+        s, _, dense = api.call("GET", "/api/cases/tron-abstain")
+        seen = dense.get("trace_summary") or {} if s == 200 else {}
+        ok(f"tron-abstain: the trace says what it saw ({seen.get('text', '')[:44]}...)",
+           s == 200 and 0 < seen["transfers_followed"] < seen["transfers_seen"]
+           and seen["wallets_not_followed"] == sum(r["count"] for r in seen["not_followed"]),
+           (s, seen))
+        s, _, context = api.call("GET", "/api/cases/tron-abstain/context")
+        ok(f"tron-abstain: its other {context.get('transfers')} transfers come back as context, "
+           "from the cache alone",
+           s == 200 and context["recorded"] is True
+           and context["transfers"] == seen["transfers_seen"] - seen["transfers_followed"]
+           and len(context["edges"]) == context["transfers"], (s, str(context)[:200]))
+
         # a bridge deposit followed onto another chain, from the recorded answers alone
         s, _, bridged = api.call("GET", "/api/cases/eth-bridge")
         legs = [x for x in bridged.get("crossings", []) if x["status"] == "followed"] \

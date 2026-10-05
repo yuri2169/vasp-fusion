@@ -55,6 +55,13 @@ A named exchange is a lead to confirm with the exchange, not proof. The wrongly-
 | ![Start: paste a wallet](docs/screenshots/final-start-light.png) | ![A case that names an exchange](docs/screenshots/final-case-attributed-light.png) | ![The request desk](docs/screenshots/final-desk-light.png) |
 | Paste a wallet, or open a recorded one | The path, the fund-flow graph and why this exchange | One consolidated request per exchange |
 
+**The graph is sparse on purpose, and says so.** It draws the suspect wallet's money only: it stops at a labelled wallet and at a high-activity hub, drops dust, and groups an exchange's wallets. Over every graph one line gives the trace's own counts. For the recorded wallet `tron-abstain`: "Followed 23 of 655 transfers seen. 23 wallets not followed: 16 below the dust limit, 4 high-activity hubs, 1 already labelled (the trail ends there), 2 at the hop limit." The other 632 transfers it read can be switched on as greyed context, for one wallet or for all, and switched off again; they never enter the attribution, the Hop Rail or the risk class. A 3D view of the same picture is one click away; the 2D view stays the one that is exported.
+
+| | | |
+|---|---|---|
+| ![What the trace saw, over the graph](docs/screenshots/final-graph-tron-abstain-default-light.png) | ![The other transfers as greyed context](docs/screenshots/final-graph-tron-abstain-context-light.png) | ![The same picture in 3D](docs/screenshots/final-graph-tron-abstain-3d-light.png) |
+| The counts over the graph; many payers no longer cover the suspect tile | Context on: 632 other transfers, greyed | The optional 3D view |
+
 Rupee amounts are shown beside US dollars at one dated reference rate (`config/fx.yaml`: the RBI reference rate, with its source).
 
 ## Run it from a fresh clone
@@ -112,7 +119,7 @@ The interface (`ui/`, design system in `ui/DESIGN.md`): `make ui-setup` once, th
 make labels          # once: the image bakes data/labels.duckdb in (`make demo-labels` in a clone without the label sets)
 make docker          # build vasp-fusion:offline (needs the network once: base images, wheels)
 make docker-up       # http://127.0.0.1:8000; sign in with the account in demo/officer.json
-make docker-smoke    # 80 checks in a throwaway container started with --network none
+make docker-smoke    # 82 checks in a throwaway container started with --network none
 UI=build make docker # the same image with the interface compiled in (what the demo uses)
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
