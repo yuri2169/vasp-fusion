@@ -369,6 +369,23 @@ recipient. Everything below is additive; a case stored before G4 has none of it.
   Its letter always carries the `transactions` ask, worded as a request for the payout chain,
   address and transaction.
 
+## What the trace saw, and the context beside the trail (U8)
+The graph of a case is sparse on purpose: it draws the wallet's money only. Two additions say what was left out and give it back on request. Both are additive.
+
+- **`CaseDetail.trace_summary`** (`TraceSummary`, null on a case with no result or stored before this was counted):
+  - `transfers_seen` (every transfer in every listing the trace read, each once), `transfers_followed` (those that carry the wallet's money: the transfers on the graph), `transfers_dust`.
+  - `wallets_seen`, `wallets_read` (listings read), `wallets_followed` (read and followed on, the case's own wallet included), `wallets_not_followed`.
+  - `not_followed[]` (`NotFollowed`): `reason`, `count`, `wallet_ids` (ids as in `graph.nodes`, so `chain:address` for a wallet on another chain; at most 200), `text`. Reasons: `small` (under 1% of the funds), `dust` (only on transfers below the dust limit), `hub`, `labelled` (the trail ends there by design), `depth_limit`, `budget`, `unreadable`, `other_chain`. **Every wallet on the graph is either followed or under exactly one reason.** `dust` and `other_chain` wallets are not on the graph.
+  - `text`: the one line to show ("Followed 23 of 655 transfers seen. 23 wallets not followed: 16 below the dust limit, 4 high-activity hubs, …"). The case file prints the same line.
+  - Each figure is counted by the trace where it makes the decision (`trace.py`: `TraceResult.seen`, `.dust`, `.read`); none is estimated afterwards.
+  - It is part of `content_sha256` (a replay reproduces it) and **not** of `findings_sha256`: the findings fingerprints of the recorded cases did not change.
+- **`GET /api/cases/{id}/context[?wallet=&limit=]`** → `CaseContext`: the transfers the trace read and did not follow.
+  - `transfers` (the whole count; without `wallet` it equals `transfers_seen − transfers_followed`), `truncated`, `nodes[]` (`id`, `address`, `chain`, `on_graph`, `label`), `edges[]` (`id`, `tx_hash`, `source`, `target`, `asset`, `amount`, `amount_usd`, `block_time`, `chain`, `why`: `dust`, `other_asset` or `not_traced`), `text`.
+  - Nothing is stored for it: the server traces the wallet again from the cached chain responses only, as `verify` does. **The case is not changed, and context is never part of the attribution, the Hop Rail, a share of the funds or the risk class.** Draw it greyed.
+  - `wallet`: one wallet's other transfers. A wallet the trace read answers from the cache. A wallet it did not read (a labelled wallet, one at the hop limit) is fetched when the server is online (`live: true`); offline, `recorded` is false, `edges` is empty and `reason` says so.
+  - 409 until the case has a result, or when its responses are no longer cached; 404 for a wallet that is not part of the case. Audit action `case.context`.
+  - A mock case has no trace behind it: its fixture answers `recorded: false` with the reason.
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 

@@ -419,7 +419,7 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "8b915c7cd9512e51e09ebc5cf07483a08d24c1212ee9604a0190a4f117fe00a0",
-    "content_sha256": "6ce7c0411cf9982ecaef83408d19383e1b28254f8eeb62806ea787c37cf67cda"
+    "content_sha256": "218d4978e5870b107f6ab1e7233705147fd99aaf7316b1abf3172933adff6a33"
   },
   "screening": {
     "hit": false,
@@ -427,6 +427,28 @@
     "text": "No direct hit: the address itself carries no ransomware, darknet-market, terrorism-financing, fraud or sanctions tag in the label store."
   },
   "threats": [],
+  "trace_summary": {
+    "transfers_seen": 7,
+    "transfers_followed": 7,
+    "transfers_dust": 0,
+    "wallets_seen": 8,
+    "wallets_read": 5,
+    "wallets_followed": 5,
+    "wallets_not_followed": 3,
+    "not_followed": [
+      {
+        "reason": "labelled",
+        "count": 3,
+        "wallet_ids": [
+          "T9zbp5mErdqtcV38NPAnwBXypkWEa4EbXs",
+          "TAuUCiH4JVNBZmDnEDZkXEUXDARdGpXTmX",
+          "THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR"
+        ],
+        "text": "3 already labelled (the trail ends there)"
+      }
+    ],
+    "text": "Followed 7 of 7 transfers seen. 3 wallets not followed: 3 already labelled (the trail ends there)."
+  },
   "risk": {
     "score": 15,
     "risk_class": "low",

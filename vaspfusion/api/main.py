@@ -205,6 +205,7 @@ MOCK_MODELS: list[tuple[str, type[BaseModel]]] = [
     (r"cases", S.CaseList),
     (r"cases/[^/]+", S.CaseDetail),
     (r"cases/[^/]+/receipt", S.Receipt),
+    (r"cases/[^/]+/context", S.CaseContext),
     (r"wallets/[^/]+/[^/]+", S.WalletDetail),
     (r"labels/search", S.LabelSearch),
     (r"desk", S.Desk),
@@ -1072,6 +1073,60 @@ def verify_case(case_id: str, response: Response):
     with LabelStore(LABEL_DB) as labels:
         return verify_stored(live, make_verify_fetcher(), labels,
                              label_db_sha256=label_db_sha256())
+
+
+# A case's trace run again, kept for the next question about the same case (opening one
+# wallet after another): content digest -> trace. A handful of cases at most.
+_CONTEXT_TRACES: dict[str, object] = {}
+_CONTEXT_KEPT = 8
+
+
+@app.get("/api/cases/{case_id}/context", response_model=S.CaseContext)
+def get_case_context(case_id: str, request: Request, response: Response,
+                     wallet: str | None = Query(None, max_length=200, description=(
+                         "One wallet's other transfers (an id from `graph.nodes`, or of a "
+                         "wallet already shown as context). Without it: the whole context")),
+                     limit: int = Query(3000, ge=1, le=3000)):
+    """The transfers this case's trace read and did not follow, to draw greyed as
+    context. Worked out by tracing the wallet again from the cached chain responses
+    only; the case is not changed. A wallet the trace did not read is fetched now when
+    the server is online; offline the answer says it was not recorded (`recorded`
+    false). 409 until the case has a result, or when its responses are no longer in
+    the cache; 404 for a wallet that is not part of the case."""
+    from ..cases import replay_trace
+    from ..chains.base import CacheMiss
+    from ..context import case_context
+    live = _cases().get(case_id)
+    if live is None:
+        fixture = demo_fixture(f"cases/{case_id}/context", _no_case(case_id))
+        _source(response, "mock")
+        return fixture
+    case_in = (live.get("provenance") or {}).get("input")
+    if live["status"] != "done" or not case_in:
+        raise HTTPException(409, "This case has no trace to read context from: it has not "
+                                 "finished, or it was stored before receipts existed.")
+    if not Path(LABEL_DB).exists():
+        raise HTTPException(503, "The label database is missing. Run `make labels` first.")
+    _source(response, "live")
+    if wallet:
+        _note(request, wallet=wallet)
+    key = live["provenance"].get("content_sha256") or case_id
+    with LabelStore(LABEL_DB) as labels:
+        try:
+            tr = _CONTEXT_TRACES.get(key)
+            if tr is None:
+                tr = replay_trace(case_in, make_verify_fetcher(), labels)
+                while len(_CONTEXT_TRACES) >= _CONTEXT_KEPT:
+                    _CONTEXT_TRACES.pop(next(iter(_CONTEXT_TRACES)))
+                _CONTEXT_TRACES[key] = tr
+            return case_context(live, None, labels, wallet=wallet, fetcher=make_fetcher(),
+                                limit=limit, tr=tr)
+        except CacheMiss:
+            raise HTTPException(409, "The chain responses this case was traced from are no "
+                                     "longer in the cache, so its context cannot be read. "
+                                     "Trace the wallet again.") from None
+        except KeyError:
+            raise HTTPException(404, "That wallet is not part of this case.") from None
 
 
 # ------------------------------------------------------------------ wallets + labels

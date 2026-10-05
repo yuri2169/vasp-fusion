@@ -206,7 +206,10 @@ def _flow(case: dict, index: list[dict]) -> list[dict]:
              + (f", on {fmt.chain_name(r['chain'])}" if r["chain"] != case["chain"] else ""),
              "funded it" if r["col"] < 0 else "-" if r["col"] == 0 else str(r["col"]),
              _amount(r["amount"], r["asset"] or asset)] for r in index]
+    # what the trace read against what is drawn, in the same words as on the screen
+    seen = (case.get("trace_summary") or {}).get("text")
     return [{"t": "h", "text": "Flow of funds"},
+            *([{"t": "p", "text": seen}] if seen else []),
             {"t": "flow", "layout": lay, "caption": caption},
             {"t": "table", "head": ["No.", "Address", "What it is", "Hop", "Traced funds"],
              "rows": rows, "widths": [7, 45, 25, 8, 15], "mono": [1]}]

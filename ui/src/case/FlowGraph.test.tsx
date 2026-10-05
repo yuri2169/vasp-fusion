@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CaseDetail } from '../api/models'
+import type { CaseContext, CaseDetail } from '../api/models'
 import { readCase, readMock } from '../test/files'
 import { bigCase, fanCase } from '../../scripts/big-graph.mjs'
 import { FlowGraph } from './FlowGraph'
@@ -398,5 +398,136 @@ describe('FlowGraph: a fan of payers (a synthetic shape of 10)', () => {
   it('counts every wallet for a screen reader, grouped or not', () => {
     render(<FlowGraph c={ten} selected={null} onSelect={() => {}} />)
     expect(screen.getByRole('img', { name: new RegExp(`${ten.graph.nodes.length} wallets and ${ten.graph.edges.length} transfers`) })).toBeInTheDocument()
+  })
+})
+
+describe('FlowGraph: what the trace saw', () => {
+  it('says how much was seen and followed, and why the rest was not, in the trace\u2019s own figures', () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} />)
+    const line = screen.getByTestId('trace-summary')
+    expect(line).toHaveTextContent('Followed 8 of 160 transfers seen. 13 wallets not followed: 8 below the dust limit, 1 high-activity hub, 2 already labelled (the trail ends there), 2 at the hop limit.')
+    expect(line.textContent!.replace(/\s+/g, ' ')).toContain(hero.trace_summary!.text)
+  })
+
+  it('lists the wallets of a reason, and shows one that is on the graph when it is chosen', async () => {
+    const onSelect = vi.fn()
+    render(<FlowGraph c={hero} selected={null} onSelect={onSelect} />)
+    const hub = screen.getByRole('button', { name: '1 high-activity hub' })
+    expect(hub).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(hub)
+    expect(hub).toHaveAttribute('aria-expanded', 'true')
+    const wallet = hero.trace_summary!.not_followed.find((r) => r.reason === 'hub')!.wallet_ids[0]
+    await userEvent.click(within(screen.getByTestId('trace-summary')).getByRole('button', { name: new RegExp(`^Show ${wallet.slice(0, 6)}.* in the graph$`) }))
+    expect(onSelect).toHaveBeenLastCalledWith(wallet)
+    // a wallet under the dust limit is not on the graph: it is listed, and cannot be shown there
+    await userEvent.click(screen.getByRole('button', { name: '8 below the dust limit' }))
+    expect(within(screen.getByTestId('trace-summary')).queryByRole('button', { name: /in the graph$/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/No traced money reached them/)).toBeInTheDocument()
+  })
+
+  it('says nothing for a case stored before this was counted', () => {
+    render(<FlowGraph c={{ ...hero, trace_summary: null }} selected={null} onSelect={() => {}} />)
+    expect(screen.queryByTestId('trace-summary')).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Show all context/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('FlowGraph: context on demand (a recorded case and its recorded context)', () => {
+  const context = readCase<CaseContext>('tron-coindcx.context')
+  const drawn = () => fake.state.added.at(-1)! as unknown as { data: { id: string; context?: number } }[]
+  const contextDrawn = () => drawn().filter((e) => e.data.context)
+  const trailDrawn = () => drawn().filter((e) => !e.data.context).map((e) => e.data.id)
+  const all = () => vi.fn(async () => context)
+
+  it('is off by default, and the switch says what it would add', () => {
+    const load = all()
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} loadContext={load} />)
+    const toggle = screen.getByRole('switch', { name: 'Show all context (adds 152 transfers)' })
+    expect(toggle).toHaveAttribute('aria-checked', 'false')
+    expect(contextDrawn()).toHaveLength(0)
+    expect(load).not.toHaveBeenCalled()
+  })
+
+  it('draws the context greyed when switched on, names it in the legend, and leaves the trail as it was', async () => {
+    const load = all()
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} loadContext={load} />)
+    const trail = trailDrawn()
+    await userEvent.click(screen.getByRole('switch', { name: /Show all context/ }))
+    expect(load).toHaveBeenCalledWith(hero.id, null)
+    expect(await screen.findByText(/152 other transfers of the 3 wallets this trace read/)).toBeInTheDocument()
+    expect(contextDrawn().length).toBeGreaterThan(10)
+    expect(trailDrawn()).toEqual(trail)
+    expect(screen.getByRole('switch', { name: 'Show all context' })).toHaveAttribute('aria-checked', 'true')
+    expect(within(screen.getByRole('group', { name: 'How to read the graph' })).getByText('Other transfers (context, not the suspect\u2019s money)'.replace('\u2019', "'"))).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /7 wallets and 8 transfers.*other transfers are drawn greyed as context/ })).toBeInTheDocument()
+  })
+
+  it('goes back to exactly the default view on Hide context', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} loadContext={all()} />)
+    const before = JSON.stringify(drawn())
+    await userEvent.click(screen.getByRole('switch', { name: /Show all context/ }))
+    await screen.findByText(/152 other transfers/)
+    await userEvent.click(screen.getByRole('button', { name: 'Hide context' }))
+    expect(JSON.stringify(drawn())).toBe(before)
+    expect(screen.queryByRole('button', { name: 'Hide context' })).not.toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: 'Show all context (adds 152 transfers)' })).toHaveAttribute('aria-checked', 'false')
+  })
+
+  it('replays the suspect\u2019s money only, with context on', async () => {
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} loadContext={all()} />)
+    const before = screen.getByTestId('replay-now').textContent
+    await userEvent.click(screen.getByRole('switch', { name: /Show all context/ }))
+    await screen.findByText(/152 other transfers/)
+    expect(screen.getByTestId('replay-now').textContent).toBe(before)
+    expect(screen.getByRole('slider', { name: 'Transfers drawn, in time order' })).toHaveAttribute('max', '6')
+  })
+
+  it('opens one wallet\u2019s other transfers from the wallet that is selected', async () => {
+    const mine = { ...context, wallet: hero.address, edges: context.edges.filter((e) => e.source === hero.address || e.target === hero.address) }
+    const load = vi.fn(async () => mine)
+    render(<FlowGraph c={hero} selected={hero.address} onSelect={() => {}} loadContext={load} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Show this wallet\u2019s other transfers' }))
+    expect(load).toHaveBeenCalledWith(hero.id, hero.address)
+    expect(await screen.findByRole('button', { name: 'Hide this wallet\u2019s other transfers' })).toHaveAttribute('aria-pressed', 'true')
+    expect(contextDrawn().length).toBeGreaterThan(0)
+    await userEvent.click(screen.getByRole('button', { name: 'Hide this wallet\u2019s other transfers' }))
+    expect(contextDrawn()).toHaveLength(0)
+  })
+
+  it('does not offer a wallet\u2019s other transfers for a group of wallets', () => {
+    render(<FlowGraph c={okx} selected="cluster:OKX" onSelect={() => {}} loadContext={all()} />)
+    expect(screen.queryByRole('button', { name: /this wallet\u2019s other transfers/ })).not.toBeInTheDocument()
+  })
+
+  it('says so when a wallet was not recorded, and draws nothing', async () => {
+    const reason = 'This wallet\u2019s other transfers were not recorded with the case: the trace did not read it. Online, they are read from the chain.'
+    const load = vi.fn(async (): Promise<CaseContext> => ({ case_id: hero.id, wallet: hero.graph.nodes[1].id, recorded: false, live: false, reason, transfers: 0, truncated: false, nodes: [], edges: [], text: reason }))
+    render(<FlowGraph c={hero} selected={hero.graph.nodes[1].id} onSelect={() => {}} loadContext={load} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Show this wallet\u2019s other transfers' }))
+    expect(await screen.findByRole('status')).toHaveTextContent(reason)
+    expect(contextDrawn()).toHaveLength(0)
+  })
+
+  it('shows the reason when the context cannot be read', async () => {
+    const load = vi.fn(async () => Promise.reject(new Error('The chain responses this case was traced from are no longer in the cache.')))
+    render(<FlowGraph c={hero} selected={null} onSelect={() => {}} loadContext={load} />)
+    await userEvent.click(screen.getByRole('switch', { name: /Show all context/ }))
+    expect(await screen.findByRole('status')).toHaveTextContent('no longer in the cache')
+  })
+
+  it('draws more of a wallet\u2019s context on a click on its group, and names a context wallet on a click, selecting nothing', async () => {
+    const onSelect = vi.fn()
+    render(<FlowGraph c={hero} selected={null} onSelect={onSelect} loadContext={all()} />)
+    await userEvent.click(screen.getByRole('switch', { name: /Show all context/ }))
+    await screen.findByText(/152 other transfers/)
+    const group = contextDrawn().find((e) => e.data.id.startsWith('ctxmore:'))!
+    const before = contextDrawn().length
+    fire('tap', 'node', element(group.data.id))
+    expect(contextDrawn().length).toBeGreaterThan(before)
+    const toggled = vi.fn()
+    const other = contextDrawn().find((e) => !e.data.id.includes('>') && !e.data.id.startsWith('ctxmore:'))!
+    fire('tap', 'node', element(other.data.id, { data: (key: string) => (key === 'context' ? 1 : undefined), toggleClass: toggled }))
+    expect(toggled).toHaveBeenCalledWith('named')
+    expect(onSelect).not.toHaveBeenCalled()
   })
 })

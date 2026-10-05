@@ -323,7 +323,7 @@ def test_no_wallet_id_leaks_into_what_an_officer_reads(tmp_path):
     """`chain:address` is an id for the graph only. Every sentence and every address
     field carries the plain address (and says the chain in words)."""
     case = run_demo("eth-bridge", tmp_path / "c.duckdb")
-    ids = {"source", "target", "id"}
+    ids = {"source", "target", "id", "wallet_ids"}
 
     def walk(v, key=None):
         if isinstance(v, dict):

@@ -17,6 +17,7 @@ import type {
   ReplyAck,
   ReplyIn,
   SahyogSim,
+  CaseContext,
   CaseDetail,
   CaseList,
   CaseSummary,
@@ -180,6 +181,8 @@ export function createApi(transport: Transport) {
     openCase: (body: CaseOpen, refresh = false) =>
       call<CaseSummary>('POST', '/cases', { body, query: refresh ? { refresh: true } : undefined }),
     receipt: (id: string) => get<Receipt>(`/cases/${seg(id)}/receipt`),
+    /** The transfers the trace read and did not follow: all of them, or one wallet's. */
+    caseContext: (id: string, wallet?: string | null) => get<CaseContext>(`/cases/${seg(id)}/context`, wallet ? { wallet } : undefined),
     verifyCase: (id: string) => call<VerifyResult>('POST', `/cases/${seg(id)}/verify`),
     caseFileUrl: (id: string) => `/api/cases/${seg(id)}/pdf`,
 

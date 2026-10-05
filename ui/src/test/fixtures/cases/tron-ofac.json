@@ -35,6 +35,61 @@
    "amount": 18.339672
   }
  ],
+ "trace_summary": {
+  "transfers_seen": 39,
+  "transfers_followed": 15,
+  "transfers_dust": 16,
+  "wallets_seen": 18,
+  "wallets_read": 3,
+  "wallets_followed": 3,
+  "wallets_not_followed": 15,
+  "not_followed": [
+   {
+    "reason": "small",
+    "count": 2,
+    "wallet_ids": [
+     "TFwuUcPXEr8ThmGiLGR2HJpuBcReBaVvYT",
+     "TXmp2h373kih1Yb2nuWU6LFoSFcyPMtw5d"
+    ],
+    "text": "2 holding under 1% of the funds"
+   },
+   {
+    "reason": "dust",
+    "count": 10,
+    "wallet_ids": [
+     "TA7gFro2nFNnpXMSrwYFAw6boVGYeCyvYT",
+     "TFbhQT5sQZowuFA731AHPnG5eSwZytAG1c",
+     "TFskhXxAFtVbFzv36M6i1SMRUX1nT6nXey",
+     "TJcUXr3LpXbU1EFfcyExNLxzCnjsT6nXey",
+     "TMTQKYqgDHJv3cKgXhcqHBLyJ3U8jNN5ey",
+     "TMYfN2afgGM41Cyp599oa7AHaub7QngQrx",
+     "TQMGGAfN89BtRUcJ5otymztLBTvPBaVvYT",
+     "TQPLbEEo9Ro6qL6SGUaXueQFDEBA86nXey",
+     "TXcuUo7smxfauqaabuJqo6s4ZpqcqCkduC",
+     "TYPZ2YLBmhfYsZVA3BAWFJ1C7VWtjY7Bey"
+    ],
+    "text": "10 below the dust limit"
+   },
+   {
+    "reason": "labelled",
+    "count": 1,
+    "wallet_ids": [
+     "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey"
+    ],
+    "text": "1 already labelled (the trail ends there)"
+   },
+   {
+    "reason": "depth_limit",
+    "count": 2,
+    "wallet_ids": [
+     "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+     "TH8tNBq1NJPfDdDksEaeQPjYsL9KCW713M"
+    ],
+    "text": "2 at the hop limit"
+   }
+  ],
+  "text": "Followed 15 of 39 transfers seen. 15 wallets not followed: 2 holding under 1% of the funds, 10 below the dust limit, 1 already labelled (the trail ends there), 2 at the hop limit."
+ },
  "hop_rail": [
   {
    "index": 1,
@@ -328,7 +383,7 @@
    "code": "sanctioned_contact",
    "severity": "high",
    "wallet": "TFdHux43bs21qRsygv5WQWfgtbQeT6nXey",
-   "text": "99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away",
+   "text": "99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away",
    "figures": {
     "amount": 100008.0,
     "hops": 1.0,
@@ -344,7 +399,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "TQ7UjgjeATtLNzZps5eqQNFZQ1LVdrwJrS",
-   "text": "TQ7Ujg\u2026drwJrS passed on 100% of the 1,052 USDT that reached it within 36 seconds of its arrival",
+   "text": "TQ7Ujg…drwJrS passed on 100% of the 1,052 USDT that reached it within 36 seconds of its arrival",
    "figures": {
     "amount": 1052.0,
     "seconds": 36.0,
@@ -356,11 +411,11 @@
    ]
   }
  ],
- "narrative": "Wallet TU1D9S\u2026WpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25 Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away. No labelled exchange was reached. Not followed in this run: 200 TRX in 1 transfer. Transaction hashes: 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.",
+ "narrative": "Wallet TU1D9S…WpmwLV sent 101,078.34 USDT on Tron in 9 transfers between 25 Nov 2024 and 7 Dec 2024. 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away. No labelled exchange was reached. Not followed in this run: 200 TRX in 1 transfer. Transaction hashes: 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b.",
  "abstain_reason": null,
  "what_would_change": [],
  "next_steps": [
-  "Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux\u2026T6nXey (OFAC SDN), 1 hop away"
+  "Escalate: 99% of the funds (100,008 USDT) reached a sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away"
  ],
  "provenance": {
   "seed": 26182,

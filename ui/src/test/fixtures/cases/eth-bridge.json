@@ -29,7 +29,7 @@
     "code": "bridge_hop",
     "name": "Funds went into a bridge",
     "points": 24,
-    "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
+    "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b…ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
     "fatf_category": "Transaction patterns",
     "wallet": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
     "case_id": null,
@@ -43,7 +43,7 @@
     "code": "rapid_forwarding",
     "name": "Forwarded within minutes",
     "points": 15,
-    "text": "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
+    "text": "0x46c7…0f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
     "fatf_category": "Transaction patterns",
     "wallet": "0x46c754ae7d9f172052c7a4093a217136670f6357",
     "case_id": null,
@@ -61,7 +61,7 @@
     "code": "fan_in",
     "name": "Funded by many wallets, or split funds merged again",
     "points": 5,
-    "text": "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
+    "text": "0x2102…f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
     "fatf_category": "Transaction patterns",
     "wallet": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
     "case_id": null,
@@ -81,9 +81,9 @@
    }
   ],
   "reasons": [
-   "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
-   "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
-   "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)"
+   "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b…ed35c5 (Across Protocol), 1 hop away; followed onto Base (and 1 more of this kind)",
+   "0x46c7…0f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block (and 2 more of this kind)",
+   "0x2102…f364b0 was funded by 5 wallets (13,705.05 USDT in all)"
   ],
   "flows": [],
   "path_class": "low",
@@ -226,6 +226,123 @@
   "0x8b1e527ea5e4cebb588c6acd2e6aa9e93c1d00bf290128ba7e77228826fe71b8": "base",
   "0xa8f9ccddb47b0e0e9bf79fbb5442b91fe34a23be5e170bc0651c8719d8d85996": "base",
   "0xae93232f3b2a28d7d0021df1d6c15cc23dc1a7f4f6cd4cd0fa565b11ceff955d": "base"
+ },
+ "trace_summary": {
+  "transfers_seen": 494,
+  "transfers_followed": 42,
+  "transfers_dust": 133,
+  "wallets_seen": 140,
+  "wallets_read": 9,
+  "wallets_followed": 8,
+  "wallets_not_followed": 70,
+  "not_followed": [
+   {
+    "reason": "small",
+    "count": 2,
+    "wallet_ids": [
+     "0x002be39c340ef60698272fa0ac0d4b85ad8e8a8c",
+     "0x7f54f05635d15cde17a49502fedb9d1803a3be8a"
+    ],
+    "text": "2 holding under 1% of the funds"
+   },
+   {
+    "reason": "dust",
+    "count": 57,
+    "wallet_ids": [
+     "0x002bb6d9c83326c341d0bca18106bbadaa258a8c",
+     "0x002bc5381544e8cecff56cf6f9b24c9d792c8a8c",
+     "0x06a705e7ba06afa92e921d150161397a4da5edc5",
+     "0x0ac1ba18859d6e6db2614ba71fcebaf1419f3e5f",
+     "0x0c036a08aee5136440f2b82d6769d9834aef0be4",
+     "0x22aec4766b87b5c71f0dc56a530e9bb0e59d3144",
+     "0x27d26cbd4d71376d77a53bdf97882842b97e1516",
+     "0x2db9d70f4814ff08a8e132428ecd39f7d9e07ae2",
+     "0x3923380bce091fd9ddb688042e3b9a7f6a335f34",
+     "0x396347304e7ddb96e25538485380067bd67c5f93",
+     "0x3b0d45cc1ed8bf2120deac7e54a1a921e1215c8d",
+     "0x44e18d618238c615350612881c315a6af3e302e0",
+     "0x4d5401b9e9dcd7c9097e1df036c3afafc35d604f",
+     "0x53b7ee1db8fd665e11c2e36acfb2bb88ab44ac45",
+     "0x5f5c0e5e4ed050262bd182731cf2e3358cc76bba",
+     "0x609c690e8f7d68a59885c9132e812eebdaaf0c9e",
+     "0x6a000f20005980200259b80c5102003040001068",
+     "0x6a2219cb4b9ddc06ceb4d072d8676091cda4c353",
+     "0x6cb17e120be1d443e3c8505d21120b4811df3745",
+     "0x6f39062bbda5e3516d48893498145b0c0508f45a",
+     "0x799849162dcf66ce146897abf13a5be35f931f49",
+     "0x7a50935d69b9057ac6db49fbe0d029ae5892f5ae",
+     "0x7aa0f48e77e3bb842b00ff0e19a10edcb439c42b",
+     "0x7b534b70e9e47b1b322f468f23cad530e6d9a93d",
+     "0x7dbf07ad92ed4e26d5511b4f285508ebf174135d",
+     "0x859920ae76ac189db5dcce59e268cac967c3769e",
+     "0x8792c2f50e5b01c70a8183eef1de305004814db8",
+     "0x8f8c579fa141c2b086e6df65e76d4dabb1594543",
+     "0x8f8c61090e7f89e59beb5b027bbbdb7d54b04543",
+     "0x8f8c8c7929948c27126d2385d3a2924decb74543",
+     "0x8f8ca7e59c85f41fe7d28fee248f46e6c0a64543",
+     "0x8fb276b387d8a3c5002b36d463eb7cf0b9c75e0c",
+     "0x91604f590d66ace8975eed6bd16cf55647d1c499",
+     "0x93ba58c4a9ae87c2d9b6cb1ba0395ad5b1eaee1e",
+     "0x9ef00f2f9595fd2ca722e8aed9411b4408b409f2",
+     "0xa4d9d7068d84bbdf2e3caf1bbf2e1135bcd41984",
+     "0xadd67d19df2b6c7c8c4f7add6142b3a1e761f098",
+     "0xb9ac7df5b410c12b732b84e1e80d2bfa9cd8082c",
+     "0xc06ebbefd94032b85424d51906e2a335efae264b",
+     "0xc9b6d0bebec9cfacab14070727c20c7ee30efb52",
+     "0xd751c11aa9c7a09b3013a416afe9552562a8401c",
+     "0xd88864001cc3e7a6786425004df708b741e108a9",
+     "0xd888f7311120e2c991388ca38b62ca3aa65d08a9",
+     "0xf0bd2b050c273e1fbcab310f4eb37bbbb8039185",
+     "0xf0bd3b5107fc647f3409f28f3de3b11fbd399185",
+     "0xf0bd9c96f730910e5663ad74a7c253cea49d9185",
+     "0xf3d79e574180ff7d5f3145ea574557ceb0b920d4",
+     "0xfb277a9006bf88461c90f6789cd1d454fed111f6",
+     "0xfb2d19401946c37368eeb8bff1cc3d0ec68f0c2d",
+     "base:0x9121b3099173ebae410b53b1113c1bb5db65f6d0",
+     "base:0xca5c96ccc17d4de112a043d55b73a3c84b1f85ac",
+     "base:0xca5ce550bb0cea9b67b5a7841a4aa1b411cd85ac",
+     "base:0xca5d8ba212ff34519dde2ca3116230ea865e85ac",
+     "base:0xcd6b980029e6e6e0733ac8ec3e02be9410d09799",
+     "base:0xf0bd15ef0b2dcd2bc817acfa9acf2cfecb749185",
+     "base:0xf0bd2b050c273e1fbcab310f4eb37bbbb8039185",
+     "base:0xf0bd9c7810b07f58d73989cca0e644c125cc2185"
+    ],
+    "text": "57 below the dust limit"
+   },
+   {
+    "reason": "hub",
+    "count": 1,
+    "wallet_ids": [
+     "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
+    ],
+    "text": "1 high-activity hub"
+   },
+   {
+    "reason": "labelled",
+    "count": 3,
+    "wallet_ids": [
+     "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
+     "0x66a9893cc07d91d95644aedd05d03f95e1dba8af",
+     "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"
+    ],
+    "text": "3 already labelled (the trail ends there)"
+   },
+   {
+    "reason": "depth_limit",
+    "count": 7,
+    "wallet_ids": [
+     "0x6cb1eee285cc43e91cfb37b68bcb3e5bb85a3745",
+     "0x8f8caeab8b6cefe82176eecd8a975a0155794543",
+     "0xc38e4e6a15593f908255214653d3d947ca1c2338",
+     "0xf70da97812cb96acdf810712aa562db8dfa3dbef",
+     "base:0xca5cc95b8cbe2901f4500f680f561e4ed7be85ac",
+     "base:0xd8881c3f7dd2e277b0f3ec6c49bbee35021008a9",
+     "base:0xf0bd6a0eef022198876d5cc115954f9ee6039185"
+    ],
+    "text": "7 at the hop limit"
+   }
+  ],
+  "text": "Followed 42 of 494 transfers seen. 70 wallets not followed: 2 holding under 1% of the funds, 57 below the dust limit, 1 high-activity hub, 3 already labelled (the trail ends there), 7 at the hop limit."
  },
  "hop_rail": [
   {
@@ -1256,7 +1373,7 @@
    "severity": "warn",
    "wallet": "0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5",
    "chain": "ethereum",
-   "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b\u2026ed35c5 (Across Protocol), 1 hop away; followed onto Base",
+   "text": "60% of the funds (8,250 USDT) reached a bridge, 0x5c7b…ed35c5 (Across Protocol), 1 hop away; followed onto Base",
    "figures": {
     "amount": 8250.0,
     "hops": 1.0,
@@ -1273,7 +1390,7 @@
    "severity": "warn",
    "wallet": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1",
    "chain": "ethereum",
-   "text": "4% of the funds (500 USDT) reached a bridge, 0x99c9\u2026884be1 (Optimism), 3 hops away",
+   "text": "4% of the funds (500 USDT) reached a bridge, 0x99c9…884be1 (Optimism), 3 hops away",
    "figures": {
     "amount": 500.0,
     "hops": 3.0,
@@ -1289,7 +1406,7 @@
    "severity": "warn",
    "wallet": "0x46c754ae7d9f172052c7a4093a217136670f6357",
    "chain": "ethereum",
-   "text": "0x46c7\u20260f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block",
+   "text": "0x46c7…0f6357 passed on 100% of the 3,479.80 USDT that reached it in the same block",
    "figures": {
     "amount": 3479.800861,
     "seconds": 0.0,
@@ -1307,7 +1424,7 @@
    "severity": "warn",
    "wallet": "0xa000b020c290d000020aac04026b5306d60050f0",
    "chain": "ethereum",
-   "text": "0xa000\u20260050f0 passed on 100% of the 3,471.12 USDT that reached it in the same block",
+   "text": "0xa000…0050f0 passed on 100% of the 3,471.12 USDT that reached it in the same block",
    "figures": {
     "amount": 3471.123121,
     "seconds": 0.0,
@@ -1325,7 +1442,7 @@
    "severity": "warn",
    "wallet": "0xf0bd6a0eef022198876d5cc115954f9ee6039185",
    "chain": "ethereum",
-   "text": "0xf0bd\u2026039185 passed on 100% of the 1,000 USDT that reached it within 4 minutes of its arrival",
+   "text": "0xf0bd…039185 passed on 100% of the 1,000 USDT that reached it within 4 minutes of its arrival",
    "figures": {
     "amount": 1000.0,
     "seconds": 216.0,
@@ -1344,7 +1461,7 @@
    "severity": "info",
    "wallet": "0x210297c6996b3008ed6ef0d4deb74b9515f364b0",
    "chain": "ethereum",
-   "text": "0x2102\u2026f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
+   "text": "0x2102…f364b0 was funded by 5 wallets (13,705.05 USDT in all)",
    "figures": {
     "amount": 13705.05228,
     "senders": 5.0
@@ -1365,18 +1482,18 @@
    "threat": null
   }
  ],
- "narrative": "Wallet 0x2102\u2026f364b0 sent 13,705.05 USDT on Ethereum in 11 transfers between 11 Feb 2026 and 1 Jun 2026. 8,250 USDT (60%) left Ethereum through the Across Protocol bridge in 2 deposits, and 8,226.08 USDC of it arrived at 0x2102\u2026f364b0 on Base, where the trace goes on. No exchange is named. None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% crossed to Base through the Across Protocol bridge and was followed there; 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 62% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself; under 1% was kept by the bridge as its fee. Not followed in this run: 2,251.05 USDC in 9 transfers, 2.90 ETH in 10 transfers.",
+ "narrative": "Wallet 0x2102…f364b0 sent 13,705.05 USDT on Ethereum in 11 transfers between 11 Feb 2026 and 1 Jun 2026. 8,250 USDT (60%) left Ethereum through the Across Protocol bridge in 2 deposits, and 8,226.08 USDC of it arrived at 0x2102…f364b0 on Base, where the trace goes on. No exchange is named. None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% crossed to Base through the Across Protocol bridge and was followed there; 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 62% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself; under 1% was kept by the bridge as its fee. Not followed in this run: 2,251.05 USDC in 9 transfers, 2.90 ETH in 10 transfers.",
  "abstain_reason": "None of the 13,705.05 USDT this wallet sent reached a labelled exchange within 3 hops. 60% crossed to Base through the Across Protocol bridge and was followed there; 25% went into a DeFi contract (Uniswap V4); 4% went into a bridge (Optimism); 4% stopped at unlabelled high-activity wallets, where funds from many senders mix; 62% went past the 3 hops that were traced; 4% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% came back to the wallet itself; under 1% was kept by the bridge as its fee.",
  "what_would_change": [
   "Following the funds across the bridge (Optimism) onto the destination chain",
-  "A label for 0x1231\u20266f4eae (holds 4% of the funds; it pays out to many wallets and may be an exchange or payment service)",
-  "Tracing deeper than 3 hops from 0xd888\u20261008a9 on Base (42% of the funds)",
-  "Tracing deeper than 3 hops from 0xf0bd\u2026039185 on Base (18% of the funds)",
-  "A full history of 0xf4e1\u20260cd8cf (4% of the funds)"
+  "A label for 0x1231…6f4eae (holds 4% of the funds; it pays out to many wallets and may be an exchange or payment service)",
+  "Tracing deeper than 3 hops from 0xd888…1008a9 on Base (42% of the funds)",
+  "Tracing deeper than 3 hops from 0xf0bd…039185 on Base (18% of the funds)",
+  "A full history of 0xf4e1…0cd8cf (4% of the funds)"
  ],
  "next_steps": [
-  "Follow the 500 USDT that went into the Optimism bridge at 0x99c9\u2026884be1 onto the destination chain: a bridge is not an exchange and holds no customer account, so no request is drafted for it. The bridge transaction (0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383) names the destination chain and address",
-  "Identify 0x1231\u20266f4eae: 4% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
+  "Follow the 500 USDT that went into the Optimism bridge at 0x99c9…884be1 onto the destination chain: a bridge is not an exchange and holds no customer account, so no request is drafted for it. The bridge transaction (0xe1090e82dab7d6001dd25bd2403c171323a34e1c3605d2937034a42c8baa2383) names the destination chain and address",
+  "Identify 0x1231…6f4eae: 4% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
   "Run the trace again with more than 3 hops"
  ],
  "provenance": {

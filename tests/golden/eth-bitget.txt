@@ -47,6 +47,9 @@ WHERE THE FUNDS WENT
 
 FLOW OF FUNDS
 -------------
+Followed 5 of 20 transfers seen. 7 wallets not followed: 3 below the dust limit, 2 already
+labelled (the trail ends there), 2 at the hop limit.
+
   5 wallets, 5 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
     W2  column Funded the wallet, row 1: Unlabelled wallet
     W3  column Funded the wallet, row 2: Unlabelled wallet
@@ -170,8 +173,8 @@ vaspfusion.cli verify eth-bitget
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         a79b5ca717418e3ff0f038a113c507bf4c2b809c3a55883da207865a242820e2
-  Receipt SHA-256         87630a39b7dec7996458dd156c0333dbf6c12f905d18ce0b3ac493b249d0658d
+  Content SHA-256         1d0860c2c4d805f39a22b20d65b99709f7d81426f13ba6a3ef38aa38ea6e52c2
+  Receipt SHA-256         4ecfe626baa4b1e2486efea085d98abf6f4ce42801382bb51bd3517017c7f29b
 
   Chain responses read
     ff9e592eee27ddb05c43b2ba9f3521e51e72c2b49aa6dc1add6174bbc36f752d  https://api.etherscan.io/v2/api?action=getblocknobytime&chainid=1&closest=after&module=block&timestamp=1706030459

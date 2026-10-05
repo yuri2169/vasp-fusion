@@ -696,6 +696,77 @@
         }
       }
     },
+    "/api/cases/{case_id}/context": {
+      "get": {
+        "summary": "Get Case Context",
+        "description": "The transfers this case's trace read and did not follow, to draw greyed as\ncontext. Worked out by tracing the wallet again from the cached chain responses\nonly; the case is not changed. A wallet the trace did not read is fetched now when\nthe server is online; offline the answer says it was not recorded (`recorded`\nfalse). 409 until the case has a result, or when its responses are no longer in\nthe cache; 404 for a wallet that is not part of the case.",
+        "operationId": "get_case_context_api_cases__case_id__context_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "wallet",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One wallet's other transfers (an id from `graph.nodes`, or of a wallet already shown as context). Without it: the whole context",
+              "title": "Wallet"
+            },
+            "description": "One wallet's other transfers (an id from `graph.nodes`, or of a wallet already shown as context). Without it: the whole context"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 3000,
+              "minimum": 1,
+              "default": 3000,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseContext"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/wallets/{chain}/{address}": {
       "get": {
         "summary": "Get Wallet",
@@ -1965,6 +2036,7 @@
               "case.export",
               "case.receipt",
               "case.verify",
+              "case.context",
               "wallet.view",
               "label.search",
               "desk.view",
@@ -2959,6 +3031,91 @@
         ],
         "title": "Candidate"
       },
+      "CaseContext": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "wallet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallet",
+            "description": "Set when one wallet's context was asked for"
+          },
+          "recorded": {
+            "type": "boolean",
+            "title": "Recorded",
+            "description": "False when `wallet` was not read by the trace and the server could not read it now (offline, or the chain refused): `reason` says which, and there are no edges"
+          },
+          "live": {
+            "type": "boolean",
+            "title": "Live",
+            "description": "The wallet's transfers were fetched for this answer",
+            "default": false
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "transfers": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Transfers",
+            "description": "How many there are, cut or not"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "description": "More than the limit: `edges` is the first part",
+            "default": false
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/ContextNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/ContextEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "One line to show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "recorded",
+          "transfers",
+          "nodes",
+          "edges",
+          "text"
+        ],
+        "title": "CaseContext",
+        "description": "The transfers a case's trace read and did not follow: context to draw greyed\nbeside the trail. It is never part of the attribution, the Hop Rail, a share of the\nfunds or the risk class, and reading it changes nothing about the case."
+      },
       "CaseCreate": {
         "properties": {
           "address": {
@@ -3391,6 +3548,17 @@
             "title": "Tx Chains",
             "description": "Transaction hash -> chain, for every transaction of this case that is not on the case's own chain (a payout, and the transfers after it)",
             "default": {}
+          },
+          "trace_summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TraceSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "How much the trace saw, how much of it is on the graph, and why the other wallets were not followed. Null on a case with no result, and on one stored before this was counted"
           },
           "hop_rail": {
             "items": {
@@ -4414,6 +4582,144 @@
           "address"
         ],
         "title": "ComplaintWalletIn"
+      },
+      "ContextEdge": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "amount_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Usd"
+          },
+          "block_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Block Time"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "why": {
+            "type": "string",
+            "enum": [
+              "dust",
+              "other_asset",
+              "not_traced"
+            ],
+            "title": "Why",
+            "description": "dust: below the dust limit; other_asset: in an asset the trace did not follow; not_traced: none of the traced money was assigned to it (it left before the money arrived, or the money had already moved on)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "tx_hash",
+          "source",
+          "target",
+          "asset",
+          "amount",
+          "block_time",
+          "chain",
+          "why"
+        ],
+        "title": "ContextEdge",
+        "description": "One transfer the trace read and did not follow. Not the wallet's money."
+      },
+      "ContextNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "As in `graph.nodes`: the address, or `chain:address`"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "enum": [
+              "tron",
+              "ethereum",
+              "bsc",
+              "polygon",
+              "arbitrum",
+              "base",
+              "optimism",
+              "avalanche",
+              "bitcoin",
+              "solana"
+            ],
+            "title": "Chain"
+          },
+          "on_graph": {
+            "type": "boolean",
+            "title": "On Graph",
+            "description": "The wallet is one of the case's `graph.nodes`"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LabelOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "address",
+          "chain",
+          "on_graph"
+        ],
+        "title": "ContextNode"
       },
       "CoverageRow": {
         "properties": {
@@ -7082,6 +7388,54 @@
         "title": "ModelScore",
         "description": "What the deposit-address model said about one address (B6)."
       },
+      "NotFollowed": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "small",
+              "dust",
+              "hub",
+              "labelled",
+              "depth_limit",
+              "budget",
+              "unreadable",
+              "other_chain"
+            ],
+            "title": "Reason",
+            "description": "small: holds under the share of the funds a trace follows; dust: only on transfers below the dust limit; hub: a high-activity wallet (commingled funds); labelled: a named party, where the trail ends by design; depth_limit: at the hop limit; budget: not read before the wallet or time budget ran out; unreadable: its transfers could not be read, or not to the end; other_chain: paid by a bridge on a chain no adapter reads"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Count",
+            "description": "How many wallets, all of them"
+          },
+          "wallet_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Wallet Ids",
+            "description": "Their ids as in `graph.nodes` (a dust or other-chain wallet is not on the graph), sorted; at most 200 are listed"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "The count in words, to show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason",
+          "count",
+          "wallet_ids",
+          "text"
+        ],
+        "title": "NotFollowed",
+        "description": "Wallets the trace did not follow, for one reason."
+      },
       "OfficerOut": {
         "properties": {
           "username": {
@@ -9250,6 +9604,80 @@
         ],
         "title": "TraceBudget",
         "description": "What the trace was allowed to read and whether that, not the evidence, ended it."
+      },
+      "TraceSummary": {
+        "properties": {
+          "transfers_seen": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Transfers Seen",
+            "description": "Every transfer in every listing the trace read, each once"
+          },
+          "transfers_followed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Transfers Followed",
+            "description": "Of those, the ones that carry the wallet's money: the transfers on the graph"
+          },
+          "transfers_dust": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Transfers Dust",
+            "description": "Of those seen, dropped as below the dust limit"
+          },
+          "wallets_seen": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Wallets Seen",
+            "description": "Distinct wallets on any transfer seen"
+          },
+          "wallets_read": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Wallets Read",
+            "description": "Wallets whose transfers were listed"
+          },
+          "wallets_followed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Wallets Followed",
+            "description": "Wallets read and followed on, the case's own wallet included"
+          },
+          "wallets_not_followed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Wallets Not Followed",
+            "description": "The sum of `not_followed[].count`"
+          },
+          "not_followed": {
+            "items": {
+              "$ref": "#/components/schemas/NotFollowed"
+            },
+            "type": "array",
+            "title": "Not Followed",
+            "description": "Each wallet the money reached that was not followed, under exactly one reason; reasons with no wallet are left out"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "One line to show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "transfers_seen",
+          "transfers_followed",
+          "transfers_dust",
+          "wallets_seen",
+          "wallets_read",
+          "wallets_followed",
+          "wallets_not_followed",
+          "not_followed",
+          "text"
+        ],
+        "title": "TraceSummary",
+        "description": "What the trace read and what it followed. Every figure is counted by the trace\nwhere it makes the decision; none is estimated afterwards."
       },
       "TypologyFlag": {
         "properties": {

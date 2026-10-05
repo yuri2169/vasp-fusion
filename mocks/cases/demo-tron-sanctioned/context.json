@@ -1,0 +1,14 @@
+{
+  "_demo": true,
+  "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
+  "case_id": "demo-tron-sanctioned",
+  "wallet": null,
+  "recorded": false,
+  "live": false,
+  "transfers": 0,
+  "truncated": false,
+  "nodes": [],
+  "edges": [],
+  "reason": "A demo fixture has no trace behind it, so there is no context to show.",
+  "text": "A demo fixture has no trace behind it, so there is no context to show."
+}

@@ -14,7 +14,7 @@ import type { ElementDefinition, StylesheetJsonBlock } from 'cytoscape'
 import { THREATS } from '../components/ThreatChip'
 import type { FlowRisk, RiskClass } from '../api/models'
 import { RISK_ORDER, RISK_WORDS } from '../components/RiskTag'
-import { COLUMN_GAP, edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
+import { edgeWidth, nodeXY, type FlowNode, type FlowView, type Role } from '../lib/caseGraph'
 import { CHAINS } from '../lib/chains'
 import { formatAmount, truncateMiddle } from '../lib/format'
 import { iconMarkup, ROLE_ICONS, type IconNode } from './roleIcons'
@@ -84,6 +84,8 @@ export const TILE = { s: 28, m: 36, l: 46 } as const
 export type TileSize = keyof typeof TILE
 /** A wallet that was not followed further: a small dashed tile with no icon. */
 const UNFOLLOWED = 16
+/** A wallet that is only context: smaller still, and grey. */
+export const CONTEXT_TILE = 12
 
 const through = (n: Pick<FlowNode, 'received' | 'sent'>) => Math.max(n.received, n.sent)
 
@@ -140,9 +142,27 @@ export function edgeRisk(transferIds: string[], flows?: ReadonlyMap<string, Flow
  *  one is marked and says its class in words; High and Severe are also drawn in the danger colour. */
 export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>): ElementDefinition[] {
   const elements: ElementDefinition[] = []
-  const most = view.nodes.reduce((max, n) => (n.kind === 'more' || n.kind === 'fan' ? max : Math.max(max, through(n))), 0)
+  const most = view.nodes.reduce((max, n) => (n.kind === 'more' || n.kind === 'fan' || n.context ? max : Math.max(max, through(n))), 0)
   for (const n of view.nodes) {
     const position = nodeXY(n)
+    if (n.context) {
+      // quiet: a small grey tile, named only when pointed at or clicked
+      elements.push({
+        group: 'nodes',
+        data: {
+          id: n.id,
+          kind: n.kind,
+          context: 1,
+          side: CONTEXT_TILE,
+          label: '',
+          // a group says how many inside its own tile; a wallet is named when asked
+          name: n.kind === 'ctxmore' ? `+${n.members.length.toLocaleString('en-US')}` : n.entity ? `${n.entity} · ${tileLabel(n.id)}` : tileLabel(n.id),
+        },
+        position,
+        classes: n.kind === 'ctxmore' ? 'named' : undefined,
+      })
+      continue
+    }
     const side = sideOf(n, most)
     elements.push({
       group: 'nodes',
@@ -177,6 +197,10 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
       })
   }
   for (const e of view.edges) {
+    if (e.context) {
+      elements.push({ group: 'edges', data: { id: e.id, source: e.source, target: e.target, context: 1, width: 1, label: '' } })
+      continue
+    }
     const risk = edgeRisk(e.transfers.map((t) => t.id), flows)
     elements.push({
       group: 'edges',
@@ -219,6 +243,11 @@ export function fanWords(n: Pick<FlowNode, 'members' | 'fan'>): string {
   return n.fan?.side === 'out' ? `${wallets} paid` : `${wallets} paid in`
 }
 
+/** How far from its own tile's edge a fan's line turns onto the trunk, and where its amount sits. */
+const FAN_TRUNK_IN = 112
+const FAN_TRUNK_OUT = 38
+const STUB_OFFSET = 62
+
 export type Box = { x1: number; y1: number; x2: number; y2: number }
 const overlap = (a: Box, b: Box) => a.x1 < b.x2 && b.x1 < a.x2 && a.y1 < b.y2 && b.y1 < a.y2
 const lines = (text: string) => text.split('\n')
@@ -254,7 +283,7 @@ export function textBoxes(elements: ElementDefinition[]): { fixed: Box[]; labels
       // beside the fan's own wallet, on the level part of its line
       const end = at.get(el.data.fan === 'in' ? el.data.source : el.data.target)
       if (!end) continue
-      const cx = end.x + (el.data.fan === 'in' ? 1 : -1) * (COLUMN_GAP / 2 - 12)
+      const cx = end.x + (el.data.fan === 'in' ? 1 : -1) * (STUB_OFFSET + 16)
       const half = (el.data.stub.length * 6.7) / 2 + 3
       fixed.push({ x1: cx - half, y1: end.y - 9, x2: cx + half, y2: end.y + 9 })
       continue
@@ -456,17 +485,64 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
     // cannot be misread. The amount is written beside the wallet it belongs to.
     {
       selector: 'edge[fan]',
-      style: { 'curve-style': 'taxi', 'taxi-direction': 'rightward', 'taxi-turn': `${COLUMN_GAP / 2}px`, 'taxi-turn-min-distance': 8, 'font-size': 11 },
+      style: { 'curve-style': 'taxi', 'taxi-direction': 'rightward', 'taxi-turn-min-distance': 8, 'font-size': 11 },
     },
-    { selector: 'edge[fan = "in"][stub]', style: { 'source-label': 'data(stub)', 'source-text-offset': COLUMN_GAP / 2 - 30 } },
+    // The trunk stands nearer the one wallet than the many, clear of the amounts, which are
+    // written beside the many: after the payers' amounts on the way in, before the payees' on
+    // the way out (and short of where the Hop Rail's own amount is written).
+    { selector: 'edge[fan = "in"]', style: { 'taxi-turn': `${FAN_TRUNK_IN}px` } },
+    { selector: 'edge[fan = "in"][stub]', style: { 'source-label': 'data(stub)', 'source-text-offset': STUB_OFFSET } },
     // the group's tile is wider than a wallet's: its line turns sooner, onto the same trunk
-    { selector: 'edge[fan = "in"][^stub]', style: { 'taxi-turn': `${COLUMN_GAP / 2 - 21}px` } },
-    { selector: 'edge[fan = "out"][stub]', style: { 'target-label': 'data(stub)', 'target-text-offset': COLUMN_GAP / 2 - 30 } },
+    { selector: 'edge[fan = "in"][^stub]', style: { 'taxi-turn': `${FAN_TRUNK_IN - 21}px` } },
+    { selector: 'edge[fan = "out"]', style: { 'taxi-turn': `${FAN_TRUNK_OUT}px` } },
+    { selector: 'edge[fan = "out"][stub]', style: { 'target-label': 'data(stub)', 'target-text-offset': STUB_OFFSET } },
     // A bridge's payout joins two chains: a dotted line in the label colour (a bridge is a
     // named party), always captioned with the bridge and both chains.
     {
       selector: 'edge[bridge = 1]',
       style: { 'line-style': 'dashed', 'line-dash-pattern': [2, 4], 'line-color': t.verifiedText, 'target-arrow-color': t.verifiedText, 'text-wrap': 'wrap', 'font-size': 11 },
+    },
+
+    // --- context: other transfers of the wallets on the trail. Not the suspect wallet's money,
+    // so it has a look of its own: the data colour, thin and dotted, no arrowhead fill, no
+    // amount on the line, and a name only when asked for (hover, a click, a group's count).
+    {
+      selector: 'node[context = 1]',
+      style: {
+        shape: 'rectangle',
+        width: CONTEXT_TILE,
+        height: CONTEXT_TILE,
+        'background-color': t.sunk,
+        'background-image': 'none',
+        'border-style': 'solid',
+        'border-width': 1,
+        'border-color': t.data,
+        label: '',
+        color: t.data,
+        'font-size': 11,
+        'text-margin-y': 3,
+      },
+    },
+    { selector: 'node[context = 1].named, node[context = 1].hover', style: { label: 'data(name)', 'text-background-color': t.surface, 'text-background-opacity': 0.9, 'text-background-padding': '2px', 'z-index': 20 } },
+    {
+      selector: 'node[context = 1][kind = "ctxmore"]',
+      style: { width: 30, height: 15, 'border-style': 'dashed', 'font-family': '"Public Sans", system-ui, sans-serif', 'font-size': 10, color: t.fg, 'text-valign': 'center', 'text-margin-y': 0, 'text-background-opacity': 0 },
+    },
+    {
+      selector: 'edge[context = 1]',
+      style: {
+        width: 1,
+        'curve-style': 'straight',
+        'line-style': 'dashed',
+        'line-dash-pattern': [1, 4],
+        'line-cap': 'round',
+        'line-color': t.data,
+        'line-opacity': 0.75,
+        'target-arrow-shape': 'vee',
+        'target-arrow-color': t.data,
+        'arrow-scale': 0.6,
+        label: '',
+      },
     },
 
     // --- looking at one wallet: its path stays, the rest steps back --------

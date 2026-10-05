@@ -534,6 +534,45 @@ class TraceBudget(_M):
     text: str = Field(description="One sentence to show as it is")
 
 
+NotFollowedReason = Literal["small", "dust", "hub", "labelled", "depth_limit", "budget",
+                            "unreadable", "other_chain"]
+
+
+class NotFollowed(_M):
+    """Wallets the trace did not follow, for one reason."""
+    reason: NotFollowedReason = Field(description=(
+        "small: holds under the share of the funds a trace follows; dust: only on transfers "
+        "below the dust limit; hub: a high-activity wallet (commingled funds); labelled: a "
+        "named party, where the trail ends by design; depth_limit: at the hop limit; budget: "
+        "not read before the wallet or time budget ran out; unreadable: its transfers could "
+        "not be read, or not to the end; other_chain: paid by a bridge on a chain no "
+        "adapter reads"))
+    count: int = Field(ge=1, description="How many wallets, all of them")
+    wallet_ids: list[str] = Field(description=(
+        "Their ids as in `graph.nodes` (a dust or other-chain wallet is not on the graph), "
+        "sorted; at most 200 are listed"))
+    text: str = Field(description="The count in words, to show as it is")
+
+
+class TraceSummary(_M):
+    """What the trace read and what it followed. Every figure is counted by the trace
+    where it makes the decision; none is estimated afterwards."""
+    transfers_seen: int = Field(ge=0, description=(
+        "Every transfer in every listing the trace read, each once"))
+    transfers_followed: int = Field(ge=0, description=(
+        "Of those, the ones that carry the wallet's money: the transfers on the graph"))
+    transfers_dust: int = Field(ge=0, description="Of those seen, dropped as below the dust limit")
+    wallets_seen: int = Field(ge=0, description="Distinct wallets on any transfer seen")
+    wallets_read: int = Field(ge=0, description="Wallets whose transfers were listed")
+    wallets_followed: int = Field(ge=0, description=(
+        "Wallets read and followed on, the case's own wallet included"))
+    wallets_not_followed: int = Field(ge=0, description="The sum of `not_followed[].count`")
+    not_followed: list[NotFollowed] = Field(description=(
+        "Each wallet the money reached that was not followed, under exactly one reason; "
+        "reasons with no wallet are left out"))
+    text: str = Field(description="One line to show as it is")
+
+
 class PageDigest(_M):
     query: str = Field(description="The chain API request, API keys removed")
     sha256: str = Field(description="SHA-256 of the response body as it was received")
@@ -663,6 +702,10 @@ class CaseDetail(CaseSummary):
     tx_chains: dict[str, TraceChain] = Field({}, description=(
         "Transaction hash -> chain, for every transaction of this case that is not on the "
         "case's own chain (a payout, and the transfers after it)"))
+    trace_summary: TraceSummary | None = Field(None, description=(
+        "How much the trace saw, how much of it is on the graph, and why the other wallets "
+        "were not followed. Null on a case with no result, and on one stored before this "
+        "was counted"))
     hop_rail: list[Hop]
     graph: CaseGraph
     candidates: list[Candidate] = Field(description="Sorted by proximity_rank")
@@ -673,6 +716,49 @@ class CaseDetail(CaseSummary):
                                                          "an abstain")
     next_steps: list[str] = []
     provenance: Provenance
+
+
+class ContextNode(_M):
+    id: str = Field(description="As in `graph.nodes`: the address, or `chain:address`")
+    address: str
+    chain: TraceChain
+    on_graph: bool = Field(description="The wallet is one of the case's `graph.nodes`")
+    label: LabelOut | None = None
+
+
+class ContextEdge(_M):
+    """One transfer the trace read and did not follow. Not the wallet's money."""
+    id: str
+    tx_hash: str
+    source: str
+    target: str
+    asset: str
+    amount: float
+    amount_usd: float | None = None
+    block_time: datetime
+    chain: TraceChain
+    why: Literal["dust", "other_asset", "not_traced"] = Field(description=(
+        "dust: below the dust limit; other_asset: in an asset the trace did not follow; "
+        "not_traced: none of the traced money was assigned to it (it left before the money "
+        "arrived, or the money had already moved on)"))
+
+
+class CaseContext(_M):
+    """The transfers a case's trace read and did not follow: context to draw greyed
+    beside the trail. It is never part of the attribution, the Hop Rail, a share of the
+    funds or the risk class, and reading it changes nothing about the case."""
+    case_id: str
+    wallet: str | None = Field(None, description="Set when one wallet's context was asked for")
+    recorded: bool = Field(description=(
+        "False when `wallet` was not read by the trace and the server could not read it "
+        "now (offline, or the chain refused): `reason` says which, and there are no edges"))
+    live: bool = Field(False, description="The wallet's transfers were fetched for this answer")
+    reason: str | None = None
+    transfers: int = Field(ge=0, description="How many there are, cut or not")
+    truncated: bool = Field(False, description="More than the limit: `edges` is the first part")
+    nodes: list[ContextNode]
+    edges: list[ContextEdge]
+    text: str = Field(description="One line to show as it is")
 
 
 # ------------------------------------------------------------------ wallets
@@ -1212,6 +1298,7 @@ class Ok(_M):
 
 AuditAction = Literal[
     "case.open", "case.list", "case.view", "case.export", "case.receipt", "case.verify",
+    "case.context",
     "wallet.view", "label.search", "desk.view", "vasp.view", "request.draft", "request.view",
     "request.status", "request.export", "dashboard.view", "model.view", "fx.view", "audit.view",
     "watch.list", "watch.add", "watch.check", "watch.seen", "watch.remove", "label.coverage",

@@ -270,7 +270,7 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "63a6f64b9046e60de6115c4e0b751f44355b0ddb1a799d95969802a673f62c70",
-    "content_sha256": "8bcce3eb36200e9bab29587c2e24d7d98f6bdcab6de3cd651ab8909327d0378f"
+    "content_sha256": "77ecc15a69e46f383cb2df84810c42a87a1ec8ae98acf6247d1938abf460697e"
   },
   "screening": {
     "hit": false,
@@ -280,6 +280,27 @@
   "threats": [
     "sanctioned_other"
   ],
+  "trace_summary": {
+    "transfers_seen": 3,
+    "transfers_followed": 3,
+    "transfers_dust": 0,
+    "wallets_seen": 4,
+    "wallets_read": 2,
+    "wallets_followed": 2,
+    "wallets_not_followed": 2,
+    "not_followed": [
+      {
+        "reason": "labelled",
+        "count": 2,
+        "wallet_ids": [
+          "TA3941uFAvmVibSkQ6fMJXxmaSNovX86mz",
+          "TA3ntKd4GUb3LH6eCDznxJaS4ZHGD56bCe"
+        ],
+        "text": "2 already labelled (the trail ends there)"
+      }
+    ],
+    "text": "Followed 3 of 3 transfers seen. 2 wallets not followed: 2 already labelled (the trail ends there)."
+  },
   "risk": {
     "score": 98,
     "risk_class": "severe",

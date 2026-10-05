@@ -4,7 +4,7 @@
  *  The layout is ours, not a library's: a column per hop (funders to the left of the wallet
  *  the case is about), and the path the Hop Rail shows kept on the first line, so the graph
  *  reads as the rail with its side branches hanging under it. Same case, same picture. */
-import type { CaseDetail, Crossing, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
+import type { CaseDetail, ContextEdge, Crossing, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
 import { walletId } from './chains'
 
 export type Role = GraphNode['role']
@@ -14,7 +14,7 @@ export interface FlowNode {
    *  for the wallets of one hop that a large graph does not draw one by one (foldFlow), or
    *  `fan:<in|out>:<wallet>` for the many small wallets that paid one wallet (or were paid by it). */
   id: string
-  kind: 'wallet' | 'cluster' | 'more' | 'fan'
+  kind: 'wallet' | 'cluster' | 'more' | 'fan' | 'ctxmore'
   role: Role
   /** 0 = the wallet the case is about, 1.. = hops out, -1.. = funders. */
   column: number
@@ -38,6 +38,8 @@ export interface FlowNode {
   fan?: { side: FanSide; of: string }
   /** Where the layout put it, when that is not its column and row (an opened fan's grid). */
   at?: { x: number; y: number }
+  /** Not part of the trail: a wallet on another transfer of a wallet the trace read (lib/context.ts). */
+  context?: true
 }
 
 export type FanSide = 'in' | 'out'
@@ -58,6 +60,9 @@ export interface FlowEdge {
   bridge?: Crossing
   /** One line of a fan: drawn square, along a shared trunk, so it stays off the tile's text. */
   fan?: FanSide
+  /** Not the suspect wallet's money: other transfers between the two, listed in `others`. */
+  context?: true
+  others?: ContextEdge[]
 }
 
 export interface FlowView {
@@ -288,6 +293,19 @@ function groupFans(nodes: Map<string, FlowNode>, edges: Map<string, FlowEdge>, o
       fan: { side, of },
     })
   }
+
+  // The suspect wallet's own lines. It stands alone in its column, so a trunk beside it can
+  // only be its own: every payment into it, and from four payees on every payment out of it
+  // that is not the Hop Rail's path, is drawn square too, leaf or not. (Four, because the
+  // fourth line down is the first that would cross the address under the tile.)
+  const suspect = [...nodes.values()].find((n) => n.column === 0)
+  if (!suspect) return
+  const next = (id: string, column: number) => nodes.get(id)?.column === column
+  const mine = [...edges.values()].filter((e) => !e.bridge && !e.onPath)
+  const paidIn = mine.filter((e) => e.target === suspect.id && e.direction === 'inbound' && next(e.source, -1))
+  const paidOut = mine.filter((e) => e.source === suspect.id && e.direction === 'outbound' && next(e.target, 1))
+  if (paidIn.length >= 2) for (const e of paidIn) e.fan = 'in'
+  if (paidOut.length >= FAN_KEEP) for (const e of paidOut) e.fan = 'out'
 }
 
 /** The wallets that paid the suspect wallet stand either side of its line, the largest nearest,
@@ -322,7 +340,7 @@ export function pathTo(view: FlowView, id: string): { nodes: Set<string>; edges:
   const walk = (from: string, to: string, direction: 'outbound' | 'inbound') => {
     const out = new Map<string, FlowEdge[]>()
     for (const e of view.edges) {
-      if (e.direction !== direction) continue
+      if (e.direction !== direction || e.context) continue
       const list = out.get(e.source)
       if (list) list.push(e)
       else out.set(e.source, [e])

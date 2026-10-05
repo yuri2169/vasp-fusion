@@ -1,11 +1,13 @@
 import cytoscape, { type Core, type EventObject } from 'cytoscape'
-import { ChevronLeft, ChevronRight, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, FileCode, Image, Layers, Maximize2, Minus, Pause, Play, Plus, Route, RotateCcw } from 'lucide-react'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { CaseDetail, FlowRisk } from '../api/models'
+import { api } from '../api/api'
+import type { CaseContext, CaseDetail, ContextEdge, FlowRisk } from '../api/models'
 import { Button } from '../components/Button'
 import { TIERS } from '../components/TierTag'
 import { Tip } from '../components/Tip'
 import { BIG_GRAPH, buildFlow, clusterable, FAN_KEEP, focusOf, foldFlow, pathTo, traced, type FlowEdge, type FlowNode, type FlowView } from '../lib/caseGraph'
+import { CONTEXT_KEEP, CONTEXT_MORE, mergeContext, withContext } from '../lib/context'
 import { cx } from '../lib/cx'
 import { downloadText, downloadUrl } from '../lib/download'
 import { formatAmount, formatDateTime, truncateMiddle } from '../lib/format'
@@ -14,6 +16,7 @@ import { toGraphML } from '../lib/graphml'
 import { replaySteps, shownAt, type ReplayStep } from '../lib/replay'
 import { ROLE_NAMES } from './caseText'
 import { GraphLegend } from './GraphLegend'
+import { TraceSummaryLine } from './TraceSummaryLine'
 import { RISK_WORDS } from '../components/RiskTag'
 import { captionY, edgeRisk, fanWords, readTheme, stylesheet, toElements, type ThemeColors } from './flowStyle'
 
@@ -81,14 +84,20 @@ export interface FlowGraphProps {
   selected: string | null
   onSelect: (id: string | null) => void
   className?: string
+  /** Where context is read from: all of a case's (wallet null), or one wallet's. The API by default. */
+  loadContext?: (caseId: string, wallet: string | null) => Promise<CaseContext>
 }
+
+const readContext = (caseId: string, wallet: string | null) => api.caseContext(caseId, wallet)
+/** The whole context of a case, as a key beside the wallets'. */
+const ALL = ''
 
 /** The fund-flow graph: the Hop Rail's path on the first line, its side branches under it,
  *  funders to the left. Click a wallet to open it; drag one to move it out of the way (it
  *  stays there until Reset layout). The replay draws the transfers in the order they
  *  happened. Every wallet is also a row in the Wallets tab, and every transfer a row in the
  *  Transfers tab, so nothing here is reachable by mouse only. */
-export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) {
+export function FlowGraph({ c, selected, onSelect, className, loadContext = readContext }: FlowGraphProps) {
   const container = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
   const tipId = useId()
@@ -118,7 +127,37 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
     const reach = Math.abs(full.nodes.find((n) => n.id === at)?.column ?? 0)
     return foldFlow(full, { perColumn: PER_HOP, maxHop: Math.max(hops ?? pathEnds, reach), keep, shown: opened })
   }, [big, full, hops, pathEnds, opened, selected])
-  const view: FlowView = folded ?? full
+  const trail: FlowView = folded ?? full
+
+  // --- context: the other transfers of the wallets the trace read. Off until asked for, drawn
+  // greyed, and never part of the answer. `asked` is what the officer switched on (the whole
+  // context, or wallets one by one); `answers` is what came back for each.
+  const [asked, setAsked] = useState<ReadonlySet<string>>(new Set())
+  const [answers, setAnswers] = useState<ReadonlyMap<string, CaseContext | Error>>(new Map())
+  const [contextShown, setContextShown] = useState<ReadonlyMap<string, number>>(new Map())
+  const ask = (key: string) => {
+    setAsked((was) => new Set(was).add(key))
+    if (answers.has(key)) return
+    loadContext(c.id, key === ALL ? null : key).then(
+      (got) => setAnswers((was) => new Map(was).set(key, got)),
+      (err: unknown) => setAnswers((was) => new Map(was).set(key, err instanceof Error ? err : new Error(String(err)))),
+    )
+  }
+  const unask = (key: string) => setAsked((was) => new Set([...was].filter((k) => k !== key)))
+  /** Back to the default view, exactly: nothing of the context stays on the picture. */
+  const hideContext = () => {
+    setAsked(new Set())
+    setContextShown(new Map())
+  }
+  const openContextMore = (id: string) => setContextShown((was) => new Map(was).set(id, (was.get(id) ?? CONTEXT_KEEP) + CONTEXT_MORE))
+  const got = useMemo(() => [...asked].map((key) => answers.get(key)).filter((a): a is CaseContext => !!a && !(a instanceof Error)), [asked, answers])
+  const withCtx = useMemo(() => (got.length > 0 ? withContext(trail, mergeContext(got), { shown: contextShown }) : null), [trail, got, contextShown])
+  const view: FlowView = withCtx ?? trail
+  const waiting = [...asked].some((key) => !answers.has(key))
+  const adds = c.trace_summary ? c.trace_summary.transfers_seen - c.trace_summary.transfers_followed : null
+  // The wallet being shown, when it is a wallet of the case and not a group of them.
+  const wallet = selected && c.graph.nodes.some((n) => n.id === selected) ? selected : null
+
   const flows = useMemo(() => new Map((c.risk?.flows ?? []).map((f) => [f.edge_id, f])), [c.risk])
   const elements = useMemo(() => toElements(view, flows), [view, flows])
   const shown = shownAs(view, selected)
@@ -129,7 +168,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   // How many transfers are drawn. All of them, unless the officer is replaying.
   // It belongs to one picture: another case, a grouping or an opened hop starts it over.
   const [replay, setReplay] = useState<{ shape: string; at: number | null; play: boolean }>({ shape: '', at: null, play: false })
-  const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}|${[...openFans].join()}`
+  const shape = `${c.id}|${c.graph.nodes.length}|${collapse}|${hops}|${[...opened].join()}|${[...openFans].join()}|${got.length}|${[...contextShown].join()}`
   const fitted = useRef<string | null>(null)
 
   const mine = replay.shape === shape
@@ -150,9 +189,9 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
   const openMore = (column: number) => setOpened((was) => new Map(was).set(column, (was.get(column) ?? PER_HOP) + MORE))
 
   // The canvas's handlers outlive a render: they read what is current through these.
-  const live = useRef({ view, onSelect, openMore, openFan })
+  const live = useRef({ view, onSelect, openMore, openFan, openContextMore })
   useEffect(() => {
-    live.current = { view, onSelect, openMore, openFan }
+    live.current = { view, onSelect, openMore, openFan, openContextMore }
   })
 
   const fit = (onlyPath = false) => {
@@ -215,6 +254,10 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
       if (id.startsWith('more:')) live.current.openMore(Number(id.slice('more:'.length)))
       // nor is a fan's group: a click draws its wallets one by one, in place
       else if (id.startsWith('fan:')) live.current.openFan(id)
+      // the rest of a wallet's context: a click draws more of it
+      else if (id.startsWith('ctxmore:')) live.current.openContextMore(id)
+      // a wallet that is only context is not a wallet of the case: a click names it, no more
+      else if (e.target.data('context')) e.target.toggleClass('named')
       else live.current.onSelect(id)
     })
     cy.on('tap', (e: EventObject) => {
@@ -356,9 +399,18 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
 
   const rows = view.nodes.reduce((max, n) => Math.max(max, n.row), 0) - view.nodes.reduce((min, n) => Math.min(min, n.row), 0) + 1
   const height = Math.min(640, Math.max(320, rows * 90 + 96))
-  const transfers = view.edges.reduce((n, e) => n + e.transfers.length, 0)
-  const wallets = view.nodes.reduce((n, node) => n + node.members.length, 0)
-  const drawn = view.nodes.reduce((n, node) => n + (node.kind === 'more' ? 0 : node.members.length), 0)
+  // what the picture says of itself counts the trail only; context is said separately
+  const transfers = trail.edges.reduce((n, e) => n + e.transfers.length, 0)
+  const wallets = trail.nodes.reduce((n, node) => n + node.members.length, 0)
+  const drawn = trail.nodes.reduce((n, node) => n + (node.kind === 'more' ? 0 : node.members.length), 0)
+  const onGraph = useMemo(() => new Set(c.graph.nodes.map((n) => n.id)), [c])
+  const contextNotes = [...asked].flatMap((key) => {
+    const a = answers.get(key)
+    if (!a) return []
+    if (a instanceof Error) return [a.message]
+    if (!a.recorded) return [a.text]
+    return [a.truncated ? `${a.text} The first ${count(a.edges.length)} of ${count(a.transfers)} are drawn.` : a.text]
+  })
 
   return (
     <section aria-labelledby={`${tipId}-title`} className={cx('panel', className)}>
@@ -496,6 +548,39 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         </div>
       )}
 
+      {c.trace_summary && <TraceSummaryLine summary={c.trace_summary} chain={c.chain} onGraph={onGraph} selected={selected} onSelect={onSelect} />}
+
+      {drawable && (c.trace_summary || asked.size > 0) && (
+        <div role="group" aria-label="Context: other transfers" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule px-4 py-1.5 text-sm text-muted">
+          <span className="colhead">Context</span>
+          <Button
+            size="sm"
+            variant={asked.has(ALL) ? 'secondary' : 'ghost'}
+            role="switch"
+            aria-checked={asked.has(ALL)}
+            icon={<Eye size={13} aria-hidden />}
+            title="Draw, greyed, every other transfer of the wallets this trace read"
+            onClick={() => (asked.has(ALL) ? unask(ALL) : ask(ALL))}
+          >
+            Show all context{adds != null && !asked.has(ALL) ? ` (adds ${plural(adds, 'transfer')})` : ''}
+          </Button>
+          {wallet && (
+            <Button size="sm" variant={asked.has(wallet) ? 'secondary' : 'ghost'} aria-pressed={asked.has(wallet)} onClick={() => (asked.has(wallet) ? unask(wallet) : ask(wallet))}>
+              {asked.has(wallet) ? 'Hide this wallet\u2019s other transfers' : 'Show this wallet\u2019s other transfers'}
+            </Button>
+          )}
+          {asked.size > 0 && (
+            <Button size="sm" variant="ghost" icon={<EyeOff size={13} aria-hidden />} onClick={hideContext}>
+              Hide context
+            </Button>
+          )}
+          <p role="status" className="basis-full empty:hidden sm:basis-auto">
+            {waiting ? 'Reading the other transfers\u2026' : contextNotes.join(' ')}
+            {!waiting && withCtx && withCtx.contextHidden > 0 ? ` ${plural(withCtx.contextHidden, 'transfer')} between wallets that are not drawn ${withCtx.contextHidden === 1 ? 'is' : 'are'} left out.` : ''}
+          </p>
+        </div>
+      )}
+
       {openFans.size > 0 && (
         <div role="group" aria-label="Opened groups of wallets" className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-rule bg-sunk px-4 py-2 text-sm text-muted">
           {[...openFans].map((id) => {
@@ -519,7 +604,7 @@ export function FlowGraph({ c, selected, onSelect, className }: FlowGraphProps) 
         aria-label={
           folded
             ? `Fund-flow graph: ${drawn} of ${c.graph.nodes.length} wallets drawn, left to right by hop. Every wallet is listed in the Wallets tab.`
-            : `Fund-flow graph: ${wallets} wallets and ${transfers} transfers, left to right by hop. Every wallet is also listed in the Wallets tab.`
+            : `Fund-flow graph: ${wallets} wallets and ${transfers} transfers, left to right by hop. Every wallet is also listed in the Wallets tab.${withCtx ? ` ${withCtx.contextTransfers} other transfers are drawn greyed as context; they are not the suspect wallet's money.` : ''}`
         }
         style={{ height: drawable ? height : undefined }}
         className="w-full"
@@ -575,6 +660,26 @@ function drawIn(cy: Core, step: ReplayStep): () => void {
 }
 
 function NodeCard({ node }: { node: FlowNode }) {
+  if (node.context)
+    return (
+      <>
+        {node.kind === 'ctxmore' ? (
+          <span className="block font-medium">{count(node.members.length)} other wallets</span>
+        ) : (
+          <span className="block break-all font-mono">{node.id}</span>
+        )}
+        <span className="mt-1 block text-muted">
+          Context: {node.kind === 'ctxmore' ? 'they are' : 'it is'} on other transfers of a wallet on the trail. None of the suspect wallet&rsquo;s money was traced to {node.kind === 'ctxmore' ? 'them' : 'it'}.
+          {node.entity && (
+            <>
+              {' '}
+              Labelled <span className="font-medium text-fg">{node.entity}</span>.
+            </>
+          )}
+        </span>
+        {node.kind === 'ctxmore' && <span className="mt-1 block text-muted">Click to draw {Math.min(CONTEXT_MORE, node.members.length)} more.</span>}
+      </>
+    )
   if (node.kind === 'more')
     return (
       <>
@@ -622,7 +727,34 @@ function NodeCard({ node }: { node: FlowNode }) {
 
 const LISTED = 4
 
+const WHY: Record<ContextEdge['why'], string> = {
+  dust: 'below the dust limit',
+  other_asset: 'in an asset the trace did not follow',
+  not_traced: 'none of the traced money was assigned to it',
+}
+
+function ContextCard({ edge }: { edge: FlowEdge }) {
+  const others = edge.others ?? []
+  return (
+    <>
+      <span className="block font-medium">
+        {plural(others.length, 'other transfer')} · context, not the suspect wallet&rsquo;s money
+      </span>
+      {others.slice(0, LISTED).map((t) => (
+        <span key={t.id} className="mt-1.5 block">
+          <span className="tabular block font-mono text-muted">
+            {formatAmount(t.amount, t.asset)} · {formatDateTime(t.block_time)} · {WHY[t.why]}
+          </span>
+          <span className="block break-all font-mono">{t.tx_hash}</span>
+        </span>
+      ))}
+      {others.length > LISTED && <span className="mt-1.5 block text-muted">and {count(others.length - LISTED)} more</span>}
+    </>
+  )
+}
+
 function EdgeCard({ edge, flows }: { edge: FlowEdge; flows: ReadonlyMap<string, FlowRisk> }) {
+  if (edge.context) return <ContextCard edge={edge} />
   const many = edge.transfers.length > 1
   const risk = edgeRisk(edge.transfers.map((t) => t.id), flows)
   const reasons = [...new Set(edge.transfers.flatMap((t) => flows.get(t.id)?.reasons ?? []))]

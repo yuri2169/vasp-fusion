@@ -28,6 +28,12 @@ A time limit depends on the clock, so a trace it ended also records how many wal
 each direction had asked for by then (`stopped_after`). The same trace with that count
 as `stop_after` stops at exactly the same wallet: this is how `verify` replays it.
 
+The trace also counts what it leaves out, at the place it decides to: every row of
+every listing it read (`TraceResult.seen`), the rows it dropped as dust (`dust`) and
+the wallets whose listing came back (`read`). `trace_summary` reports them, with each
+wallet the money reached either followed or listed under the one reason it was not.
+Counting changes nothing about the walk.
+
 A bridge is where money leaves a chain. When a trace is given `crossings`
 (chains/bridges.py), each deposit into a labelled bridge is matched to its payout:
 the bridge's index names the destination chain, the recipient and the payout
@@ -171,6 +177,20 @@ class TraceResult:
     stopped_after: dict[str, int] = field(default_factory=dict)
     seconds: float | None = None     # how long the walk took, when a time budget was set
     crossings: list[Crossing] = field(default_factory=list)   # every bridge deposit met
+    # What the trace read, in the order it read it (dicts used as ordered sets):
+    seen: dict[Transfer, None] = field(default_factory=dict)   # every row of every listing
+    dust: dict[Transfer, None] = field(default_factory=dict)   # ... of which dropped as dust
+    read: dict[str, None] = field(default_factory=dict)        # wallets whose listing came back
+
+    def saw(self, rows: Iterable[Transfer], wallet: str | None = None) -> None:
+        """A listing came back: `rows`, for `wallet` (None: a look-up that reads no wallet,
+        such as a bridge payout)."""
+        if wallet is not None:
+            self.read.setdefault(wallet)
+        for t in rows:
+            self.seen.setdefault(t)
+            if _is_dust(t, self.config):
+                self.dust.setdefault(t)
 
     def expanded(self, side: str) -> int:
         return sum(1 for (s, _), n in self.nodes.items() if s == side and n.state == "expanded")
@@ -518,6 +538,7 @@ class _Walk:
                                      limit=self.cfg.fetch_limit,
                                      asset=self.asset_at.get(addr, self.asset))
             self.report.read(addr, len(raw))
+            self.r.saw(raw, addr)
             cached = (since, self.usable(raw, addr), _complete(raw, self.cfg.fetch_limit))
             self.fetched[addr] = cached
         return cached[1], cached[2]
@@ -663,6 +684,7 @@ class _Walk:
             for asset in provider.traceable_assets:
                 rows = provider.transfers(wallet, "in", since=found.paid_at or found.deposited_at,
                                           limit=self.cfg.fetch_limit, asset=asset)
+                self.r.saw(rows)
                 paid = [t for t in rows if t.tx_hash == found.payout_tx and t.to_addr == wallet
                         and t.from_addr != wallet and t.amount > 0]
                 if paid:
@@ -687,7 +709,8 @@ class _Walk:
         return groups
 
 
-def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: str
+def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: str,
+                r: TraceResult | None = None
                 ) -> tuple[str | None, list[Transfer], bool, dict[str, tuple[int, Decimal]]]:
     """Fetch each traceable asset on its own and choose the one to follow: the
     stablecoin with the largest total, else the native coin. With nothing to follow,
@@ -698,6 +721,8 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
     for asset in provider.traceable_assets:
         raw = provider.transfers(address, direction, since=cfg.since, limit=cfg.fetch_limit,
                                  asset=asset)
+        if r is not None:
+            r.saw(raw, address)
         mine = (lambda t: t.from_addr) if side == "outbound" else (lambda t: t.to_addr)
         rows = [t for t in raw if not _is_dust(t, cfg) and t.from_addr != t.to_addr
                 and mine(t) == address]
@@ -718,6 +743,106 @@ def _pick_asset(provider, address: str, direction: str, cfg: TraceConfig, side: 
     untraced = {a: (len(r), sum((t.amount for t in r), ZERO))
                 for a, (r, _) in per.items() if a != chosen}
     return chosen, rows, truncated, untraced
+
+
+# ------------------------------------------------------------------ what was left out
+# Why a wallet the money reached was not followed, in the order they are reported.
+# `dust`: the wallet is only on transfers below the dust limit, so no money was traced to it.
+# `other_chain`: a bridge paid it on a chain no adapter reads.
+NOT_FOLLOWED = ("small", "dust", "hub", "labelled", "depth_limit", "budget", "unreadable",
+                "other_chain")
+_STATE_REASON = {"small": "small", "hub": "hub", "labelled": "labelled",
+                 "depth_limit": "depth_limit", "budget": "budget"}
+LISTED_WALLETS = 200             # wallets named per reason; `count` is always the whole number
+
+
+def followed_rows(tr: TraceResult) -> set[Transfer]:
+    """The rows the trace read that carry the wallet's money: the transfers it drew, and
+    behind each bridge crossing it followed, the payout rows it read on the other chain."""
+    drawn = {e.transfer for e in tr.edges if e.crossing is None}
+    paid = {(e.crossing.payout.tx_hash, e.crossing.payout.to_addr)
+            for e in tr.edges if e.crossing is not None}
+    return {t for t in tr.seen if t in drawn or (t.tx_hash, t.to_addr) in paid}
+
+
+def context_rows(tr: TraceResult) -> list[Transfer]:
+    """The rows the trace read and did not follow, in the order it read them: other
+    transfers of the wallets on the trail. Context, not the wallet's money."""
+    followed = followed_rows(tr)
+    return [t for t in tr.seen if t not in followed]
+
+
+def why_not_followed(tr: TraceResult) -> dict[str, list[str]]:
+    """reason -> the wallet ids it applies to, sorted. Each wallet the money reached is
+    under exactly one reason unless it was followed (read and its outflows allocated)."""
+    out: dict[str, set[str]] = {reason: set() for reason in NOT_FOLLOWED}
+    reached: dict[str, TraceNode] = {}
+    for side in ("origin", "outbound", "inbound"):      # as the case's graph: outbound wins
+        for (s, addr), node in tr.nodes.items():
+            if s == side:
+                reached.setdefault(addr, node)
+    expanded = {addr for (_s, addr), n in tr.nodes.items() if n.state in ("expanded", "origin")}
+    for addr, node in reached.items():
+        if addr not in expanded:
+            out[_STATE_REASON.get(node.state, "unreadable")].add(addr)
+    for t in tr.dust:
+        for end in (t.from_addr, t.to_addr):
+            if end not in reached:
+                out["dust"].add(end)
+    for leg in tr.crossings:
+        if leg.status == "not_traced" and leg.hop is not None and leg.hop.dest_chain is None:
+            out["other_chain"].add(f"{leg.hop.dest_name}:{leg.hop.recipient}")
+    return {reason: sorted(wallets) for reason, wallets in out.items() if wallets}
+
+
+def _n(count: int, one: str, many: str | None = None) -> str:
+    return f"{count:,} {one if count == 1 else many or one + 's'}"
+
+
+def reason_words(reason: str, count: int, cfg: TraceConfig = TraceConfig()) -> str:
+    share = f"{cfg.min_share:.0%}"
+    return {
+        "small": f"{count:,} holding under {share} of the funds",
+        "dust": f"{count:,} below the dust limit",
+        "hub": _n(count, "high-activity hub"),
+        "labelled": f"{count:,} already labelled (the trail ends there)",
+        "depth_limit": f"{count:,} at the hop limit",
+        "budget": f"{count:,} not read before the budget ran out",
+        "unreadable": f"{count:,} whose transfers could not be read",
+        "other_chain": f"{count:,} on a chain this tool does not read",
+    }[reason]
+
+
+def summary_text(followed: int, seen: int, rows: list[dict]) -> str:
+    """The one line shown over the graph and printed in the case file."""
+    left = sum(r["count"] for r in rows)
+    text = f"Followed {followed:,} of {_n(seen, 'transfer')} seen. "
+    return text + (f"{_n(left, 'wallet')} not followed: " + ", ".join(r["text"] for r in rows)
+                   + "." if rows else "Every wallet the money reached was read.")
+
+
+def trace_summary(tr: TraceResult) -> dict:
+    """How much the trace saw, how much of it is the wallet's money, and why the rest of
+    the wallets were not followed (`S.TraceSummary`). Every figure is a count of what
+    the walk recorded as it went; nothing is estimated."""
+    followed = len(followed_rows(tr))
+    why = why_not_followed(tr)
+    rows = [{"reason": reason, "count": len(wallets), "wallet_ids": wallets[:LISTED_WALLETS],
+             "text": reason_words(reason, len(wallets), tr.config)}
+            for reason, wallets in why.items()]
+    left = sum(r["count"] for r in rows)
+    text = summary_text(followed, len(tr.seen), rows)
+    ends = {end for t in tr.seen for end in (t.from_addr, t.to_addr)}
+    return {
+        "transfers_seen": len(tr.seen), "transfers_followed": followed,
+        "transfers_dust": len(tr.dust),
+        "wallets_seen": len(ends | {a for (_s, a) in tr.nodes}),
+        "wallets_read": len(tr.read),
+        "wallets_followed": len({a for (_s, a), n in tr.nodes.items()
+                                 if n.state in ("expanded", "origin")}),
+        "wallets_not_followed": left,
+        "not_followed": rows, "text": text,
+    }
 
 
 def replay_config(cfg: TraceConfig, result: TraceResult) -> TraceConfig:
@@ -772,7 +897,7 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
     # an adapter that lists newest-first cuts off the old end of a long history
     which = "most recent" if getattr(provider, "newest_first", False) and cfg.since is None \
         else "first"
-    asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound")
+    asset, rows, truncated, untraced = _pick_asset(provider, address, "out", cfg, "outbound", r)
     r.asset, r.untraced, r.truncated = asset, untraced, truncated
     r.total_out = sum((t.amount for t in rows), ZERO)
     report.asset = asset
@@ -791,7 +916,7 @@ def _walks(r: TraceResult, provider, labels: LabelLookup, cfg: TraceConfig,
 
     if cfg.inbound_hops == 0:
         return
-    in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound")
+    in_asset, rows, truncated, _ = _pick_asset(provider, address, "in", cfg, "inbound", r)
     r.in_asset = in_asset
     r.total_in = sum((t.amount for t in rows), ZERO)
     report.phase = "inbound"

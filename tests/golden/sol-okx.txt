@@ -46,6 +46,9 @@ WHERE THE FUNDS WENT
 
 FLOW OF FUNDS
 -------------
+Followed 5 of 7 transfers seen. 3 wallets not followed: 1 already labelled (the trail ends
+there), 2 at the hop limit.
+
   4 wallets, 5 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
     W2  column Funded the wallet, row 1: Unlabelled wallet
     W3  column Funded the wallet, row 2: Unlabelled wallet
@@ -164,8 +167,8 @@ vaspfusion.cli verify sol-okx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         e9d8bc34317b14aa7e7024ee3bf5d2d93d458c2a913a4f08774ccec58064320d
-  Receipt SHA-256         4edacd31d395a38d4d10e6d2d78bb54277357769cf517e5da6071d409d9325b2
+  Content SHA-256         8de94b72992750060a4bf279882fa58816d6bf010d33b431df7a9f88dbe292aa
+  Receipt SHA-256         1ed3c1b63fefc46b6ab2a3a53d9f6cde6b09d15d8e6a121552a1f3f783656940
 
   Chain responses read
     950e1fd16a41f84e6ddeba4e9175fe5bb6d827f123a60a1abdd9e9287f395e7a  https://api.helius.xyz/v0/addresses/34ZmafMy4wfvMgjRcjexVi1Fb9eVQwnkxpC396yVFnhe/transactions?limit=100&sort-order=asc

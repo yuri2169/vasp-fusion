@@ -29,6 +29,50 @@
    "amount": 6000.0
   }
  ],
+ "trace_summary": {
+  "transfers_seen": 25,
+  "transfers_followed": 7,
+  "transfers_dust": 8,
+  "wallets_seen": 19,
+  "wallets_read": 3,
+  "wallets_followed": 3,
+  "wallets_not_followed": 11,
+  "not_followed": [
+   {
+    "reason": "dust",
+    "count": 8,
+    "wallet_ids": [
+     "TG32MuVfArD9w1QE765zgxr2hCX8boMRDT",
+     "TKPd3LDL31k48iJpYtc3Kg6WPzuQrb1Gas",
+     "TMVUd48orKjwW4Ysj21BRVhESgp8io1JV4",
+     "TNm1oN6P4HFWNpx1VP89boZuXgPvD7EJV4",
+     "TRiAHNKyHxwkaLEXanMY8iNDNcLtNjqrWs",
+     "TU6tK9BTJytNAUEA4bpA7zum3b5D4P1GDT",
+     "TXc1QqvjEVStYRdx7uYFEEDG2eedZhDPYk",
+     "TYQwZyXDkotrRQ2aPPByhMWr3vW3WSet6a"
+    ],
+    "text": "8 below the dust limit"
+   },
+   {
+    "reason": "labelled",
+    "count": 2,
+    "wallet_ids": [
+     "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+     "TLUQsVHsmUrcWEy3tGrpEdh2ue8z2NHPYk"
+    ],
+    "text": "2 already labelled (the trail ends there)"
+   },
+   {
+    "reason": "depth_limit",
+    "count": 1,
+    "wallet_ids": [
+     "TYSKA53mirLaAhEXPcn8M7jtKP6km9F67k"
+    ],
+    "text": "1 at the hop limit"
+   }
+  ],
+  "text": "Followed 7 of 25 transfers seen. 11 wallets not followed: 8 below the dust limit, 2 already labelled (the trail ends there), 1 at the hop limit."
+ },
  "hop_rail": [
   {
    "index": 1,
@@ -70,7 +114,7 @@
      "source_url": null,
      "label": "CoinDCX deposit address (derived: sweep + gas payer)",
      "confidence": 0.8492,
-     "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "evidence": "Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability.",
      "confidence_low": 0.8492,
      "confidence_high": 0.85,
      "model": {
@@ -263,14 +307,14 @@
    "evidence": [
     {
      "kind": "label",
-     "text": "TLUQsV\u20262NHPYk is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "text": "TLUQsV…2NHPYk is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 2,218.43 USDT it received from 2 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list) in 6 sweeps, typically 34 seconds after arrival. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 4 of 6 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability.",
      "tier": "derived",
      "tx_hashes": [],
      "weight": 0.8492
     },
     {
      "kind": "model",
-     "text": "Deposit-address model: over 0.99 that an address behaving like TLUQsV\u20262NHPYk is an exchange deposit address (range narrower than 0.01)",
+     "text": "Deposit-address model: over 0.99 that an address behaving like TLUQsV…2NHPYk is an exchange deposit address (range narrower than 0.01)",
      "tier": null,
      "tx_hashes": [],
      "weight": null
@@ -307,7 +351,7 @@
     },
     {
      "kind": "counterfactual",
-     "text": "Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
+     "text": "Still CoinDCX without the label on TLUQsV…2NHPYk: 46% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
      "tier": null,
      "tx_hashes": [
       "a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae",
@@ -316,7 +360,7 @@
      "weight": -0.1267
     }
    ],
-   "counterfactual": "Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
+   "counterfactual": "Still CoinDCX without the label on TLUQsV…2NHPYk: 46% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85).",
    "counterfactual_holds": true,
    "amount": 6000.0,
    "request_wallets": [
@@ -354,7 +398,7 @@
    "evidence": [
     {
      "kind": "label",
-     "text": "TFTWNg\u20268x5jLu is labelled HTX (\"HTX (Huobi) (proof-of-reserves)\"): published by the exchange itself, source defillama-cex",
+     "text": "TFTWNg…8x5jLu is labelled HTX (\"HTX (Huobi) (proof-of-reserves)\"): published by the exchange itself, source defillama-cex",
      "tier": "published_por",
      "tx_hashes": [],
      "weight": 0.95
@@ -371,7 +415,7 @@
     },
     {
      "kind": "path",
-     "text": "THW7GJ\u2026uUJt6a passed on all 7,000 USDT it received from this trail to HTX",
+     "text": "THW7GJ…uUJt6a passed on all 7,000 USDT it received from this trail to HTX",
      "tier": null,
      "tx_hashes": [
       "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354",
@@ -381,13 +425,13 @@
     },
     {
      "kind": "counterfactual",
-     "text": "Without the label on TFTWNg\u20268x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
+     "text": "Without the label on TFTWNg…8x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
      "tier": null,
      "tx_hashes": [],
      "weight": -0.7071
     }
    ],
-   "counterfactual": "Without the label on TFTWNg\u20268x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
+   "counterfactual": "Without the label on TFTWNg…8x5jLu, HTX is not reached at all: naming HTX rests on that one label.",
    "counterfactual_holds": false,
    "amount": 7000.0,
    "request_wallets": [
@@ -430,7 +474,7 @@
    "code": "deposit_like",
    "severity": "info",
    "wallet": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
-   "text": "THW7GJ\u2026uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. The wallet it pays most, TFTWNg\u20268x5jLu, is labelled HTX (published by the exchange itself), so it may be a deposit address of HTX that the discovery rules have not derived. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "text": "THW7GJ…uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. The wallet it pays most, TFTWNg…8x5jLu, is labelled HTX (published by the exchange itself), so it may be a deposit address of HTX that the discovery rules have not derived. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
    "figures": {
     "amount": 7000.0,
     "high": 1.0,
@@ -445,14 +489,14 @@
    ]
   }
  ],
- "narrative": "Wallet TGfoGr\u2026q49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul 2024 and 26 Aug 2024. 6,000 USDT (46%) reached CoinDCX in 1 hop, at TLUQsV\u20262NHPYk (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). 7,000 USDT (54%) reached HTX in 2 to 3 hops, at TFTWNg\u20268x5jLu (\"HTX (Huobi) (proof-of-reserves)\", published by the exchange itself). The wallet before it, THW7GJ\u2026uUJt6a, passed on everything it received from this trail. Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01). The range comes from the deposit-address model, which is calibrated against the addresses the discovery rules derived; the weight of the exchange wallet's label and the hop decay are rule-set. Checked without its strongest evidence: Still CoinDCX without the label on TLUQsV\u20262NHPYk: 46% of the funds reach CoinDCX at TU7BbA\u2026vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding: THW7GJ\u2026uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01); see the flags. Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes: a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae.",
+ "narrative": "Wallet TGfoGr…q49sWr sent 13,000 USDT on Tron in 3 transfers between 23 Jul 2024 and 26 Aug 2024. 6,000 USDT (46%) reached CoinDCX in 1 hop, at TLUQsV…2NHPYk (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). 7,000 USDT (54%) reached HTX in 2 to 3 hops, at TFTWNg…8x5jLu (\"HTX (Huobi) (proof-of-reserves)\", published by the exchange itself). The wallet before it, THW7GJ…uUJt6a, passed on everything it received from this trail. Nearest exchange: CoinDCX, confidence 0.85 (range narrower than 0.01). The range comes from the deposit-address model, which is calibrated against the addresses the discovery rules derived; the weight of the exchange wallet's label and the hop decay are rule-set. Checked without its strongest evidence: Still CoinDCX without the label on TLUQsV…2NHPYk: 46% of the funds reach CoinDCX at TU7BbA…vZbsFs (curated list) in 2 hops, confidence 0.72 (was 0.85). Lead, not a finding: THW7GJ…uUJt6a behaves like an exchange deposit address: 54% of the funds (7,000 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01); see the flags. Not followed in this run: 18.55 TRX in 1 transfer. Transaction hashes: a12af76b0c4c89cdc0a316d9dc7f23a72b48844f197c0944effb684461f80dae.",
  "abstain_reason": null,
  "what_would_change": [],
  "next_steps": [
-  "Draft a request to CoinDCX for KYC and a freeze on the account behind TLUQsV\u20262NHPYk",
-  "Draft a request to HTX for KYC and a freeze on the account behind THW7GJ\u2026uUJt6a (54% of the funds)",
+  "Draft a request to CoinDCX for KYC and a freeze on the account behind TLUQsV…2NHPYk",
+  "Draft a request to HTX for KYC and a freeze on the account behind THW7GJ…uUJt6a (54% of the funds)",
   "Preserve the transaction records listed in the evidence",
-  "Ask HTX whether THW7GJ\u2026uUJt6a is one of its deposit addresses: it behaves like one and pays into TFTWNg\u20268x5jLu (54% of the funds reached it)"
+  "Ask HTX whether THW7GJ…uUJt6a is one of its deposit addresses: it behaves like one and pays into TFTWNg…8x5jLu (54% of the funds reached it)"
  ],
  "provenance": {
   "seed": 26182,

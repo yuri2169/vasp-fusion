@@ -35,6 +35,69 @@
    "amount": 150.0
   }
  ],
+ "trace_summary": {
+  "transfers_seen": 655,
+  "transfers_followed": 23,
+  "transfers_dust": 17,
+  "wallets_seen": 323,
+  "wallets_read": 14,
+  "wallets_followed": 10,
+  "wallets_not_followed": 23,
+  "not_followed": [
+   {
+    "reason": "dust",
+    "count": 16,
+    "wallet_ids": [
+     "TBLioDP2auQAM4PKQ8bHw4DyqKJy86iBA1",
+     "TC6zEXKbodbFLMnYeaKLZGwYqvpYH3FDjn",
+     "TCKvpW28ey5TUV2Hcd4NqywCu2doAmrM1b",
+     "TD7jzcevPEmHEhgbUCJWVjSzoAfY3vhknZ",
+     "TMSCwpK23CD7dVxtpdDiAixYFQA1hYvfWi",
+     "TMUzCpKPwV9ar9RgcF3nYGJvQ6MQwp5BA1",
+     "TNGxrq8XG4sPMuTUqy2M2vVXjJyPxoJ6Mv",
+     "TNax1HjPGnoxgh1EWoiJNz4ryESvaLKBA1",
+     "TT5j9a9pA3iYCu3pvYXecZ2RCBRCENERGr",
+     "TTGHDg3AVmzBrfHfA17UunTvGX3GrBqfWi",
+     "TU64vihe4RWmd9Aa9pAPs1wj4Lyr7LTB5F",
+     "TWHv9cjdCFyTp8LgLLcNvQ6R7LnvyM1RGr",
+     "TXhzyVnGrKTfm9waD5cvgUZsrLPysX1HjF",
+     "TZ4TEkxPi73Rukd7ZzvEhKtRUTUPXNixQC",
+     "TZE5Mj5Td27WhKdD6xz1aNhqhm9cAA9BA1",
+     "TZEiyT2YtxFSGCdoFj5WjLNpUwNSnZ33AJ"
+    ],
+    "text": "16 below the dust limit"
+   },
+   {
+    "reason": "hub",
+    "count": 4,
+    "wallet_ids": [
+     "TAz5NBpWKaVqQqePMT68nj5cLLQdtGCVbo",
+     "TDAj94xq3QXayXTZpo5E5g9zzjLvQGNBR1",
+     "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
+     "TWBPGLwQw2EbqYLLw1DJnTDt2ZQ9yJW1JJ"
+    ],
+    "text": "4 high-activity hubs"
+   },
+   {
+    "reason": "labelled",
+    "count": 1,
+    "wallet_ids": [
+     "THuWriDhUhhU2sp6LWpp6FvzW6E58CRkY9"
+    ],
+    "text": "1 already labelled (the trail ends there)"
+   },
+   {
+    "reason": "depth_limit",
+    "count": 2,
+    "wallet_ids": [
+     "TMBvaUqXeF7ayBDh4whMRzkSAjtK3YuDjn",
+     "TWjYubaMCpg9YKZKdGHBtQZwCueV1ohBA1"
+    ],
+    "text": "2 at the hop limit"
+   }
+  ],
+  "text": "Followed 23 of 655 transfers seen. 23 wallets not followed: 16 below the dust limit, 4 high-activity hubs, 1 already labelled (the trail ends there), 2 at the hop limit."
+ },
  "hop_rail": [
   {
    "index": 1,
@@ -121,7 +184,7 @@
      "source_url": null,
      "label": "CoinDCX deposit address (derived: sweep + gas payer)",
      "confidence": 0.8491,
-     "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "evidence": "Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability.",
      "confidence_low": 0.8491,
      "confidence_high": 0.85,
      "model": {
@@ -545,14 +608,14 @@
    "evidence": [
     {
      "kind": "label",
-     "text": "THuWri\u20268CRkY9 is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA\u2026vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH\u2026aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) \u00d7 the model's probability.",
+     "text": "THuWri…8CRkY9 is labelled CoinDCX (\"CoinDCX deposit address (derived: sweep + gas payer)\"): derived by VASP-FUSION, source vaspfusion-discover. Sweep rule: forwarded 100% of the 5,013.58 USDT it received from 7 senders to CoinDCX wallet TU7BbA…vZbsFs (curated list) in 24 sweeps, typically 33 seconds after arrival. Only its first 50 transfers since 2025-05-18 were read; what it did later is not covered. Its gas listing was not read to the end. Gas rule: TFLxNH…aEznGd, labelled CoinDCX, sent the fee money for 17 of 24 sweeps. Both rules agree. Model: over 0.99 that an address behaving like this is an exchange deposit address (range narrower than 0.01), from a model that did not train on this address. Label confidence 0.85 = 0.85 for the CoinDCX wallet's label (curated list) × the model's probability.",
      "tier": "derived",
      "tx_hashes": [],
      "weight": 0.8491
     },
     {
      "kind": "model",
-     "text": "Deposit-address model: over 0.99 that an address behaving like THuWri\u20268CRkY9 is an exchange deposit address (range narrower than 0.01)",
+     "text": "Deposit-address model: over 0.99 that an address behaving like THuWri…8CRkY9 is an exchange deposit address (range narrower than 0.01)",
      "tier": null,
      "tx_hashes": [],
      "weight": null
@@ -612,7 +675,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
-   "text": "TMPJaN\u2026YyzeAJ passed on 100% of the 395 USDT that reached it within 2 minutes of its arrival",
+   "text": "TMPJaN…YyzeAJ passed on 100% of the 395 USDT that reached it within 2 minutes of its arrival",
    "figures": {
     "amount": 395.0,
     "seconds": 141.0,
@@ -627,7 +690,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "TLCykn6CtB8Ac1GrrpXqNhyBXsPeVSdqGv",
-   "text": "TLCykn\u2026VSdqGv passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
+   "text": "TLCykn…VSdqGv passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
    "figures": {
     "amount": 250.0,
     "seconds": 111.0,
@@ -642,7 +705,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "TVHpZB7djzXyBNdwGLTCgcNXiWuoLUr5Mz",
-   "text": "TVHpZB\u2026LUr5Mz passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
+   "text": "TVHpZB…LUr5Mz passed on 100% of the 250 USDT that reached it within 2 minutes of its arrival",
    "figures": {
     "amount": 250.0,
     "seconds": 135.0,
@@ -657,7 +720,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "TSe4ZadckBdQn8RFLRPsYmhFFQy9zShRtE",
-   "text": "TSe4Za\u2026zShRtE passed on 100% of the 24 USDT that reached it within 5 minutes of its arrival",
+   "text": "TSe4Za…zShRtE passed on 100% of the 24 USDT that reached it within 5 minutes of its arrival",
    "figures": {
     "amount": 24.0,
     "seconds": 279.0,
@@ -672,7 +735,7 @@
    "code": "rapid_forwarding",
    "severity": "warn",
    "wallet": "THbT14YfjmTkiKhEjPiVizviPrDWbdZfWi",
-   "text": "THbT14\u2026bdZfWi passed on 100% of the 20 USDT that reached it within 7 minutes of its arrival",
+   "text": "THbT14…bdZfWi passed on 100% of the 20 USDT that reached it within 7 minutes of its arrival",
    "figures": {
     "amount": 20.0,
     "seconds": 423.0,
@@ -687,7 +750,7 @@
    "code": "fan_in",
    "severity": "info",
    "wallet": "TDqSquXBgUCLYvYC4XZgrprLK589dkhSCf",
-   "text": "721 USDT of the wallet's money came together again at TDqSqu\u2026dkhSCf, from 3 wallets it had been split across",
+   "text": "721 USDT of the wallet's money came together again at TDqSqu…dkhSCf, from 3 wallets it had been split across",
    "figures": {
     "amount": 721.0,
     "senders": 3.0
@@ -703,7 +766,7 @@
    "code": "deposit_like",
    "severity": "info",
    "wallet": "TMPJaN2dKL8H1DyongqVHAjpfHtNYyzeAJ",
-   "text": "TMPJaN\u2026YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TWBPGL\u2026yJW1JJ, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "text": "TMPJaN…YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TWBPGL…yJW1JJ, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
    "figures": {
     "amount": 395.0,
     "high": 1.0,
@@ -720,7 +783,7 @@
    "code": "deposit_like",
    "severity": "info",
    "wallet": "TLfVvtUFJtpRJ2Mgn5sfRTVgS2vttYbRGr",
-   "text": "TLfVvt\u2026tYbRGr behaves like an exchange deposit address: 15% of the funds (241 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu\u2026dkhSCf, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
+   "text": "TLfVvt…tYbRGr behaves like an exchange deposit address: 15% of the funds (241 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01). What speaks for it: forwards 100% of what it receives to one wallet; every outgoing transfer goes to one wallet; the wallet it pays most keeps or spreads what it receives, as a collecting wallet does. Neither it nor TDqSqu…dkhSCf, the wallet it sweeps into, is labelled, so the exchange cannot be named. A lead to check, not a finding: the model was measured on exchange customers and deposit addresses only.",
    "figures": {
     "amount": 241.0,
     "high": 1.0,
@@ -734,23 +797,23 @@
    ]
   }
  ],
- "narrative": "Wallet TXXvb9\u2026BCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr 2025 and 21 Apr 2026. 150 USDT (10%) reached CoinDCX in 1 hop, at THuWri\u20268CRkY9 (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). No exchange is named. Only 10% of the funds reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced. Lead, not a finding: TMPJaN\u2026YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01), and 1 more; see the flags. Not followed in this run: 64.83 TRX in 4 transfers. Transaction hashes: a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf.",
+ "narrative": "Wallet TXXvb9…BCz4pW sent 1,560 USDT on Tron in 9 transfers between 17 Apr 2025 and 21 Apr 2026. 150 USDT (10%) reached CoinDCX in 1 hop, at THuWri…8CRkY9 (\"CoinDCX deposit address (derived: sweep + gas payer)\", derived by VASP-FUSION). No exchange is named. Only 10% of the funds reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced. Lead, not a finding: TMPJaN…YyzeAJ behaves like an exchange deposit address: 25% of the funds (395 USDT) reached it, and the deposit-address model gives over 0.99 (range narrower than 0.01), and 1 more; see the flags. Not followed in this run: 64.83 TRX in 4 transfers. Transaction hashes: a83e02aabfc2d85cbdb82439c428288b987448baba6a75e5026a88af1d4c81cf.",
  "abstain_reason": "Only 10% of the funds reached a labelled VASP (CoinDCX), 1 hop away; rule confidence 0.33 is below the 0.60 needed to name one. 74% stopped at unlabelled high-activity wallets, where funds from many senders mix; 16% went past the 3 hops that were traced.",
  "what_would_change": [
-  "A label for TWBPGL\u2026yJW1JJ, the wallet TMPJaN\u2026YyzeAJ sweeps into: if it is an exchange's wallet, TMPJaN\u2026YyzeAJ is that exchange's deposit address (25% of the funds)",
-  "A label for TDqSqu\u2026dkhSCf, the wallet TLfVvt\u2026tYbRGr sweeps into: if it is an exchange's wallet, TLfVvt\u2026tYbRGr is that exchange's deposit address (15% of the funds)",
+  "A label for TWBPGL…yJW1JJ, the wallet TMPJaN…YyzeAJ sweeps into: if it is an exchange's wallet, TMPJaN…YyzeAJ is that exchange's deposit address (25% of the funds)",
+  "A label for TDqSqu…dkhSCf, the wallet TLfVvt…tYbRGr sweeps into: if it is an exchange's wallet, TLfVvt…tYbRGr is that exchange's deposit address (15% of the funds)",
   "A larger part of the funds reaching CoinDCX (now 10%; 25% or more counts in full)",
-  "A label for TDqSqu\u2026dkhSCf (holds 46% of the funds; it pays out to many wallets and may be an exchange or payment service)",
-  "A label for TWBPGL\u2026yJW1JJ (holds 25% of the funds; it pays out to many wallets and may be an exchange or payment service)",
-  "Tracing deeper than 3 hops from TF4tag\u2026rg6M1b (16% of the funds)",
-  "A stronger label for THuWri\u20268CRkY9 (now: derived by VASP-FUSION)"
+  "A label for TDqSqu…dkhSCf (holds 46% of the funds; it pays out to many wallets and may be an exchange or payment service)",
+  "A label for TWBPGL…yJW1JJ (holds 25% of the funds; it pays out to many wallets and may be an exchange or payment service)",
+  "Tracing deeper than 3 hops from TF4tag…rg6M1b (16% of the funds)",
+  "A stronger label for THuWri…8CRkY9 (now: derived by VASP-FUSION)"
  ],
  "next_steps": [
-  "Identify TWBPGL\u2026yJW1JJ: TMPJaN\u2026YyzeAJ, which received 25% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
-  "Identify TDqSqu\u2026dkhSCf: TLfVvt\u2026tYbRGr, which received 15% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
-  "Identify TDqSqu\u2026dkhSCf: 46% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
-  "Identify TWBPGL\u2026yJW1JJ: 25% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
-  "CoinDCX did receive 10% of the funds (150 USDT) at THuWri\u20268CRkY9; a request limited to that deposit can still be drafted",
+  "Identify TWBPGL…yJW1JJ: TMPJaN…YyzeAJ, which received 25% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
+  "Identify TDqSqu…dkhSCf: TLfVvt…tYbRGr, which received 15% of the funds, behaves like a deposit address and sweeps into it (check other label sources and block explorers)",
+  "Identify TDqSqu…dkhSCf: 46% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
+  "Identify TWBPGL…yJW1JJ: 25% of the funds stopped there and it behaves like a service wallet (check other label sources and block explorers)",
+  "CoinDCX did receive 10% of the funds (150 USDT) at THuWri…8CRkY9; a request limited to that deposit can still be drafted",
   "Run the trace again with more than 3 hops"
  ],
  "provenance": {

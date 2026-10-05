@@ -53,6 +53,9 @@ WHERE THE FUNDS WENT
 
 FLOW OF FUNDS
 -------------
+Followed 8 of 160 transfers seen. 13 wallets not followed: 8 below the dust limit, 1
+high-activity hub, 2 already labelled (the trail ends there), 2 at the hop limit.
+
   7 wallets, 8 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
     W4  column Funded the wallet, row 1: Unlabelled wallet
     W5  column Funded the wallet, row 2: Unlabelled wallet
@@ -227,8 +230,8 @@ vaspfusion.cli verify tron-coindcx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         a5ee562523af9826901e94b727aeaf5f2f6d1d828830801ff0687d28f3a5e26c
-  Receipt SHA-256         020453916474a320af312eeed3a1ea0b693bf08f216d3c79d3e96d2b81b4da43
+  Content SHA-256         7d61638500214085108fef2963ee82eb69b8e8f0e8ae61e1b83853b8ee31c702
+  Receipt SHA-256         7a63b6c46b26193b29b9b5b343b0d18c6dfb2c85c869fa28bbb3bec56cb86f49
 
   Chain responses read
     1480b684a7cda1e82e4fa0ed673aa5610f0898c21c829af76965a96169297de3  https://api.trongrid.io/v1/accounts/TCw8j3nQFnRDMUW2SeNbAgjnVKpELLcoV5/transactions/trc20?contract_address=TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t&limit=100&min_timestamp=1748143335000&only_confirmed=true&only_from=true&order_by=block_timestamp%2Casc

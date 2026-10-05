@@ -48,6 +48,9 @@ WHERE THE FUNDS WENT
 
 FLOW OF FUNDS
 -------------
+Followed 23 of 384 transfers seen. 13 wallets not followed: 9 below the dust limit, 3
+high-activity hubs, 1 already labelled (the trail ends there).
+
   5 wallets, 23 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
     W0  column Traced wallet, row 1: Traced wallet
     W1  column Hop 1, row 1: CoinDCX
@@ -195,8 +198,8 @@ vaspfusion.cli verify bnb-coindcx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         84a344a8762e994785ec09ff106404184b204fc3544583610f6f05a1a83f7e89
-  Receipt SHA-256         4a6803534684583cb58664077629ff272e079a16d3dac2a86465632ef7110e6c
+  Content SHA-256         112cee64082b6dca25e978ae037c5fb7c27bcc853cefb23e7c0988034e92a5b3
+  Receipt SHA-256         7180d92e90cc12d8747144d6c774a661c9293771b255b248421271ac70fe4f1c
 
   Chain responses read
     d6f25bee34099ae9b15facf32f9ce3f3dec3b31b3d1bd73005dcb5c1d76b6ff9  https://rpc.ankr.com/multichain?method=ankr_getTokenTransfers&params=%7B%22address%22%3A%5B%220x16b9a82891338f9ba80e2d6970fdda79d1eb0dae%22%5D%2C%22blockchain%22%3A%22bsc%22%2C%22descOrder%22%3Afalse%2C%22fromTimestamp%22%3A1667540511%2C%22pageSize%22%3A100%2C%22pageToken%22%3A%22eyJic2MiOnsidG9rZW4iOiJ7XCJibG9ja1wiOjIyNzU2ODA2LFwiaW5kZXhcIjoyMzd9Iiwib2Zmc2V0IjowLCJuZXh0VG9rZW4iOiIiLCJuZXh0VG9rZW5JbmRleCI6MH19%22%7D

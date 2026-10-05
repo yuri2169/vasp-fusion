@@ -40,6 +40,7 @@ ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("GET", "/api/cases/{case_id}/pdf"): ("case.export", "case_id"),
     ("GET", "/api/cases/{case_id}/receipt"): ("case.receipt", "case_id"),
     ("POST", "/api/cases/{case_id}/verify"): ("case.verify", "case_id"),
+    ("GET", "/api/cases/{case_id}/context"): ("case.context", "case_id"),
     ("GET", "/api/wallets/{chain}/{address}"): ("wallet.view", "chain:address"),
     ("GET", "/api/labels/search"): ("label.search", "?q"),
     ("GET", "/api/desk"): ("desk.view", None),

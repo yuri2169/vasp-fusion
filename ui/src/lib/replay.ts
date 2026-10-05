@@ -15,7 +15,8 @@ export interface ReplayStep {
 /** The picture's edges in the order the money moved (by block time; an edge with no time
  *  goes last). The order is stable, so a replay is the same every time. */
 export function replaySteps(view: FlowView): ReplayStep[] {
-  const steps = view.edges.map((e) => ({
+  // context is not the suspect wallet's money: the replay plays the trail only
+  const steps = view.edges.filter((e) => !e.context).map((e) => ({
     edge: e.id,
     source: e.source,
     target: e.target,
@@ -28,9 +29,10 @@ export function replaySteps(view: FlowView): ReplayStep[] {
 }
 
 /** What is on the picture after `at` steps: those edges, the wallets they touch, and the
- *  wallet the case is about (it is there before anything moves). */
+ *  wallet the case is about (it is there before anything moves). Context is on it only
+ *  when the replay is at its end. */
 export function shownAt(view: FlowView, steps: ReplayStep[], at: number): { nodes: Set<string>; edges: Set<string> } {
-  const nodes = new Set(view.nodes.filter((n) => n.column === 0).map((n) => n.id))
+  const nodes = new Set(view.nodes.filter((n) => n.column === 0 && !n.context).map((n) => n.id))
   const edges = new Set<string>()
   for (const s of steps.slice(0, Math.max(0, at))) {
     edges.add(s.edge)

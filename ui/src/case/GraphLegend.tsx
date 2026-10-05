@@ -75,12 +75,13 @@ const item = 'flex items-center gap-1.5 whitespace-nowrap text-sm text-fg'
 
 /** How to read the picture, in words: only the shapes and borders this case uses. */
 export function GraphLegend({ view, named, flagged = false }: { view: FlowView; named?: string | null; flagged?: boolean }) {
-  const wallets = view.nodes.filter((n) => n.kind !== 'more' && n.kind !== 'fan')
+  const wallets = view.nodes.filter((n) => n.kind !== 'more' && n.kind !== 'fan' && !n.context)
+  const hasContext = view.edges.some((e) => e.context)
   const hasFan = view.nodes.some((n) => n.kind === 'fan')
   const roles = ROLE_ORDER.filter((role) => wallets.some((n) => n.role === role))
   const tiers = TIER_ORDER.filter((tier) => wallets.some((n) => n.role !== 'suspect' && (n.tier ?? 'none') === tier))
   const hasMore = view.nodes.some((n) => n.kind === 'more')
-  const hasInbound = view.edges.some((e) => e.direction === 'inbound')
+  const hasInbound = view.edges.some((e) => e.direction === 'inbound' && !e.context)
   const hasNamed = view.nodes.some((n) => n.named)
 
   return (
@@ -154,6 +155,15 @@ export function GraphLegend({ view, named, flagged = false }: { view: FlowView; 
               <path d="M2 10h26" stroke="var(--rule-strong)" strokeWidth={2.5} strokeDasharray="7 4" />
             </svg>
             Money coming in
+          </li>
+        )}
+        {hasContext && (
+          <li className={item}>
+            <svg aria-hidden width={BOX.w} height={BOX.h} viewBox={`0 0 ${BOX.w} ${BOX.h}`} className="shrink-0">
+              <path d="M2 10h18" stroke="var(--data)" strokeWidth={1.5} strokeDasharray="1 4" strokeLinecap="round" />
+              <rect x={21.5} y={5.5} width={8} height={8} fill="var(--surface-2)" stroke="var(--data)" />
+            </svg>
+            Other transfers (context, not the suspect's money)
           </li>
         )}
         {flagged && (

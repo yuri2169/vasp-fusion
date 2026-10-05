@@ -297,6 +297,34 @@ def case_sanctioned(L) -> dict:
     }
 
 
+def with_trace_summary(case: dict) -> dict:
+    """A fixture has no trace behind it: its summary counts the fixture's own graph, so the
+    line over the graph agrees with what is drawn (every transfer followed, the labelled
+    wallets and the hubs not followed)."""
+    from vaspfusion.trace import reason_words, summary_text
+    nodes = [n for n in case["graph"]["nodes"] if n["role"] != "suspect"]
+    why = {"hub": sorted(n["id"] for n in nodes if n.get("is_hub")),
+           "labelled": sorted(n["id"] for n in nodes if n.get("label") and not n.get("is_hub"))}
+    rows = [{"reason": r, "count": len(w), "wallet_ids": w, "text": reason_words(r, len(w))}
+            for r, w in why.items() if w]
+    left = sum(r["count"] for r in rows)
+    edges = len(case["graph"]["edges"])
+    case["trace_summary"] = {
+        "transfers_seen": edges, "transfers_followed": edges, "transfers_dust": 0,
+        "wallets_seen": len(nodes) + 1, "wallets_read": len(nodes) + 1 - left,
+        "wallets_followed": len(nodes) + 1 - left, "wallets_not_followed": left,
+        "not_followed": rows, "text": summary_text(edges, edges, rows)}
+    return case
+
+
+def context_mock(case: dict) -> dict:
+    """A fixture has no trace and no recorded responses, so it has no context to show."""
+    return {"case_id": case["id"], "wallet": None, "recorded": False,
+            "live": False, "transfers": 0, "truncated": False, "nodes": [], "edges": [],
+            "reason": "A demo fixture has no trace behind it, so there is no context to show.",
+            "text": "A demo fixture has no trace behind it, so there is no context to show."}
+
+
 def with_receipt(case: dict) -> dict:
     """The mock case with the receipt fields a real run fills (B9). The page digests are
     synthetic like every other hash in a mock; the digests over them are computed."""
@@ -529,7 +557,7 @@ def main() -> None:
         for c in (c1, c2, c3):  # the suspect wallets are synthetic: no tag of their own
             c["screening"] = screen(None)
             c["threats"] = case_threats(None, c["typology_flags"])
-        cases = [with_risk(with_receipt(c)) for c in (c1, c2, c3)]
+        cases = [with_risk(with_receipt(with_trace_summary(c))) for c in (c1, c2, c3)]
         c1, c2, c3 = cases
         as_json = [S.CaseDetail.model_validate(c).model_dump(mode="json") for c in cases]
         req = request_okx(c1)
@@ -606,6 +634,7 @@ def main() -> None:
         from vaspfusion.provenance import receipt
         files.update({f"cases/{c['id']}/receipt": receipt(
             S.CaseDetail.model_validate(c).model_dump(mode="json")) for c in cases})
+        files.update({f"cases/{c['id']}/context": context_mock(c) for c in cases})
 
     shutil.rmtree(MOCKS, ignore_errors=True)
     for rel, body in files.items():

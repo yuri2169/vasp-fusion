@@ -29,7 +29,7 @@ from .labels.threats import tag_of
 from .screening import case_threats, screen
 from .provenance import case_headline, file_sha256  # noqa: F401 - re-exported
 from .trace import (DEFAULT_WALLETS, ZERO, Crossing, TraceConfig, TraceEdge, TraceNode,
-                    TraceResult, replay_config, trace)
+                    TraceResult, replay_config, trace, trace_summary)
 
 SEED = 26182
 CODE_VERSION = "b5-bitcoin-1"
@@ -318,6 +318,7 @@ def build_case(tr: TraceResult, att: Attribution, *, case_id: str, meta: dict | 
         "total_received": float(tr.total_in) if tr.in_asset else None,
         "where_funds_went": _where(tr),
         "chains": tr.chains, "crossings": _crossings(tr), "tx_chains": _tx_chains(tr),
+        "trace_summary": trace_summary(tr),
         "hop_rail": _hop_rail(tr, _rail_edges(tr, att)), "graph": _graph(tr),
         "candidates": [_candidate(tr, c) for c in att.candidates],
         "typology_flags": [{**f, "wallet": _plain(tr, f["wallet"]),
@@ -399,18 +400,34 @@ def run_case(address: str, chain: str, provider, labels, *, case_id: str | None 
 
 
 # ------------------------------------------------------------------ verify (B9)
-def replay_case(case_in: dict, fetcher, labels, *, label_db_sha256: str | None = None,
-                **provider_opts) -> dict:
-    """Trace the wallet of a receipt's `input` again, exactly as a case run does."""
+def replay_cfg(case_in: dict) -> TraceConfig:
+    """The trace settings of a receipt's `input`."""
     since = case_in.get("since")
     if isinstance(since, str):
         since = datetime.fromisoformat(since.replace("Z", "+00:00"))
     # a trace that a time limit ended is replayed to where it stopped, without a clock
     cut, seconds = case_in.get("stopped_after"), case_in.get("max_seconds")
-    cfg = TraceConfig(max_hops=case_in["max_hops"], since=since,
-                      max_nodes=case_in.get("max_wallets") or DEFAULT_WALLETS,
-                      max_seconds=seconds,
-                      stop_after=tuple(cut) if cut else (None, None) if seconds else None)
+    return TraceConfig(max_hops=case_in["max_hops"], since=since,
+                       max_nodes=case_in.get("max_wallets") or DEFAULT_WALLETS,
+                       max_seconds=seconds,
+                       stop_after=tuple(cut) if cut else (None, None) if seconds else None)
+
+
+def replay_trace(case_in: dict, fetcher, labels, **provider_opts) -> TraceResult:
+    """The trace of a receipt's `input` alone, run again exactly as `run_case` runs it:
+    the same walk, with what it read and left out (`TraceResult.seen`). No attribution,
+    no scoring. This is what a case's context is read from (context.py)."""
+    cfg, chain = replay_cfg(case_in), case_in["chain"]
+    provider = trace_provider(chain, fetcher, cfg, **provider_opts)
+    crossings = Crossings(fetcher, lambda ch: trace_provider(ch, fetcher, cfg, **provider_opts))
+    return trace(case_in["address"], chain, provider, cluster_labels(chain, labels, provider),
+                 cfg, crossings=crossings)
+
+
+def replay_case(case_in: dict, fetcher, labels, *, label_db_sha256: str | None = None,
+                **provider_opts) -> dict:
+    """Trace the wallet of a receipt's `input` again, exactly as a case run does."""
+    cfg = replay_cfg(case_in)
     chain = case_in["chain"]
     scorer = "auto"
     if provider_opts:

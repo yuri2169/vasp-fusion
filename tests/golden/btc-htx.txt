@@ -46,6 +46,9 @@ WHERE THE FUNDS WENT
 
 FLOW OF FUNDS
 -------------
+Followed 4 of 4 transfers seen. 3 wallets not followed: 1 already labelled (the trail ends
+there), 2 at the hop limit.
+
   4 wallets, 4 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
     W2  column Funded the wallet, row 1: Unlabelled wallet
     W3  column Funded the wallet, row 2: Unlabelled wallet
@@ -195,8 +198,8 @@ vaspfusion.cli verify btc-htx
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         3bf373bac714d1f7c57fa60c79c14dfc385313c74a463e642a9b551d69e51478
-  Receipt SHA-256         6df103e77f08eccedf153876a2744c66eb63f907db8ea431e7d647c02112b2e2
+  Content SHA-256         f6bf056c8a6339233beb18f2b27b9ae217003467cb27f5dd37cf8a064526996b
+  Receipt SHA-256         d51083fff67e1cf1de3b2863bce9c0d2cbe068595e549be0f3d6cd5f59bacb6b
 
   Chain responses read
     a52a243a8c1dbbbd74a6e77afc92df258b145169adf565a5ad3fd8d3c1ca57dc  https://blockstream.info/api/address/19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV/txs

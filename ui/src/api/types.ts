@@ -322,6 +322,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cases/{case_id}/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Case Context
+         * @description The transfers this case's trace read and did not follow, to draw greyed as
+         *     context. Worked out by tracing the wallet again from the cached chain responses
+         *     only; the case is not changed. A wallet the trace did not read is fetched now when
+         *     the server is online; offline the answer says it was not recorded (`recorded`
+         *     false). 409 until the case has a result, or when its responses are no longer in
+         *     the cache; 404 for a wallet that is not part of the case.
+         */
+        get: operations["get_case_context_api_cases__case_id__context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/wallets/{chain}/{address}": {
         parameters: {
             query?: never;
@@ -880,7 +905,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "batch.upload" | "batch.list" | "batch.view" | "batch.export" | "scale.view" | "auth.login" | "auth.logout" | "api.other";
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "case.context" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "batch.upload" | "batch.list" | "batch.view" | "batch.export" | "scale.view" | "auth.login" | "auth.logout" | "api.other";
             /**
              * Target
              * @description case id, `chain:address`, exchange name, request id, search text or user name, by action
@@ -1232,6 +1257,54 @@ export interface components {
              */
             request_wallets?: components["schemas"]["RequestWallet"][] | null;
         };
+        /**
+         * CaseContext
+         * @description The transfers a case's trace read and did not follow: context to draw greyed
+         *     beside the trail. It is never part of the attribution, the Hop Rail, a share of the
+         *     funds or the risk class, and reading it changes nothing about the case.
+         */
+        CaseContext: {
+            /** Case Id */
+            case_id: string;
+            /**
+             * Wallet
+             * @description Set when one wallet's context was asked for
+             */
+            wallet?: string | null;
+            /**
+             * Recorded
+             * @description False when `wallet` was not read by the trace and the server could not read it now (offline, or the chain refused): `reason` says which, and there are no edges
+             */
+            recorded: boolean;
+            /**
+             * Live
+             * @description The wallet's transfers were fetched for this answer
+             * @default false
+             */
+            live: boolean;
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Transfers
+             * @description How many there are, cut or not
+             */
+            transfers: number;
+            /**
+             * Truncated
+             * @description More than the limit: `edges` is the first part
+             * @default false
+             */
+            truncated: boolean;
+            /** Nodes */
+            nodes: components["schemas"]["ContextNode"][];
+            /** Edges */
+            edges: components["schemas"]["ContextEdge"][];
+            /**
+             * Text
+             * @description One line to show as it is
+             */
+            text: string;
+        };
         /** CaseCreate */
         CaseCreate: {
             /** Address */
@@ -1377,6 +1450,8 @@ export interface components {
             tx_chains: {
                 [key: string]: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
             };
+            /** @description How much the trace saw, how much of it is on the graph, and why the other wallets were not followed. Null on a case with no result, and on one stored before this was counted */
+            trace_summary?: components["schemas"]["TraceSummary"] | null;
             /** Hop Rail */
             hop_rail: components["schemas"]["Hop"][];
             graph: components["schemas"]["CaseGraph"];
@@ -1719,6 +1794,63 @@ export interface components {
              * @description Omit to have it read from the address
              */
             chain?: ("tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana") | null;
+        };
+        /**
+         * ContextEdge
+         * @description One transfer the trace read and did not follow. Not the wallet's money.
+         */
+        ContextEdge: {
+            /** Id */
+            id: string;
+            /** Tx Hash */
+            tx_hash: string;
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
+            /** Asset */
+            asset: string;
+            /** Amount */
+            amount: number;
+            /** Amount Usd */
+            amount_usd?: number | null;
+            /**
+             * Block Time
+             * Format: date-time
+             */
+            block_time: string;
+            /**
+             * Chain
+             * @enum {string}
+             */
+            chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
+            /**
+             * Why
+             * @description dust: below the dust limit; other_asset: in an asset the trace did not follow; not_traced: none of the traced money was assigned to it (it left before the money arrived, or the money had already moved on)
+             * @enum {string}
+             */
+            why: "dust" | "other_asset" | "not_traced";
+        };
+        /** ContextNode */
+        ContextNode: {
+            /**
+             * Id
+             * @description As in `graph.nodes`: the address, or `chain:address`
+             */
+            id: string;
+            /** Address */
+            address: string;
+            /**
+             * Chain
+             * @enum {string}
+             */
+            chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
+            /**
+             * On Graph
+             * @description The wallet is one of the case's `graph.nodes`
+             */
+            on_graph: boolean;
+            label?: components["schemas"]["LabelOut"] | null;
         };
         /** CoverageRow */
         CoverageRow: {
@@ -2776,6 +2908,33 @@ export interface components {
              */
             reasons: components["schemas"]["ModelReason"][];
         };
+        /**
+         * NotFollowed
+         * @description Wallets the trace did not follow, for one reason.
+         */
+        NotFollowed: {
+            /**
+             * Reason
+             * @description small: holds under the share of the funds a trace follows; dust: only on transfers below the dust limit; hub: a high-activity wallet (commingled funds); labelled: a named party, where the trail ends by design; depth_limit: at the hop limit; budget: not read before the wallet or time budget ran out; unreadable: its transfers could not be read, or not to the end; other_chain: paid by a bridge on a chain no adapter reads
+             * @enum {string}
+             */
+            reason: "small" | "dust" | "hub" | "labelled" | "depth_limit" | "budget" | "unreadable" | "other_chain";
+            /**
+             * Count
+             * @description How many wallets, all of them
+             */
+            count: number;
+            /**
+             * Wallet Ids
+             * @description Their ids as in `graph.nodes` (a dust or other-chain wallet is not on the graph), sorted; at most 200 are listed
+             */
+            wallet_ids: string[];
+            /**
+             * Text
+             * @description The count in words, to show as it is
+             */
+            text: string;
+        };
         /** OfficerOut */
         OfficerOut: {
             /** Username */
@@ -3618,6 +3777,58 @@ export interface components {
              */
             text: string;
         };
+        /**
+         * TraceSummary
+         * @description What the trace read and what it followed. Every figure is counted by the trace
+         *     where it makes the decision; none is estimated afterwards.
+         */
+        TraceSummary: {
+            /**
+             * Transfers Seen
+             * @description Every transfer in every listing the trace read, each once
+             */
+            transfers_seen: number;
+            /**
+             * Transfers Followed
+             * @description Of those, the ones that carry the wallet's money: the transfers on the graph
+             */
+            transfers_followed: number;
+            /**
+             * Transfers Dust
+             * @description Of those seen, dropped as below the dust limit
+             */
+            transfers_dust: number;
+            /**
+             * Wallets Seen
+             * @description Distinct wallets on any transfer seen
+             */
+            wallets_seen: number;
+            /**
+             * Wallets Read
+             * @description Wallets whose transfers were listed
+             */
+            wallets_read: number;
+            /**
+             * Wallets Followed
+             * @description Wallets read and followed on, the case's own wallet included
+             */
+            wallets_followed: number;
+            /**
+             * Wallets Not Followed
+             * @description The sum of `not_followed[].count`
+             */
+            wallets_not_followed: number;
+            /**
+             * Not Followed
+             * @description Each wallet the money reached that was not followed, under exactly one reason; reasons with no wallet are left out
+             */
+            not_followed: components["schemas"]["NotFollowed"][];
+            /**
+             * Text
+             * @description One line to show as it is
+             */
+            text: string;
+        };
         /** TypologyFlag */
         TypologyFlag: {
             /**
@@ -4412,6 +4623,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VerifyResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_case_context_api_cases__case_id__context_get: {
+        parameters: {
+            query?: {
+                /** @description One wallet's other transfers (an id from `graph.nodes`, or of a wallet already shown as context). Without it: the whole context */
+                wallet?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                case_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CaseContext"];
                 };
             };
             /** @description Validation Error */
