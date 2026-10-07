@@ -591,7 +591,9 @@ def _timeline(timeline: dict | None) -> list[dict]:
                 line += f", by {s['by']}"
             line += f" (from the {s['source']})"
             if s.get("after_previous_s") is not None:
-                line += f"; {elapsed_words(s['after_previous_s'])} after the step before"
+                gap = s["after_previous_s"]     # times are whole seconds
+                line += ("; in the same second as the step before" if gap == 0
+                         else f"; {elapsed_words(gap)} after the step before")
         elif s["state"] == "pending":
             line = f"Pending: {s['label']}"
         else:

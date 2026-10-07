@@ -50,7 +50,9 @@ function Step({ step, first, last }: { step: TimelineStep; first: TimelineStep |
         </p>
         {done && (
           <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm text-muted">
-            {step.after_previous_s != null && <span>{elapsedWords(step.after_previous_s)} after the step before</span>}
+            {step.after_previous_s != null && (
+              <span>{step.after_previous_s === 0 ? 'in the same second as the step before' : `${elapsedWords(step.after_previous_s)} after the step before`}</span>
+            )}
             {step.since_first_s != null && step.since_first_s > 0 && first && step.after_previous_s !== step.since_first_s && (
               <span>
                 {elapsedWords(step.since_first_s)} after "{first.label}"
