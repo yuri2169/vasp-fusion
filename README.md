@@ -216,6 +216,22 @@ from vaspfusion.labels.lookup import lookup, LabelStore
 lookup("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron")   # Label(entity='Bitget', tier='published_por', ...)
 ```
 
+## Where each exchange is registered, and the map
+`data/vasp_directory.yaml` holds, for 22 exchanges, only what a source states; each fact names its source and the day it was read. A cited jurisdiction is on file for 13 of them, including every exchange the recorded cases reach:
+
+| Exchange | Jurisdiction on file | What the source says | Source |
+|---|---|---|---|
+| CoinDCX | India | Neblio Technologies Private Limited is "an Indian company" | CoinDCX Exchange Terms of Use, in effect from 22 Sep 2026 (the exchange's own terms) |
+| Bitget | Singapore | "Bitget Limited", the operator of Bitget, is listed at Singapore. **That column is the location of the office or address, not a place of incorporation**; no official source for the latter was found | Japan FSA, list of unregistered crypto-asset exchange operators (file dated 1 Sep 2026) |
+| HTX | Panama | Huobi Global S.A. is "a company incorporated in Panama"; the same proceedings also name "persons unknown" who own or control the exchange | UK FCA, "HTX (formerly Huobi): legal proceedings information" |
+| Binance | Cayman Islands | Binance Holdings Limited is "the entity that operates" Binance.com (US DOJ, 21 Nov 2023), and FIU-IND's order of 19 Jun 2024 places it in the Cayman Islands. The company on FIU-IND's list is Binance International Limited, whose country the list does not state | US DOJ; FIU-IND order 10/DIR/FIU-IND/2024 |
+| OKX | Seychelles | Aux Cayes Fintech Co. Ltd, doing business as OKX, is "a Seychelles-based entity" | US Attorney's Office, SDNY, 24 Feb 2025 |
+| Bitfinex | British Virgin Islands | iFinex Inc and BFXWW Inc. | PIB release of 28 Dec 2023 |
+
+Read on 8 Oct 2026, except Bitfinex (2 Oct 2026). No country is inferred: Gate.io, MEXC, Bybit, WazirX, CoinSwitch and four others stay blank until a source is read for them. Registration with FIU-IND is taken from the official list of 2 Dec 2024 where an exchange is on it (CoinDCX, WazirX, CoinSwitch, Binance, KuCoin, Bitbns, Delta Exchange), always shown with that date.
+
+**The map** (the dashboard, and the Jurisdiction tab of a case) puts the traced money on the country each exchange is registered in, under the caption "Where the exchange is registered, not where the suspect is." It is counted from the wallets the request desk routes; an exchange with no cited country is listed beside the map, never placed. On the thirteen recorded cases it shows Singapore (Bitget, USD 552,938.30, 2 cases), Seychelles (OKX, USD 12,739.49, 1 case), India (CoinDCX, USD 7,786.56, 3 cases) and Panama (HTX, USD 7,000, 2 cases; one of them pays in bitcoin, which is counted and not converted). The borders are bundled (Natural Earth); nothing is fetched.
+
 ## Threat tags and high-risk alerts
 A label can carry a **threat** beside its category: `terrorism_financing`, `ransomware`, `darknet_market`, `theft` (the wallet of a hack or exploit), `fraud` or `sanctioned_other`, with who the source names (`threat_entity`), the source (`threat_source`, `threat_url`) and the source's own words (`threat_evidence`). The tool never infers a threat: every tag is a public source's statement, and `config/threats.yaml` holds each rule.
 
