@@ -147,3 +147,25 @@ def test_the_tron_row_is_the_tracked_run():
     assert (m["wallets"], m["ours"]["named"], m["ours"]["wrong"]) == (280, 155, 15)
     assert m["baseline"]["named"] >= m["ours"]["named"]
     assert m["median_seconds"] is None
+
+
+def test_the_ethereum_model_stays_off_by_the_rule_fixed_in_advance():
+    from vaspfusion.classify.dataset import read_dataset
+    from vaspfusion.eval.model_gate import MIN_FLAGGED, decide
+    df = read_dataset(ROOT / "artifacts" / "model_v1" / "ethereum" / "dataset.csv")
+    g = decide("ethereum", df, reference_upper=0.1728)
+    assert (g["flagged"], g["flagged_wrong"], g["held_out"]) == (27, 0, 1196)
+    assert g["flagged"] < MIN_FLAGGED and g["switch_on"] is False
+    assert "only 27" in g["because"]
+    # the same figures would pass with a lower count: the rule, not the error, keeps it off
+    assert g["error_upper_95"] <= 0.1728
+
+
+def test_the_summary_has_a_row_for_every_chain_measured_or_not():
+    claims = read_claims(ROOT / "artifacts" / "abstain_v1" / "tron" / "claims.csv")
+    s = B.summarise({"tron": B.measure(B.tron_rows(claims, 0.60), "tron")})
+    assert [r["chain"] for r in s["chains"]] == list(B.CHAINS)
+    assert [r["measured"] for r in s["chains"]] == [True, False, False, False, False, False]
+    tron = s["chains"][0]
+    assert (tron["wallets"], tron["named"], tron["wrong"], tron["median_seconds"]) == (280, 155, 15, None)
+    assert "derived label" in tron["hidden"]

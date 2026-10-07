@@ -612,7 +612,7 @@ def cmd_benchmark(args) -> None:
                              "pages_cached": fetcher.stats["hits"],
                              "retries": fetcher.stats["retries"]}
             cache.close()
-        if chain != "tron" or not args.from_wallets:
+        if not args.from_wallets:
             B.write_csv(out / "wallets.csv", rows, B.COLUMNS)
         m = B.measure(rows, chain, cfg, report, collected)
         out.mkdir(parents=True, exist_ok=True)

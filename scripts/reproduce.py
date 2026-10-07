@@ -10,6 +10,8 @@ What is regenerated, and from what:
   labels        data/labels.duckdb          research label CSVs + derived/ + model scores
   model         artifacts/model_v1/<chain>/  the tracked dataset.csv (train, calibrate, measure)
   abstain       artifacts/abstain_v1/tron/   the tracked claims.csv
+  benchmark     artifacts/benchmark_v1/      the tracked wallets.csv of each chain, the Tron
+                                             claims.csv, and both models' dataset.csv
   demo-cache    a chain cache                tests/fixtures/demo (recorded chain responses)
   demo          the twelve demo cases        that cache, OFFLINE=1; golden fingerprints
   verify        each case traced again       cache only
@@ -187,6 +189,11 @@ def main() -> None:
                  *cli, "abstain-eval", needs=ROOT / "data" / "abstain_cache.duckdb")
     run.step("abstain", "the abstain bar, re-measured from the tracked claims",
              *cli, "abstain-eval", "--from-claims")
+    if args.full:
+        run.step("benchmark:full", "the benchmark traces, replayed from the caches",
+                 *cli, "benchmark", needs=ROOT / "data" / "benchmark_cache", env={"OFFLINE": "1"})
+    run.step("benchmark", "the benchmark table, re-measured from the tracked wallets",
+             *cli, "benchmark", "--from-wallets")
     if run.step("demo-cache", "the demo's chain cache, from the recorded fixtures",
                 *cli, "demo-cache", "--out", str(cache)):
         run.step("demo", "the twelve demo cases, offline, against the golden fingerprints",

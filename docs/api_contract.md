@@ -387,6 +387,15 @@ The graph of a case is sparse on purpose: it draws the wallet's money only. Two 
   - 409 until the case has a result, or when its responses are no longer cached; 404 for a wallet that is not part of the case. Audit action `case.context`.
   - A mock case has no trace behind it: its fixture answers `recorded: false` with the reason.
 
+## The benchmark on every chain (E1)
+`GET /api/model` has a `benchmark` block: `artifacts/benchmark_v1/summary.json` as `make benchmark` wrote it, the same whichever `?chain=` was asked for, and `null` when the file is not there. It is sent with a `not_measured` model too, so a chain with no deposit-address model still gets its row.
+
+- `benchmark.chains[]`, one row per chain in the order Tron, Ethereum, Bitcoin, BNB Chain, Polygon, Solana. `measured: false` rows carry nothing else. A measured row: `wallets` (the sample size; every other figure is out of it), `exchanges`, `named`, `wrong`, `error` (wrong / named, null when nobody was named), `error_upper_95` (one-sided Clopper-Pearson), `not_named`, `by_hops[]` (`hops`, `named`, `wrong`), the same four figures for the baseline (`baseline_named`, `baseline_wrong`, `baseline_error`, `baseline_error_upper_95`), `median_seconds` and `median_requests` per trace (null on Tron: the earlier run did not record them), `calibration_brier`, `confidence_informative`, and `hidden` (the sentence saying exactly which labels were hidden on that chain).
+- `benchmark.notes[]`: what the table is and is not. Show them with the table.
+- `benchmark.model_gates[]`: for each chain with a deposit-address model, `switch_on` (is it used when tracing), `because`, the `rule`, and the held-out figures (`held_out`, `flagged`, `flagged_wrong`, `error_upper_95`, `reference_upper`, `min_flagged`, `deposit_addresses_found`).
+
+Under a case's answer the interface quotes the row of **the case's own chain** (`wallets`, `named`, `wrong`, the error and its bound, `not_named`), and says the bar has not been measured on the chain when there is no measured row for it. A figure from another chain is never shown there.
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 
