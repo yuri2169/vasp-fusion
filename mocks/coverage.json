@@ -6,12 +6,12 @@
       "id": "sahyog-intake",
       "section": "The system should",
       "text": "Automatically analyze suspect cryptocurrency wallet addresses reported during investigations on the Sahyog Platform.",
-      "status": "partly",
-      "what": "An intake API takes a complaint with its wallets, opens one case per wallet and traces each without anyone touching the tool; the result is handed back through the gateway.",
+      "status": "ready_to_connect",
+      "what": "A portal posts a complaint with its wallets to the intake API over signed HTTP; one case is opened per wallet and traced without anyone touching the tool, and the result is pushed back to the portal over signed HTTP. Proven between two separate programs (the tool and a reference portal, each with its own port and store) by a conformance suite: a bad signature, an old timestamp and a replayed call are refused, and a duplicate delivery opens nothing twice.",
       "where": "/sahyog-sim",
-      "evidence_kind": "test",
-      "evidence": "tests/api/test_sahyog_intake.py::test_a_complaint_is_traced_without_anyone_touching_the_tool",
-      "gap": "SAHYOG's real interface is not public. This is our side of a contract, demonstrated with a simulator; nothing has been connected to the portal.",
+      "evidence_kind": "make",
+      "evidence": "conformance",
+      "gap": "SAHYOG's real interface is not public: only authorised agencies' nodal officers use the portal, and service providers are connected by arrangement with I4C. This runs against our reference portal, a separate program written from our contract, not against SAHYOG. What I4C would need to give us to connect is one page of docs/sahyog_contract.md: a base address, credentials and the field mapping.",
       "computed": false
     },
     {
@@ -54,12 +54,12 @@
       "id": "sahyog-apis",
       "section": "The system should",
       "text": "Integrate Sahyog with blockchain intelligence APIs and graph analytics engines.",
-      "status": "partly",
-      "what": "The tracing and attribution engine is behind a documented HTTP API with a contract for both directions: complaints in, results and requests out, replies in.",
+      "status": "ready_to_connect",
+      "what": "The tracing and attribution engine sits behind a documented HTTP API with a contract for both directions (complaints in, results and requests out, replies in). An HTTP gateway makes the outgoing calls: an API key, an HMAC signature over each call with a timestamp and a nonce, idempotency keys, retries with a pause, timeouts, and a sentence that names the host when the portal cannot be reached. It is chosen by configuration (SAHYOG_URL); with none set, a local outbox stands in and nothing leaves the machine.",
       "where": "/sahyog-sim",
       "evidence_kind": "test",
-      "evidence": "tests/api/test_sahyog_intake.py::test_the_result_is_handed_to_the_gateway",
-      "gap": "The contract is our proposal. The real portal has not been connected, because its interface is not public.",
+      "evidence": "tests/conformance/test_conformance.py::test_complaint_in_trace_result_back_request_out_reply_in",
+      "gap": "SAHYOG's real interface is not public: only authorised agencies' nodal officers use the portal, and service providers are connected by arrangement with I4C. This runs against our reference portal, a separate program written from our contract, not against SAHYOG. What I4C would need to give us to connect is one page of docs/sahyog_contract.md: a base address, credentials and the field mapping.",
       "computed": false
     },
     {
@@ -90,12 +90,12 @@
       "id": "request-routing",
       "section": "The system should",
       "text": "Assist investigators in automatically routing lawful disclosure or freezing requests to the correct VASP through the SAHYOG Portal.",
-      "status": "partly",
-      "what": "Wallets are grouped under the exchange they route to; one request per exchange is drafted with its legal basis, approved by the officer, handed to the gateway, and the exchange's reply is tracked to 'freeze confirmed'.",
+      "status": "ready_to_connect",
+      "what": "Wallets are grouped under the exchange they route to; one request per exchange is drafted with its legal basis and approved by the officer. With a portal configured the approved request and its letter are submitted to it over signed HTTP and the portal's receipt is kept; the exchange's reply comes back the same way and the request is tracked to 'freeze confirmed'. If the portal does not answer, the request stays approved and unsent and says why.",
       "where": "/desk",
       "evidence_kind": "test",
-      "evidence": "tests/test_desk_service.py::test_sending_writes_the_payload_and_the_letter_to_the_outbox_once",
-      "gap": "The gateway writes to a local outbox. Nothing is sent to the real portal or to an exchange.",
+      "evidence": "tests/conformance/test_conformance.py::test_with_the_portal_down_a_request_stays_approved_and_says_why",
+      "gap": "SAHYOG's real interface is not public: only authorised agencies' nodal officers use the portal, and service providers are connected by arrangement with I4C. This runs against our reference portal, a separate program written from our contract, not against SAHYOG. What I4C would need to give us to connect is one page of docs/sahyog_contract.md: a base address, credentials and the field mapping. No request has reached a real exchange.",
       "computed": false
     },
     {
@@ -293,7 +293,8 @@
   ],
   "counts": {
     "built": 15,
-    "partly": 9,
+    "ready_to_connect": 3,
+    "partly": 6,
     "planned": 0
   },
   "total": 24,

@@ -8,7 +8,9 @@
 sign in, the thirteen demo cases, the case file PDF, the receipt, verify, a fresh trace
 from the cache, a refusal for a wallet that is not cached, the request desk, a
 request drafted, approved and sent to the mock outbox, label search, the model page,
-the audit log and its hash chain.
+the audit log and its hash chain. With --serve it then starts the tool again connected
+to the reference portal (a second program, refportal/) and drives a complaint, its
+result, a request and the exchange's reply between the two over signed HTTP.
 
 Standard library only: this file is copied into the image, which has no test tools.
 """
@@ -335,6 +337,75 @@ class Smoke:
         print(f"PASS: {self.n} checks")
 
 
+class Pair:
+    """The tool connected to the reference portal: two programs on two ports of this
+    container, exchanging signed HTTP calls. Nothing else is reachable (--network none)."""
+
+    def __init__(self, tool: Api, portal: Api, smoke: Smoke):
+        self.tool, self.portal, self.ok = tool, portal, smoke.ok
+
+    def run(self) -> None:
+        tool, portal, ok = self.tool, self.portal, self.ok
+        officer = json.loads((ROOT / "demo" / "officer.json").read_text())
+        s, _, health = portal.call("GET", "/api/health")
+        ok("the reference portal is up as its own program, and says it is a simulator",
+           s == 200 and health["service"] == "reference-portal"
+           and "Not the SAHYOG portal" in health["notice"], (s, health))
+        tool.call("POST", "/api/auth/login",
+                  {"username": officer["username"], "password": officer["password"]})
+        s, _, sim = tool.call("GET", "/api/sahyog-sim")
+        ok("the tool says its portal is another program, and where",
+           s == 200 and sim["enabled"] is False and sim["portal_url"], (s, sim))
+        s, _, body = portal.call("GET", "/v1/health")
+        ok("the portal refuses an unsigned call (401)", s == 401, (s, body))
+        s, _, body = tool.call("POST", "/api/sahyog/complaints", {
+            "complaint_ref": "SMOKE-HTTP-0", "agency": "smoke", "officer": "smoke",
+            "wallets": [{"address": "x"}]})
+        ok("the tool's intake refuses an unsigned call (401)", s == 401, (s, body))
+
+        specs = {c["id"]: c for c in json.loads((ROOT / "demo" / "cases.json").read_text())["cases"]}
+        wallet = specs["eth-bitget"]
+        s, _, filed = portal.call("POST", "/api/sahyog-sim/complaints", {
+            "complaint_ref": "SMOKE-HTTP-1", "agency": "smoke test", "officer": "smoke test",
+            "category": "investment_fraud", "wallets": [{"address": wallet["address"]}]})
+        ok("a complaint filed at the portal reaches the tool's intake over signed HTTP",
+           s == 202 and filed["wallets"][0].get("case_id") == "eth-bitget", (s, filed))
+        deadline = time.monotonic() + 60
+        while True:
+            _, _, screen = portal.call("GET", "/api/sahyog-sim")
+            mine = next(c for c in screen["complaints"] if c["complaint_ref"] == "SMOKE-HTTP-1")
+            w = mine["wallets"][0]
+            if (w.get("result_sent_at") and screen["results_received"]) \
+                    or time.monotonic() > deadline:
+                break
+            time.sleep(0.5)
+        ok("the portal has the result, pushed to it by the tool: Bitget, with its confidence",
+           mine["status"] == "result" and w["top_vasp"] == "Bitget" and w["result_sent_at"]
+           and screen["results_received"] >= 1, (mine, screen["results_received"]))
+
+        s, _, req = tool.call("POST", "/api/requests", {
+            "vasp": "Bitget", "case_ids": ["eth-bitget"], "asks": ["kyc", "freeze"],
+            "officer": officer["name"]})
+        rid = req.get("id")
+        tool.call("PATCH", f"/api/requests/{rid}", {"status": "approved"})
+        s, _, sent = tool.call("PATCH", f"/api/requests/{rid}", {"status": "sent"})
+        ok("an approved request is submitted to the portal over signed HTTP; the receipt is "
+           "the portal's", s == 200 and sent["receipt"]["gateway"] == "sahyog-http"
+           and sent["receipt"]["receipt_id"].startswith("rp-"), (s, sent.get("receipt")))
+        _, _, screen = portal.call("GET", "/api/sahyog-sim")
+        held = next((r for r in screen["requests"] if r["id"] == rid), None)
+        s, _, letter = portal.call("GET", f"/api/sahyog-sim/requests/{rid}/letter")
+        ok("the portal holds the request and its letter",
+           held is not None and held["vasp"] == "Bitget" and s == 200
+           and letter[:5] == b"%PDF-", (held, s))
+        s, _, ack = portal.call("POST", f"/api/sahyog-sim/requests/{rid}/reply",
+                                {"status": "freeze_confirmed", "note": "smoke test"})
+        _, _, after = tool.call("GET", f"/api/requests/{rid}")
+        ok("the exchange's reply goes from the portal to the tool, and the desk reads "
+           "\"freeze confirmed\"", s == 200 and after["status"] == "freeze_confirmed"
+           and after["status_history"][-1].get("via") == "sahyog", (s, ack, after.get("status")))
+
+
 def wait_up(base: str, seconds: float = 90) -> None:
     deadline = time.monotonic() + seconds
     while True:
@@ -361,13 +432,36 @@ def main() -> None:
                                    "--host", "127.0.0.1", "--port", port],
                                   cwd=ROOT, env=os.environ.copy(),
                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    smoke = Smoke(Api(args.url), args.read_only)
     try:
         wait_up(args.url)
-        Smoke(Api(args.url), args.read_only).run()
+        smoke.run()
     finally:
         if server is not None:
             server.terminate()
             server.wait(timeout=20)
+    if not args.serve or args.read_only:
+        return
+    before = smoke.n
+    # ---- the same tool again, connected to the reference portal (a second program)
+    portal_url = "http://127.0.0.1:8100"
+    quiet = dict(cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    pair = [subprocess.Popen([sys.executable, "-m", "refportal", "--port", "8100", "--tool",
+                              args.url], env=os.environ.copy(), **quiet),
+            subprocess.Popen([sys.executable, "-m", "vaspfusion.cli", "serve", "--host",
+                              "127.0.0.1", "--port", port],
+                             env={**os.environ, "SAHYOG_URL": portal_url}, **quiet)]
+    try:
+        wait_up(args.url)
+        wait_up(portal_url)
+        Pair(Api(args.url), Api(portal_url), smoke).run()
+        print(f"PASS: {smoke.n} checks, the last {smoke.n - before} between two programs "
+              "over signed HTTP")
+    finally:
+        for proc in pair:
+            proc.terminate()
+        for proc in pair:
+            proc.wait(timeout=20)
 
 
 if __name__ == "__main__":

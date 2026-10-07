@@ -460,6 +460,17 @@ describe('a wallet’s page', () => {
 describe('the watchlist', () => {
   const hero = 'TVZpWtHzwWsD4f9R5BHDRB3y4yskKjUtzR'
 
+  it('says whether wallets are re-checked in the background, in the server\'s own sentence', async () => {
+    open('/watchlist')
+    expect(await screen.findByTestId('watcher-says')).toHaveTextContent('Nothing is checked in the background.')
+    vi.spyOn(api, 'watchlist').mockResolvedValue({
+      items: [],
+      watcher: { enabled: true, every_seconds: 900, last_run_at: '2026-10-08T06:00:00Z', says: 'Every watched wallet is traced again every 15 minutes, reading the chain afresh.' },
+    })
+    open('/watchlist')
+    expect(await screen.findByText('Every watched wallet is traced again every 15 minutes, reading the chain afresh.')).toBeInTheDocument()
+  })
+
   it('invites a first wallet, catches a typo before anything is sent, and adds a wallet', async () => {
     const { user } = open('/watchlist')
     expect(await screen.findByRole('heading', { name: 'No wallet is being watched' })).toBeInTheDocument()

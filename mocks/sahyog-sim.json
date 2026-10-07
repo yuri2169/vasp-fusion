@@ -59,6 +59,7 @@
             "demo-req-okx-001"
           ],
           "result_sent_at": "2026-09-14T10:04:11Z",
+          "result_error": null,
           "case_error": null
         }
       ],

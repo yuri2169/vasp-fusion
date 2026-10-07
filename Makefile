@@ -150,7 +150,7 @@ bench-scale:      ## measure throughput at 1, 2, 4 and 8 workers on the recorded
 PORTAL_PORT ?= 8100
 PORTAL ?= http://127.0.0.1:$(PORTAL_PORT)
 conformance:      ## the SAHYOG contract, checked over real sockets between the tool and the reference portal (no network; CONFORMANCE_TOOL_URL / CONFORMANCE_PORTAL_URL point it at running programs)
-	$(PY) -m pytest tests/conformance tests/test_sahyog_signing.py tests/test_http_gateway.py tests/refportal -q
+	$(PY) -m pytest tests/conformance tests/test_sahyog_signing.py tests/test_http_gateway.py tests/reference_portal -q
 
 portal:           ## the reference portal (a separate program; a simulator, not the SAHYOG portal) on :$(PORTAL_PORT), talking to the tool on :$(PORT)
 	$(PY) -m refportal --port $(PORTAL_PORT) --tool http://127.0.0.1:$(PORT)

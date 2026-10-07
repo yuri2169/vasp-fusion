@@ -78,3 +78,22 @@ def test_a_nonce_is_good_once_and_forgotten_after_its_time(tmp_path):
     assert store.claim("a" * 24, NOW + timedelta(seconds=5)) is False
     assert store.claim("b" * 24, NOW) is True
     assert store.claim("a" * 24, NOW + timedelta(seconds=2000)) is True
+
+
+def test_the_vector_printed_in_the_contract_is_what_both_programs_compute():
+    import re
+    from pathlib import Path
+
+    from refportal import signing as theirs
+    doc = (Path(__file__).resolve().parents[1] / "docs" / "sahyog_contract.md").read_text()
+    table = doc[doc.index("| secret |"):doc.index("**What the receiver refuses**")]
+    cell = {name: re.search(rf"\| {name} \| (.+?) \|\n", table).group(1)
+            for name in ("secret", "timestamp, nonce", "method, path", "body", "signature")}
+    secret = cell["secret"].strip("`")
+    timestamp, nonce = (v.strip("` ") for v in cell["timestamp, nonce"].split(","))
+    method, path = (v.strip("` ") for v in cell["method, path"].split(","))
+    body = re.match(r"`(.+?)`", cell["body"]).group(1).encode()
+    want = cell["signature"].strip("`").removeprefix("v1=")
+    assert len(want) == 64
+    assert signing.sign(secret, timestamp, nonce, method, path, body) == want
+    assert theirs.sign(secret, timestamp, nonce, method, path, body) == want

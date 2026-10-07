@@ -21,6 +21,10 @@ import { fileURLToPath } from 'node:url'
 import { dom, launch, sleep, waitFor } from './browser.mjs'
 
 const BASE = process.env.BASE_URL ?? 'http://127.0.0.1:8000'
+// The reference portal: a second program on its own port that plays SAHYOG's side. With it,
+// the complaint, the result, the request and the reply below each cross between the two programs
+// as a signed HTTP call. Without it (PORTAL_URL empty) the tool's built-in simulator is used.
+const PORTAL = (process.env.PORTAL_URL ?? '').replace(/\/$/, '') || null
 const FRAMES = process.env.FRAMES
 const PACE = Number(process.env.PACE ?? 1)
 const THEME = process.env.THEME ?? 'light'
@@ -100,6 +104,16 @@ try {
   // --- the complaint comes in through the simulator ----------------------------------------------
   await click('SAHYOG simulator', 'nav a')
   await see('A simulator for demonstration. Not the SAHYOG portal.', 'the banner that says this is a simulator')
+  if (PORTAL) {
+    await see("The portal's side runs as its own program", 'the tool saying the portal is another program')
+    say('The tool is connected to a portal over signed HTTP; the portal\'s side is a separate program with its own screen')
+    await shot('tool-connected')
+    await pause(1500)
+    await page.send('Page.navigate', { url: PORTAL + '/sahyog-sim' })
+    await see('A simulator for demonstration. Not the SAHYOG portal.', 'the same banner on the reference portal')
+    await see('This is a separate program from the tool', 'the reference portal saying it is a separate program')
+    expect((await page.evaluate('location.origin')) === PORTAL, `the screen is served by the reference portal (${PORTAL})`)
+  }
   await waitFor(() => page.evaluate(`!!document.querySelector('form[aria-label="File a complaint"] textarea')`), 'the complaint form')
   const complaintRef = await page.evaluate(`document.querySelector('form[aria-label="File a complaint"] input').value`)
   await page.evaluate(dom.type('form[aria-label="File a complaint"] textarea', HERO))
@@ -112,10 +126,19 @@ try {
     `complaint ${complaintRef} reaching "Result" with CoinDCX named`,
     60000,
   )
-  say(`A complaint (${complaintRef}) is filed in the simulator through the intake: its wallet has a case and a result, CoinDCX with its confidence and risk class, with nobody touching the tool`)
+  say(
+    PORTAL
+      ? `A complaint (${complaintRef}) is filed at the reference portal, which posts it to the tool's intake as a signed HTTP call: its wallet has a case and a result, CoinDCX with its confidence and risk class, with nobody touching the tool`
+      : `A complaint (${complaintRef}) is filed in the simulator through the intake: its wallet has a case and a result, CoinDCX with its confidence and risk class, with nobody touching the tool`,
+  )
+  if (PORTAL) {
+    await see('Result handed back', 'the result pushed back to the portal over HTTP', 30000)
+    say('The tool pushed the result back to the portal over signed HTTP ("Result handed back")')
+  }
   await shot('simulator-result')
   await pause(2500)
   await click('Open the case', '[data-testid="complaint"] a')
+  if (PORTAL) await waitFor(() => page.evaluate('location.origin').then((o) => o === new URL(BASE).origin), 'the link from the portal leading to the case in the tool')
   await see('Reported through SAHYOG', 'the case saying it was reported through SAHYOG')
   expect((await text()).includes(complaintRef) || /Reported through SAHYOG · SIM-/.test(await text()), 'the case names the complaint that reported it')
   say('The case says where it came from: "Reported through SAHYOG" with the complaint reference')
@@ -195,8 +218,13 @@ try {
   await pause(1200)
   await inDialog('Mark as sent')
   await see('Marked as sent', 'the toast "Marked as sent"')
-  await see('nothing left this machine', 'the receipt says the gateway is a local outbox')
-  say('Approved, then marked as sent: the toast repeats each verb, and the receipt says nothing left this machine')
+  if (PORTAL) {
+    await see('Submitted over signed HTTP', 'the receipt says the request was submitted to the portal over signed HTTP')
+    say('Approved, then marked as sent: the request and its letter went to the reference portal over signed HTTP, and the receipt is the portal\'s')
+  } else {
+    await see('nothing left this machine', 'the receipt says the gateway is a local outbox')
+    say('Approved, then marked as sent: the toast repeats each verb, and the receipt says nothing left this machine')
+  }
   await shot('letter-sent')
   await pause(2500)
 
@@ -245,15 +273,17 @@ try {
   await pause(4000)
 
   // --- the reply comes back through the simulator ------------------------------------------------
-  await click('SAHYOG simulator', 'nav a')
+  if (PORTAL) await page.send('Page.navigate', { url: PORTAL + '/sahyog-sim' })
+  else await click('SAHYOG simulator', 'nav a')
   await waitFor(() => page.evaluate(`[...document.querySelectorAll('[data-testid="sim-request"]')].some((c) => c.innerText.includes('CoinDCX') && [...c.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Confirm freeze'))`), 'the sent request to CoinDCX on the simulator, with "Confirm freeze"')
-  say('The simulator shows the request the desk sent, as the portal would see it')
+  say(PORTAL ? 'The reference portal holds the request the desk submitted to it over signed HTTP' : 'The simulator shows the request the desk sent, as the portal would see it')
   await shot('simulator-request')
   await pause(1500)
   await page.evaluate(`[...document.querySelectorAll('[data-testid="sim-request"]')].find((c) => c.innerText.includes('CoinDCX') && [...c.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Confirm freeze')).querySelectorAll('button').forEach((b) => b.textContent.trim() === 'Confirm freeze' && b.click())`)
   await see('Freeze confirmed', 'the toast "Freeze confirmed"')
   await pause(1200)
-  await click('Request desk', 'nav a')
+  if (PORTAL) await page.send('Page.navigate', { url: BASE + '/desk' })
+  else await click('Request desk', 'nav a')
   await waitFor(() => page.evaluate(`[...document.querySelectorAll('tbody tr')].some((tr) => tr.innerText.includes('CoinDCX') && /freeze confirmed/i.test(tr.querySelector('[data-testid="status-tag"]')?.innerText ?? ''))`), 'the desk row of CoinDCX reading "Freeze confirmed"')
   say('The exchange\'s side confirms the freeze in the simulator; the request desk reads "Freeze confirmed"')
   await shot('desk-freeze-confirmed')

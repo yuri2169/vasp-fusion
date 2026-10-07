@@ -280,6 +280,17 @@ class ScaleRun(_M):
         "How many of the run's cases have the findings fingerprint the repository records"))
 
 
+class LiveTiming(_M):
+    """How long one live trace of a wallet took on a chain: fetched from the public chain
+    APIs, not replayed."""
+    chain: str
+    median_seconds: float
+    median_requests: float | None = Field(None, description="Chain API requests per trace")
+    traces: int | None = Field(None, description="Live traces timed, where it was recorded")
+    source: str = Field(description="The file the figure is read from")
+    measured_on: str | None = None
+
+
 class ScaleMetrics(_M):
     """Measured throughput (`make bench-scale`, artifacts/scale/metrics.json)."""
     status: Literal["measured", "not_measured"]
@@ -296,6 +307,8 @@ class ScaleMetrics(_M):
     intake: dict | None = Field(None, description="Batch upload through the API, timed")
     limits: list[str] = []
     notes: list[str] = []
+    live: list[LiveTiming] = Field([], description=(
+        "Seconds per live trace by chain, beside the replayed figures above"))
 
 
 class Screening(_M):

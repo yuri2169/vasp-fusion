@@ -275,7 +275,8 @@ export function WatchlistPage() {
         title="Watchlist"
         meta={list.data && items.length > 0 ? `${plural(items.length, 'wallet')} watched · ${changed ? `${plural(changed, 'wallet')} changed` : 'none changed'}` : undefined}
       >
-        Wallets to check again. "Check now" traces a wallet afresh and compares it with the trace you last marked as seen. Nothing is checked in the background.
+        Wallets to check again. "Check now" traces a wallet afresh, reading the chain again, and compares it with the trace you last marked as seen.{' '}
+        <span data-testid="watcher-says">{list.data?.watcher?.says ?? 'Nothing is checked in the background.'}</span>
       </PageHeader>
       <AddForm />
       {list.isError ? (

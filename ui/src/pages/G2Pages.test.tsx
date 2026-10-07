@@ -25,7 +25,20 @@ describe('the problem statement coverage page', () => {
     const counts = screen.getByRole('list', { name: 'Lines by status' })
     expect(counts).toHaveTextContent(`Built${page.counts.built}`)
     expect(counts).toHaveTextContent(`Partly built${page.counts.partly}`)
-    expect(page.counts.built! + page.counts.partly! + page.counts.planned!).toBe(page.total)
+    expect(counts).toHaveTextContent(`Ready to connect${page.counts.ready_to_connect}`)
+    expect(page.counts.built! + page.counts.ready_to_connect! + page.counts.partly! + page.counts.planned!).toBe(page.total)
+  })
+
+  it('never shows a line that only waits for access as built: it is "Ready to connect", and says what is missing', async () => {
+    open('/coverage')
+    const tags = await screen.findAllByTestId('coverage-status')
+    const waiting = tags.filter((t) => t.getAttribute('data-status') === 'ready_to_connect')
+    const rows = page.rows.filter((r) => r.status === 'ready_to_connect')
+    expect(rows.map((r) => r.id)).toEqual(['sahyog-intake', 'sahyog-apis', 'request-routing'])
+    expect(waiting).toHaveLength(rows.length)
+    for (const t of waiting) expect(t).toHaveTextContent('Ready to connect')
+    for (const r of rows) expect(r.gap).toMatch(/not public/)
+    expect(screen.getAllByText(/This runs against our reference portal/).length).toBeGreaterThanOrEqual(rows.length)
   })
 
   it('says what is missing on every line that is not built, and where to see each line', async () => {
@@ -130,6 +143,39 @@ describe('the SAHYOG simulator', () => {
     await user.click(within(group).getByRole('button', { name: 'Confirm freeze' }))
     await waitFor(() => expect(reply).toHaveBeenCalledWith(r.id, expect.objectContaining({ status: 'freeze_confirmed' })))
     expect(await screen.findByText('Freeze confirmed')).toBeInTheDocument()
+  })
+
+  it('says where the portal is when the portal is another program, and offers no form here', async () => {
+    vi.spyOn(api, 'sahyogSim').mockResolvedValue({
+      ...sim,
+      enabled: false,
+      portal_url: 'http://127.0.0.1:8100',
+      why_disabled: 'This installation is connected to a portal at 127.0.0.1:8100 over signed HTTP.',
+      complaints: [],
+      requests: [],
+    })
+    open('/sahyog-sim')
+    expect(await screen.findByText("The portal's side runs as its own program")).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open the reference portal' })).toHaveAttribute('href', 'http://127.0.0.1:8100/sahyog-sim')
+    expect(screen.queryByRole('form')).toBeNull()
+  })
+
+  it('served by the reference portal, shows only the simulator, and its links lead to the tool', async () => {
+    const mark = document.createElement('meta')
+    mark.name = 'vf-portal'
+    document.head.appendChild(mark)
+    try {
+      vi.spyOn(api, 'sahyogSim').mockResolvedValue({ ...sim, tool_url: 'http://127.0.0.1:8000', results_received: 1 })
+      open('/sahyog-sim')
+      const note = await screen.findByRole('note', { name: 'Simulator notice' })
+      expect(note).toHaveTextContent('A simulator for demonstration. Not the SAHYOG portal.')
+      await waitFor(() => expect(note).toHaveTextContent('This is a separate program from the tool at 127.0.0.1:8000'))
+      expect(screen.queryByRole('navigation')).toBeNull() // none of the tool's own places
+      const card = await screen.findByTestId('complaint')
+      expect(within(card).getByRole('link', { name: 'Open the case' })).toHaveAttribute('href', `http://127.0.0.1:8000/cases/${sim.complaints[0].wallets[0].case_id}`)
+    } finally {
+      mark.remove()
+    }
   })
 
   it('says so when no intake key is set', async () => {

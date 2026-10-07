@@ -1,0 +1,83 @@
+{
+ "chains": {
+  "tron": {
+   "traces": 8,
+   "failed": 0,
+   "median_seconds": 40.75,
+   "min_seconds": 5.64,
+   "max_seconds": 67.79,
+   "median_live_requests": 44.5,
+   "max_hops": 3,
+   "sample": "8 wallets drawn with seed 26182 from artifacts/benchmark_v1/tron/wallets.csv",
+   "chain_data": "fetched live into a cache that started empty; no replay",
+   "measured_on": "2026-10-07",
+   "machine": "Darwin arm64, 10 cores, Python 3.12.14",
+   "per_trace": [
+    {
+     "wallet": "THYXpuf7QpDeAqw5Fcc8yfqpb21ZpGrVwY",
+     "seconds": 5.64,
+     "live_requests": 6,
+     "cached": 5,
+     "outcome": "ATTRIBUTED",
+     "wallets_read": 6
+    },
+    {
+     "wallet": "TPuYAQLQnbx5Rse5YR9pbvSHzJEG1QrZsH",
+     "seconds": 28.87,
+     "live_requests": 38,
+     "cached": 23,
+     "outcome": "ATTRIBUTED",
+     "wallets_read": 30
+    },
+    {
+     "wallet": "TQa41e3PdMJK499BB9DTwozgZpPXZ9LJDi",
+     "seconds": 67.79,
+     "live_requests": 68,
+     "cached": 0,
+     "outcome": "INSUFFICIENT_EVIDENCE",
+     "wallets_read": 80
+    },
+    {
+     "wallet": "TRwdFxuw3s9WsiZzUCWAX5QV2QwANM6neo",
+     "seconds": 46.22,
+     "live_requests": 47,
+     "cached": 34,
+     "outcome": "ATTRIBUTED",
+     "wallets_read": 151
+    },
+    {
+     "wallet": "TGTb1paYrYajQ92C7xdrgEP5fT7LF5x73C",
+     "seconds": 49.56,
+     "live_requests": 55,
+     "cached": 0,
+     "outcome": "INSUFFICIENT_EVIDENCE",
+     "wallets_read": 126
+    },
+    {
+     "wallet": "TF2Y4i2iTX4ruxFEY1AYEMkcYfyAAcMibG",
+     "seconds": 41.13,
+     "live_requests": 45,
+     "cached": 0,
+     "outcome": "INSUFFICIENT_EVIDENCE",
+     "wallets_read": 68
+    },
+    {
+     "wallet": "TAH53dB1UmxSmPhGW3821pEdCdp3aPQUXv",
+     "seconds": 40.37,
+     "live_requests": 44,
+     "cached": 37,
+     "outcome": "ATTRIBUTED",
+     "wallets_read": 110
+    },
+    {
+     "wallet": "TGFiV4XyXDBseMpAy2QyhLPbLU54aYShEh",
+     "seconds": 36.22,
+     "live_requests": 40,
+     "cached": 0,
+     "outcome": "INSUFFICIENT_EVIDENCE",
+     "wallets_read": 43
+    }
+   ]
+  }
+ }
+}

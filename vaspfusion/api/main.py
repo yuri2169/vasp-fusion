@@ -1016,10 +1016,39 @@ def get_scale(response: Response):
     on this installation = it says so; no figure is made up."""
     _source(response, "live")
     if not Path(SCALE_METRICS).exists():
-        return {"status": "not_measured",
+        return {"status": "not_measured", "live": live_timings(),
                 "notes": ["Throughput has not been measured on this installation. "
                           "`make bench-scale` measures it."]}
-    return {"status": "measured", **json.loads(Path(SCALE_METRICS).read_text())}
+    return {"status": "measured", **json.loads(Path(SCALE_METRICS).read_text()),
+            "live": live_timings()}
+
+
+LIVE_TIMING = ROOT / "artifacts" / "live_timing.json"     # scripts/live_timing.py
+
+
+def live_timings() -> list[dict]:
+    """Seconds per live trace, by chain, as two files recorded them: the six-chain
+    benchmark (each wallet it fetched live) and the small live sample taken for a chain
+    the benchmark replayed. A chain nobody timed live is left out."""
+    from ..eval.benchmark import read_summary
+    rows: dict[str, dict] = {}
+    try:
+        for c in (read_summary(BENCHMARK_DIR) or {}).get("chains", []):
+            if c.get("median_seconds") is not None:
+                rows[c["chain"]] = {
+                    "chain": c["chain"], "median_seconds": c["median_seconds"],
+                    "median_requests": c.get("median_requests"), "traces": None,
+                    "source": "artifacts/benchmark_v1/summary.json", "measured_on": None}
+    except Exception:  # noqa: BLE001 - no benchmark on this installation
+        pass
+    if Path(LIVE_TIMING).exists():
+        for chain, c in json.loads(Path(LIVE_TIMING).read_text()).get("chains", {}).items():
+            if c.get("median_seconds") is not None and chain not in rows:
+                rows[chain] = {
+                    "chain": chain, "median_seconds": c["median_seconds"],
+                    "median_requests": c.get("median_live_requests"), "traces": c["traces"],
+                    "source": "artifacts/live_timing.json", "measured_on": c.get("measured_on")}
+    return [rows[c] for c in TRACEABLE if c in rows]
 
 
 # ------------------------------------------------------------------ case file, receipt, verify (B9)

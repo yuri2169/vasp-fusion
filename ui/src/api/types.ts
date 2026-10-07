@@ -559,8 +559,8 @@ export interface paths {
         put?: never;
         /**
          * Check Watch
-         * @description Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the
-         *     watchlist: the item is `checking` until the trace is done, then says what is new.
+         * @description Trace the watched wallet again, reading the chain afresh. Poll the watchlist: the
+         *     item is `checking` until the trace is done, then says what is new.
          */
         post: operations["check_watch_api_watchlist__watch_id__check_post"];
         delete?: never;
@@ -1891,6 +1891,11 @@ export interface components {
              * @description When the result was handed to the gateway
              */
             result_sent_at?: string | null;
+            /**
+             * Result Error
+             * @description Why the last hand-over failed (the portal did not answer). It is tried again
+             */
+            result_error?: string | null;
             /** Case Error */
             case_error?: string | null;
         };
@@ -1976,7 +1981,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "built" | "partly" | "planned";
+            status: "built" | "ready_to_connect" | "partly" | "planned";
             /** What */
             what: string;
             /**
@@ -2474,7 +2479,7 @@ export interface components {
         GatewayReceipt: {
             /**
              * Gateway
-             * @description `mock-outbox` until a real SAHYOG connection exists
+             * @description `mock-outbox` (a local folder; the default), or `sahyog-http` when a portal is configured (SAHYOG_URL)
              */
             gateway: string;
             /** Receipt Id */
@@ -2486,7 +2491,7 @@ export interface components {
             submitted_at: string;
             /**
              * Location
-             * @description Where the submission went (the outbox file)
+             * @description Where the submission went: the outbox file, or the portal's host and path
              */
             location: string;
             /** Payload Sha256 */
@@ -2871,6 +2876,34 @@ export interface components {
              * @description The label text behind the attribution
              */
             label?: string | null;
+        };
+        /**
+         * LiveTiming
+         * @description How long one live trace of a wallet took on a chain: fetched from the public chain
+         *     APIs, not replayed.
+         */
+        LiveTiming: {
+            /** Chain */
+            chain: string;
+            /** Median Seconds */
+            median_seconds: number;
+            /**
+             * Median Requests
+             * @description Chain API requests per trace
+             */
+            median_requests?: number | null;
+            /**
+             * Traces
+             * @description Live traces timed, where it was recorded
+             */
+            traces?: number | null;
+            /**
+             * Source
+             * @description The file the figure is read from
+             */
+            source: string;
+            /** Measured On */
+            measured_on?: string | null;
         };
         /** Login */
         Login: {
@@ -3821,6 +3854,21 @@ export interface components {
              * @default []
              */
             requests: components["schemas"]["SimRequest"][];
+            /**
+             * Portal Url
+             * @description Set when this installation is connected to a portal over HTTP (SAHYOG_URL): the screen is then that program's, at this address, and `enabled` is false here
+             */
+            portal_url?: string | null;
+            /**
+             * Tool Url
+             * @description Set by the reference portal when it serves this screen: where the tool is, so links to a case or a request lead there
+             */
+            tool_url?: string | null;
+            /**
+             * Results Received
+             * @description Set by the reference portal: results the tool has pushed to it
+             */
+            results_received?: number | null;
         };
         /**
          * ScaleMetrics
@@ -3887,6 +3935,12 @@ export interface components {
              * @default []
              */
             notes: string[];
+            /**
+             * Live
+             * @description Seconds per live trace by chain, beside the replayed figures above
+             * @default []
+             */
+            live: components["schemas"]["LiveTiming"][];
         };
         /** ScaleRun */
         ScaleRun: {
@@ -4422,6 +4476,11 @@ export interface components {
             state: "not_traced" | "checking" | "unchanged" | "changed" | "failed";
             /** Last Checked At */
             last_checked_at?: string | null;
+            /**
+             * Auto Checked At
+             * @description When the background watcher last queued a check of this wallet
+             */
+            auto_checked_at?: string | null;
             /** Baseline At */
             baseline_at?: string | null;
             /**
@@ -4442,6 +4501,24 @@ export interface components {
         WatchList: {
             /** Items */
             items: components["schemas"]["WatchItem"][];
+            watcher?: components["schemas"]["WatcherState"] | null;
+        };
+        /**
+         * WatcherState
+         * @description Whether watched wallets are re-checked in the background, and how often.
+         */
+        WatcherState: {
+            /** Enabled */
+            enabled: boolean;
+            /** Every Seconds */
+            every_seconds?: number | null;
+            /**
+             * Last Run At
+             * @description The watcher's last pass
+             */
+            last_run_at?: string | null;
+            /** Says */
+            says: string;
         };
     };
     responses: never;

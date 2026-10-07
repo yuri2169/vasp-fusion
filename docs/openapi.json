@@ -1372,7 +1372,7 @@
     "/api/watchlist/{watch_id}/check": {
       "post": {
         "summary": "Check Watch",
-        "description": "Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the\nwatchlist: the item is `checking` until the trace is done, then says what is new.",
+        "description": "Trace the watched wallet again, reading the chain afresh. Poll the watchlist: the\nitem is `checking` until the trace is done, then says what is new.",
         "operationId": "check_watch_api_watchlist__watch_id__check_post",
         "parameters": [
           {
@@ -4833,6 +4833,18 @@
             "title": "Result Sent At",
             "description": "When the result was handed to the gateway"
           },
+          "result_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result Error",
+            "description": "Why the last hand-over failed (the portal did not answer). It is tried again"
+          },
           "case_error": {
             "anyOf": [
               {
@@ -5051,6 +5063,7 @@
             "type": "string",
             "enum": [
               "built",
+              "ready_to_connect",
               "partly",
               "planned"
             ],
@@ -6266,7 +6279,7 @@
           "gateway": {
             "type": "string",
             "title": "Gateway",
-            "description": "`mock-outbox` until a real SAHYOG connection exists"
+            "description": "`mock-outbox` (a local folder; the default), or `sahyog-http` when a portal is configured (SAHYOG_URL)"
           },
           "receipt_id": {
             "type": "string",
@@ -6280,7 +6293,7 @@
           "location": {
             "type": "string",
             "title": "Location",
-            "description": "Where the submission went (the outbox file)"
+            "description": "Where the submission went: the outbox file, or the portal's host and path"
           },
           "payload_sha256": {
             "type": "string",
@@ -7336,6 +7349,67 @@
         ],
         "title": "LetterWallet"
       },
+      "LiveTiming": {
+        "properties": {
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "median_seconds": {
+            "type": "number",
+            "title": "Median Seconds"
+          },
+          "median_requests": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Requests",
+            "description": "Chain API requests per trace"
+          },
+          "traces": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traces",
+            "description": "Live traces timed, where it was recorded"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "The file the figure is read from"
+          },
+          "measured_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Measured On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chain",
+          "median_seconds",
+          "source"
+        ],
+        "title": "LiveTiming",
+        "description": "How long one live trace of a wallet took on a chain: fetched from the public chain\nAPIs, not replayed."
+      },
       "Login": {
         "properties": {
           "username": {
@@ -8254,6 +8328,7 @@
             "propertyNames": {
               "enum": [
                 "built",
+                "ready_to_connect",
                 "partly",
                 "planned"
               ]
@@ -9748,6 +9823,42 @@
             "title": "Requests",
             "description": "Newest first",
             "default": []
+          },
+          "portal_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Portal Url",
+            "description": "Set when this installation is connected to a portal over HTTP (SAHYOG_URL): the screen is then that program's, at this address, and `enabled` is false here"
+          },
+          "tool_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tool Url",
+            "description": "Set by the reference portal when it serves this screen: where the tool is, so links to a case or a request lead there"
+          },
+          "results_received": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Results Received",
+            "description": "Set by the reference portal: results the tool has pushed to it"
           }
         },
         "additionalProperties": false,
@@ -9888,6 +9999,15 @@
             },
             "type": "array",
             "title": "Notes",
+            "default": []
+          },
+          "live": {
+            "items": {
+              "$ref": "#/components/schemas/LiveTiming"
+            },
+            "type": "array",
+            "title": "Live",
+            "description": "Seconds per live trace by chain, beside the replayed figures above",
             "default": []
           }
         },
@@ -11262,6 +11382,19 @@
             ],
             "title": "Last Checked At"
           },
+          "auto_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Checked At",
+            "description": "When the background watcher last queued a check of this wallet"
+          },
           "baseline_at": {
             "anyOf": [
               {
@@ -11342,6 +11475,16 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "watcher": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WatcherState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -11350,6 +11493,50 @@
           "items"
         ],
         "title": "WatchList"
+      },
+      "WatcherState": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "every_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Every Seconds"
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run At",
+            "description": "The watcher's last pass"
+          },
+          "says": {
+            "type": "string",
+            "title": "Says"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "enabled",
+          "says"
+        ],
+        "title": "WatcherState",
+        "description": "Whether watched wallets are re-checked in the background, and how often."
       }
     }
   }

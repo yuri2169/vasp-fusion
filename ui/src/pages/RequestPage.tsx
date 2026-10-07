@@ -56,6 +56,12 @@ function GatewayReceipt({ receipt }: { receipt: NonNullable<RequestDetail['recei
           This installation is not connected to SAHYOG: the request was written to a local outbox, and nothing left this machine.
         </p>
       )}
+      {receipt.gateway === 'sahyog-http' && (
+        <p className="mt-1.5 border-t border-rule pt-1.5 text-muted">
+          Submitted over signed HTTP to the portal this installation is configured for, which answered with this receipt. SAHYOG's own interface is not
+          public: unless I4C has given this installation an address and credentials, that portal is the reference portal, a simulator.
+        </p>
+      )}
     </div>
   )
 }

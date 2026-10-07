@@ -5,6 +5,7 @@ import { DataTable, type Column } from '../components/DataTable'
 import { Skeleton } from '../components/Skeleton'
 import { formatNumber } from '../lib/format'
 import { Panel } from './parts'
+import { chainName } from './words'
 
 const one = (v: number) => v.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 const two = (v: number) => v.toFixed(2)
@@ -42,6 +43,31 @@ function columns(best: number): Column<ScaleRun>[] {
 type Before = { cases_per_minute?: number; median_seconds_per_case?: number; commit?: string }
 type Intake = { rows?: number; seconds?: number; rows_per_second?: number }
 
+/** Beside the replayed figures: how long one trace took when every page came from the public
+ *  chain APIs. Read from the benchmark's own timings and the live sample; a chain nobody timed is absent. */
+export function LiveTimes({ m }: { m: ScaleMetrics }) {
+  const live = m.live ?? []
+  if (live.length === 0) return null
+  return (
+    <div data-testid="live-times">
+      <h3 className="eyebrow mb-2">Live, from the public chain APIs: seconds for one trace</h3>
+      <ul className="flex flex-wrap gap-x-6 gap-y-1 text-base text-ink">
+        {live.map((t) => (
+          <li key={t.chain}>
+            {chainName(t.chain)} <span className="tabular font-mono">{one(t.median_seconds)}</span> s
+            {t.median_requests != null && <span className="text-ink-soft"> · {Math.round(t.median_requests)} requests</span>}
+            {t.traces != null && <span className="text-ink-soft"> · {t.traces} traces</span>}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-1 text-sm text-ink-soft">
+        Medians. The table above replays recorded responses, so it measures this machine; these figures wait on the providers and their rate limits, which is what
+        bounds live volume. A chain shown with a count of traces was timed on a small sample.
+      </p>
+    </div>
+  )
+}
+
 /** What was measured, in the file's own figures. Nothing here is typed in. */
 export function ThroughputFigures({ m }: { m: ScaleMetrics }) {
   const best = Math.max(...m.runs.map((r) => r.cases_per_minute), 1)
@@ -77,6 +103,7 @@ export function ThroughputFigures({ m }: { m: ScaleMetrics }) {
           </li>
         )}
       </ul>
+      <LiveTimes m={m} />
       {m.limits.length > 0 && (
         <div>
           <h3 className="eyebrow mb-2">What limits it, and what was not measured</h3>
