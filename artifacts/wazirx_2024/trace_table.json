@@ -52,9 +52,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -103,10 +105,11 @@
     ],
     "flags": [
      "fan_in",
-     "fan_out"
+     "fan_out",
+     "threat_contact"
     ],
-    "risk_score": 15,
-    "risk_class": "low"
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "SANCTIONED_OR_MIXER_REACHED",
@@ -163,9 +166,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 15,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -215,9 +220,10 @@
     ],
     "flags": [
      "fan_in",
-     "mixer_contact"
+     "mixer_contact",
+     "threat_contact"
     ],
-    "risk_score": 92,
+    "risk_score": 100,
     "risk_class": "severe"
    },
    "entity_hidden": {
@@ -263,9 +269,11 @@
     "transfers": 1,
     "exchanges": [],
     "where_funds_went": [],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 95,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -297,9 +305,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -337,9 +347,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -377,9 +389,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -422,9 +436,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -464,9 +480,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -506,9 +524,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -553,9 +573,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -593,9 +615,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -635,9 +659,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -675,9 +701,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -725,9 +753,11 @@
       "share": 0.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -772,9 +802,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -819,9 +851,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -861,9 +895,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -903,9 +939,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -950,9 +988,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -992,9 +1032,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -1034,9 +1076,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "INSUFFICIENT_EVIDENCE",
@@ -1074,9 +1118,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "SANCTIONED_OR_MIXER_REACHED",
@@ -1132,9 +1178,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "SANCTIONED_OR_MIXER_REACHED",
@@ -1179,9 +1227,11 @@
       "share": 1.0
      }
     ],
-    "flags": [],
-    "risk_score": 0,
-    "risk_class": "low"
+    "flags": [
+     "threat_contact"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
    },
    "entity_hidden": {
     "outcome": "SANCTIONED_OR_MIXER_REACHED",
@@ -1228,7 +1278,8 @@
     ],
     "flags": [
      "mixer_contact",
-     "rapid_forwarding"
+     "rapid_forwarding",
+     "threat_contact"
     ],
     "risk_score": 100,
     "risk_class": "severe"

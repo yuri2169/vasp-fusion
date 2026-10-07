@@ -392,7 +392,8 @@ def summary(m: dict) -> dict:
             "rules_firing_more_on_positives": v["rules_firing_more_on_positives"],
             "p_fisher": v["separation"]["p_fisher"], "auc_score": v["separation"]["auc_score"],
             "auc_behaviour_score": v["separation"]["auc_behaviour_score"]})
-    return {"version": m["version"], "seed": m["seed"], "positives": m["positives"],
+    return {"version": m["version"], "seed": m["seed"], "pattern_cap": m.get("pattern_cap"),
+            "positives": m["positives"],
             "controls": m["controls"], "main_view": m["main_view"], "views": views,
             "rules": m["views"][m["main_view"]]["rules"], "notes": m["notes"]}
 

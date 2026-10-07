@@ -109,7 +109,7 @@ When a wallet's trace finishes, its result is handed to the gateway. The mock wr
                             "hops": 1, "confidence": 0.8491}],
              "risk_class": "low", "risk_score": 0,
              "report_pdf": "/api/cases/c-3f0e1b2a9d/pdf"},
-  "risk_basis": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.",
+  "risk_basis": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.",
   "generated_by": {"tool": "VASP-FUSION", "code_version": "b5-bitcoin-1"}
 }
 ```

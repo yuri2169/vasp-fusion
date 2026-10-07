@@ -769,6 +769,21 @@
   ],
   "nodes": 3,
   "edges": 3,
-  "flags": []
+  "flags": [
+   [
+    "threat_contact",
+    "0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd",
+    {
+     "share": 1.0,
+     "amount": 5792698.555,
+     "hops": 1.0
+    }
+   ],
+   [
+    "threat_contact",
+    "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+    {}
+   ]
+  ]
  }
 }

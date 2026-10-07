@@ -31,7 +31,7 @@ OFAC_SOURCE = "ofac-sdn-xml"
 RANSOMWHERE_SOURCE = "ransomwhere"
 TAGPACK_PREFIX = "graphsense-tagpack:"
 THREAT_WORDS = {"terrorism_financing": "terrorism financing", "ransomware": "ransomware",
-                "darknet_market": "a darknet market", "theft": "a hack or exploit",
+                "darknet_market": "a darknet market", "theft": "theft by hack or exploit",
                 "fraud": "fraud",
                 "sanctioned_other": "a sanctioned party"}
 _ID_PREFIX = "Digital Currency Address - "

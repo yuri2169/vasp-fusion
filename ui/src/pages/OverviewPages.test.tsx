@@ -243,12 +243,13 @@ describe('the model page', () => {
       controls_scored: 70, controls_high_or_above: 2, controls_interval: [0, 0.1], controls_nothing_to_trace: 20, controls_classes: {}, positives_high_with_list_link: high, rules_firing_more_on_positives: [], p_fisher: 0.01, auc_score: auc, auc_behaviour_score: 0.43,
     })
     const risk_validation: NonNullable<ModelInfo['risk_validation']> = {
-      version: 'risk_validation_v1', seed: 26182, positives: 65, controls: 70, main_view: 'own_hidden',
+      version: 'risk_validation_v2', seed: 26183, pattern_cap: 20, positives: 65, controls: 70, main_view: 'own_hidden',
       views: [view('as_shown', 'Every label, as the tool shows it', 52, 0.88), view('own_hidden', "The wallet's own label hidden", 14, 0.55)],
       rules: [{ code: 'fan_in', positive: 20, positive_of: 65, positive_share: 0.31, control: 30, control_of: 70, control_share: 0.43, p_fisher: 0.2 }],
       notes: ['The points were set before this measurement.'],
     }
-    vi.spyOn(api, 'model').mockResolvedValue({ ...model, risk_validation })
+    const risk_validation_first = { ...risk_validation, version: 'risk_validation_v1', pattern_cap: null, notes: ['The points were set before this measurement.'] }
+    vi.spyOn(api, 'model').mockResolvedValue({ ...model, risk_validation, risk_validation_first })
     open('/model')
     const panel = await screen.findByRole('region', { name: 'The risk score, checked on real wallets' })
     const quoted = within(panel).getByText('the figure to quote').closest('tr')!
@@ -260,6 +261,10 @@ describe('the model page', () => {
     expect(rule).toHaveTextContent('20 of 65')
     expect(rule).toHaveTextContent('30 of 70')
     expect(within(panel).getByText('The points were set before this measurement.')).toBeInTheDocument()
+    // the first set is shown apart, as the record of the points before they were changed
+    const first = screen.getByRole('region', { name: 'The first set, with the points as they were' })
+    expect(first).toHaveTextContent('It says nothing about the score in use.')
+    expect(within(first).getAllByText('14 of 65').length).toBeGreaterThan(0)
   })
 
   it('says "not yet measured" and shows no figure when the model has not been measured', async () => {

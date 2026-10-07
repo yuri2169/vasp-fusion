@@ -24,7 +24,7 @@ describe('ThreatChip', () => {
   })
 
   it('has words for every threat', () => {
-    expect(Object.values(THREATS).map((t) => t.name)).toEqual(['Terrorism financing', 'Ransomware', 'Darknet market', 'Fraud', 'Sanctioned'])
+    expect(Object.values(THREATS).map((t) => t.name)).toEqual(['Terrorism financing', 'Ransomware', 'Darknet market', 'Hack or exploit', 'Fraud', 'Sanctioned'])
   })
 
   it('shows the source and its own words on hover and on keyboard focus', async () => {

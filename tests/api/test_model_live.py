@@ -97,9 +97,16 @@ def test_the_tracked_table_has_six_measured_chains_each_with_its_sample_size():
         assert r["baseline_named"] >= r["named"] and r["hidden"]
 
 
-def test_the_model_route_carries_the_risk_scores_check(client):
+def test_the_model_route_carries_both_checks_of_the_risk_score(client):
     from vaspfusion.eval.risk_validation import read_summary
     body = client.get("/api/model", params={"chain": "toy"}).json()
+    # the fresh set, scored with the points in use: the one the interface quotes
     assert body["risk_validation"] == read_summary(main.RISK_VALIDATION_DIR)
-    main_view = next(v for v in body["risk_validation"]["views"] if v["view"] == "own_hidden")
-    assert main_view["positives_scored"] == 65 and main_view["controls_scored"] == 70
+    assert body["risk_validation"]["version"] == "risk_validation_v2"
+    assert body["risk_validation"]["pattern_cap"] == 20
+    # the first set, with the points as they were then
+    first = body["risk_validation_first"]
+    assert first == read_summary(main.RISK_VALIDATION_FIRST_DIR) and first["pattern_cap"] is None
+    main_view = next(v for v in first["views"] if v["view"] == "own_hidden")
+    assert (main_view["positives_high_or_above"], main_view["positives_scored"],
+            main_view["controls_high_or_above"], main_view["controls_scored"]) == (14, 65, 2, 70)

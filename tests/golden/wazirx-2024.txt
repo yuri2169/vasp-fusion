@@ -35,11 +35,14 @@ went into a named wallet that is not an exchange (Wazirx Exploit).
 
 SUMMARY
 -------
-Wallet 0x04b2…891a88 sent 5,792,698.56 USDT on Ethereum in 2 transfers on 18 Jul 2024. No
-exchange is named. None of the 5,792,698.56 USDT this wallet sent reached a labelled exchange
-within 3 hops. 100% went into a named wallet that is not an exchange (Wazirx Exploit). The
-wallet received 5,792,698.56 USDT; 100% came directly from WazirX (0x27fd…60c9b4). Not followed
-in this run: 544,818.71 USDC in 1 transfer, 15,302.25 ETH in 7 transfers.
+Wallet 0x04b2…891a88 sent 5,792,698.56 USDT on Ethereum in 2 transfers on 18 Jul 2024. Linked to
+theft by hack or exploit (Wazirx Exploit, explorer tag): 1 hop away, 100% of the funds
+(5,792,698.56 USDT) reached 0x90ca…9f91fd. The wallet itself is tagged theft by hack or exploit
+(Wazirx Exploit, explorer tag). No exchange is named. None of the 5,792,698.56 USDT this wallet
+sent reached a labelled exchange within 3 hops. 100% went into a named wallet that is not an
+exchange (Wazirx Exploit). The wallet received 5,792,698.56 USDT; 100% came directly from WazirX
+(0x27fd…60c9b4). Not followed in this run: 544,818.71 USDC in 1 transfer, 15,302.25 ETH in 7
+transfers.
 
 In the sentences of this file a long address is written as its first six and last six
 characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
@@ -92,20 +95,38 @@ MAIN PATH OF THE FUNDS
   Hop | From -> to | Traced funds | Time | After | Transaction
   1 | W0 -> W1 | 5,783,698.56 USDT (Rs 55,40,20,485) | 18 Jul 2024, 06:39:11 UTC | - | 0x16c1857c6ace4d49cf4a5a6191fd66b12966d5c0666e8cf4dd18a207d31cabbd
 
+PATTERNS SEEN
+-------------
+Patterns in the traced funds. They describe how the money moved and never decide the result.
+
+    [Link to a tagged address (high)] 0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd: Linked to
+    theft by hack or exploit (Wazirx Exploit, explorer tag): 1 hop away, 100% of the funds
+    (5,792,698.56 USDT) reached 0x90ca…9f91fd
+        tx 0x16c1857c6ace4d49cf4a5a6191fd66b12966d5c0666e8cf4dd18a207d31cabbd
+        tx 0xcc4356d0ad68f9c60e7977fe2e3332b9a6367d11d638c7603eee0e039d03dc9a
+    [Link to a tagged address (high)] 0x04b21735e93fa3f8df70e2da89e6922616891a88: The wallet
+    itself is tagged theft by hack or exploit (Wazirx Exploit, explorer tag)
+
 RISK INDICATORS
 ---------------
-Risk class: Low (score 0 of 100). An indicator score from published red-flag rules. Not a
-probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented
-ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all
-of those through a link to another listed address. No pattern rule fired more often on the
-listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are
+Risk class: Severe (score 100 of 100). An indicator score from published red-flag rules. Not a
+probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented
+ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65
+and 2 of 65 scored High or above, all of those through a link to another listed address. No
+pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are
 not a sample of real complaints. The indicator list follows Financial Action Task Force (FATF),
 "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September
 2020; the points are this tool's.
 
-No indicator is present in the traced funds.
-
-Transaction flows: All 3 transfers read are Low. The path shown above is Low.
+    [The address carries a threat tag (+95)] The wallet itself is tagged theft by hack or
+    exploit (Wazirx Exploit, explorer tag)
+    [Funds reached a threat-tagged address (+95)] Linked to theft by hack or exploit (Wazirx
+    Exploit, explorer tag): 1 hop away, 100% of the funds (5,792,698.56 USDT) reached
+    0x90ca…9f91fd
+        tx 0x16c1857c6ace4d49cf4a5a6191fd66b12966d5c0666e8cf4dd18a207d31cabbd
+        tx 0xcc4356d0ad68f9c60e7977fe2e3332b9a6367d11d638c7603eee0e039d03dc9a
+Transaction flows: Of the 3 transfers read, 2 Severe; the rest are Low. The path shown above is
+Severe.
 
 
 HOW THE CONFIDENCE WAS WORKED OUT
@@ -168,7 +189,7 @@ too. Neither covers the case reference, complaint number or amount reported lost
 officer's entries. To check it, trace the wallet again from the same responses: python -m
 vaspfusion.cli verify wazirx-2024
 
-  Findings fingerprint    14fe2f9fe6646dde91e8b73081beeff3349ad689d5d106d68889baa43ab6236a
+  Findings fingerprint    c3e44030f50559b64bbae7e8a800948344b90cf9d5d5d1394f6efd9c1f813757
   Input                   ethereum 0x04b21735e93fa3f8df70e2da89e6922616891a88, hop limit 3
   Input SHA-256           77747a873184216982f002810723ba6fd94b4d209ae557db0b4829521f9df0e9
   Chain responses         5 read from api.etherscan.io
@@ -178,8 +199,8 @@ vaspfusion.cli verify wazirx-2024
   Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
   Seed                    26182
   Fetched                 2 Oct 2026, 09:00:00 UTC
-  Content SHA-256         8e8f85acf2d543656b84136f0b9ee6258586685d67da4fd5fd85ab650d8c3666
-  Receipt SHA-256         e07c64357680d6d638d77757e587a00f641f66eb43f42e07368ee69cc5df9f1d
+  Content SHA-256         f9cb3f0410b223d416ad6845e31e662348ac4e6fde389f3e816a3ea6b639698a
+  Receipt SHA-256         ff7e4337984b6841f2595aeddfff07624f1ad9048bf694a7bc6086b02093f25b
 
   Chain responses read
     d928dcac16d74e7c25fab60f6d01e96b0a7dc1191bae5313ded2395637602bd9  https://api.etherscan.io/v2/api?action=tokentx&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0

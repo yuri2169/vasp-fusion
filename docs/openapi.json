@@ -347,6 +347,7 @@
                     "terrorism_financing",
                     "ransomware",
                     "darknet_market",
+                    "theft",
                     "fraud",
                     "sanctioned_other"
                   ],
@@ -938,6 +939,7 @@
                     "terrorism_financing",
                     "ransomware",
                     "darknet_market",
+                    "theft",
                     "fraud",
                     "sanctioned_other"
                   ],
@@ -3664,6 +3666,7 @@
                 "terrorism_financing",
                 "ransomware",
                 "darknet_market",
+                "theft",
                 "fraud",
                 "sanctioned_other"
               ]
@@ -3703,7 +3706,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -4279,6 +4282,7 @@
                 "terrorism_financing",
                 "ransomware",
                 "darknet_market",
+                "theft",
                 "fraud",
                 "sanctioned_other"
               ]
@@ -4318,7 +4322,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -4793,7 +4797,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
           },
           "report_pdf": {
             "anyOf": [
@@ -5430,7 +5434,7 @@
             },
             "type": "object",
             "title": "Risk Classes",
-            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.",
+            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.",
             "default": {}
           }
         },
@@ -6937,6 +6941,7 @@
                   "terrorism_financing",
                   "ransomware",
                   "darknet_market",
+                  "theft",
                   "fraud",
                   "sanctioned_other"
                 ]
@@ -7694,7 +7699,18 @@
                 "type": "null"
               }
             ],
-            "description": "What the risk score and the pattern rules did on real listed and ordinary wallets (the same for every chain); null when it was not measured"
+            "description": "What the risk score in use and the pattern rules did on real listed and ordinary wallets drawn after the points were last changed (the same for every chain); null when it was not measured"
+          },
+          "risk_validation_first": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskValidation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The first set of wallets, scored with the points as they were then: what led to the change of the points, and no measure of the points in use"
           }
         },
         "additionalProperties": false,
@@ -9258,7 +9274,7 @@
               }
             ],
             "title": "Score",
-            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints. null: not assessed"
+            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. null: not assessed"
           },
           "risk_class": {
             "anyOf": [
@@ -9326,7 +9342,7 @@
           "basis": {
             "type": "string",
             "title": "Basis",
-            "default": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
+            "default": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
           },
           "source": {
             "anyOf": [
@@ -9421,6 +9437,18 @@
           "seed": {
             "type": "integer",
             "title": "Seed"
+          },
+          "pattern_cap": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern Cap",
+            "description": "The most the five pattern rules could add together when this was scored; null: no cap (the points before 8 Oct 2026)"
           },
           "positives": {
             "type": "integer",
@@ -10221,6 +10249,7 @@
               "terrorism_financing",
               "ransomware",
               "darknet_market",
+              "theft",
               "fraud",
               "sanctioned_other"
             ],

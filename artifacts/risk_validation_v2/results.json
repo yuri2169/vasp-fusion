@@ -1,0 +1,9089 @@
+{
+ "version": "risk_validation_v2",
+ "seed": 26183,
+ "main_view": "own_hidden",
+ "pattern_cap": 20,
+ "positives": 65,
+ "controls": 65,
+ "trace": {
+  "max_hops": 3,
+  "max_wallets": 40,
+  "inbound_hops": 1,
+  "since": null,
+  "deposit_model_leads": "not scored (not a risk indicator)"
+ },
+ "risk_config_sha256": "81bbb978ebbcefe947ceb5ed4d99bd5290db643fa4a95a41181f4d22da23d5be",
+ "corpus_sha256": "55eb30f764adc2d89437fa077730c43f810dc6746b14e8fc0ae3a521a8d6b100",
+ "classes": {
+  "low": 0,
+  "medium": 25,
+  "high": 50,
+  "severe": 75
+ },
+ "views": {
+  "as_shown": {
+   "arms": {
+    "positive": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 15,
+     "traced": 50,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 65
+     },
+     "high_or_above": 65,
+     "high_or_above_share": 1.0,
+     "high_or_above_interval": [
+      0.9448,
+      1.0
+     ],
+     "traced_high_or_above": 50,
+     "traced_high_or_above_share": 1.0,
+     "traced_high_or_above_interval": [
+      0.9289,
+      1.0
+     ],
+     "median_score": 100,
+     "behaviour_classes": {
+      "low": 56,
+      "medium": 7,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 9
+    },
+    "control": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 22,
+     "traced": 43,
+     "classes": {
+      "low": 57,
+      "medium": 6,
+      "high": 2,
+      "severe": 0
+     },
+     "high_or_above": 2,
+     "high_or_above_share": 0.0308,
+     "high_or_above_interval": [
+      0.0037,
+      0.1068
+     ],
+     "traced_high_or_above": 2,
+     "traced_high_or_above_share": 0.0465,
+     "traced_high_or_above_interval": [
+      0.0057,
+      0.1581
+     ],
+     "median_score": 0,
+     "behaviour_classes": {
+      "low": 51,
+      "medium": 12,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 14
+    }
+   },
+   "positives_high_with_list_link": 65,
+   "rules_firing_more_on_positives": [],
+   "separation": {
+    "positives_high_or_above": 1.0,
+    "controls_high_or_above": 0.0308,
+    "p_fisher": 0.0,
+    "auc_score": 1.0,
+    "auc_score_traced": 1.0,
+    "auc_behaviour_score": 0.5206,
+    "auc_behaviour_score_traced": 0.4707
+   },
+   "rules": [
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0201
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 65,
+     "positive_share": 0.2462,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    }
+   ],
+   "rules_traced": [
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 50,
+     "positive_share": 0.04,
+     "control": 1,
+     "control_of": 43,
+     "control_share": 0.0233,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 50,
+     "positive_share": 0.12,
+     "control": 17,
+     "control_of": 43,
+     "control_share": 0.3953,
+     "p_fisher": 0.0034
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 50,
+     "positive_share": 0.42,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 0.5271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 50,
+     "positive_share": 0.32,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 0.8273
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 50,
+     "positive_share": 0.14,
+     "control": 2,
+     "control_of": 43,
+     "control_share": 0.0465,
+     "p_fisher": 0.1695
+    }
+   ],
+   "indicators": [
+    {
+     "code": "sanctioned_self",
+     "positive": 20,
+     "positive_of": 65,
+     "positive_share": 0.3077,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0
+    },
+    {
+     "code": "sanctioned_contact",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0277
+    },
+    {
+     "code": "sanctioned_funding",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0062
+    },
+    {
+     "code": "mixer_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "mixer_contact",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.4961
+    },
+    {
+     "code": "mixer_funding",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_self",
+     "positive": 45,
+     "positive_of": 65,
+     "positive_share": 0.6923,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0
+    },
+    {
+     "code": "threat_contact",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0062
+    },
+    {
+     "code": "threat_funding",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0277
+    },
+    {
+     "code": "coinjoin_shape",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_contact",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "bridge_hop",
+     "positive": 1,
+     "positive_of": 65,
+     "positive_share": 0.0154,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "swap_service",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.2442
+    },
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 65,
+     "positive_share": 0.2462,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0201
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    },
+    {
+     "code": "unlabelled_hub",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 9,
+     "control_of": 65,
+     "control_share": 0.1385,
+     "p_fisher": 1.0
+    }
+   ],
+   "by_stratum": [
+    {
+     "stratum": "ofac_tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 10
+     },
+     "high_or_above": 10,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 3,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "stratum": "ofac_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 5
+     },
+     "high_or_above": 5,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 1,
+      "round_amounts": 2
+     }
+    },
+    {
+     "stratum": "ofac_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 5
+     },
+     "high_or_above": 5,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "ransomware_bitcoin",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 10
+     },
+     "high_or_above": 10,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 10
+     },
+     "high_or_above": 10,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 4,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "defi_fraud_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 5
+     },
+     "high_or_above": 5,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 5
+     },
+     "high_or_above": 5,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exploiter_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 10
+     },
+     "high_or_above": 10,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 4,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "phishing_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 0,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 5
+     },
+     "high_or_above": 5,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "charity_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 10,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "mining_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 9,
+     "classes": {
+      "low": 9,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 7,
+      "fan_in": 3,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "treasury_ethereum",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 8,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "distributor_ethereum",
+     "arm": "control",
+     "wallets": 7,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "stratum": "exchange_customer_ethereum",
+     "arm": "control",
+     "wallets": 6,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 2,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ],
+   "by_chain": [
+    {
+     "chain": "tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 10
+     },
+     "high_or_above": 10,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 3,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "chain": "tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "positive",
+     "wallets": 35,
+     "could_not_be_read": 0,
+     "traced": 25,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 35
+     },
+     "high_or_above": 35,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 14,
+      "rapid_forwarding": 9,
+      "round_amounts": 2
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "control",
+     "wallets": 41,
+     "could_not_be_read": 0,
+     "traced": 20,
+     "classes": {
+      "low": 39,
+      "medium": 1,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 9,
+      "fan_in": 5,
+      "rapid_forwarding": 7,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "positive",
+     "wallets": 20,
+     "could_not_be_read": 0,
+     "traced": 15,
+     "classes": {
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "severe": 20
+     },
+     "high_or_above": 20,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ]
+  },
+  "own_hidden": {
+   "arms": {
+    "positive": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 15,
+     "traced": 50,
+     "classes": {
+      "low": 39,
+      "medium": 4,
+      "high": 2,
+      "severe": 20
+     },
+     "high_or_above": 22,
+     "high_or_above_share": 0.3385,
+     "high_or_above_interval": [
+      0.2257,
+      0.4665
+     ],
+     "traced_high_or_above": 22,
+     "traced_high_or_above_share": 0.44,
+     "traced_high_or_above_interval": [
+      0.2999,
+      0.5875
+     ],
+     "median_score": 15,
+     "behaviour_classes": {
+      "low": 56,
+      "medium": 7,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 9
+    },
+    "control": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 22,
+     "traced": 43,
+     "classes": {
+      "low": 57,
+      "medium": 6,
+      "high": 2,
+      "severe": 0
+     },
+     "high_or_above": 2,
+     "high_or_above_share": 0.0308,
+     "high_or_above_interval": [
+      0.0037,
+      0.1068
+     ],
+     "traced_high_or_above": 2,
+     "traced_high_or_above_share": 0.0465,
+     "traced_high_or_above_interval": [
+      0.0057,
+      0.1581
+     ],
+     "median_score": 0,
+     "behaviour_classes": {
+      "low": 51,
+      "medium": 12,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 14
+    }
+   },
+   "positives_high_with_list_link": 22,
+   "rules_firing_more_on_positives": [],
+   "separation": {
+    "positives_high_or_above": 0.3385,
+    "controls_high_or_above": 0.0308,
+    "p_fisher": 0.0,
+    "auc_score": 0.6534,
+    "auc_score_traced": 0.7009,
+    "auc_behaviour_score": 0.5206,
+    "auc_behaviour_score_traced": 0.4707
+   },
+   "rules": [
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0201
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 65,
+     "positive_share": 0.2462,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    }
+   ],
+   "rules_traced": [
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 50,
+     "positive_share": 0.04,
+     "control": 1,
+     "control_of": 43,
+     "control_share": 0.0233,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 50,
+     "positive_share": 0.12,
+     "control": 17,
+     "control_of": 43,
+     "control_share": 0.3953,
+     "p_fisher": 0.0034
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 50,
+     "positive_share": 0.42,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 0.5271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 50,
+     "positive_share": 0.32,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 0.8273
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 50,
+     "positive_share": 0.14,
+     "control": 2,
+     "control_of": 43,
+     "control_share": 0.0465,
+     "p_fisher": 0.1695
+    }
+   ],
+   "indicators": [
+    {
+     "code": "sanctioned_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "sanctioned_contact",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0277
+    },
+    {
+     "code": "sanctioned_funding",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0062
+    },
+    {
+     "code": "mixer_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "mixer_contact",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.4961
+    },
+    {
+     "code": "mixer_funding",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_contact",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0062
+    },
+    {
+     "code": "threat_funding",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.0277
+    },
+    {
+     "code": "coinjoin_shape",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_contact",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "bridge_hop",
+     "positive": 1,
+     "positive_of": 65,
+     "positive_share": 0.0154,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "swap_service",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.2442
+    },
+    {
+     "code": "peel_chain",
+     "positive": 2,
+     "positive_of": 65,
+     "positive_share": 0.0308,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 16,
+     "positive_of": 65,
+     "positive_share": 0.2462,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "fan_out",
+     "positive": 6,
+     "positive_of": 65,
+     "positive_share": 0.0923,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0201
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    },
+    {
+     "code": "unlabelled_hub",
+     "positive": 8,
+     "positive_of": 65,
+     "positive_share": 0.1231,
+     "control": 9,
+     "control_of": 65,
+     "control_share": 0.1385,
+     "p_fisher": 1.0
+    }
+   ],
+   "by_stratum": [
+    {
+     "stratum": "ofac_tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 1,
+      "medium": 2,
+      "high": 1,
+      "severe": 6
+     },
+     "high_or_above": 7,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 3,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "stratum": "ofac_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 3,
+      "medium": 0,
+      "high": 0,
+      "severe": 2
+     },
+     "high_or_above": 2,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 1,
+      "round_amounts": 2
+     }
+    },
+    {
+     "stratum": "ofac_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 3,
+      "medium": 0,
+      "high": 0,
+      "severe": 2
+     },
+     "high_or_above": 2,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "ransomware_bitcoin",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 9,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 6,
+      "medium": 1,
+      "high": 0,
+      "severe": 3
+     },
+     "high_or_above": 3,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 4,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "defi_fraud_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 5,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exploiter_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 3,
+      "medium": 0,
+      "high": 0,
+      "severe": 7
+     },
+     "high_or_above": 7,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 4,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "phishing_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 0,
+     "classes": {
+      "low": 5,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "charity_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 10,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "mining_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 9,
+     "classes": {
+      "low": 9,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 7,
+      "fan_in": 3,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "treasury_ethereum",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 8,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "distributor_ethereum",
+     "arm": "control",
+     "wallets": 7,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "stratum": "exchange_customer_ethereum",
+     "arm": "control",
+     "wallets": 6,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 2,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ],
+   "by_chain": [
+    {
+     "chain": "tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 1,
+      "medium": 2,
+      "high": 1,
+      "severe": 6
+     },
+     "high_or_above": 7,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 3,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "chain": "tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "positive",
+     "wallets": 35,
+     "could_not_be_read": 0,
+     "traced": 25,
+     "classes": {
+      "low": 21,
+      "medium": 2,
+      "high": 0,
+      "severe": 12
+     },
+     "high_or_above": 12,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 14,
+      "rapid_forwarding": 9,
+      "round_amounts": 2
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "control",
+     "wallets": 41,
+     "could_not_be_read": 0,
+     "traced": 20,
+     "classes": {
+      "low": 39,
+      "medium": 1,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 9,
+      "fan_in": 5,
+      "rapid_forwarding": 7,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "positive",
+     "wallets": 20,
+     "could_not_be_read": 0,
+     "traced": 15,
+     "classes": {
+      "low": 17,
+      "medium": 0,
+      "high": 1,
+      "severe": 2
+     },
+     "high_or_above": 3,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ]
+  },
+  "entity_hidden": {
+   "arms": {
+    "positive": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 15,
+     "traced": 50,
+     "classes": {
+      "low": 57,
+      "medium": 5,
+      "high": 0,
+      "severe": 3
+     },
+     "high_or_above": 3,
+     "high_or_above_share": 0.0462,
+     "high_or_above_interval": [
+      0.0096,
+      0.129
+     ],
+     "traced_high_or_above": 3,
+     "traced_high_or_above_share": 0.06,
+     "traced_high_or_above_interval": [
+      0.0125,
+      0.1655
+     ],
+     "median_score": 5,
+     "behaviour_classes": {
+      "low": 55,
+      "medium": 8,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 10
+    },
+    "control": {
+     "wallets": 65,
+     "could_not_be_read": 0,
+     "nothing_to_trace": 22,
+     "traced": 43,
+     "classes": {
+      "low": 56,
+      "medium": 7,
+      "high": 2,
+      "severe": 0
+     },
+     "high_or_above": 2,
+     "high_or_above_share": 0.0308,
+     "high_or_above_interval": [
+      0.0037,
+      0.1068
+     ],
+     "traced_high_or_above": 2,
+     "traced_high_or_above_share": 0.0465,
+     "traced_high_or_above_interval": [
+      0.0057,
+      0.1581
+     ],
+     "median_score": 0,
+     "behaviour_classes": {
+      "low": 50,
+      "medium": 13,
+      "high": 2,
+      "severe": 0
+     },
+     "behaviour_medium_or_above": 15
+    }
+   },
+   "positives_high_with_list_link": 3,
+   "rules_firing_more_on_positives": [],
+   "separation": {
+    "positives_high_or_above": 0.0462,
+    "controls_high_or_above": 0.0308,
+    "p_fisher": 1.0,
+    "auc_score": 0.5673,
+    "auc_score_traced": 0.5421,
+    "auc_behaviour_score": 0.5395,
+    "auc_behaviour_score_traced": 0.4926
+   },
+   "rules": [
+    {
+     "code": "peel_chain",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 0.6191
+    },
+    {
+     "code": "fan_out",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0404
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 18,
+     "positive_of": 65,
+     "positive_share": 0.2769,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.6873
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    }
+   ],
+   "rules_traced": [
+    {
+     "code": "peel_chain",
+     "positive": 3,
+     "positive_of": 50,
+     "positive_share": 0.06,
+     "control": 1,
+     "control_of": 43,
+     "control_share": 0.0233,
+     "p_fisher": 0.6211
+    },
+    {
+     "code": "fan_out",
+     "positive": 7,
+     "positive_of": 50,
+     "positive_share": 0.14,
+     "control": 17,
+     "control_of": 43,
+     "control_share": 0.3953,
+     "p_fisher": 0.0082
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 50,
+     "positive_share": 0.42,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 0.5271
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 18,
+     "positive_of": 50,
+     "positive_share": 0.36,
+     "control": 15,
+     "control_of": 43,
+     "control_share": 0.3488,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 50,
+     "positive_share": 0.14,
+     "control": 2,
+     "control_of": 43,
+     "control_share": 0.0465,
+     "p_fisher": 0.1695
+    }
+   ],
+   "indicators": [
+    {
+     "code": "sanctioned_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "sanctioned_contact",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "sanctioned_funding",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "mixer_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "mixer_contact",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.2442
+    },
+    {
+     "code": "mixer_funding",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_contact",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "threat_funding",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "coinjoin_shape",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_self",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "scam_contact",
+     "positive": 0,
+     "positive_of": 65,
+     "positive_share": 0.0,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "bridge_hop",
+     "positive": 1,
+     "positive_of": 65,
+     "positive_share": 0.0154,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 1.0
+    },
+    {
+     "code": "swap_service",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 0,
+     "control_of": 65,
+     "control_share": 0.0,
+     "p_fisher": 0.2442
+    },
+    {
+     "code": "peel_chain",
+     "positive": 3,
+     "positive_of": 65,
+     "positive_share": 0.0462,
+     "control": 1,
+     "control_of": 65,
+     "control_share": 0.0154,
+     "p_fisher": 0.6191
+    },
+    {
+     "code": "rapid_forwarding",
+     "positive": 18,
+     "positive_of": 65,
+     "positive_share": 0.2769,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.6873
+    },
+    {
+     "code": "fan_out",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 17,
+     "control_of": 65,
+     "control_share": 0.2615,
+     "p_fisher": 0.0404
+    },
+    {
+     "code": "fan_in",
+     "positive": 21,
+     "positive_of": 65,
+     "positive_share": 0.3231,
+     "control": 15,
+     "control_of": 65,
+     "control_share": 0.2308,
+     "p_fisher": 0.3271
+    },
+    {
+     "code": "round_amounts",
+     "positive": 7,
+     "positive_of": 65,
+     "positive_share": 0.1077,
+     "control": 2,
+     "control_of": 65,
+     "control_share": 0.0308,
+     "p_fisher": 0.1643
+    },
+    {
+     "code": "unlabelled_hub",
+     "positive": 9,
+     "positive_of": 65,
+     "positive_share": 0.1385,
+     "control": 10,
+     "control_of": 65,
+     "control_share": 0.1538,
+     "p_fisher": 1.0
+    }
+   ],
+   "by_stratum": [
+    {
+     "stratum": "ofac_tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 7,
+      "medium": 3,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 2,
+      "fan_out": 4,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "stratum": "ofac_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 1
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 1,
+      "round_amounts": 2
+     }
+    },
+    {
+     "stratum": "ofac_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 5,
+     "classes": {
+      "low": 5,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "ransomware_bitcoin",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 10,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 8,
+      "medium": 1,
+      "high": 0,
+      "severe": 1
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 4,
+      "rapid_forwarding": 4,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "defi_fraud_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 3,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "scam_list_bitcoin",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 5,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exploiter_ethereum",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 9,
+      "medium": 0,
+      "high": 0,
+      "severe": 1
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 4,
+      "rapid_forwarding": 4,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "phishing_ethereum",
+     "arm": "positive",
+     "wallets": 5,
+     "could_not_be_read": 0,
+     "traced": 0,
+     "classes": {
+      "low": 5,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "charity_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 10,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "mining_ethereum",
+     "arm": "control",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 9,
+     "classes": {
+      "low": 9,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 7,
+      "fan_in": 3,
+      "rapid_forwarding": 3,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "treasury_ethereum",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 3,
+     "classes": {
+      "low": 7,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "distributor_ethereum",
+     "arm": "control",
+     "wallets": 7,
+     "could_not_be_read": 0,
+     "traced": 1,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 0,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "stratum": "exchange_customer_ethereum",
+     "arm": "control",
+     "wallets": 6,
+     "could_not_be_read": 0,
+     "traced": 6,
+     "classes": {
+      "low": 6,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 2,
+      "rapid_forwarding": 1,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "stratum": "exchange_customer_polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ],
+   "by_chain": [
+    {
+     "chain": "tron",
+     "arm": "positive",
+     "wallets": 10,
+     "could_not_be_read": 0,
+     "traced": 10,
+     "classes": {
+      "low": 7,
+      "medium": 3,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 2,
+      "fan_out": 4,
+      "fan_in": 7,
+      "rapid_forwarding": 5,
+      "round_amounts": 5
+     }
+    },
+    {
+     "chain": "tron",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 8,
+     "classes": {
+      "low": 4,
+      "medium": 4,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 6,
+      "fan_in": 7,
+      "rapid_forwarding": 7,
+      "round_amounts": 1
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "positive",
+     "wallets": 35,
+     "could_not_be_read": 0,
+     "traced": 25,
+     "classes": {
+      "low": 30,
+      "medium": 2,
+      "high": 0,
+      "severe": 3
+     },
+     "high_or_above": 3,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 3,
+      "fan_in": 14,
+      "rapid_forwarding": 11,
+      "round_amounts": 2
+     }
+    },
+    {
+     "chain": "ethereum",
+     "arm": "control",
+     "wallets": 41,
+     "could_not_be_read": 0,
+     "traced": 20,
+     "classes": {
+      "low": 38,
+      "medium": 2,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 9,
+      "fan_in": 5,
+      "rapid_forwarding": 7,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "positive",
+     "wallets": 20,
+     "could_not_be_read": 0,
+     "traced": 15,
+     "classes": {
+      "low": 20,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 1,
+      "fan_out": 0,
+      "fan_in": 0,
+      "rapid_forwarding": 2,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bitcoin",
+     "arm": "control",
+     "wallets": 8,
+     "could_not_be_read": 0,
+     "traced": 7,
+     "classes": {
+      "low": 7,
+      "medium": 0,
+      "high": 1,
+      "severe": 0
+     },
+     "high_or_above": 1,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "bsc",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 4,
+      "medium": 0,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 0,
+      "fan_in": 1,
+      "rapid_forwarding": 0,
+      "round_amounts": 0
+     }
+    },
+    {
+     "chain": "polygon",
+     "arm": "control",
+     "wallets": 4,
+     "could_not_be_read": 0,
+     "traced": 4,
+     "classes": {
+      "low": 3,
+      "medium": 1,
+      "high": 0,
+      "severe": 0
+     },
+     "high_or_above": 0,
+     "rules": {
+      "peel_chain": 0,
+      "fan_out": 1,
+      "fan_in": 1,
+      "rapid_forwarding": 1,
+      "round_amounts": 1
+     }
+    }
+   ]
+  }
+ },
+ "notes": [
+  "The positives are addresses a public list names; the controls are addresses with a documented ordinary purpose. Neither is a sample of the wallets a complaint brings in.",
+  "The main figure hides each wallet's own label. Other listed addresses stay visible, so a positive can still score by paying a listed neighbour; the entity-hidden view removes the neighbours of its own entry, and the behaviour-only score removes every list.",
+  "A wallet with nothing to trace (no transfer, in or out, of an asset the tool follows) scores Low by default. It stays in every count and is also reported apart.",
+  "A pattern rule counts for a wallet when it fired anywhere on that wallet's trail, not only on the wallet itself. The p-values are Fisher's exact test on each row alone, not corrected for the number of rows.",
+  "The two sets differ in more than guilt: most positives are old Bitcoin and Ethereum addresses, most controls are Ethereum service wallets and recent exchange customers. A difference between the arms is not all due to the rules.",
+  "The points were changed once, on 8 Oct 2026, after the first measurement (risk_validation_v1) and before these wallets were drawn: the five pattern rules together now add at most 20 points, and an explorer's exploiter or phishing tag is a threat tag. None of these wallets was in the first set, and nothing was changed after they were traced.",
+  "Each wallet was traced once at the default budget (3 hops, 40 wallets per direction) from its most recent transfers; a different budget or date can change a wallet's result."
+ ],
+ "wallets": [
+  {
+   "address": "TWBAPzpPiZarfVsY2BLXeaLhNHurn4wkWG",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 50,
+    "behaviour_class": "high",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 50,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 50,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TU4tDFRvcKhAZ1jdihojmBWZqvJhQCnJ4F",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TLC3piEQ5n4tcULKHqLTGhmYFUyHUVSxck",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TLHWeZcDmXk6idnaGwsQ9CEmK24KpoGgRM",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "round_amounts"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TETfViHWf9ZNB6WJgZBRMB48pTaBFo5Rmd",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 70,
+    "risk_class": "high",
+    "indicators": [
+     "sanctioned_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "TMocScwSbSn2cqRCHVkzZSEar3Jk5AsXgo",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 80,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TNwe3WoEX6XrQ5NPAeWPkvpTtdaf27XYxK",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 60,
+    "behaviour_class": "high",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 60,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 60,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TCA9vmjsYw9MtPKEwRBtGhKFRfr4CLxJAv",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_funding",
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 90,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_funding",
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TG83Fk56S2mycAUMYHZyZp9wMg6DCf4bUn",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "round_amounts"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TXoVNrqm11FFVKcF1vEND64gibVkr1HwAR",
+   "chain": "tron",
+   "arm": "positive",
+   "stratum": "ofac_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "sanctioned_funding",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x7f03679b56d8772530efa516b58bb83d4829e881",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "ofac_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x32da24ca413f3e7b53145d4737e172c3bdf81e3e",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "ofac_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x9be599d7867f5e1a2d7ec6db9710df2b98a15573",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "ofac_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "rapid_forwarding",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x53b6936513e738f44fb50d2b9476730c0ab3bfc1",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "ofac_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "mixer_contact",
+     "sanctioned_funding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "mixer_contact",
+     "sanctioned_funding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 92,
+    "risk_class": "severe",
+    "indicators": [
+     "mixer_contact",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x532b77b33a040587e9fd1800088225f99b8b0e8a",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "ofac_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_funding",
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 75,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_funding",
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "bc1qz654h5qcqzalv6ltpxsk4ksdcc3e20wkedqntgnarv3a0t2e2p7scr48pl",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ofac_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1DT3tenf14cxz9WFNxmYrXFbB6TFiVWA9U",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ofac_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "15yqWQ4sqr7jzCwDtZ3U1KaCa8WMEy7Mm2",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ofac_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_contact",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_contact",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1BUXxhcwzFukm9CUxnhag85sSXDkMRbXse",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ofac_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1J6cgUVEZRKyJhpXJgHWX7YmzkdnHRaLhF",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ofac_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_self",
+     "sanctioned_funding",
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 85,
+    "risk_class": "severe",
+    "indicators": [
+     "sanctioned_funding",
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1rYWA7yJyEM5FtqGLHeGrANqRGoGkmNF7",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "17nUrWtZEGndni67FnNrKz1BhbycZaXDaN",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 70,
+    "risk_class": "high",
+    "indicators": [
+     "threat_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1CtiHvSAZD7WN5riN7H3p1NALgeFbCgzmx",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "13nJqUBgH3hAGUFwCXpofc1c6vRV2q4ZW3",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "18AVPLKGBamXtGpdT3kP2b5Dv3iBUDpjKv",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "15RV4a9GuBkNy12S3iHqcqzyxinc9SEBqd",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1JuXakVSmjTHN3sFapDdUvLugHg4GPJqU5",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "1JZEKrnb5h2joxb3o3f2PNsJQSa4hrBLa6",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "1D2b1dojvx7JJ6uUzHpkihgfJJzYTApoLm",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1KzjUSf6D9xQhQqRmZgtix2LWJwLtDw35F",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "ransomware_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "0x7eb28833082eb28fd423ab30df20afde98c47dbf",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact",
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact",
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x6834d3096793d0731348f1581ae1b20c9b79e26a",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xb4c9d8a5812a024bdb177991af256da144776033",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x83885fc61837b4a9e0960be80da2f2bc581ecbc6",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x9aa722c9b6e63325797e1b2f8ff6873e44dd17c1",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x65af8c81291fb60a20235d9e4de80851f8f845d2",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xc5f6690f7b60fe739908e02aec46ae07718cec5f",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xc4625787be3fccff6ac2971945806acc167c8cbd",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "swap_service",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "swap_service",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "swap_service",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x0059b14e35dab1b4eee1e2926c7a5660da66f747",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "mixer_contact",
+     "threat_contact",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "mixer_contact",
+     "threat_contact",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "mixer_contact",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xe1358ae1a9130bc458c8021fcbb7ef8aedd51487",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "scam_list_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xd58ca904db555b67e78dbd94fbc3b81f68dcf76d",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "defi_fraud_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0xadea1fc3493feb9fddc1629e37e5580c21470d7c",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "defi_fraud_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x99f3d11527c4ca9dd4e7e2320ccec21c08abaec5",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "defi_fraud_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xed59726967cae93e8acb8e50eef61fd8ed2e10aa",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "defi_fraud_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "swap_service",
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x7c875ee4d4a1b29b41ebb2678df1f645f28d090b",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "defi_fraud_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "32sPuzVsc1HmJMaXr47GkNSKoMDxh89J2f",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "scam_list_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "1PnbGDUKEWziJfvqxWoNAu5H4ZfizGVyws",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "scam_list_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "3ARdn5pKaybo6DoEZ1iBxeEJK81ZmgYX4E",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "scam_list_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1JSeDGPmq74JP2RQXqJFdHH3L2jcie3w4X",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "scam_list_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "1KfEHjqt9v3hJD1Ru7rYnMg32z6C6Nh93H",
+   "chain": "bitcoin",
+   "arm": "positive",
+   "stratum": "scam_list_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "0xec6ffb13d763d11ae7b8a2075ddb42097d1206a4",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_funding",
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 85,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_funding",
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x09278b36863be4ccd3d0c22d643e8062d7a11377",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x325a4fb13d568b025c7deb17bb0fec5f49b9029a",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x4571bd67d14280e40bf3910bd39fbf60834f900a",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact",
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact",
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x62afdd1bd84f6b152572404be90679ae58eb4862",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact",
+     "threat_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact",
+     "threat_funding"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 84,
+    "risk_class": "severe",
+    "indicators": [
+     "mixer_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xcfc14fa81226074036622976d95897ff84b58d66",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_contact"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x1dd7daf089c16856155fefd7e2170966bb6b3aee",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 90,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_funding",
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xf1809f69e33a81796651d3dd14abdb3652d9625b",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 100,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self",
+     "bridge_hop",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 22,
+    "risk_class": "low",
+    "indicators": [
+     "bridge_hop",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 22,
+    "risk_class": "low",
+    "indicators": [
+     "bridge_hop",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x3aa199a8362e399ce47e7d12467f8c5034f2713b",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0xf7fd39cbdc12d5002975d3f16ed67583e6243d68",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "exploiter_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0xfc8731ba13cd6121b221bb710e2f4c95f141dc2f",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "phishing_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xbb5b03e920cf702de5a3ba9fc1445af4b3919c88",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "phishing_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xe6a7357ecf75a9b0b9910392356fabf590609edc",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "phishing_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xc907a1812eeccdb9cfa8cb2f3208da1d3f98ad6e",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "phishing_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x5184d6e11682cae99f02f538d4e4fac09eb58712",
+   "chain": "ethereum",
+   "arm": "positive",
+   "stratum": "phishing_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 95,
+    "risk_class": "severe",
+    "indicators": [
+     "threat_self"
+    ],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x6ae756ddbf2943828b77e22e875627b63666e752",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x7109c446f636adb410811e77b15eb9cd46378b7a",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x0e90eb380b704ab327ac49ac06179550c65e83d7",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xc3c0513ce1891e788acd6e85592ca6ffb5c11cc2",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x203b654e5bfff41bafa7d8c0abdf4c35817f5e6f",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xa00303fb209f39e16ac912b3de19566dc2343101",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x890e274e513420f67b13f4b378b3d3542ac2d138",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x8cca6163cca0eec85608b432cdff5f57da96a440",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xed45b3d47abe7426f216fff836d2bbd74311c71d",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x2af5f94cf47524da11325e46653055d88c4ca05d",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "charity_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x6d1d84363e342a099005423a1bc7e25a5b5ffbeb",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x8595dd9e0438640b5e1254f9df579ac12a86865f",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x06b8c5883ec71bc3f4b332081519f23834c8706e",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x537b6bd3caeb0d41540ac1fd406b9acda5670aad",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xcd7b9e2b957c819000b1a8107130f786636c5ccc",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x1ad91ee08f21be3de0ba2ba6918e714da6b45836",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x2daa35962a6d43eb54c48367b33d0b379c930e5e",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 25,
+    "risk_class": "medium",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 25,
+    "risk_class": "medium",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 25,
+    "risk_class": "medium",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 25,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0xd327a5ef64541cdd628b51b5814f914596124703",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub"
+    ],
+    "rules": [],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x6a851246689eb8fc77a9bf68df5860f13f679fa0",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 10,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out"
+    ],
+    "behaviour_score": 10,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x14b30f257c2737370203a15aa343c2b600dfb675",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "mining_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x58f826b6661394c2ade8ae6a211dab792dc82112",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x3f60e5f9437b79ea30135eb75d3a907944eef303",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xa90c682f511b384706e592a8cad9121f1c17de86",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH"
+   }
+  },
+  {
+   "address": "0x0e590bb5f02a0c38888bffb45dee050b8fb60bda",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x859e4d219e83204a2ea389dac11048cc880b6aa8",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x3dd7c834eaa70c98e1c224808a3c62163b344dae",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 15,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 15,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 30,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub"
+    ],
+    "rules": [
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x7237c120fca2081f1a36ab933b065389174962b7",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x1d4f25bc16b68c50b78e1040bc430a8097fd6f45",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "treasury_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0xce6568338708400d03f430d29f2eb40a33a3f4c4",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x074306bc6a6fc1bd02b425dd41d742adf36ca9c6",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xf2d15c0a89428c9251d71a0e29b39ff1e86bce25",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0x29067f28306419923bcff96e37f95e0f58abdbbe",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xce23bd7205bf2b543f6b4eec00add0c111fefc3b",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 50,
+    "risk_class": "high",
+    "indicators": [
+     "bridge_hop",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 50,
+    "risk_class": "high",
+    "indicators": [
+     "bridge_hop",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 50,
+    "risk_class": "high",
+    "indicators": [
+     "bridge_hop",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out"
+    ],
+    "rules": [
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 40,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x4c20cdadbcae364edc03e2b90f09eb97d08ce3c8",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "0xa35dce3e0e6ceb67a30b8d7f4aee721c949b5970",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "distributor_ethereum",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null
+   }
+  },
+  {
+   "address": "TFGDbUyP8xez44C76fin3bn3Ss6jugoUwJ",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TY7XewkPXf82NqbX9tiyhQfWurxiVsi6AM",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in",
+     "round_amounts"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding",
+     "round_amounts"
+    ],
+    "behaviour_score": 35,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TGTb1paYrYajQ92C7xdrgEP5fT7LF5x73C",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TEciHar2rDKpD81ZqnusSnK38eckHSLcfw",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TSTZg6bJaMynWCsQXcT2Dof6iGTERnPbbz",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TU35Kqq9AWQBgqqyZz7J24yaoMZaVnrLAS",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TWnRS4EeoA79JhmVAtWJF2fy33J4AajWjv",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "TW8HYmCYoj1dXhjrXmHxGHYmE1B6vzeJJ7",
+   "chain": "tron",
+   "arm": "control",
+   "stratum": "exchange_customer_tron",
+   "as_shown": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 65,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 65,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "peel_chain",
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "peel_chain",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 65,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x7eb527b5d0306ffa928850a18b5995ac7594c51f",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0xe1a9bae15d16882179f20e12990882ccd87cc576",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x4a27bd3689a9771bd52662c7ef2924b12fcce26b",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0xeb629cc74b8b887b257a4cd1c3a1d9ae3246edf4",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x83bdf89ce9b2b587785a89603d2d451f05cf719b",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "rapid_forwarding",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 30,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x08447678968e06ccbd6499d68ba7f6d3426076da",
+   "chain": "ethereum",
+   "arm": "control",
+   "stratum": "exchange_customer_ethereum",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "bc1q2737wlhwv4v6k2jd5yrgfckh595qe82y5g08fq",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1LXSm6haZFfkqmtA7fmR4RBQ2Z9dM8JUjJ",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": null
+   },
+   "own_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": null
+   },
+   "entity_hidden": {
+    "traced": false,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": null
+   }
+  },
+  {
+   "address": "bc1qt3369e4v6xur2r3gqcc57ccvx0w7r053d9u28u",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "1HWKWNLjLbegpDFWpHFHUaf5fvsVdRpBfQ",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "bc1q869ypha0j9vcssg57e293uw3x2dfep6ykjg0ms",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "bc1q5rsc4uscnmemlwru8xsys26k3xgxewqfnf3k7j",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "bc1q9ahxx0xl2vyzaccfxg546wqrrpdjnnxv9umf66wucegu8p95v5dqdn6g94",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "32NFQaVcmPQdGVdJUrwi5LGKfiayHdopQs",
+   "chain": "bitcoin",
+   "arm": "control",
+   "stratum": "exchange_customer_bitcoin",
+   "as_shown": {
+    "traced": true,
+    "score": 55,
+    "risk_class": "high",
+    "indicators": [
+     "coinjoin_shape",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 55,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 55,
+    "risk_class": "high",
+    "indicators": [
+     "coinjoin_shape",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 55,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 55,
+    "risk_class": "high",
+    "indicators": [
+     "coinjoin_shape",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out"
+    ],
+    "behaviour_score": 55,
+    "behaviour_class": "high",
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "BTC"
+   }
+  },
+  {
+   "address": "0x34d34624ce95a53df37505015b4697af1ddc7478",
+   "chain": "bsc",
+   "arm": "control",
+   "stratum": "exchange_customer_bsc",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x18f9d3f4b1454bfc64186b6e78143828091d77f2",
+   "chain": "bsc",
+   "arm": "control",
+   "stratum": "exchange_customer_bsc",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x2ef1c43fc12f64d8975d3b8210b82dd38d937ec3",
+   "chain": "bsc",
+   "arm": "control",
+   "stratum": "exchange_customer_bsc",
+   "as_shown": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 20,
+    "risk_class": "low",
+    "indicators": [
+     "unlabelled_hub",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in"
+    ],
+    "behaviour_score": 20,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x1a206693fea5705f56ac80d0c3f23c60550a58c8",
+   "chain": "bsc",
+   "arm": "control",
+   "stratum": "exchange_customer_bsc",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0x6f0e0a5276d36b7c43a22b6c7b83cf8a2234a3b4",
+   "chain": "polygon",
+   "arm": "control",
+   "stratum": "exchange_customer_polygon",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC"
+   }
+  },
+  {
+   "address": "0x9f82abee9e97f593fa07c11a0d3b4533097f12c1",
+   "chain": "polygon",
+   "arm": "control",
+   "stratum": "exchange_customer_polygon",
+   "as_shown": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC.e"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC.e"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 5,
+    "risk_class": "low",
+    "indicators": [
+     "round_amounts"
+    ],
+    "rules": [
+     "round_amounts"
+    ],
+    "behaviour_score": 5,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDC.e"
+   }
+  },
+  {
+   "address": "0xe1b19d3d3e08474176958ccbf3faca28d0111103",
+   "chain": "polygon",
+   "arm": "control",
+   "stratum": "exchange_customer_polygon",
+   "as_shown": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 0,
+    "risk_class": "low",
+    "indicators": [],
+    "rules": [],
+    "behaviour_score": 0,
+    "behaviour_class": "low",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  },
+  {
+   "address": "0xe58c8d45477d894bb9a1501bb0d0a32af8419eda",
+   "chain": "polygon",
+   "arm": "control",
+   "stratum": "exchange_customer_polygon",
+   "as_shown": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "own_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   },
+   "entity_hidden": {
+    "traced": true,
+    "score": 35,
+    "risk_class": "medium",
+    "indicators": [
+     "rapid_forwarding",
+     "unlabelled_hub",
+     "fan_out",
+     "fan_in"
+    ],
+    "rules": [
+     "fan_in",
+     "fan_out",
+     "rapid_forwarding"
+    ],
+    "behaviour_score": 45,
+    "behaviour_class": "medium",
+    "outcome": "ATTRIBUTED",
+    "asset": "USDT"
+   }
+  }
+ ]
+}

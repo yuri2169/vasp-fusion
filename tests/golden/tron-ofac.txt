@@ -102,10 +102,10 @@ Patterns in the traced funds. They describe how the money moved and never decide
 RISK INDICATORS
 ---------------
 Risk class: Severe (score 100 of 100). An indicator score from published red-flag rules. Not a
-probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented
-ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all
-of those through a link to another listed address. No pattern rule fired more often on the
-listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are
+probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented
+ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65
+and 2 of 65 scored High or above, all of those through a link to another listed address. No
+pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are
 not a sample of real complaints. The indicator list follows Financial Action Task Force (FATF),
 "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September
 2020; the points are this tool's.

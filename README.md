@@ -12,7 +12,7 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **What this does.** Paste the wallet. VASP-FUSION follows its money on chain (Tron, Ethereum, Bitcoin), names the nearest exchange that took it, shows the evidence transfer by transfer, gives a confidence that has been measured, and drafts the request to that exchange for the SAHYOG channel. **When the evidence does not hold, it says "insufficient evidence" and says what would change that, instead of guessing.**
 
-**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 9 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability**; on 65 listed and 70 ordinary real wallets it separates them only through links to other listed addresses, and none of its five pattern rules does (`make risk-validation`, the table below).
+**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 9 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability**; measured on real listed and ordinary wallets it separates them only through links to other listed addresses, and none of its five pattern rules does, so those rules are capped below Medium (`make risk-validation`, the table below).
 
 **Check it yourself** (no network needed after the image is built):
 
@@ -35,10 +35,10 @@ make reproduce                           # every figure below, regenerated from 
 | Deposit-address model, Brier score | 0.0026 | same |
 | Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
 | Labelled addresses on file | 474,142 (1,690 published by exchanges, 349,440 curated, 117,515 explorer tags, 5,497 derived here) | `make labels` |
-| ...of which carry a threat tag from a cited public source | 18,646: ransomware 11,271, fraud 6,213, terrorism financing 367, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
-| Risk score at High or above, each wallet's own label hidden | 14 of 65 wallets public sources list as illicit (21.5%; 95% interval 12.3% to 33.5%), 2 of 70 with a documented ordinary purpose (2.9%; 0.4% to 9.9%). All 14 through a link to another listed address | `artifacts/risk_validation_v1/results.json` |
-| ...with every label of the wallet's own list entry hidden too | 3 of 65 against 2 of 70 (no difference: p = 0.67) | same |
-| Pattern rules that fired more often on the listed wallets than on the ordinary ones | 0 of 5 | same |
+| ...of which carry a threat tag from a cited public source | 19,357: ransomware 11,271, fraud 6,607, terrorism financing 367, hack or exploit 317, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
+| Risk score at High or above, each wallet's own label hidden (the points in use, on wallets not used to set them) | 22 of 65 wallets public sources list as illicit (33.8%; 95% interval 22.6% to 46.7%), 2 of 65 with a documented ordinary purpose (3.1%; 0.4% to 10.7%). All 22 through a link to another listed address | `artifacts/risk_validation_v2/results.json` |
+| ...with every label of the wallet's own list entry hidden too | 3 of 65 against 2 of 65 (no difference) | same |
+| Pattern rules that fired more often on the listed wallets than on the ordinary ones | 0 of 5 (in both sets; together they are capped at 20 points, below Medium) | same, and `artifacts/risk_validation_v1/results.json` |
 | Recorded demonstration cases that replay offline to the same fingerprint | 13 of 13 (7 name an exchange, 4 say insufficient evidence, one of them the documented WazirX theft of July 2024, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
 
 **Volume.** A batch of wallets is uploaded at `/batch`, queued, and traced by a pool of worker processes (`make serve WORKERS=4`). Measured by `make bench-scale` on one laptop (Darwin arm64, 10 cores, 5 Oct 2026), 300 cases per run, chain responses replayed from a cache, read from `artifacts/scale/metrics.json`:
@@ -215,7 +215,7 @@ lookup("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron")   # Label(entity='Bitget', 
 ```
 
 ## Threat tags and high-risk alerts
-A label can carry a **threat** beside its category: `terrorism_financing`, `ransomware`, `darknet_market`, `fraud` or `sanctioned_other`, with who the source names (`threat_entity`), the source (`threat_source`, `threat_url`) and the source's own words (`threat_evidence`). The tool never infers a threat: every tag is a public source's statement, and `config/threats.yaml` holds each rule.
+A label can carry a **threat** beside its category: `terrorism_financing`, `ransomware`, `darknet_market`, `theft` (the wallet of a hack or exploit), `fraud` or `sanctioned_other`, with who the source names (`threat_entity`), the source (`threat_source`, `threat_url`) and the source's own words (`threat_evidence`). The tool never infers a threat: every tag is a public source's statement, and `config/threats.yaml` holds each rule.
 
 | Source | Licence | Fetched | What is read |
 |---|---|---|---|
@@ -223,6 +223,7 @@ A label can carry a **threat** beside its category: `terrorism_financing`, `rans
 | Ransomwhere export | CC BY 4.0 (doi:10.5281/zenodo.13999026) | 5 Oct 2026 | 11,186 Bitcoin ransomware payment addresses; the family is the entity |
 | GraphSense TagPacks, commit `b556978` | MIT | 5 Oct 2026 | Tags whose own `abuse` field says ransomware, terrorism, scam, phishing, Ponzi, investment fraud or pyramid scheme; `category: market` in the Hydra and WalletExplorer packs |
 | The scam lists already in the store | as on record | | Rows filed `scam` are tagged `fraud` in their own words |
+| Block-explorer name tags already in the store (eth-labels) | as on record | | A name tag ending "Exploiter" or "Hacker" → `theft` (317 labels); a `Fake_Phishing…` tag → `fraud` (394). The tag restates the explorer's words. Added 8 Oct 2026 after the first risk measurement |
 
 - `make threats` flattens the raw files (`../research/data/threats/`) into the tracked `data/threat_tags.csv` (18,446 addresses) and writes `data/threat_sources.json` (sources, licences, fetch date, counts, what was skipped and why). `make labels` joins the file on: 1,429 tags sit on a label already held, 17,017 addresses got a label of their own (a listed address is `sanctioned`, a fraud address `scam`, anything else a named `entity`; **no category was added**).
 - Skipped, with the reason on record in the config: sextortion spam and extremism packs (neither is one of the four ecosystems), exchange hacks, `etherscan-wordcloud-market` (NFT marketplaces), the LockBit-tattoo recipients. Two `sanctioned` rows of the older list are not in the current SDN XML and carry no tag.
@@ -369,39 +370,49 @@ No exchange is named below confidence 0.60. There is no labelled set of "wallet 
 
 ## The risk score, measured
 ```bash
-make risk-validation              # score the tracked traced cases again (no network) -> artifacts/risk_validation_v1/results.json
-make risk-validation-trace        # trace the 135 wallets again (network; OFFLINE=1 replays the cache)
+make risk-validation              # score both tracked sets again (no network) -> artifacts/risk_validation_v1 and _v2
+make risk-validation-trace        # trace the fresh set (v2) again (network; OFFLINE=1 replays the cache)
 ```
-The risk score (`config/risk.yaml`) is a sum of points for named indicators. To see what it does on wallets with a known story, two sets were fixed by script before any wallet was traced (`scripts/build_validation_corpus.py`, seed 26182, `data/validation/corpus.json`, every address with its source):
-- **65 positives**: on the OFAC SDN list (Tron 10, Ethereum 5, Bitcoin 5), Ransomwhere payment addresses (Bitcoin 10), scam lists (Ethereum 10, Bitcoin 5), a DeFi-fraud list (Ethereum 5), explorer-tagged exploiter wallets (Ethereum 10) and phishing addresses (Ethereum 5).
-- **70 controls**: explorer-tagged charities (10), mining pools (10), treasuries (8), airdrop and reward distributors (7), a payment processor (5), and 30 customers of exchanges from the six-chain benchmark's wallets (Tron 8, Bitcoin 8, Ethereum 6, BNB Chain 4, Polygon 4).
+The risk score (`config/risk.yaml`) is a sum of points for named indicators. It was measured twice, on two sets of real wallets that share no wallet, each fixed by script before any of it was traced (`scripts/build_validation_corpus.py`; every address with its source in `data/validation/`):
+- **Positives**: on the OFAC SDN list (Tron 10, Ethereum 5, Bitcoin 5), Ransomwhere payment addresses (Bitcoin 10), scam lists (Ethereum 10, Bitcoin 5), a DeFi-fraud list (Ethereum 5), explorer-tagged exploiter wallets (Ethereum 10) and phishing addresses (Ethereum 5): 65 in each set.
+- **Controls**: explorer-tagged charities (10), mining pools (10), treasuries (8), airdrop and reward distributors (7), a payment processor (5, first set only: the label store holds no others), and 30 customers of exchanges from the six-chain benchmark's wallets (Tron 8, Bitcoin 8, Ethereum 6, BNB Chain 4, Polygon 4): 70 in the first set, 65 in the second.
 
 Each wallet was traced once with the pipeline a case runs, at the interface's defaults (3 hops, 40 wallets per direction), under three views of the label store. A wallet that is itself on a list scores Severe by lookup, which proves nothing, so **the figure to quote hides each wallet's own label**.
 
+**1. The first set (seed 26182), with the points as they were** (`artifacts/risk_validation_v1/`, scored with the copy of the points kept beside it). With its own label hidden, 14 of 65 listed wallets and 2 of 70 ordinary ones scored High or above, all 14 through a link to another listed address. None of the five pattern rules fired more often on the listed wallets (peel chain 3 of 65 against 3 of 70, fan-out 8 against 15, fan-in 20 against 26, forwarding within minutes 13 against 21, round amounts 4 against 5), and on patterns alone 16 of 70 ordinary wallets were Medium and 2 High. With their label shown, 7 of 10 exploiter wallets and 4 of 5 phishing addresses still scored Low, because an explorer's tag carried no threat.
+
+**2. What was changed because of it (8 Oct 2026), and nothing else:**
+- the five pattern rules together add at most 20 points (`pattern_cap`), which is below Medium;
+- an explorer's "Exploiter"/"Hacker" name tag is a threat tag (`theft`) and its phishing tag is `fraud` (`config/threats.yaml`, `explorer_tags`: 317 and 394 labels).
+
+**3. The second set (seed 26183), drawn after the change from wallets the first did not hold: the measure of the score in use** (`artifacts/risk_validation_v2/results.json`):
+
 | Labels the score could read | Listed wallets at High or above | Ordinary wallets at High or above | Listed outscores ordinary (AUC) |
 |---|---|---|---|
-| Every label, as the tool shows it | 52 of 65 (80.0%) | 2 of 70 (2.9%) | 0.885 |
-| **The wallet's own label hidden** | **14 of 65 (21.5%; 12.3% to 33.5%)** | **2 of 70 (2.9%; 0.4% to 9.9%)** | **0.557** |
-| Every label of the wallet's own entity hidden | 3 of 65 (4.6%) | 2 of 70 (2.9%) | 0.473 |
+| Every label, as the tool shows it | 65 of 65 (100%) | 2 of 65 (3.1%) | 1.000 |
+| **The wallet's own label hidden** | **22 of 65 (33.8%; 22.6% to 46.7%)** | **2 of 65 (3.1%; 0.4% to 10.7%)** | **0.653** |
+| Every label of the wallet's own entity hidden | 3 of 65 (4.6%) | 2 of 65 (3.1%) | 0.567 |
 
 | Pattern rule (own label hidden) | Fired on listed wallets | Fired on ordinary wallets | p (Fisher) |
 |---|---|---|---|
-| Peel chain | 3 of 65 | 3 of 70 | 1.00 |
-| Fan-out | 8 of 65 | 15 of 70 | 0.18 |
-| Fan-in | 20 of 65 | 26 of 70 | 0.47 |
-| Forwarded within minutes | 13 of 65 | 21 of 70 | 0.23 |
-| Round amounts | 4 of 65 | 5 of 70 | 1.00 |
+| Peel chain | 2 of 65 | 1 of 65 | 1.00 |
+| Fan-out | 6 of 65 | 17 of 65 | 0.02 |
+| Fan-in | 21 of 65 | 15 of 65 | 0.33 |
+| Forwarded within minutes | 16 of 65 | 15 of 65 | 1.00 |
+| Round amounts | 7 of 65 | 2 of 65 | 0.16 |
 
-- **What it shows.** With its own label hidden a listed wallet is still far more often High or above than an ordinary one (p = 0.0009), but all 14 got there through a link to another listed address (funded by, or paying, a sanctioned address, a mixer or a threat-tagged address). With the neighbours of its own list entry hidden as well, the difference is gone. **No pattern rule fired more often on the listed wallets**; four of the five fired more often on the ordinary ones, and the points of the behaviour indicators alone rank a listed wallet above an ordinary one less than half the time (AUC 0.44). On this set the score is a list-proximity score; the pattern rules add points to ordinary busy wallets (16 of 70 controls are Medium, 2 are High, on patterns alone).
-- **What it is not.** 14 positives and 17 controls had nothing to trace (old or contract addresses with no transfer of a followed asset) and score Low by default; they stay in every count. The two sets differ in chain and age as well as in story. Neither is a sample of real complaints. Each wallet was traced once, from its most recent transfers.
-- **The points were not changed.** They were set before the measurement. What the result suggests (lower points for fan-in, fan-out and rapid forwarding, or counting them only in combination; an indicator for explorer-tagged exploiter wallets, which today score nothing) is a proposal: a changed `config/risk.yaml` has to be measured on a fresh set of wallets.
+- **What it shows.** With its own label hidden a listed wallet is far more often High or above than an ordinary one (p < 0.0001), and **all 22 got there through a link to another listed address** (a sanctioned address, a mixer, a threat-tagged address; 7 of the 22 are exploiter wallets linked to other wallets of the same theft, which the new tag now counts). With the neighbours of its own list entry hidden as well, the difference is gone (3 against 2). **No pattern rule fired more often on the listed wallets**; fan-out fired more often on the ordinary ones. The score is a list-proximity score: it finds a wallet that touches known bad addresses and says nothing reliable about one that does not.
+- **What the cap did, on these same wallets.** Scored without it, 11 ordinary wallets would be Medium and 3 High; with it, 6 are Medium and 2 High (one through a bridge and an unlabelled busy wallet, one through a CoinJoin-shaped transaction). Two listed wallets that reached High on patterns alone no longer do (24 without the cap, 22 with it).
+- **What still scores Low without its own label:** 9 of 10 ransomware addresses, 4 of 5 DeFi-fraud addresses (the fifth is Medium), all 5 scam-list Bitcoin addresses and all 5 phishing addresses (none of which had anything to trace). For these the score is only as good as the list that names them. This is a stated limit, not something a change of points can fix.
+- **What it is not.** 15 positives and 22 controls had nothing to trace and score Low by default; they stay in every count. The two arms differ in chain and age as well as in story. Neither set is a sample of real complaints. Each wallet was traced once, from its most recent transfers. The two sets are different wallets, so their figures are not a before-and-after of the same wallets (the cap comparison above is).
+- **A further change of the points needs a third set.** `config/risk.yaml` was changed once, between the two sets, and not after the second was traced.
 
 ## A documented case: the WazirX theft of July 2024
 ```bash
 python scripts/trace_documented_case.py data/validation/wazirx_2024.json   # --offline replays the cache
 ```
 On 18 July 2024 assets worth over USD 230 million were taken from a multi-signature wallet of the Indian exchange WazirX on Ethereum. Sources, each with its URL in `data/validation/wazirx_2024.json`: WazirX's own preliminary report (the affected wallet `0x27fd…c9b4`), CloudSEK's published investigation (the theft addresses), and the block explorer's public tags "WazirX Exploiter" to "WazirX Exploiter 27" (as collected in the eth-labels data set). The 27 tagged addresses were taken from the label store by script, none added or removed.
-- **The recorded case `wazirx-2024`** traces the wallet the assets were moved to (`0x04b2…1a88`) at the interface's defaults (3 hops, 40 wallets, nothing else set). The tool reads 5,792,698.56 USDT arriving straight from WazirX's own wallet on 18 July 2024 and moving on to a second tagged wallet; it names WazirX as the source of the funds, **names no exchange the money was cashed out at ("insufficient evidence")**, and does not follow the 15,302 ETH the same wallet moved (a trace follows one asset). Its risk class is Low: an explorer's "exploiter" tag is not a risk indicator today.
+- **The recorded case `wazirx-2024`** traces the wallet the assets were moved to (`0x04b2…1a88`) at the interface's defaults (3 hops, 40 wallets, nothing else set). The tool reads 5,792,698.56 USDT arriving straight from WazirX's own wallet on 18 July 2024 and moving on to a second tagged wallet; it names WazirX as the source of the funds, **names no exchange the money was cashed out at ("insufficient evidence")**, and does not follow the 15,302 ETH the same wallet moved (a trace follows one asset). Its risk class is Severe: the wallet is itself tagged as the wallet of a hack by the explorer, and all the traced funds went to another such wallet (before 8 Oct 2026 that tag carried no threat and the class was Low).
 - **All 27 tagged wallets, one by one** (`artifacts/wazirx_2024/trace_table.json`): 23 stop at another tagged wallet, 2 reach Tornado Cash, 1 stops at an unlabelled high-activity wallet, 1 has nothing to trace. With the explorer's tags hidden (what a trace finds before anyone has tagged the thief's wallets): 6 reach Tornado Cash, 18 run past the 3-hop limit, 2 stop at an unlabelled high-activity wallet, 1 has nothing to trace. **In neither run does any of the 27 reach a named exchange.**
 - It replays offline with the other recorded cases (`make offline-demo`), and the landing page offers it apart from them, with its sources.
 

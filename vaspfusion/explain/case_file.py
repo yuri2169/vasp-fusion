@@ -53,6 +53,7 @@ FLAG_WORDS = {
     "rapid_forwarding": "Rapid forwarding", "round_amounts": "Round amounts",
     "bridge_hop": "Bridge", "mixer_contact": "Mixer contact",
     "sanctioned_contact": "Sanctioned contact", "deposit_like": "Lead",
+    "threat_contact": "Link to a tagged address",
     "coinjoin_shape": "CoinJoin-shaped transaction",
 }
 EVIDENCE_WORDS = {"label": "Label", "path": "Route", "sweep": "Sweep", "gas_payer": "Gas payer",

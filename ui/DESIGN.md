@@ -165,7 +165,7 @@ The pages an officer goes to between cases. Their shared parts are in `src/overv
 
 ## Risk (`components/RiskTag.tsx`, `components/RiskPanel.tsx`)
 
-- **The sentence travels with the score.** Wherever a risk score or class is shown with any room, the page shows `risk.basis` as the API sends it: what the score is, and what it did on the 65 listed and 70 ordinary wallets it was checked on (`make risk-validation`). Where there is no case at hand (a tag's tooltip, the dashboard panel) the short form in `RiskTag.tsx` points to the Model page, which has the table.
+- **The sentence travels with the score.** Wherever a risk score or class is shown with any room, the page shows `risk.basis` as the API sends it: what the score is, and what it did on the 65 listed and 65 ordinary wallets it was checked on after its points were last changed (`make risk-validation`). The Model page shows that table first and, under it, "The first set, with the points as they were": the earlier measurement that led to the change, which says nothing about the score in use. Where there is no case at hand (a tag's tooltip, the dashboard panel) the short form in `RiskTag.tsx` points to the Model page, which has the table.
 - **A documented case is offered apart.** A recorded case with a `documented` block (a publicly documented incident) gets its own card on the landing, above the recorded wallets: the title, what the cited sources say happened, "What the trace shows" with what it does not, the case tile, and the sources as links. The case page carries a "Documented case" tag beside "Recorded".
 - **`RiskTag`: steps + word, never colour alone.** Four rising steps, as many filled as the class is high, then "Low / Medium / High / Severe risk" and, when given, the score as `87/100` in mono. Low is quiet (soft ink), Medium and High are ink (High filled and bold), **only Severe takes the danger colour**, because danger means "sanctioned or mixer" in this palette and that is what makes a case Severe. A null class reads "Not assessed", dashed.
 - **`RiskPanel`**: the score as the screen's figure, the tag, one bar from 0 to 100 with the three class boundaries ruled on it (a `meter`), the basis sentence and the source, then each indicator on a ruled line: its points right-aligned in mono (`+75`), its name, the backend's sentence verbatim, the category it is filed under, and up to three transaction hashes.
@@ -285,6 +285,7 @@ The picture is sparse on purpose: it draws the suspect wallet's money and nothin
   | `terrorism_financing` | Terrorism financing | siren |
   | `ransomware` | Ransomware | lock-keyhole |
   | `darknet_market` | Darknet market | store |
+  | `theft` | Hack or exploit | key-round |
   | `fraud` | Fraud | badge-alert |
   | `sanctioned_other` | Sanctioned | ban |
 

@@ -3,16 +3,21 @@
 # WHAT THIS IS. An indicator score from published red-flag rules. Not a probability. The
 # points below are a stated judgement, not a fitted model.
 #
-# WHAT WAS MEASURED (8 Oct 2026, `make risk-validation`, artifacts/risk_validation_v1/):
-# 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose,
-# fixed before tracing. With each wallet's own label hidden, 14 of 65 and 2 of 70 scored
-# High or above; all 14 through a link to another listed address. None of the five pattern
-# rules (peel chain, fan-out, fan-in, forwarding within minutes, round amounts) fired more
-# often on the listed wallets than on the ordinary ones.
+# WHAT WAS MEASURED (8 Oct 2026, `make risk-validation`):
+# 1. artifacts/risk_validation_v1: 65 wallets that public sources list as illicit and 70
+#    with a documented ordinary purpose, scored with this file AS IT WAS (the copy kept in
+#    that folder). Own label hidden: 14 of 65 and 2 of 70 at High or above, all 14 through
+#    a link to another listed address; no pattern rule fired more often on the listed
+#    wallets, and patterns alone put 16 of 70 ordinary wallets at Medium and 2 at High.
+# 2. This file was then changed ONCE: `pattern_cap` below (and, in config/threats.yaml,
+#    an explorer's exploiter or phishing tag became a threat tag).
+# 3. artifacts/risk_validation_v2: a fresh 65 and 65, none of them in the first set, drawn
+#    after the change and scored with this file. Own label hidden: 22 of 65 and 2 of 65 at
+#    High or above, all 22 through a link to another listed address; still no pattern rule
+#    fired more often on the listed wallets.
 #
-# DO NOT RETUNE THE POINTS ON THOSE WALLETS. The points were set before the measurement
-# and left as they were. A changed file is a new score: it has to be measured on a fresh
-# set of wallets, not on the 135 it was changed to fit.
+# DO NOT RETUNE THE POINTS ON EITHER SET. A changed file is a new score: draw a third set
+# (scripts/build_validation_corpus.py --seed ... --exclude both) and measure it there.
 #
 # RULES (held by tests/test_risk.py):
 #   * score = the sum of the points of the indicators present, capped at 100;

@@ -246,3 +246,13 @@ def test_text_outside_the_pdf_fonts_does_not_break_it(cases):
     case = {**cases["tron-coindcx"], "case_ref": "प्राथमिकी 12/2026 <b>&", "complaint_no": "₹ 5"}
     pdf = case_pdf(case)
     assert pdf.startswith(b"%PDF-") and b"Rs 5" in pdf
+
+
+def test_every_flag_a_trace_can_raise_has_words_in_the_case_file():
+    """A case that links to a threat-tagged address that is neither sanctioned nor a mixer
+    raises `threat_contact`; the case file once had no words for it and could not be made."""
+    from typing import get_args
+
+    from vaspfusion.api.schemas import TypologyCode
+    from vaspfusion.explain.case_file import FLAG_WORDS
+    assert set(get_args(TypologyCode)) <= set(FLAG_WORDS)

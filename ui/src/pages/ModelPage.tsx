@@ -224,7 +224,7 @@ const RULE_WORDS: Record<string, string> = {
 /** The risk score and the pattern rules on real wallets: how many of the listed ones and how many
  *  of the ordinary ones scored High or above, under each view of the labels, and what each rule
  *  fired on. Poor figures are shown as they came out. */
-function RiskCheck({ r }: { r: RiskCheckInfo }) {
+function RiskCheck({ r, first = false }: { r: RiskCheckInfo; first?: boolean }) {
   const of = (k: number, n: number) => (
     <span className={mono}>
       {count(k)} of {count(n)}
@@ -275,8 +275,12 @@ function RiskCheck({ r }: { r: RiskCheckInfo }) {
   ]
   return (
     <Panel
-      title="The risk score, checked on real wallets"
-      note={`${plural(r.positives, 'wallet')} that public sources list as sanctioned, ransomware, scam, phishing or theft addresses, and ${plural(r.controls, 'wallet')} with a documented ordinary purpose. Both lists were fixed before any wallet was traced, and the points were not changed afterwards. The same for every chain.`}
+      title={first ? 'The first set, with the points as they were' : 'The risk score, checked on real wallets'}
+      note={
+        first
+          ? `${plural(r.positives, 'wallet')} listed as illicit and ${plural(r.controls, 'wallet')} with an ordinary purpose, scored with the points before 8 Oct 2026, when the pattern rules had no cap and an explorer's exploiter or phishing tag carried no threat. This result is why the points were changed. It says nothing about the score in use.`
+          : `${plural(r.positives, 'wallet')} that public sources list as sanctioned, ransomware, scam, phishing or theft addresses, and ${plural(r.controls, 'wallet')} with a documented ordinary purpose. Drawn after the points were last changed, from wallets the first set did not hold, and fixed before any was traced. The same for every chain.`
+      }
     >
       <DataTable caption="Wallets scoring High or above, by what the score could read" columns={views} rows={r.views} rowKey={(v) => v.view} />
       <p className="text-sm text-muted">“Listed outscores ordinary” is the chance that a listed wallet scores higher than an ordinary one, ties counting half: 50% is no better than a coin.</p>
@@ -440,6 +444,7 @@ export function ModelPage() {
           )}
 
           {m.risk_validation && <RiskCheck r={m.risk_validation} />}
+          {m.risk_validation_first && <RiskCheck r={m.risk_validation_first} first />}
 
           {m.notes.length > 0 && (
             <Panel title="What these numbers are, and are not">

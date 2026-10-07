@@ -184,9 +184,10 @@
   ],
   "by_threat": {
     "ransomware": 11271,
-    "fraud": 6213,
+    "fraud": 6607,
     "sanctioned_other": 613,
     "terrorism_financing": 367,
+    "theft": 317,
     "darknet_market": 182
   },
   "traceable_chains": [

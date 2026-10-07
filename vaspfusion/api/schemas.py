@@ -51,10 +51,11 @@ RiskClass = Literal["low", "medium", "high", "severe"]
 
 def _risk_basis() -> str:
     """What the risk score is, in the sentence that travels with it. The figures are read
-    from the tracked measurement (artifacts/risk_validation_v1/results.json, `make
-    risk-validation`), so the sentence cannot say more than was measured."""
+    from the tracked measurement of the points in use (artifacts/risk_validation_v2/
+    results.json, `make risk-validation`: wallets drawn after the points were last
+    changed), so the sentence cannot say more than was measured."""
     start = "An indicator score from published red-flag rules. Not a probability"
-    path = Path(__file__).resolve().parents[2] / "artifacts" / "risk_validation_v1" / "results.json"
+    path = Path(__file__).resolve().parents[2] / "artifacts" / "risk_validation_v2" / "results.json"
     try:
         m = json.loads(path.read_text())
         view = m["views"][m["main_view"]]
@@ -69,10 +70,11 @@ def _risk_basis() -> str:
     how = "all of those" if linked == p["high_or_above"] else \
         f"{linked} of those {p['high_or_above']}"
     return (f"{start}. Checked on {p_n} wallets that public sources list as illicit and {c_n} "
-            f"with a documented ordinary purpose, each with its own label hidden: "
+            f"with a documented ordinary purpose, none of them used to set the points, each "
+            f"with its own label hidden: "
             f"{p['high_or_above']} of {p_n} and {c['high_or_above']} of {c_n} scored High or "
-            f"above, {how} through a link to another listed address. {rules}. The points were not fitted to these wallets, which are not a "
-            "sample of real complaints.")
+            f"above, {how} through a link to another listed address. {rules}. These wallets "
+            "are not a sample of real complaints.")
 
 
 RISK_BASIS = _risk_basis()
@@ -1337,6 +1339,9 @@ class RiskValidation(_M):
     """The risk score measured on real wallets (`make risk-validation`). Show the notes."""
     version: str
     seed: int
+    pattern_cap: int | None = Field(None, description=(
+        "The most the five pattern rules could add together when this was scored; null: "
+        "no cap (the points before 8 Oct 2026)"))
     positives: int = Field(description="Wallets a public source lists as illicit")
     controls: int = Field(description="Wallets with a documented ordinary purpose")
     main_view: str = Field(description="The view to quote: the wallet's own label hidden")
@@ -1367,8 +1372,12 @@ class ModelInfo(_M):
         "The benchmark table for every chain (the same whichever chain was asked for); "
         "null when `make benchmark` has not been run"))
     risk_validation: RiskValidation | None = Field(None, description=(
-        "What the risk score and the pattern rules did on real listed and ordinary wallets "
-        "(the same for every chain); null when it was not measured"))
+        "What the risk score in use and the pattern rules did on real listed and ordinary "
+        "wallets drawn after the points were last changed (the same for every chain); null "
+        "when it was not measured"))
+    risk_validation_first: RiskValidation | None = Field(None, description=(
+        "The first set of wallets, scored with the points as they were then: what led to "
+        "the change of the points, and no measure of the points in use"))
 
 
 # ------------------------------------------------------------------ receipt / verify (B9)

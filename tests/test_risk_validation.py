@@ -83,7 +83,7 @@ def test_the_tables_count_wallets_per_arm_and_rule():
     })
     rows["c2"]["views"] = {v: _view((), edges=0, address="c2") for v in V.VIEWS}
     rows["p2"]["views"]["entity_hidden"] = {"error": "ProviderError: gone"}
-    m = V.measure(corpus, rows)
+    m = V.measure(corpus, rows, {**R.load_config(), "pattern_cap": None})
     main = m["views"]["own_hidden"]
     assert m["positives"] == 2 and m["controls"] == 2 and m["main_view"] == "own_hidden"
     assert main["arms"]["positive"]["high_or_above"] == 1        # the mixer contact
@@ -101,6 +101,9 @@ def test_the_tables_count_wallets_per_arm_and_rule():
     hidden = m["views"]["entity_hidden"]["arms"]["positive"]
     assert hidden["could_not_be_read"] == 1 and sum(hidden["classes"].values()) == 1
     assert main["separation"]["auc_score"] == 1.0
+    # with the cap the two patterns of p2 no longer reach Medium
+    capped = V.measure(corpus, rows)["views"]["own_hidden"]["arms"]["positive"]
+    assert capped["classes"]["medium"] == 0 and capped["high_or_above"] == 1
     assert main["positives_high_with_list_link"] == 1
     assert main["rules_firing_more_on_positives"] == []      # 1 of 2 against 1 of 2
 
@@ -119,8 +122,13 @@ def test_the_packed_cases_are_written_the_same_way_twice(tmp_path):
     assert V.read_cases(tmp_path / "a.gz") == rows
 
 
-def test_the_corpus_was_fixed_with_a_source_for_every_wallet_and_no_overlap():
-    corpus = json.loads((ROOT / "data" / "validation" / "corpus.json").read_text())
+SETS = {"v1": ("corpus.json", lambda: ROOT / "artifacts" / "risk_validation_v1" / "risk.yaml"),
+        "v2": ("corpus_v2.json", lambda: R.DEFAULT_PATH)}
+
+
+@pytest.mark.parametrize("name", list(SETS))
+def test_each_set_was_fixed_with_a_source_for_every_wallet(name):
+    corpus = json.loads((ROOT / "data" / "validation" / SETS[name][0]).read_text())
     wallets = corpus["wallets"]
     assert corpus["positives"] >= 40 and corpus["controls"] >= 40
     assert len({w["address"] for w in wallets}) == len(wallets)
@@ -128,14 +136,32 @@ def test_the_corpus_was_fixed_with_a_source_for_every_wallet_and_no_overlap():
     assert not any("wazirx" in (w["entity"] or "").lower() for w in wallets if w["arm"] == "positive")
 
 
-def test_the_tracked_results_are_what_the_tracked_cases_give():
-    out = ROOT / "artifacts" / "risk_validation_v1"
-    if not (out / "results.json").exists():
-        pytest.skip("not measured yet")
-    corpus_path = ROOT / "data" / "validation" / "corpus.json"
+def test_the_fresh_set_holds_no_wallet_of_the_first():
+    first, fresh = (json.loads((ROOT / "data" / "validation" / SETS[n][0]).read_text())
+                    for n in ("v1", "v2"))
+    assert not {w["address"] for w in first["wallets"]} & {w["address"] for w in fresh["wallets"]}
+    assert fresh["seed"] != first["seed"] and fresh["excludes"] == ["data/validation/corpus.json"]
+
+
+@pytest.mark.parametrize("name", list(SETS))
+def test_the_tracked_results_are_what_the_tracked_cases_give(name):
+    out = ROOT / "artifacts" / f"risk_validation_{name}"
+    corpus_path, config_path = ROOT / "data" / "validation" / SETS[name][0], SETS[name][1]()
     m = V.measure(json.loads(corpus_path.read_text()), V.read_cases(out / "cases.json.gz"),
-                  config_sha256=V.sha256(R.DEFAULT_PATH), corpus_sha256=V.sha256(corpus_path))
+                  R.load_config(config_path), config_sha256=V.sha256(config_path),
+                  corpus_sha256=V.sha256(corpus_path), version=f"risk_validation_{name}")
     assert json.loads(json.dumps(m)) == json.loads((out / "results.json").read_text())
+
+
+def test_the_first_set_keeps_the_points_it_was_measured_with():
+    """The first measurement is a record: it is scored with the copy of the points kept
+    beside it (no pattern cap), whatever config/risk.yaml says today."""
+    old = R.load_config(ROOT / "artifacts" / "risk_validation_v1" / "risk.yaml")
+    m = json.loads((ROOT / "artifacts" / "risk_validation_v1" / "results.json").read_text())
+    assert old["pattern_cap"] is None and m["pattern_cap"] is None
+    arms = m["views"]["own_hidden"]["arms"]
+    assert (arms["positive"]["high_or_above"], arms["control"]["high_or_above"]) == (14, 2)
+    assert R.load_config()["pattern_cap"] == 20
 
 
 def test_the_wazirx_statement_says_what_the_trace_table_holds():
@@ -154,14 +180,15 @@ def test_the_wazirx_statement_says_what_the_trace_table_holds():
         [("WazirX", "inbound")]
 
 
-def test_the_sentence_that_travels_with_the_score_quotes_the_measurement():
+def test_the_sentence_that_travels_with_the_score_quotes_the_fresh_set():
     from vaspfusion.api.schemas import RISK_BASIS, RiskValidation
-    m = json.loads((ROOT / "artifacts" / "risk_validation_v1" / "results.json").read_text())
+    m = json.loads((ROOT / "artifacts" / "risk_validation_v2" / "results.json").read_text())
     arms = m["views"]["own_hidden"]["arms"]
     p, c = arms["positive"], arms["control"]
     assert f"{p['high_or_above']} of {p['wallets']} and {c['high_or_above']} of {c['wallets']}" \
         in RISK_BASIS
-    assert "not measured" not in RISK_BASIS and "Not a probability" in RISK_BASIS
+    assert "not measured" not in RISK_BASIS and "none of them used to set the points" in RISK_BASIS
     shown = RiskValidation.model_validate(V.summary(m))
     assert shown.main_view == "own_hidden" and len(shown.views) == 3 and len(shown.rules) == 5
     assert m["risk_config_sha256"] == V.sha256(R.DEFAULT_PATH)   # scored with today's points
+    assert m["pattern_cap"] == R.load_config()["pattern_cap"]

@@ -1497,7 +1497,7 @@ export interface components {
              * @description The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only
              * @default []
              */
-            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
+            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other")[];
             /**
              * Risk Class
              * @description Of a finished case (risk.py). Worked out when the case is read, never stored
@@ -1505,7 +1505,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -1720,7 +1720,7 @@ export interface components {
              * @description The distinct threats the case touches: its own address's tag and every flagged link. While the trace runs it holds the screening hit only
              * @default []
              */
-            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other")[];
+            threats: ("terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other")[];
             /**
              * Risk Class
              * @description Of a finished case (risk.py). Worked out when the case is read, never stored
@@ -1728,7 +1728,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -1872,7 +1872,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -2135,7 +2135,7 @@ export interface components {
             label_coverage: components["schemas"]["LabelCoverage"];
             /**
              * Risk Classes
-             * @description Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
+             * @description Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.
              * @default {}
              */
             risk_classes: {
@@ -2749,7 +2749,7 @@ export interface components {
              * Threat
              * @description Set when a public source ties the address to a threat ecosystem. Sits beside `category`; the four fields below say who, per which source, in its own words
              */
-            threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | null;
+            threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other") | null;
             /** Threat Entity */
             threat_entity?: string | null;
             /** Threat Source */
@@ -3012,8 +3012,10 @@ export interface components {
             abstain?: components["schemas"]["AbstainInfo"] | null;
             /** @description The benchmark table for every chain (the same whichever chain was asked for); null when `make benchmark` has not been run */
             benchmark?: components["schemas"]["BenchmarkInfo"] | null;
-            /** @description What the risk score and the pattern rules did on real listed and ordinary wallets (the same for every chain); null when it was not measured */
+            /** @description What the risk score in use and the pattern rules did on real listed and ordinary wallets drawn after the points were last changed (the same for every chain); null when it was not measured */
             risk_validation?: components["schemas"]["RiskValidation"] | null;
+            /** @description The first set of wallets, scored with the points as they were then: what led to the change of the points, and no measure of the points in use */
+            risk_validation_first?: components["schemas"]["RiskValidation"] | null;
         };
         /** ModelMetrics */
         ModelMetrics: {
@@ -3611,7 +3613,7 @@ export interface components {
         RiskInfo: {
             /**
              * Score
-             * @description The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints. null: not assessed
+             * @description The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. null: not assessed
              */
             score?: number | null;
             /**
@@ -3644,7 +3646,7 @@ export interface components {
             path_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Basis
-             * @default An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
+             * @default An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.
              */
             basis: string;
             /**
@@ -3681,6 +3683,11 @@ export interface components {
             version: string;
             /** Seed */
             seed: number;
+            /**
+             * Pattern Cap
+             * @description The most the five pattern rules could add together when this was scored; null: no cap (the points before 8 Oct 2026)
+             */
+            pattern_cap?: number | null;
             /**
              * Positives
              * @description Wallets a public source lists as illicit
@@ -4011,7 +4018,7 @@ export interface components {
              * @description sanctioned_other: on the OFAC SDN list under a programme that names none of the other four
              * @enum {string}
              */
-            threat: "terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other";
+            threat: "terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other";
             /**
              * Entity
              * @description Who the source names: a ransomware family, a market, a listed person or organisation
@@ -4603,7 +4610,7 @@ export interface operations {
                 outcome?: ("ATTRIBUTED" | "INSUFFICIENT_EVIDENCE" | "SANCTIONED_OR_MIXER_REACHED") | null;
                 status?: ("queued" | "running" | "done" | "failed") | null;
                 /** @description Only cases that touch this threat; `any` = every case that touches one */
-                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | "any" | null;
+                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other") | "any" | null;
             };
             header?: never;
             path?: never;
@@ -5021,7 +5028,7 @@ export interface operations {
                 category?: ("exchange" | "custodial_wallet" | "swap_service" | "sanctioned" | "scam" | "mixer" | "bridge" | "defi" | "entity") | null;
                 tier?: ("published_por" | "curated" | "explorer_tag" | "derived") | null;
                 /** @description Only labels with this threat tag; `any` = every tagged label */
-                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "fraud" | "sanctioned_other") | "any" | null;
+                threat?: ("terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other") | "any" | null;
                 limit?: number;
                 offset?: number;
             };
