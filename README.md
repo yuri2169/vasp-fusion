@@ -30,6 +30,7 @@ make reproduce                           # every figure below, regenerated from 
 | ...of which the tool named an exchange (at the 0.60 bar in use) | 155 | same |
 | ...of those, named wrongly | 15 (9.7%; upper bound 17.3%) | same |
 | ...and declined to name one ("insufficient evidence") | 125 | same |
+| The same test on the other chains, labels one hop away hidden, beside a naive baseline | Ethereum 213 wallets: 69 named, 22 wrongly (31.9%). Bitcoin 96: 28, 2. BNB Chain 84: 19, 0. Polygon 74: 11, 0. Solana 14: 3, 0. Full table below | `artifacts/benchmark_v1/summary.json` |
 | Deposit-address model, calibration error (ECE) | 0.0093 | `artifacts/model_v1/tron/metrics.json` |
 | Deposit-address model, Brier score | 0.0026 | same |
 | Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
@@ -103,6 +104,7 @@ make desk      # the request desk: the exchanges those cases route to, one row e
 make letter VASP=CoinDCX OFFICER="Insp. A. Rao"   # one consolidated request -> data/exports/<id>.pdf (a draft; SEND=1 approves and writes it to the mock SAHYOG outbox)
 make model     # train, calibrate and measure the deposit-address model; then `make labels`
 make abstain-eval   # measure the abstain bar on real customers traced with labels hidden
+make benchmark      # attribution on all six chains beside the naive baseline (OFFLINE=1 replays the cache)
 make case-pdf CASE=tron-coindcx   # the case file (A4 PDF) and its receipt -> data/exports/
 make verify    # trace every stored case again from the cache only and compare fingerprints
 make audit     # check the audit log's hash chain
@@ -161,7 +163,7 @@ python -m vaspfusion.cli audit --verify
 - No file upload exists in this tool, so there is nothing to sandbox; cross-origin writes are refused (403), and every API reply is `no-store`, `nosniff`, not frameable.
 
 ## Reproduce
-`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the demo's chain cache (from the recorded fixtures), the twelve demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
+`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the six-chain benchmark (from the tracked `wallets.csv` of each chain), the demo's chain cache (from the recorded fixtures), the twelve demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
 
 ## Layout
 | Path | What |
@@ -177,6 +179,7 @@ python -m vaspfusion.cli audit --verify
 | `artifacts/model_v1/<chain>/` | The model's dataset, measurements, plots, label scores and the model itself as LightGBM text (`model.txt`), all tracked |
 | `vaspfusion/detect/typologies.py` | Typology flags over the traced money, each with figures and hashes |
 | `vaspfusion/attribute/counterfactual.py`, `leads.py` | Does a named exchange survive without its label; unlabelled wallets that behave like deposit addresses |
+| `vaspfusion/eval/benchmark.py`, `vaspfusion/eval/model_gate.py`, `artifacts/benchmark_v1/` | Attribution measured on six chains beside a naive baseline; the rule that decides which chain's deposit model is used when tracing |
 | `vaspfusion/eval/abstain.py`, `artifacts/abstain_v1/` | The abstain bar measured by hiding labels: claims, risk vs coverage |
 | `vaspfusion/explain/case_narrative.py` | The paragraph an officer reads |
 | `vaspfusion/cases.py`, `vaspfusion/store/cases.py` | `run_case` → the API's `CaseDetail`; cases in `data/case.duckdb` |
@@ -309,6 +312,47 @@ A LightGBM model (`vaspfusion/classify/`) says how likely an address is an excha
 
 Plots: `reliability.svg`, `reliability_by_exchange.svg`, `reliability_labels.svg`, `importance.svg` in each chain's folder.
 
+## Attribution measured on every chain, beside a naive baseline
+```
+make benchmark                    # samples, traces and scores; fetched pages go to data/benchmark_cache/
+OFFLINE=1 make benchmark          # replays the cache: the same files byte for byte
+python -m vaspfusion.cli benchmark --from-wallets     # measure again from the tracked wallets.csv
+```
+Measured on 7 Oct 2026, seed 26182, naming bar 0.60 (`vaspfusion/eval/benchmark.py`; per chain `artifacts/benchmark_v1/<chain>/sample.csv`, `wallets.csv`, `validation.json`; the table is `summary.json`). Every figure is a count of wallets, beside its sample size.
+
+| Chain | Wallets traced | Named | Named wrongly (95% upper bound) | Insufficient evidence | Baseline named | Baseline wrongly | Median s / trace |
+|---|---|---|---|---|---|---|---|
+| Tron | 280 | 155 | 15 of 155 (9.7%; at most 14.5%) | 125 | 248 | 39 of 248 (15.7%; at most 20.0%) | not recorded |
+| Ethereum | 213 | 69 | 22 of 69 (31.9%; at most 42.3%) | 144 | 100 | 40 of 100 (40.0%; at most 48.7%) | 13.4 |
+| Bitcoin | 96 | 28 | 2 of 28 (7.1%; at most 20.8%) | 68 | 43 | 8 of 43 (18.6%; at most 31.1%) | 15.4 |
+| BNB Chain | 84 | 19 | 0 of 19 (0.0%; at most 14.6%) | 65 | 23 | 4 of 23 (17.4%; at most 35.5%) | 11.4 |
+| Polygon | 74 | 11 | 0 of 11 (0.0%; at most 23.8%) | 63 | 16 | 3 of 16 (18.8%; at most 41.7%) | 13.0 |
+| Solana | 14 | 3 | 0 of 3 (0.0%; at most 63.2%) | 11 | 3 | 0 of 3 (0.0%; at most 63.2%) | 21.4 |
+
+Named, by hops to the exchange. Tron: 154 at two hops (14 wrong), 1 at three (wrong). Ethereum: 67 at two hops (20 wrong), 2 at three (both wrong). Bitcoin: 12 at zero hops (1 wrong), 10 at one hop (1 wrong), 6 at two hops (0 wrong). BNB Chain 19, Polygon 11 and Solana 3, all at two hops, none wrong.
+
+**The protocol, fixed before any wallet was sampled.**
+1. **Wallets.** On each chain the eight exchanges with the most labelled addresses; each one's addresses shuffled with the seed, the first 40 probed (one listing of 100 inbound USDT and USDC transfers each; BTC on Bitcoin); senders of at least 10 USDT/USDC or 0.001 BTC that carry no label, taken round-robin over the addresses up to 30 per exchange on Ethereum and 12 elsewhere. Tron keeps the 280 wallets of the earlier run.
+2. **Hidden.** Every exchange, custodial or swap-service label on an address the wallet paid directly, and the label of the sampled address in any case. Nothing two or more hops out. On Tron only the 5,497 derived deposit labels were hidden, and claims one hop away are left out of every figure, as before.
+3. **Traced** with the pipeline as a case runs it (3 hops, 40 wallets, 100 transfers a listing), from the time of the sampled payment.
+4. **Scored.** A name is right when it is the sampled exchange or the owner of another hidden label. The upper bound is one-sided Clopper-Pearson at 95% on the error among the wallets named.
+5. **Baseline.** The nearest labelled exchange the same trace reached, whatever its confidence; it never abstains when anything was reached. It shares the tracer, so the two columns differ by the decision to abstain and nothing else.
+
+**What it shows.** On every chain the tool names fewer wallets than the baseline and is wrong less often: abstaining removed 24 of the baseline's 39 wrong names on Tron, 18 of 40 on Ethereum, 6 of 8 on Bitcoin, all 4 on BNB Chain and all 3 on Polygon. **On Ethereum the error is still high: 22 of 69 names were wrong (31.9%; at most 42.3%).** Most wallets on every chain other than Tron got "insufficient evidence", and the commonest reason is that the money stopped at a busy unlabelled wallet (Ethereum 83 of 144, Polygon 35 of 63, BNB Chain 25 of 65) or at one whose listing was cut off (BNB Chain 26, Polygon 14, Ethereum 9); on Ethereum another 31 reached an exchange but under the bar: with its label hidden, an exchange's hot wallet is exactly that.
+
+**Limits, stated plainly.**
+- The Tron row is not like for like with the others: different wallets (the deposit model's customers), different labels hidden (our own derived ones).
+- A name counts as wrong whenever it is not an exchange the wallet paid directly. Some "wrong" names may be real payments to that other exchange through an intermediary; that was not checked.
+- A sender into an exchange's hot wallet can be the exchange's own unlabelled deposit address, another service, or a contract. On Bitcoin 12 of the 28 named wallets were named at zero hops: the wallet itself sits in a co-spend cluster with labelled addresses of the exchange, so it is an exchange's wallet, not a customer's. Another 10 were named at one hop, where the cluster rule gave the hidden address its owner back.
+- **Solana has 14 wallets, not the 60 aimed for.** The adapter reads the oldest 500 transactions of an address and few of those are stablecoin payments in; only 11 of the 86 labelled addresses had an eligible sender. Bitget on Ethereum gave 23 of 30 and Deribit 10 of 30 for the same reason (most tagged deposit addresses never received a stablecoin).
+- BNB Chain, Polygon and Solana hold few exchange labels (94, 34 and 86), so there is little for a hidden-label trace to find again. With 0 wrong among 19, 11 and 3 names the upper bounds are wide (14.6%, 23.8%, 63.2%).
+- Seconds are per trace as fetched live with free keys, provider waits included. Blockstream refused requests part-way through the Bitcoin run; it was resumed at one call every three seconds, and 25 Bitcoin wallets whose pages were already cached have no time recorded. The Tron run did not record times.
+- Every wallet here paid an exchange. Nothing measures a wallet that never did.
+
+**Is the confidence informative?** Compared on the wallets where the trace reached any exchange (the confidence and correctness of the nearest one; bins fixed in advance; `calibration` in each `validation.json`). Ethereum, 100 wallets: confidence 0.60 to 0.75 was right 67.7% of the time (65 wallets) and under 0.30 right 40% (20), so the ordering is there, but the Brier score (0.243) is no better than quoting the overall share right (0.240). Tron, 248 wallets: under-confident throughout (claims stated under 0.30 were right 75% of the time, those at 0.75 to 0.90 right 92%), Brier 0.236 against 0.133 for a constant. By the test fixed in advance the confidence is **not informative as a probability on either chain**; it is a rule-set score that orders answers, and the bar on it is what was measured. Bitcoin (43 wallets, Brier 0.200 against 0.151) likewise. BNB Chain is the exception on a small sample: of 23 wallets the 19 at 0.60 or more were all right and the 4 below it all wrong (Brier 0.092 against 0.144). Polygon (16) and Solana (3) have fewer than the 20 wallets fixed as the minimum, so nothing is said about them.
+
+**The Ethereum deposit model stays off when tracing.** Rule fixed in advance: switch it on only if at least 30 addresses of an exchange the model never saw score 0.90 or more and the 95% upper bound of the share of them that are not deposit addresses is within 17.3% (the bound of the naming error on Tron). Measured on the leave-one-exchange-out predictions (1,196 addresses, two exchanges): 27 scored 0.90 or more, none wrongly (upper bound 10.5%), which is 4.5% of the 599 deposit addresses. It fails on the count, not on the error, so `SCORED_CHAINS` is unchanged and no recorded case changed.
+
 ## The abstain bar, measured
 ```bash
 make abstain-eval                 # 280 real wallets traced twice (cached; OFFLINE=1 replays byte-identical)
@@ -327,7 +371,7 @@ python -m vaspfusion.cli trace <address> [--chain ..] [--max-hops 1-5] [--since 
 - **One asset is followed:** the stablecoin the wallet sent most of, else the native coin. Unknown tokens are never followed (this is what keeps address-poisoning spoofs out). Whatever else the wallet sent is listed as "not followed".
 - **Allocation, "first out after arrival":** money that reached a wallet at time *t* is assigned to that wallet's next outgoing transfers at or after *t*, in time order. So every unit the wallet sent ends in exactly one place, and the case says where: an exchange, a sanctioned address, a hub, past the hop limit, or not moved.
 - **Stops** at any labelled address (a bridge it can match is the exception: see "Across a bridge"), at hubs (30+ distinct counterparties in one fetch), at the hop limit, and at wallets holding under 1% of the funds. A wallet whose listing could not be read to the end (the adapters page with a cap) is reported as "not followed", never as "the money is still there".
-- **Chains:** Tron, Bitcoin, Solana, and the EVM chains with a free data source (Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below. **The deposit-address model scores Tron only and the naming bar was measured on Tron only:** on every other chain an answer rests on labels and tracing rules, its confidence is marked "rule confidence", and the case file and the case page say the bar has not been measured on that chain.
+- **Chains:** Tron, Bitcoin, Solana, and the EVM chains with a free data source (Ethereum, BNB Chain, Polygon, Arbitrum, Base, Optimism). Bitcoin has rules of its own, below. **The deposit-address model scores Tron only.** On every other chain an answer rests on labels and tracing rules and its confidence is marked "rule confidence". The naming bar was measured on six chains (Tron, Ethereum, Bitcoin, BNB Chain, Polygon, Solana; the section above); the case file and the case page quote the figure of the case's own chain, and say the bar has not been measured on a chain with no row (Arbitrum, Base, Optimism).
 - **Two numbers, never blended:** `proximity_rank` (hops, then share, then time) and `confidence`.
 - **Confidence:** the average over the traced money of *label weight × 0.85^(hops − 1)*, scaled down when the share is under 25%. Label weights: published by the exchange 0.95, curated list 0.85, explorer tag 0.75; a derived deposit address weighs its own confidence. A VASP is named at 0.60 or more.
 - **What is calibrated and what is not.** Where the money reached a deposit address the model confirmed, the candidate carries a `confidence_interval` (the model's range through the same formula) and the model's reasons as evidence. The label weights, the hop decay and the share factor are rule-set, so a case confidence is not a calibrated probability end to end; every screen and narrative says which part is which. A candidate without a range is "rule confidence".
@@ -362,4 +406,4 @@ A Bitcoin transaction has many inputs and many outputs and does not record which
 
 **The demo case** (`btc-htx`, real): `bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6` sent 0.364594 BTC on 1 Oct 2026 to `19vP8bkaR5K9K5W12QyHoYd7TZpz16BxSV`, which no list names. That address was spent together with 287 others in 9 transactions, one of them `1AQLXAB6aXSVbRMjbhSBudLf1kcsbWSEjg`, which HTX published in its proof of reserves: ATTRIBUTED → HTX, rule confidence 0.855. Checked without that cluster label: 14% of the funds are swept straight into HTX's published wallet (confidence 0.46, under the bar); the rest goes into sweeps that pay several addresses and is not followed. So naming HTX rests on the cluster, and the case says so.
 
-**Limits.** The trace follows addresses, not individual coins: Bitcoin does record which coin a transaction spent, the tool does not read that yet, so where an address holds other coins too "first out after arrival" is a convention. A cluster is read from one page (the 25 to 50 most recent transactions of the address). A wallet with more transactions since the money arrived than one trace reads (five pages) is reported as not followed. Outputs with no address form (pay-to-pubkey, bare multisig) are not followed. The 0.60 bar has not been measured on Bitcoin. mempool.space did not resolve from the development network on 2 Oct 2026, which is why blockstream.info is the default backend.
+**Limits.** The trace follows addresses, not individual coins: Bitcoin does record which coin a transaction spent, the tool does not read that yet, so where an address holds other coins too "first out after arrival" is a convention. A cluster is read from one page (the 25 to 50 most recent transactions of the address). A wallet with more transactions since the money arrived than one trace reads (five pages) is reported as not followed. Outputs with no address form (pay-to-pubkey, bare multisig) are not followed. mempool.space did not resolve from the development network on 2 Oct 2026, which is why blockstream.info is the default backend.

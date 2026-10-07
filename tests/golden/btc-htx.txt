@@ -138,7 +138,10 @@ confidence is its Venn-Abers range carried through the formula). The label weigh
 decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
 no calibrated part. Confidence is not the probability that the named exchange is right.
 
-The bar has not been measured on this chain.
+The 0.60 bar was checked on 96 real Bitcoin wallets that paid a labelled exchange address,
+traced with the labels one hop away hidden: an exchange was named for 28 wallets and the name
+was wrong for 2 (7.1%; upper bound 20.8%); 68 got "insufficient evidence". That is a check on a
+label hold-out, not a calibration.
 
 
 NEXT STEPS

@@ -67,3 +67,31 @@ def test_the_abstain_measurement_rides_along_when_it_exists(client, tmp_path, mo
     assert all(0 <= p["accuracy"] <= 1 for p in got["risk_coverage"])
     svg = A.risk_coverage_svg(m)
     assert svg.startswith("<svg") and "bar 0.60 in use" in svg
+
+
+def test_the_benchmark_table_is_served_with_any_chain_measured_model_or_not(client, tmp_path,
+                                                                             monkeypatch):
+    from vaspfusion.eval import benchmark as B
+    from vaspfusion.eval.abstain import read_claims
+    claims = read_claims(main.ROOT / "artifacts" / "abstain_v1" / "tron" / "claims.csv")
+    summary = B.summarise({"tron": B.measure(B.tron_rows(claims, 0.60), "tron")})
+    (tmp_path / "summary.json").write_text(json.dumps(summary))
+    monkeypatch.setattr(main, "BENCHMARK_DIR", tmp_path)
+    for chain, status in (("toy", "measured"), ("polygon", "not_measured")):
+        monkeypatch.delenv("VASPFUSION_DEMO_MODE", raising=False)
+        body = client.get("/api/model", params={"chain": chain}).json()
+        rows = body["benchmark"]["chains"]
+        assert [r["chain"] for r in rows] == list(B.CHAINS)
+        assert (rows[0]["wallets"], rows[0]["named"], rows[0]["wrong"]) == (280, 155, 15)
+        assert rows[1]["measured"] is False and rows[1]["wallets"] is None
+    monkeypatch.setattr(main, "BENCHMARK_DIR", tmp_path / "nowhere")
+    assert client.get("/api/model", params={"chain": "toy"}).json()["benchmark"] is None
+
+
+def test_the_tracked_table_has_six_measured_chains_each_with_its_sample_size():
+    from vaspfusion.eval.benchmark import CHAINS, read_summary
+    rows = read_summary(main.ROOT / "artifacts" / "benchmark_v1")["chains"]
+    assert [r["chain"] for r in rows] == list(CHAINS) and all(r["measured"] for r in rows)
+    for r in rows:
+        assert r["wallets"] == r["named"] + r["not_named"] and r["wrong"] <= r["named"]
+        assert r["baseline_named"] >= r["named"] and r["hidden"]
