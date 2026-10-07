@@ -408,13 +408,20 @@ def calibration(rows: list[dict]) -> dict:
 
 
 def _stop_reasons(rows: list[dict]) -> dict:
-    """For the wallets not named: the main reason the traced money stopped."""
+    """For the wallets not named: an exchange was reached but under the bar, or else the
+    main reason the traced money stopped (not recorded by the Tron run)."""
     out: dict[str, int] = {}
     for r in rows:
         if r["named"] != "":
             continue
-        why = "provider_error" if r.get("error") else \
-            (r["stopped"].split("|")[0].split("=")[0] if r.get("stopped") else "nothing_sent")
+        if r.get("error"):
+            why = "provider_error"
+        elif r["base_named"] != "":
+            why = "below_the_bar"
+        elif r.get("stopped"):
+            why = r["stopped"].split("|")[0].split("=")[0]
+        else:
+            why = "nothing_sent" if r.get("outcome") else "no_exchange_reached"
         out[why] = out.get(why, 0) + 1
     return dict(sorted(out.items(), key=lambda kv: (-kv[1], kv[0])))
 
