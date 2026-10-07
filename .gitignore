@@ -45,4 +45,4 @@ data/demo_cache.duckdb
 data/reproduce/
 data/risk_validation_cache.duckdb
 data/risk_validation_cache.rows.jsonl
-data/e2_cache.duckdb
+data/documented_cache.duckdb

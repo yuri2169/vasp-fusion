@@ -71,7 +71,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("case")
     ap.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
-    ap.add_argument("--cache", default=str(ROOT / "data" / "risk_validation_cache.duckdb"))
+    ap.add_argument("--cache", default=str(ROOT / "data" / "documented_cache.duckdb"))
     ap.add_argument("--offline", action="store_true")
     args = ap.parse_args()
     doc = json.loads(Path(args.case).read_text())
