@@ -1,0 +1,247 @@
+{
+ "version": "benchmark_v1",
+ "chain": "ethereum",
+ "seed": 26182,
+ "bar": 0.6,
+ "protocol": {
+  "exchanges": "the 8 exchanges with the most labelled addresses on the chain (category exchange, not derived; ties by name)",
+  "quota_per_exchange": 30,
+  "addresses_probed": "each exchange's labelled addresses, shuffled with the seed, the first 40",
+  "listing": "transfers into the address, USDT and USDC, one listing of 100 per asset (the oldest)",
+  "eligible_sender": "sent at least 10 USDT, 10 USDC; a plain address; no label of any kind; not taken already",
+  "choice": "round-robin over the probed addresses, senders of one address in a seeded order; no top-up from another exchange when one falls short",
+  "traced_from": "the time of the sampled payment",
+  "hidden": "every label in a VASP category (exchange, custodial wallet, swap service) on an address the wallet paid directly since then, and the label of the sampled address in any case. Nothing two or more hops out",
+  "known_answer": "the sampled exchange, plus the owner of every hidden label",
+  "seed": 26182,
+  "bar": 0.6,
+  "max_hops": 3,
+  "wallet_budget": 40,
+  "transfers_per_listing": 100
+ },
+ "wallets_sampled": 213,
+ "wallets": 213,
+ "could_not_be_read": 0,
+ "exchanges": 8,
+ "by_exchange": {
+  "Binance": {
+   "wallets": 30,
+   "named": 18,
+   "wrong": 7
+  },
+  "Bitget": {
+   "wallets": 23,
+   "named": 18,
+   "wrong": 5
+  },
+  "Coinbase": {
+   "wallets": 30,
+   "named": 5,
+   "wrong": 2
+  },
+  "Deribit": {
+   "wallets": 10,
+   "named": 4,
+   "wrong": 2
+  },
+  "HTX": {
+   "wallets": 30,
+   "named": 5,
+   "wrong": 1
+  },
+  "Kraken": {
+   "wallets": 30,
+   "named": 2,
+   "wrong": 2
+  },
+  "KuCoin": {
+   "wallets": 30,
+   "named": 8,
+   "wrong": 0
+  },
+  "OKX": {
+   "wallets": 30,
+   "named": 9,
+   "wrong": 3
+  }
+ },
+ "ours": {
+  "named": 69,
+  "wrong": 22,
+  "right": 47,
+  "not_named": 144,
+  "error": 0.3188,
+  "error_upper_95": 0.4231,
+  "by_hops": [
+   {
+    "hops": 2,
+    "named": 67,
+    "wrong": 20
+   },
+   {
+    "hops": 3,
+    "named": 2,
+    "wrong": 2
+   }
+  ]
+ },
+ "baseline": {
+  "named": 100,
+  "wrong": 40,
+  "right": 60,
+  "not_named": 113,
+  "error": 0.4,
+  "error_upper_95": 0.487,
+  "by_hops": [
+   {
+    "hops": 2,
+    "named": 88,
+    "wrong": 30
+   },
+   {
+    "hops": 3,
+    "named": 12,
+    "wrong": 10
+   }
+  ]
+ },
+ "not_named_because": {
+  "hub": 83,
+  "below_the_bar": 31,
+  "unspent": 17,
+  "truncated": 9,
+  "depth_limit": 2,
+  "labelled": 2
+ },
+ "median_seconds": 13.36,
+ "median_requests": 18,
+ "calibration": {
+  "wallets_with_a_confidence": 100,
+  "available": true,
+  "bins": [
+   {
+    "from": 0.0,
+    "to": 0.3,
+    "wallets": 20,
+    "stated": 0.1293,
+    "observed": 0.4
+   },
+   {
+    "from": 0.3,
+    "to": 0.6,
+    "wallets": 11,
+    "stated": 0.4732,
+    "observed": 0.4545
+   },
+   {
+    "from": 0.6,
+    "to": 0.75,
+    "wallets": 65,
+    "stated": 0.6766,
+    "observed": 0.6769
+   },
+   {
+    "from": 0.75,
+    "to": 0.9,
+    "wallets": 4,
+    "stated": 0.8075,
+    "observed": 0.75
+   },
+   {
+    "from": 0.9,
+    "to": 1.0,
+    "wallets": 0,
+    "stated": null,
+    "observed": null
+   }
+  ],
+  "brier": 0.2431,
+  "share_right": 0.6,
+  "brier_of_constant": 0.24,
+  "informative": false
+ },
+ "sampling": {
+  "exchanges": [
+   {
+    "exchange": "Bitget",
+    "labelled_addresses": 19100,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 8,
+    "eligible_senders": 23,
+    "wallets": 23,
+    "quota": 30
+   },
+   {
+    "exchange": "Deribit",
+    "labelled_addresses": 6069,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 10,
+    "eligible_senders": 11,
+    "wallets": 10,
+    "quota": 30
+   },
+   {
+    "exchange": "OKX",
+    "labelled_addresses": 234,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 13,
+    "eligible_senders": 481,
+    "wallets": 30,
+    "quota": 30
+   },
+   {
+    "exchange": "Coinbase",
+    "labelled_addresses": 126,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 14,
+    "eligible_senders": 533,
+    "wallets": 30,
+    "quota": 30
+   },
+   {
+    "exchange": "HTX",
+    "labelled_addresses": 103,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 8,
+    "eligible_senders": 642,
+    "wallets": 30,
+    "quota": 30
+   },
+   {
+    "exchange": "Kraken",
+    "labelled_addresses": 77,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 5,
+    "eligible_senders": 141,
+    "wallets": 30,
+    "quota": 30
+   },
+   {
+    "exchange": "KuCoin",
+    "labelled_addresses": 68,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 12,
+    "eligible_senders": 789,
+    "wallets": 30,
+    "quota": 30
+   },
+   {
+    "exchange": "Binance",
+    "labelled_addresses": 56,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 18,
+    "eligible_senders": 623,
+    "wallets": 30,
+    "quota": 30
+   }
+  ],
+  "listings_unreadable": 0
+ },
+ "collected": {
+  "on": "2026-10-07",
+  "code_commit": "0eb8e44",
+  "pages_live": 4299,
+  "pages_cached": 1951,
+  "retries": 10
+ }
+}

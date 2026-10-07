@@ -1,0 +1,188 @@
+{
+ "version": "benchmark_v1",
+ "chain": "polygon",
+ "seed": 26182,
+ "bar": 0.6,
+ "protocol": {
+  "exchanges": "the 8 exchanges with the most labelled addresses on the chain (category exchange, not derived; ties by name)",
+  "quota_per_exchange": 12,
+  "addresses_probed": "each exchange's labelled addresses, shuffled with the seed, the first 40",
+  "listing": "transfers into the address, USDT and USDC, one listing of 100 per asset (the oldest)",
+  "eligible_sender": "sent at least 10 USDT, 10 USDC; a plain address; no label of any kind; not taken already",
+  "choice": "round-robin over the probed addresses, senders of one address in a seeded order; no top-up from another exchange when one falls short",
+  "traced_from": "the time of the sampled payment",
+  "hidden": "every label in a VASP category (exchange, custodial wallet, swap service) on an address the wallet paid directly since then, and the label of the sampled address in any case. Nothing two or more hops out",
+  "known_answer": "the sampled exchange, plus the owner of every hidden label",
+  "seed": 26182,
+  "bar": 0.6,
+  "max_hops": 3,
+  "wallet_budget": 40,
+  "transfers_per_listing": 100
+ },
+ "wallets_sampled": 74,
+ "wallets": 74,
+ "could_not_be_read": 0,
+ "exchanges": 7,
+ "by_exchange": {
+  "Bitfinex": {
+   "wallets": 12,
+   "named": 0,
+   "wrong": 0
+  },
+  "Bitget": {
+   "wallets": 12,
+   "named": 1,
+   "wrong": 0
+  },
+  "Bitrue": {
+   "wallets": 12,
+   "named": 0,
+   "wrong": 0
+  },
+  "Gate.io": {
+   "wallets": 12,
+   "named": 0,
+   "wrong": 0
+  },
+  "HTX": {
+   "wallets": 12,
+   "named": 6,
+   "wrong": 0
+  },
+  "KuCoin": {
+   "wallets": 2,
+   "named": 0,
+   "wrong": 0
+  },
+  "OKX": {
+   "wallets": 12,
+   "named": 4,
+   "wrong": 0
+  }
+ },
+ "ours": {
+  "named": 11,
+  "wrong": 0,
+  "right": 11,
+  "not_named": 63,
+  "error": 0.0,
+  "error_upper_95": 0.2384,
+  "by_hops": [
+   {
+    "hops": 2,
+    "named": 11,
+    "wrong": 0
+   }
+  ]
+ },
+ "baseline": {
+  "named": 16,
+  "wrong": 3,
+  "right": 13,
+  "not_named": 58,
+  "error": 0.1875,
+  "error_upper_95": 0.4166,
+  "by_hops": [
+   {
+    "hops": 2,
+    "named": 14,
+    "wrong": 1
+   },
+   {
+    "hops": 3,
+    "named": 2,
+    "wrong": 2
+   }
+  ]
+ },
+ "not_named_because": {
+  "hub": 35,
+  "truncated": 14,
+  "below_the_bar": 5,
+  "unspent": 5,
+  "depth_limit": 2,
+  "returned": 2
+ },
+ "median_seconds": 13.0,
+ "median_requests": 22,
+ "calibration": {
+  "wallets_with_a_confidence": 16,
+  "available": false,
+  "note": "Too few to say: fewer than 20 wallets were given a confidence."
+ },
+ "sampling": {
+  "exchanges": [
+   {
+    "exchange": "Gate.io",
+    "labelled_addresses": 14,
+    "addresses_probed": 14,
+    "addresses_with_an_eligible_sender": 3,
+    "eligible_senders": 332,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Bitget",
+    "labelled_addresses": 8,
+    "addresses_probed": 8,
+    "addresses_with_an_eligible_sender": 5,
+    "eligible_senders": 325,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "HTX",
+    "labelled_addresses": 4,
+    "addresses_probed": 4,
+    "addresses_with_an_eligible_sender": 3,
+    "eligible_senders": 239,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "OKX",
+    "labelled_addresses": 4,
+    "addresses_probed": 4,
+    "addresses_with_an_eligible_sender": 3,
+    "eligible_senders": 152,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Bitfinex",
+    "labelled_addresses": 2,
+    "addresses_probed": 2,
+    "addresses_with_an_eligible_sender": 2,
+    "eligible_senders": 74,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Bitrue",
+    "labelled_addresses": 1,
+    "addresses_probed": 1,
+    "addresses_with_an_eligible_sender": 1,
+    "eligible_senders": 159,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "KuCoin",
+    "labelled_addresses": 1,
+    "addresses_probed": 1,
+    "addresses_with_an_eligible_sender": 1,
+    "eligible_senders": 2,
+    "wallets": 2,
+    "quota": 12
+   }
+  ],
+  "listings_unreadable": 0
+ },
+ "collected": {
+  "on": "2026-10-07",
+  "code_commit": "0eb8e44",
+  "pages_live": 1129,
+  "pages_cached": 881,
+  "retries": 3
+ }
+}

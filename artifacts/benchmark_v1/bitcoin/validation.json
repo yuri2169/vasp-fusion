@@ -1,0 +1,259 @@
+{
+ "version": "benchmark_v1",
+ "chain": "bitcoin",
+ "seed": 26182,
+ "bar": 0.6,
+ "protocol": {
+  "exchanges": "the 8 exchanges with the most labelled addresses on the chain (category exchange, not derived; ties by name)",
+  "quota_per_exchange": 12,
+  "addresses_probed": "each exchange's labelled addresses, shuffled with the seed, the first 40",
+  "listing": "transfers into the address, BTC, one listing of 100 per asset (the newest; the adapter offers nothing else)",
+  "eligible_sender": "sent at least 0.001 BTC; a plain address; no label of any kind; not taken already",
+  "choice": "round-robin over the probed addresses, senders of one address in a seeded order; no top-up from another exchange when one falls short",
+  "traced_from": "the time of the sampled payment",
+  "hidden": "every label in a VASP category (exchange, custodial wallet, swap service) on an address the wallet paid directly since then, and the label of the sampled address in any case. Nothing two or more hops out",
+  "known_answer": "the sampled exchange, plus the owner of every hidden label",
+  "seed": 26182,
+  "bar": 0.6,
+  "max_hops": 3,
+  "wallet_budget": 40,
+  "transfers_per_listing": 100
+ },
+ "wallets_sampled": 96,
+ "wallets": 96,
+ "could_not_be_read": 0,
+ "exchanges": 8,
+ "by_exchange": {
+  "Binance": {
+   "wallets": 12,
+   "named": 9,
+   "wrong": 1
+  },
+  "BitMEX": {
+   "wallets": 12,
+   "named": 2,
+   "wrong": 0
+  },
+  "Bitget": {
+   "wallets": 12,
+   "named": 3,
+   "wrong": 0
+  },
+  "Bybit": {
+   "wallets": 12,
+   "named": 7,
+   "wrong": 0
+  },
+  "CoinDCX": {
+   "wallets": 12,
+   "named": 3,
+   "wrong": 1
+  },
+  "CoinEx": {
+   "wallets": 12,
+   "named": 4,
+   "wrong": 0
+  },
+  "Korbit": {
+   "wallets": 12,
+   "named": 0,
+   "wrong": 0
+  },
+  "OKX": {
+   "wallets": 12,
+   "named": 0,
+   "wrong": 0
+  }
+ },
+ "ours": {
+  "named": 28,
+  "wrong": 2,
+  "right": 26,
+  "not_named": 68,
+  "error": 0.0714,
+  "error_upper_95": 0.2082,
+  "by_hops": [
+   {
+    "hops": 0,
+    "named": 12,
+    "wrong": 1
+   },
+   {
+    "hops": 1,
+    "named": 10,
+    "wrong": 1
+   },
+   {
+    "hops": 2,
+    "named": 6,
+    "wrong": 0
+   }
+  ]
+ },
+ "baseline": {
+  "named": 43,
+  "wrong": 8,
+  "right": 35,
+  "not_named": 53,
+  "error": 0.186,
+  "error_upper_95": 0.3107,
+  "by_hops": [
+   {
+    "hops": 0,
+    "named": 12,
+    "wrong": 1
+   },
+   {
+    "hops": 1,
+    "named": 17,
+    "wrong": 3
+   },
+   {
+    "hops": 2,
+    "named": 14,
+    "wrong": 4
+   }
+  ]
+ },
+ "not_named_because": {
+  "nothing_sent": 18,
+  "below_the_bar": 15,
+  "pooled": 10,
+  "depth_limit": 8,
+  "truncated": 8,
+  "hub": 4,
+  "unspent": 4,
+  "returned": 1
+ },
+ "median_seconds": 15.41,
+ "median_requests": 11,
+ "calibration": {
+  "wallets_with_a_confidence": 43,
+  "available": true,
+  "bins": [
+   {
+    "from": 0.0,
+    "to": 0.3,
+    "wallets": 11,
+    "stated": 0.1201,
+    "observed": 0.5455
+   },
+   {
+    "from": 0.3,
+    "to": 0.6,
+    "wallets": 4,
+    "stated": 0.3965,
+    "observed": 0.75
+   },
+   {
+    "from": 0.6,
+    "to": 0.75,
+    "wallets": 4,
+    "stated": 0.7125,
+    "observed": 1.0
+   },
+   {
+    "from": 0.75,
+    "to": 0.9,
+    "wallets": 24,
+    "stated": 0.8352,
+    "observed": 0.9167
+   },
+   {
+    "from": 0.9,
+    "to": 1.0,
+    "wallets": 0,
+    "stated": null,
+    "observed": null
+   }
+  ],
+  "brier": 0.1996,
+  "share_right": 0.814,
+  "brier_of_constant": 0.1514,
+  "informative": false
+ },
+ "sampling": {
+  "exchanges": [
+   {
+    "exchange": "BitMEX",
+    "labelled_addresses": 336208,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 33,
+    "eligible_senders": 192,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Binance",
+    "labelled_addresses": 44,
+    "addresses_probed": 40,
+    "addresses_with_an_eligible_sender": 13,
+    "eligible_senders": 48,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Korbit",
+    "labelled_addresses": 28,
+    "addresses_probed": 28,
+    "addresses_with_an_eligible_sender": 23,
+    "eligible_senders": 45,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "CoinDCX",
+    "labelled_addresses": 26,
+    "addresses_probed": 26,
+    "addresses_with_an_eligible_sender": 8,
+    "eligible_senders": 108,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Bybit",
+    "labelled_addresses": 25,
+    "addresses_probed": 25,
+    "addresses_with_an_eligible_sender": 19,
+    "eligible_senders": 141,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "OKX",
+    "labelled_addresses": 23,
+    "addresses_probed": 23,
+    "addresses_with_an_eligible_sender": 22,
+    "eligible_senders": 52,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "Bitget",
+    "labelled_addresses": 19,
+    "addresses_probed": 19,
+    "addresses_with_an_eligible_sender": 9,
+    "eligible_senders": 204,
+    "wallets": 12,
+    "quota": 12
+   },
+   {
+    "exchange": "CoinEx",
+    "labelled_addresses": 19,
+    "addresses_probed": 19,
+    "addresses_with_an_eligible_sender": 19,
+    "eligible_senders": 923,
+    "wallets": 12,
+    "quota": 12
+   }
+  ],
+  "listings_unreadable": 0
+ },
+ "collected": {
+  "on": "2026-10-07",
+  "code_commit": "22c9d77",
+  "pages_live": 558,
+  "pages_cached": 1468,
+  "retries": 5
+ }
+}
