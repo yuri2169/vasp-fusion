@@ -104,6 +104,8 @@ def test_the_interface_it_serves_is_marked_so_only_the_simulator_is_shown(tmp_pa
                      secret=SECRET, ui_dist=dist)
     page = TestClient(app).get("/sahyog-sim").text
     assert '<meta name="vf-portal"' in page and 'id="root"' in page
+    assert "<title>Reference portal · A simulator for demonstration. Not the SAHYOG portal." \
+        "</title>" in page
 
 
 def test_an_old_nonce_is_forgotten_and_a_fresh_one_is_good_once(tmp_path):

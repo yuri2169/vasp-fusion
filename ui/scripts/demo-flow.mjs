@@ -41,6 +41,9 @@ const say = (text) => console.log(`${String(++step).padStart(2)}. ${text}`)
 const text = () => page.evaluate('document.body.innerText')
 const path = () => page.evaluate('location.pathname + location.search')
 const see = (needle, what = needle, timeoutMs = 20000) => waitFor(() => page.evaluate(dom.hasText(needle)), `"${what}" on the screen`, timeoutMs)
+// For a heading: the style may set it in capitals, and innerText gives it as drawn.
+const seeHeading = (needle, what = needle, timeoutMs = 20000) =>
+  waitFor(() => page.evaluate(`document.body.innerText.toLowerCase().includes(${JSON.stringify(needle.toLowerCase())})`), `"${what}" on the screen`, timeoutMs)
 const click = (name, tag) => page.evaluate(dom.clickText(name, tag))
 const inDialog = (name) => click(name, 'dialog[open] button')
 const expect = (cond, what) => {
@@ -73,7 +76,7 @@ try {
   // --- sign in --------------------------------------------------------------------------------
   await page.send('Page.navigate', { url: BASE + '/' })
   await waitFor(() => page.evaluate(`!!document.querySelector('h1')`), 'the first screen')
-  if ((await text()).includes('Sign in to VASP-FUSION')) {
+  if (/sign in to vasp-fusion/i.test(await text())) { // the heading is set in capitals by its style
     say('The tool asks who is using it: every case and request is logged under a name')
     await shot('sign-in')
     await pause(1200)
@@ -105,7 +108,7 @@ try {
   await click('SAHYOG simulator', 'nav a')
   await see('A simulator for demonstration. Not the SAHYOG portal.', 'the banner that says this is a simulator')
   if (PORTAL) {
-    await see("The portal's side runs as its own program", 'the tool saying the portal is another program')
+    await seeHeading("The portal's side runs as its own program", 'the tool saying the portal is another program')
     say('The tool is connected to a portal over signed HTTP; the portal\'s side is a separate program with its own screen')
     await shot('tool-connected')
     await pause(1500)

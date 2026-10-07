@@ -22,7 +22,7 @@ done before.
 > fewest transfers away.
 
 Allowed: the explorer named on the sheet for that chain, its own name tags, and following
-transfers by clicking. Not allowed: this tool, any paid tracing product, an AI assistant,
+transfers by clicking. Not allowed: this tool, any tracing product, any automated helper,
 asking someone who knows.
 
 ## How

@@ -265,7 +265,9 @@ def create_app(*, tool_url: str | None = None, db: Path | str | None = None,
         if path and file.is_file() and root in file.parents:
             return FileResponse(file)
         # the same build as the tool's, told that the portal is serving it
-        html = index.read_text().replace("<head>", f"<head>{MARK}", 1)
+        html = re.sub(r"<title>.*?</title>", f"<title>Reference portal · {NOTICE}</title>",
+                      index.read_text(), count=1, flags=re.S)
+        html = html.replace("<head>", f"<head>{MARK}", 1)
         return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
     return app

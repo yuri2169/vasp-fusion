@@ -29,8 +29,9 @@ services:
       SAHYOG_URL: http://portal:8100
       SAHYOG_ALLOW_HTTP: "1"
       SAHYOG_PUBLIC_URL: http://127.0.0.1:${PORTAL_PORT:-8100}
-      # The shared API key and signing secret: random, made by whichever program starts
-      # first, in a volume both mount. Never printed, never in the image.
+      # The shared API key and signing secret: random, made by the tool at its first
+      # start, in a volume both programs mount. Never printed, and not the image's own.
+      SAHYOG_CREATE_CREDENTIALS: "1"
       VASPFUSION_SAHYOG_KEY_FILE: /run/sahyog/api_key
       VASPFUSION_SAHYOG_SECRET_FILE: /run/sahyog/signing_secret
     volumes:
