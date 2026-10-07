@@ -130,12 +130,14 @@ def test_source_families():
     assert family("etherscan public tag + dune-spellbook") == "dune-spellbook"
     assert family("somewhere else") == "somewhere else"
     rows = by_source([("eth-labels", "explorer_tag", 5), ("ofac-sdn+eth-labels", "curated", 2),
+                      ("cex-list", "curated", 1),
                       ("graphsense-tagpack:a", "curated", 3), ("graphsense-tagpack:b", "curated", 4),
                       ("unknown-set", "curated", 1)])
     by = {r["source"]: r for r in rows}
     assert [r["source"] for r in rows][0] == "graphsense-tagpacks"
     assert by["graphsense-tagpacks"]["labels"] == 7 and by["graphsense-tagpacks"]["licence"] == "MIT"
-    assert by["eth-labels"]["licence"] is None            # upstream's own; not recorded here
+    assert by["eth-labels"]["licence"].startswith("MIT (the eth-labels repository, read ")
+    assert by["cex-list"]["licence"] is None              # upstream's own; not read, not recorded
     assert by["ofac-sdn"]["licence"] == "US-government public record"
     assert by["unknown-set"]["licence"] is None and by["unknown-set"]["obtained_from"] is None
 

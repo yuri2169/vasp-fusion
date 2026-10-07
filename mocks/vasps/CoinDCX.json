@@ -5,11 +5,22 @@
     "name": "CoinDCX",
     "legal_name": "Neblio Technologies Private Limited",
     "fiu_ind_registered": true,
-    "fiu_ind_as_of": "2023-12-04",
-    "jurisdiction": null,
+    "fiu_ind_as_of": "2024-12-02",
+    "jurisdiction": "India",
     "le_request_channel": null,
-    "notes": [],
+    "notes": [
+      "CoinDCX's terms call Neblio Technologies Private Limited \"an Indian company\" and give its FIU-IND registration number as VA00030982 (the exchange's own statement)."
+    ],
     "sources": [
+      {
+        "field": "legal_name",
+        "title": "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: 47 VDA SPs registered with FIU-IND",
+        "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+        "kind": "official",
+        "url": "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals",
+        "published": "2024-12-02",
+        "accessed": "2026-10-08"
+      },
       {
         "field": "legal_name",
         "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
@@ -21,16 +32,45 @@
       },
       {
         "field": "fiu_ind_registered",
+        "title": "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: 47 VDA SPs registered with FIU-IND",
+        "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+        "kind": "official",
+        "url": "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals",
+        "published": "2024-12-02",
+        "accessed": "2026-10-08"
+      },
+      {
+        "field": "fiu_ind_registered",
         "title": "Lok Sabha Unstarred Question No. 112, answered 4 Dec 2023, Annexure: VDA SPs registered with FIU-IND (28 entities)",
         "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
         "kind": "official",
         "url": "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
         "published": "2023-12-04",
         "accessed": "2026-10-02"
+      },
+      {
+        "field": "jurisdiction",
+        "title": "CoinDCX Exchange Terms of Use, valid with effect from 22 Sep 2026",
+        "publisher": "CoinDCX (the exchange's own terms)",
+        "kind": "exchange",
+        "url": "https://coindcx.s3.amazonaws.com/static/documents/terms-of-use.pdf",
+        "published": "2026-09-22",
+        "accessed": "2026-10-08"
+      },
+      {
+        "field": "notes",
+        "title": "CoinDCX Exchange Terms of Use, valid with effect from 22 Sep 2026",
+        "publisher": "CoinDCX (the exchange's own terms)",
+        "kind": "exchange",
+        "url": "https://coindcx.s3.amazonaws.com/static/documents/terms-of-use.pdf",
+        "published": "2026-09-22",
+        "accessed": "2026-10-08"
       }
     ],
     "source_urls": [
-      "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals"
+      "https://coindcx.s3.amazonaws.com/static/documents/terms-of-use.pdf",
+      "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals",
+      "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals"
     ]
   },
   "label_counts": {

@@ -2791,6 +2791,96 @@ export interface components {
              */
             elapsed_s?: number | null;
         };
+        /**
+         * IndianCoverage
+         * @description Providers registered with FIU-IND (one official list, with its date) against the
+         *     label store. Registration is a claim about the list's date only.
+         */
+        IndianCoverage: {
+            source: components["schemas"]["IndianListSource"];
+            /** Listed */
+            listed: number;
+            /** Can Name */
+            can_name: number;
+            /** In Recorded Cases */
+            in_recorded_cases: number;
+            /** Providers */
+            providers: components["schemas"]["IndianProvider"][];
+        };
+        /** IndianListSource */
+        IndianListSource: {
+            /** Title */
+            title: string;
+            /** Publisher */
+            publisher: string;
+            /** Url */
+            url: string;
+            /** Licence */
+            licence: string;
+            /**
+             * Published
+             * @description The date the list speaks for (ISO date)
+             */
+            published: string;
+            /** Accessed */
+            accessed: string;
+        };
+        /** IndianProvider */
+        IndianProvider: {
+            /**
+             * N
+             * @description Serial number in the official list
+             */
+            n: number;
+            /** Legal Name */
+            legal_name: string;
+            /**
+             * Trade Name
+             * @description null: the list gives none
+             */
+            trade_name?: string | null;
+            /**
+             * Labels
+             * @description Labelled addresses held under its name and filed as an exchange's wallets
+             */
+            labels: number;
+            /**
+             * Traceable Labels
+             * @description Of those, on chains a trace can run on
+             */
+            traceable_labels: number;
+            /**
+             * Other Labels
+             * @description Addresses held under its name but not filed as an exchange's wallets: a trace that reaches one does not name the provider
+             * @default 0
+             */
+            other_labels: number;
+            /**
+             * By Chain
+             * @default {}
+             */
+            by_chain: {
+                [key: string]: number;
+            };
+            /**
+             * By Tier
+             * @default {}
+             */
+            by_tier: {
+                [key: string]: number;
+            };
+            /**
+             * Recorded Cases
+             * @description Recorded demo cases that name it
+             * @default []
+             */
+            recorded_cases: string[];
+            /**
+             * Can Name
+             * @description true only with at least one exchange label on a traceable chain. false = a trace can pass through this provider's wallets and not know it
+             */
+            can_name: boolean;
+        };
         /** LabelCoverage */
         LabelCoverage: {
             /** Total */
@@ -2830,6 +2920,8 @@ export interface components {
              * @default []
              */
             traceable_chains: string[];
+            /** @description On `GET /api/labels/coverage` only (null inside the dashboard): which providers registered with FIU-IND the tool can name */
+            indian_providers?: components["schemas"]["IndianCoverage"] | null;
         };
         /** LabelOut */
         LabelOut: {

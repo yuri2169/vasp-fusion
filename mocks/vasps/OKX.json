@@ -6,12 +6,22 @@
     "legal_name": null,
     "fiu_ind_registered": null,
     "fiu_ind_as_of": null,
-    "jurisdiction": null,
+    "jurisdiction": "Seychelles",
     "le_request_channel": "https://app.kodexglobal.com/okx/signin",
     "notes": [
+      "The US Attorney's Office, SDNY (24 Feb 2025) calls Aux Cayes Fintech Co. Ltd, doing business as OKX, \"a Seychelles-based entity\" that has operated OKX since at least 2017.",
       "OKX asks that requests be addressed to \"OKX\" rather than to a specific legal entity; enforcement@okx.com is its channel for extraordinary circumstances."
     ],
     "sources": [
+      {
+        "field": "jurisdiction",
+        "title": "OKX Pleads Guilty To Violating U.S. Anti-Money Laundering Laws And Agrees To Pay Penalties Totaling More Than $500 Million",
+        "publisher": "US Attorney's Office, Southern District of New York",
+        "kind": "official",
+        "url": "https://www.justice.gov/usao-sdny/pr/okx-pleads-guilty-violating-us-anti-money-laundering-laws-and-agrees-pay-penalties",
+        "published": "2025-02-24",
+        "accessed": "2026-10-08"
+      },
       {
         "field": "le_request_channel",
         "title": "OKX Law Enforcement Request Guide",
@@ -20,6 +30,15 @@
         "url": "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide",
         "published": null,
         "accessed": "2026-10-02"
+      },
+      {
+        "field": "notes",
+        "title": "OKX Pleads Guilty To Violating U.S. Anti-Money Laundering Laws And Agrees To Pay Penalties Totaling More Than $500 Million",
+        "publisher": "US Attorney's Office, Southern District of New York",
+        "kind": "official",
+        "url": "https://www.justice.gov/usao-sdny/pr/okx-pleads-guilty-violating-us-anti-money-laundering-laws-and-agrees-pay-penalties",
+        "published": "2025-02-24",
+        "accessed": "2026-10-08"
       },
       {
         "field": "notes",
@@ -32,6 +51,7 @@
       }
     ],
     "source_urls": [
+      "https://www.justice.gov/usao-sdny/pr/okx-pleads-guilty-violating-us-anti-money-laundering-laws-and-agrees-pay-penalties",
       "https://www.okx.com/en-us/help/okx-law-enforcement-request-guide"
     ]
   },

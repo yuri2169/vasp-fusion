@@ -7080,6 +7080,164 @@
         "title": "Hop",
         "description": "One step on the Hop Rail: money moved from `from_address` to `to_address`. On a\ncross-chain step `bridge` is set: `from_address` is the bridge wallet on `from_chain`,\n`to_address` the recipient on `to_chain`, and `tx_hash` the payout transaction."
       },
+      "IndianCoverage": {
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/IndianListSource"
+          },
+          "listed": {
+            "type": "integer",
+            "title": "Listed"
+          },
+          "can_name": {
+            "type": "integer",
+            "title": "Can Name"
+          },
+          "in_recorded_cases": {
+            "type": "integer",
+            "title": "In Recorded Cases"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/IndianProvider"
+            },
+            "type": "array",
+            "title": "Providers"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "listed",
+          "can_name",
+          "in_recorded_cases",
+          "providers"
+        ],
+        "title": "IndianCoverage",
+        "description": "Providers registered with FIU-IND (one official list, with its date) against the\nlabel store. Registration is a claim about the list's date only."
+      },
+      "IndianListSource": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "publisher": {
+            "type": "string",
+            "title": "Publisher"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "licence": {
+            "type": "string",
+            "title": "Licence"
+          },
+          "published": {
+            "type": "string",
+            "title": "Published",
+            "description": "The date the list speaks for (ISO date)"
+          },
+          "accessed": {
+            "type": "string",
+            "title": "Accessed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "publisher",
+          "url",
+          "licence",
+          "published",
+          "accessed"
+        ],
+        "title": "IndianListSource"
+      },
+      "IndianProvider": {
+        "properties": {
+          "n": {
+            "type": "integer",
+            "title": "N",
+            "description": "Serial number in the official list"
+          },
+          "legal_name": {
+            "type": "string",
+            "title": "Legal Name"
+          },
+          "trade_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Name",
+            "description": "null: the list gives none"
+          },
+          "labels": {
+            "type": "integer",
+            "title": "Labels",
+            "description": "Labelled addresses held under its name and filed as an exchange's wallets"
+          },
+          "traceable_labels": {
+            "type": "integer",
+            "title": "Traceable Labels",
+            "description": "Of those, on chains a trace can run on"
+          },
+          "other_labels": {
+            "type": "integer",
+            "title": "Other Labels",
+            "description": "Addresses held under its name but not filed as an exchange's wallets: a trace that reaches one does not name the provider",
+            "default": 0
+          },
+          "by_chain": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Chain",
+            "default": {}
+          },
+          "by_tier": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Tier",
+            "default": {}
+          },
+          "recorded_cases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recorded Cases",
+            "description": "Recorded demo cases that name it",
+            "default": []
+          },
+          "can_name": {
+            "type": "boolean",
+            "title": "Can Name",
+            "description": "true only with at least one exchange label on a traceable chain. false = a trace can pass through this provider's wallets and not know it"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "n",
+          "legal_name",
+          "labels",
+          "traceable_labels",
+          "can_name"
+        ],
+        "title": "IndianProvider"
+      },
       "LabelCoverage": {
         "properties": {
           "total": {
@@ -7143,6 +7301,17 @@
             "type": "array",
             "title": "Traceable Chains",
             "default": []
+          },
+          "indian_providers": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IndianCoverage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "On `GET /api/labels/coverage` only (null inside the dashboard): which providers registered with FIU-IND the tool can name"
           }
         },
         "additionalProperties": false,

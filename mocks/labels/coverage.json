@@ -86,7 +86,7 @@
       "source": "eth-labels",
       "name": "eth-labels: public tags of block explorers",
       "obtained_from": "wallet-attribution set",
-      "licence": null,
+      "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
       "url": "https://github.com/dawsbot/eth-labels",
       "labels": 111673,
       "tiers": {
@@ -201,5 +201,671 @@
     "bitcoin",
     "solana"
   ],
-  "traceable_total": 462747
+  "traceable_total": 462747,
+  "indian_providers": {
+    "source": {
+      "title": "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: Details of 47 Virtual Digital Asset Service Providers (VDA SPs) Registered with Financial Intelligence Unit-India (FIU-IND)",
+      "publisher": "Ministry of Finance, Department of Revenue (Lok Sabha)",
+      "url": "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals",
+      "licence": "Government of India parliamentary record (public)",
+      "published": "2024-12-02",
+      "accessed": "2026-10-08"
+    },
+    "listed": 47,
+    "can_name": 6,
+    "in_recorded_cases": 1,
+    "providers": [
+      {
+        "n": 1,
+        "legal_name": "Neblio Technologies Private Limited",
+        "trade_name": "Coin DCX",
+        "labels": 762,
+        "traceable_labels": 653,
+        "other_labels": 30,
+        "by_chain": {
+          "tron": 571,
+          "evm": 53,
+          "avalanche": 52,
+          "worldchain": 52,
+          "bitcoin": 26,
+          "xrp": 5,
+          "bsc": 3
+        },
+        "by_tier": {
+          "published_por": 24,
+          "curated": 73,
+          "explorer_tag": 107,
+          "derived": 558
+        },
+        "recorded_cases": [
+          "bnb-coindcx",
+          "tron-coindcx",
+          "tron-htx-coindcx"
+        ],
+        "can_name": true
+      },
+      {
+        "n": 2,
+        "legal_name": "ANQ Digital Finserv Private Limited",
+        "trade_name": "ANQ Finance",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 3,
+        "legal_name": "Unocoin Technologies Pvt Ltd",
+        "trade_name": "Unocoin",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 4,
+        "legal_name": "Buyhatke Internet Private Limited",
+        "trade_name": "Onramp",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 5,
+        "legal_name": "Giottus Technologies Pvt Ltd",
+        "trade_name": "Giottus",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 6,
+        "legal_name": "Bitbns Internet Private Limited",
+        "trade_name": "Bitbns",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 1,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 7,
+        "legal_name": "Awlencan Innovations India Limited",
+        "trade_name": "Zebpay",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 8,
+        "legal_name": "Zanmai Labs Pvt Ltd",
+        "trade_name": "WazirX",
+        "labels": 32,
+        "traceable_labels": 12,
+        "other_labels": 3,
+        "by_chain": {
+          "avalanche": 10,
+          "evm": 10,
+          "worldchain": 10,
+          "tron": 2
+        },
+        "by_tier": {
+          "curated": 12,
+          "explorer_tag": 20
+        },
+        "recorded_cases": [],
+        "can_name": true
+      },
+      {
+        "n": 9,
+        "legal_name": "Bitcipher Labs LLP",
+        "trade_name": "Coinswitch",
+        "labels": 4,
+        "traceable_labels": 2,
+        "other_labels": 0,
+        "by_chain": {
+          "evm": 2,
+          "avalanche": 1,
+          "worldchain": 1
+        },
+        "by_tier": {
+          "curated": 2,
+          "explorer_tag": 2
+        },
+        "recorded_cases": [],
+        "can_name": true
+      },
+      {
+        "n": 10,
+        "legal_name": "Nextgendev Solutions Private Limited",
+        "trade_name": "CoinswitchX",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 11,
+        "legal_name": "RPFAS Technologies Pvt Ltd",
+        "trade_name": "Mudrex",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 12,
+        "legal_name": "IBLOCK Technologies Pvt Ltd",
+        "trade_name": "Buyucoin",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 13,
+        "legal_name": "WOLLFISH Labs Pvt Ltd",
+        "trade_name": "Coindhan",
+        "labels": 2,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {
+          "avalanche": 1,
+          "worldchain": 1
+        },
+        "by_tier": {
+          "explorer_tag": 2
+        },
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 14,
+        "legal_name": "Rario Digital Private Limited",
+        "trade_name": "Rario",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 15,
+        "legal_name": "Angelic Infotech Pvt Ltd",
+        "trade_name": "Suncrypto",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 16,
+        "legal_name": "Carretx Technologies Pvt Ltd",
+        "trade_name": "Carret",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 17,
+        "legal_name": "Ante Multimedia Pvt Ltd",
+        "trade_name": null,
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 18,
+        "legal_name": "ABHIBHA Technologies Pvt Ltd",
+        "trade_name": "Onmeta",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 19,
+        "legal_name": "Smartliving Digital Technologies Pvt Ltd",
+        "trade_name": "Cryptosmartlife",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 20,
+        "legal_name": "UCY Technology Pvt Ltd",
+        "trade_name": "Pyor",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 21,
+        "legal_name": "Digital Collectibles Pte Ltd",
+        "trade_name": "Rario",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 22,
+        "legal_name": "Veeratva Technologies Pvt Ltd",
+        "trade_name": "Vair",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 23,
+        "legal_name": "Transak Technology India Pvt Ltd",
+        "trade_name": "Transak",
+        "labels": 4,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {
+          "avalanche": 2,
+          "worldchain": 2
+        },
+        "by_tier": {
+          "explorer_tag": 4
+        },
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 24,
+        "legal_name": "REMIZO Technologies India Pvt Ltd",
+        "trade_name": "Getbit",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 25,
+        "legal_name": "FIN GENIE Tech Pvt Ltd",
+        "trade_name": "Bytex",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 26,
+        "legal_name": "ARDOUR labs Pvt Ltd",
+        "trade_name": null,
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 27,
+        "legal_name": "Inocyx Technologies Pvt Ltd",
+        "trade_name": "Inocyx",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 28,
+        "legal_name": "Metatoken Technologies Pvt Ltd",
+        "trade_name": "Fanztar",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 29,
+        "legal_name": "Excellium Technologies Pvt Ltd",
+        "trade_name": "Delta Exchange",
+        "labels": 7,
+        "traceable_labels": 1,
+        "other_labels": 1,
+        "by_chain": {
+          "avalanche": 3,
+          "worldchain": 3,
+          "ethereum": 1
+        },
+        "by_tier": {
+          "explorer_tag": 7
+        },
+        "recorded_cases": [],
+        "can_name": true
+      },
+      {
+        "n": 30,
+        "legal_name": "Rovi91 Innovations Pvt Ltd",
+        "trade_name": null,
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 31,
+        "legal_name": "Longreen India Pvt Ltd",
+        "trade_name": "Bitbse.com",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 32,
+        "legal_name": "Flitpay Pvt Ltd",
+        "trade_name": "Flitpay",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 33,
+        "legal_name": "Fincrypt LLP",
+        "trade_name": "Stable Pay",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 34,
+        "legal_name": "Arthbit Pvt Ltd",
+        "trade_name": "ArthBit",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 35,
+        "legal_name": "Pagarpay India Pvt Ltd",
+        "trade_name": "Density Exchange",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 36,
+        "legal_name": "Lightningnodes Technologies Pvt Ltd",
+        "trade_name": "pi42",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 37,
+        "legal_name": "Kooz Advisors and Technologies Pvt Ltd",
+        "trade_name": "KoinBX",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 38,
+        "legal_name": "Mindless Pandora Tech Solutions Pvt Ltd",
+        "trade_name": null,
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 39,
+        "legal_name": "FanzCraze Technologies Inc",
+        "trade_name": null,
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 40,
+        "legal_name": "SUBHX Infotech (OPC) Pvt Ltd",
+        "trade_name": "BIT24HR",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 41,
+        "legal_name": "Peken Global Ltd",
+        "trade_name": "KuCoin",
+        "labels": 1306,
+        "traceable_labels": 1113,
+        "other_labels": 3,
+        "by_chain": {
+          "tron": 982,
+          "avalanche": 80,
+          "worldchain": 79,
+          "ethereum": 68,
+          "arbitrum": 16,
+          "solana": 15,
+          "bsc": 13,
+          "base": 10,
+          "xrp": 8,
+          "cardano": 7,
+          "algorand": 6,
+          "kcc": 5,
+          "bitcoin": 4,
+          "optimism": 4,
+          "kava": 3,
+          "dogecoin": 2,
+          "near": 2,
+          "polkadot": 1,
+          "polygon": 1
+        },
+        "by_tier": {
+          "published_por": 157,
+          "curated": 13,
+          "explorer_tag": 178,
+          "derived": 958
+        },
+        "recorded_cases": [],
+        "can_name": true
+      },
+      {
+        "n": 42,
+        "legal_name": "ALSD Technologies Pvt Ltd",
+        "trade_name": "Alpyne",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 43,
+        "legal_name": "Damsol Pvt Ltd",
+        "trade_name": "Square",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 44,
+        "legal_name": "First Answer India Technologies Pvt Ltd",
+        "trade_name": "Liminal",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 45,
+        "legal_name": "Eclipton Technologies Pvt Ltd",
+        "trade_name": "Eclipton",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 46,
+        "legal_name": "Blockoville OU",
+        "trade_name": "Blockoville",
+        "labels": 0,
+        "traceable_labels": 0,
+        "other_labels": 0,
+        "by_chain": {},
+        "by_tier": {},
+        "recorded_cases": [],
+        "can_name": false
+      },
+      {
+        "n": 47,
+        "legal_name": "Binance International Limited",
+        "trade_name": "Binance",
+        "labels": 420,
+        "traceable_labels": 130,
+        "other_labels": 2,
+        "by_chain": {
+          "avalanche": 145,
+          "worldchain": 145,
+          "ethereum": 56,
+          "bitcoin": 44,
+          "bsc": 19,
+          "tron": 8,
+          "arbitrum": 1,
+          "optimism": 1,
+          "solana": 1
+        },
+        "by_tier": {
+          "published_por": 41,
+          "curated": 64,
+          "explorer_tag": 315
+        },
+        "recorded_cases": [],
+        "can_name": true
+      }
+    ]
+  }
 }

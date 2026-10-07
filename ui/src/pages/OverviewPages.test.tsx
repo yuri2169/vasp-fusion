@@ -131,7 +131,8 @@ describe('the labels explorer', () => {
     const sources = await screen.findByRole('table', { name: 'Labels per source, with the licence on record' })
     const row = (name: RegExp) => within(sources).getByRole('link', { name }).closest('tr')!
     expect(row(/GraphSense TagPacks/)).toHaveTextContent('MIT')
-    expect(row(/eth-labels/)).toHaveTextContent('Not recorded')
+    expect(row(/eth-labels: public tags/)).toHaveTextContent('MIT (the eth-labels repository')
+    expect(row(/DefiLlama adapters/)).toHaveTextContent('Not recorded')
     expect(row(/OFAC SDN list of sanctioned addresses/)).toHaveTextContent('US-government public record')
     expect(screen.getByText(/"Not recorded" means this project holds no record of that source's own licence/)).toBeInTheDocument()
     // a count is a link to the labels behind it
@@ -184,6 +185,51 @@ describe('the labels explorer', () => {
     open('/labels')
     const sources = await screen.findByRole('table', { name: 'Labels per source, with the licence on record' })
     expect(within(sources).getAllByText('Not recorded')).toHaveLength(2) // where it came from, and its licence
+  })
+})
+
+describe('the Indian exchanges the tool can name', () => {
+  it('shows the count, each provider it holds labels for, and names every provider it cannot name', async () => {
+    const cov = await api.labelCoverage()
+    const india = cov.indian_providers!
+    open('/labels')
+    const table = await screen.findByRole('table', { name: 'Registered providers with a labelled address' })
+    const panel = table.closest('section')!
+    expect(panel).toHaveTextContent(`${india.can_name} of ${india.listed} can be named today`)
+    const held = india.providers.filter((p) => p.labels > 0 || (p.other_labels ?? 0) > 0)
+    expect(within(table).getAllByRole('row')).toHaveLength(held.length + 1)
+    const dcx = within(table).getByRole('row', { name: /Coin DCX/ })
+    expect(dcx).toHaveTextContent('Neblio Technologies Private Limited')
+    expect(dcx).toHaveTextContent('Yes')
+    // the gaps are said as plainly as the hits
+    const gaps = within(panel).getByLabelText('Registered providers with no labelled address')
+    expect(gaps).toHaveTextContent(`No labelled address is held for the other ${india.listed - held.length}`)
+    expect(gaps).toHaveTextContent('Unocoin')
+    expect(gaps).toHaveTextContent('Giottus')
+    // and the source is the official list, with its date
+    expect(within(panel).getByRole('link', { name: /Lok Sabha Unstarred Question No. 966/ })).toHaveAttribute('href', india.source.url)
+    expect(panel).toHaveTextContent('as of 2 Dec 2024')
+  })
+
+  it('says why a provider with a label still cannot be named', async () => {
+    const cov = await api.labelCoverage()
+    const base = cov.indian_providers!.providers[0]
+    vi.spyOn(api, 'labelCoverage').mockResolvedValue({
+      ...cov,
+      indian_providers: {
+        ...cov.indian_providers!,
+        listed: 2,
+        can_name: 0,
+        providers: [
+          { ...base, n: 1, trade_name: 'Elsewhere', labels: 2, traceable_labels: 0, other_labels: 0, by_chain: { avalanche: 2 }, can_name: false, recorded_cases: [] },
+          { ...base, n: 2, trade_name: 'Misfiled', labels: 0, traceable_labels: 0, other_labels: 1, by_chain: {}, by_tier: {}, can_name: false, recorded_cases: [] },
+        ],
+      },
+    })
+    open('/labels')
+    const table = await screen.findByRole('table', { name: 'Registered providers with a labelled address' })
+    expect(within(table).getByRole('row', { name: /Elsewhere/ })).toHaveTextContent('No: its labels are on chains the tool does not trace')
+    expect(within(table).getByRole('row', { name: /Misfiled/ })).toHaveTextContent('No: the address held is not filed as an exchange wallet')
   })
 })
 

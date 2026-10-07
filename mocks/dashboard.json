@@ -138,7 +138,7 @@
         "source": "eth-labels",
         "name": "eth-labels: public tags of block explorers",
         "obtained_from": "wallet-attribution set",
-        "licence": null,
+        "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
         "url": "https://github.com/dawsbot/eth-labels",
         "labels": 111673,
         "tiers": {
