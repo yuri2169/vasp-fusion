@@ -177,4 +177,4 @@ docker-smoke:     ## drive the whole demo inside a throwaway container that has 
 
 # The audit log (data/audit.duckdb) and the officer accounts are never removed here.
 clean:
-	rm -rf data/labels.duckdb data/case.duckdb data/desk.duckdb data/sahyog_outbox data/sahyog_api_key data/demo_cache.duckdb ui/dist
+	rm -rf data/labels.duckdb data/case.duckdb data/desk.duckdb data/sahyog_outbox data/sahyog_api_key data/sahyog_signing_secret data/refportal.sqlite data/demo_cache.duckdb ui/dist

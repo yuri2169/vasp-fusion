@@ -824,8 +824,11 @@ def cmd_demo(args) -> None:
     if not args.no_sahyog_key:
         from .desk.intake import ensure_demo_key
         key_file, made = ensure_demo_key()
-        print(f"SAHYOG simulator: intake key {'created' if made else 'already'} in {key_file} "
-              "(a demonstration key; the simulator is not the SAHYOG portal)")
+        from .desk.intake import ensure_demo_secret
+        secret_file, made_secret = ensure_demo_secret()
+        print(f"SAHYOG simulator: intake key {'created' if made else 'already'} in {key_file}, "
+              f"signing secret {'created' if made_secret else 'already'} in {secret_file} "
+              "(demonstration credentials; the simulator is not the SAHYOG portal)")
     same = len(specs)
     if args.golden:
         same = _golden(args.golden, [store.get(spec["id"]) for spec in specs])
@@ -1013,11 +1016,11 @@ def cmd_verify(args) -> None:
 
 def _desk_service():
     from .desk.directory import Directory
-    from .desk.gateway import MockSahyogGateway
+    from .desk.gateway import gateway_from_env
     from .desk.service import DeskService
     from .store.cases import CaseStore
     from .store.requests import RequestStore
-    return DeskService(CaseStore(), RequestStore(), Directory.load(), MockSahyogGateway())
+    return DeskService(CaseStore(), RequestStore(), Directory.load(), gateway_from_env())
 
 
 def cmd_desk(args) -> None:

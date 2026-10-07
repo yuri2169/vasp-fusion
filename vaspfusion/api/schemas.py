@@ -1008,10 +1008,12 @@ class RequestLetter(_M):
 
 
 class GatewayReceipt(_M):
-    gateway: str = Field(description="`mock-outbox` until a real SAHYOG connection exists")
+    gateway: str = Field(description="`mock-outbox` (a local folder; the default), or "
+                                     "`sahyog-http` when a portal is configured (SAHYOG_URL)")
     receipt_id: str
     submitted_at: datetime
-    location: str = Field(description="Where the submission went (the outbox file)")
+    location: str = Field(description="Where the submission went: the outbox file, or "
+                                      "the portal's host and path")
     payload_sha256: str
 
 
@@ -1598,6 +1600,8 @@ class ComplaintWallet(_M):
     request_ids: list[str] = Field([], description="Requests drafted from this case")
     result_sent_at: datetime | None = Field(None, description=(
         "When the result was handed to the gateway"))
+    result_error: str | None = Field(None, description=(
+        "Why the last hand-over failed (the portal did not answer). It is tried again"))
     case_error: str | None = None
 
 

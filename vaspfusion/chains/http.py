@@ -1,4 +1,5 @@
-"""HTTP transport and API-key loading. The only module that opens sockets.
+"""HTTP transport and API-key loading. The only module that opens sockets: the chain
+APIs, and the SAHYOG gateway's signed calls when a portal is configured (SAHYOG_URL).
 
 Keys (TRONGRID_API_KEY, ETHERSCAN_API_KEY, HELIUS_API_KEY, ANKR_API_KEY) come from
 the process environment first, then from vasp-fusion/.env (git-ignored). They are
@@ -51,9 +52,19 @@ class UrllibTransport:
                      "Content-Type": "application/json", **headers})
         return self._send(req)
 
-    def _send(self, req: urllib.request.Request) -> tuple[int, bytes]:
+    def send(self, method: str, url: str, body: bytes | None, headers: dict,
+             timeout: float | None = None) -> tuple[int, bytes]:
+        """Any one call with a body as given (the SAHYOG gateway's signed calls: the bytes
+        that were signed are the bytes sent)."""
+        req = urllib.request.Request(url, data=body, method=method,
+                                     headers={"User-Agent": USER_AGENT,
+                                              "Accept": "application/json", **headers})
+        return self._send(req, timeout)
+
+    def _send(self, req: urllib.request.Request,
+              timeout: float | None = None) -> tuple[int, bytes]:
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            with urllib.request.urlopen(req, timeout=timeout or self.timeout) as r:
                 return r.status, r.read()
         except urllib.error.HTTPError as e:
             return e.code, e.read() or b""

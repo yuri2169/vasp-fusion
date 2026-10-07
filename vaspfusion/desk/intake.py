@@ -19,6 +19,7 @@ from ..api.schemas import RISK_BASIS
 ROOT = Path(__file__).resolve().parents[2]
 KEY_HEADER = "X-SAHYOG-Key"
 DEFAULT_KEY_FILE = ROOT / "data" / "sahyog_api_key"
+DEFAULT_SECRET_FILE = ROOT / "data" / "sahyog_signing_secret"
 RESULT_SCHEMA = "vaspfusion-sahyog-result/1"
 REPLY_SCHEMA = "vaspfusion-sahyog-reply/1"
 REPLIES = ("acknowledged", "answered", "freeze_confirmed", "refused")
@@ -60,15 +61,49 @@ def check_key(given: str | None, path: Path | str | None = None) -> None:
         raise IntakeError(401, f"The {KEY_HEADER} header is missing or wrong.")
 
 
+def _write_once(file: Path) -> bool:
+    """A random secret in `file` unless it holds one. Two programs may start at the same
+    moment on one shared folder: the file is created exclusively, and the loser reads it."""
+    if file.is_file() and file.read_text().strip():
+        return False
+    file.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(file, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        if file.read_text().strip():
+            return False
+        fd = os.open(file, os.O_WRONLY | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(secrets.token_urlsafe(32) + "\n")
+    return True
+
+
 def ensure_demo_key(path: Path | str | None = None) -> tuple[Path, bool]:
     """The demo set-up's key file: a random key, written once. (file, was it created)."""
     file = _key_file(path)
-    if file.is_file() and file.read_text().strip():
-        return file, False
-    file.parent.mkdir(parents=True, exist_ok=True)
-    file.write_text(secrets.token_urlsafe(32) + "\n")
-    file.chmod(0o600)
-    return file, True
+    return file, _write_once(file)
+
+
+def _secret_file(path: Path | str | None) -> Path:
+    return Path(path or os.environ.get("VASPFUSION_SAHYOG_SECRET_FILE") or DEFAULT_SECRET_FILE)
+
+
+def configured_secret(path: Path | str | None = None) -> str | None:
+    """The secret signed calls are checked and made with: SAHYOG_SIGNING_SECRET, else the
+    secret file. None = calls are not signed, and the API key alone opens the intake."""
+    env = os.environ.get("SAHYOG_SIGNING_SECRET", "").strip()
+    if env:
+        return env
+    file = _secret_file(path)
+    if file.is_file():
+        return file.read_text().strip() or None
+    return None
+
+
+def ensure_demo_secret(path: Path | str | None = None) -> tuple[Path, bool]:
+    """The demo set-up's signing secret, as `ensure_demo_key`."""
+    file = _secret_file(path)
+    return file, _write_once(file)
 
 
 def iso(t: datetime) -> str:
@@ -102,6 +137,7 @@ def wallet_view(entry: dict, case: dict | None, requests: list[dict], risk: dict
         "request_ids": sorted(r["id"] for r in requests if r["status"] != "withdrawn"
                               and entry["case_id"] in r["case_ids"]),
         "result_sent_at": entry.get("result_sent_at"),
+        "result_error": entry.get("result_error"),
         "case_error": (case or {}).get("error"),
     }
 

@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -70,6 +70,7 @@ AUDIT_DB: Path | None = None     # None = data/audit.duckdb (or VASPFUSION_AUDIT
 AUTH_SECRET: Path | None = None  # None = data/auth_secret (or VASPFUSION_JWT_SECRET)
 AUTH: str | None = None          # None = VASPFUSION_AUTH, else "auto"; "off" | "required"
 SAHYOG_KEY: Path | None = None   # None = data/sahyog_api_key (or VASPFUSION_SAHYOG_KEY_FILE)
+SAHYOG_SECRET: Path | None = None  # None = data/sahyog_signing_secret (or ..._SECRET_FILE)
 VERSION = "0.1.0"
 # Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
 # have no adapter yet (PROGRESS.md, B2). Bitcoin is traced since B5 (chains/btc.py: an
@@ -1251,10 +1252,11 @@ def search_labels(response: Response, q: str = "", chain: str | None = None,
 
 # ------------------------------------------------------------------ desk + requests (B8)
 def make_gateway():
-    """Where an approved request goes. Only the mock exists: it writes to an outbox
-    folder and sends nothing (docs/sahyog_contract.md)."""
-    from ..desk.gateway import MockSahyogGateway
-    return MockSahyogGateway(OUTBOX)
+    """Where an approved request goes: a portal over signed HTTPS when SAHYOG_URL is set,
+    else the mock, which writes to an outbox folder and sends nothing
+    (docs/sahyog_contract.md)."""
+    from ..desk.gateway import gateway_from_env
+    return gateway_from_env(OUTBOX, SAHYOG_KEY, SAHYOG_SECRET)
 
 
 def _desk():
@@ -1631,12 +1633,30 @@ def _enrich(case: dict) -> dict:
     return case
 
 
-def _sahyog_key(request: Request) -> None:
-    from ..desk.intake import KEY_HEADER, IntakeError, check_key
+async def _sahyog_key(request: Request) -> None:
+    """The portal's credentials on a call to the intake: its API key and, when a signing
+    secret is configured, a signature over this very call that has not been used before
+    (desk/signing.py). 401 for a wrong key, signature or clock; 409 for a replay."""
+    from ..desk.intake import KEY_HEADER, IntakeError, check_key, configured_secret
+    from ..desk.signing import SignatureError, verify
     try:
         check_key(request.headers.get(KEY_HEADER), SAHYOG_KEY)
     except IntakeError as e:
         raise HTTPException(e.status, str(e)) from None
+    secret = configured_secret(SAHYOG_SECRET)
+    if secret is None:
+        return
+    path = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+    now = datetime.now(timezone.utc)
+    try:
+        nonce = verify(secret, request.headers, request.method, path, await request.body(),
+                       now=now)
+    except SignatureError as e:
+        raise HTTPException(e.status, str(e)) from None
+    from ..store.nonces import NonceStore
+    if not NonceStore(DESK_DB).claim(nonce, now):
+        raise HTTPException(409, "This signed call was received before and is refused as a "
+                                 "replay. Sign a retry afresh, with the same Idempotency-Key.")
 
 
 def _complaint_view(complaint: dict) -> dict:
@@ -1652,9 +1672,11 @@ def _complaint_view(complaint: dict) -> dict:
 
 def _notify_sahyog(case_id: str) -> None:
     """A trace has finished: hand its result to the gateway for every complaint that
-    reported the wallet. A failure here is recorded nowhere but must not fail the case;
-    the portal can always read the result from the status route."""
+    reported the wallet. A failure here must not fail the case: it is written on the
+    wallet (`result_error`), tried again later, and the portal can always read the result
+    from the status route."""
     from ..cases import CODE_VERSION
+    from ..desk.gateway import GatewayError
     from ..desk.intake import iso, result_payload
     try:
         store = _complaints()
@@ -1668,14 +1690,32 @@ def _notify_sahyog(case_id: str) -> None:
             if view[case_id]["status"] != "result":
                 continue
             now = datetime.now(timezone.utc)
-            receipt = make_gateway().notify_result(
-                result_payload(complaint, view[case_id], code_version=CODE_VERSION, now=now),
-                now=now)
+            try:
+                receipt = make_gateway().notify_result(
+                    result_payload(complaint, view[case_id], code_version=CODE_VERSION,
+                                   now=now), now=now)
+            except GatewayError as e:       # kept, and tried again by the background loop
+                for w in mine:
+                    w["result_error"] = str(e)[:300]
+                store.save(complaint)
+                continue
             for w in mine:
                 w["result_sent_at"], w["result_receipt"] = iso(now), receipt
+                w.pop("result_error", None)
             store.save(complaint)
     except Exception:  # noqa: BLE001
         pass
+
+
+def redeliver_results() -> int:
+    """Hand over again every result the gateway did not take (the portal was down).
+    Returns how many wallets were still waiting."""
+    waiting = [w["case_id"] for c in _complaints().list() for w in c["wallets"]
+               if w.get("accepted") and w.get("case_id") and not w.get("result_sent_at")
+               and w.get("result_error")]
+    for cid in dict.fromkeys(waiting):
+        _notify_sahyog(cid)
+    return len(waiting)
 
 
 def _file_complaint(body: S.ComplaintCreate, background: BackgroundTasks) -> dict:
@@ -1733,25 +1773,25 @@ def _record_reply(request_id: str, body: S.ReplyIn) -> dict:
             "location": receipt["location"] if receipt else None}
 
 
-@app.post("/api/sahyog/complaints", response_model=S.ComplaintStatus, status_code=202)
+@app.post("/api/sahyog/complaints", response_model=S.ComplaintStatus, status_code=202,
+          dependencies=[Depends(_sahyog_key)])
 def sahyog_complaint(body: S.ComplaintCreate, request: Request, response: Response,
                      background: BackgroundTasks):
     """SAHYOG -> VASP-FUSION. A complaint with its wallets: one case is opened per wallet
     and its trace starts at once. 202 with the case ids; poll the status route. Sending
     the same complaint again returns the same cases. 401 without the API key, 503 when
     no key is configured, 422 when no wallet can be accepted."""
-    _sahyog_key(request)
     _note(request, target=body.complaint_ref, wallets=len(body.wallets))
     _source(response, "live")
     return _file_complaint(body, background)
 
 
-@app.get("/api/sahyog/complaints/{complaint_ref}", response_model=S.ComplaintStatus)
+@app.get("/api/sahyog/complaints/{complaint_ref}", response_model=S.ComplaintStatus,
+         dependencies=[Depends(_sahyog_key)])
 def sahyog_status(complaint_ref: str, request: Request, response: Response):
     """The state of each wallet of a complaint and, once traced: the outcome, every
     exchange reached with proximity and confidence apart, the risk class, the case file
     and the requests drafted from it."""
-    _sahyog_key(request)
     complaint = _complaints().get(complaint_ref) if re.match(S.COMPLAINT_REF, complaint_ref) \
         else None
     if complaint is None:
@@ -1760,12 +1800,12 @@ def sahyog_status(complaint_ref: str, request: Request, response: Response):
     return _complaint_view(complaint)
 
 
-@app.post("/api/sahyog/requests/{request_id}/replies", response_model=S.ReplyAck)
+@app.post("/api/sahyog/requests/{request_id}/replies", response_model=S.ReplyAck,
+          dependencies=[Depends(_sahyog_key)])
 def sahyog_reply(request_id: str, body: S.ReplyIn, request: Request, response: Response):
     """SAHYOG -> VASP-FUSION. An exchange's reply to a request that was sent: acknowledged,
     answered, freeze_confirmed or refused. The request desk shows it at once. 404 unknown
     request, 409 a reply that cannot follow the request's present status."""
-    _sahyog_key(request)
     _note(request, status=body.status)
     _source(response, "live")
     return _record_reply(request_id, body)

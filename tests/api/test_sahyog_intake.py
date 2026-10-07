@@ -303,3 +303,60 @@ def test_every_sahyog_call_is_in_the_audit_log(client):
     assert ("sahyog.complaint", 401, None) in seen
     assert ("sahyog.status", 200, "NCRP-2026-0001") in seen
     assert ("sim.view", 200, None) in seen
+
+
+# ------------------------------------------------------------------ signed calls (E6)
+SECRET = "a-signing-secret-for-this-test-only"
+
+
+def _signed(method: str, path: str, raw: bytes = b"", *, secret=SECRET, at=None) -> dict:
+    from datetime import datetime, timezone
+
+    from vaspfusion.desk import signing
+    h = signing.headers(KEY["X-SAHYOG-Key"], secret, method, path, raw,
+                        now=at or datetime.now(timezone.utc))
+    return {**h, "Content-Type": "application/json"}
+
+
+def test_with_a_signing_secret_an_unsigned_call_is_refused_and_a_signed_one_goes_through(
+        client, monkeypatch):
+    monkeypatch.setenv("SAHYOG_SIGNING_SECRET", SECRET)
+    raw = json.dumps(body()).encode()
+    r = client.post("/api/sahyog/complaints", content=raw,
+                    headers={**KEY, "Content-Type": "application/json"})
+    assert r.status_code == 401 and "not signed" in r.json()["detail"]
+    r = client.post("/api/sahyog/complaints", content=raw,
+                    headers=_signed("POST", "/api/sahyog/complaints", raw))
+    assert r.status_code == 202, r.text
+    path = "/api/sahyog/complaints/NCRP-2026-0001"
+    assert client.get(path, headers=_signed("GET", path)).status_code == 200
+
+
+def test_a_bad_signature_a_changed_body_and_an_old_timestamp_are_refused(client, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    monkeypatch.setenv("SAHYOG_SIGNING_SECRET", SECRET)
+    raw = json.dumps(body()).encode()
+    path = "/api/sahyog/complaints"
+    wrong = client.post(path, content=raw, headers=_signed("POST", path, raw, secret="other"))
+    changed = client.post(path, content=raw.replace(b"250000", b"950000"),
+                          headers=_signed("POST", path, raw))
+    old = client.post(path, content=raw, headers=_signed(
+        "POST", path, raw, at=datetime.now(timezone.utc) - timedelta(minutes=10)))
+    assert [wrong.status_code, changed.status_code, old.status_code] == [401, 401, 401]
+    assert "does not match" in wrong.json()["detail"]
+    assert "does not match" in changed.json()["detail"]
+    assert "300 seconds" in old.json()["detail"]
+    assert client.get("/api/sahyog-sim").json()["complaints"] == []     # nothing was opened
+
+
+def test_the_same_signed_call_a_second_time_is_refused_as_a_replay(client, monkeypatch):
+    monkeypatch.setenv("SAHYOG_SIGNING_SECRET", SECRET)
+    raw = json.dumps(body()).encode()
+    headers = _signed("POST", "/api/sahyog/complaints", raw)
+    assert client.post("/api/sahyog/complaints", content=raw, headers=headers).status_code == 202
+    again = client.post("/api/sahyog/complaints", content=raw, headers=headers)
+    assert again.status_code == 409 and "replay" in again.json()["detail"]
+    # a retry is signed afresh, and the complaint is idempotent: the same case, no new trace
+    retry = client.post("/api/sahyog/complaints", content=raw,
+                        headers=_signed("POST", "/api/sahyog/complaints", raw))
+    assert retry.status_code == 202
