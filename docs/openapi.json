@@ -3703,7 +3703,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -3716,6 +3716,17 @@
             ],
             "title": "Sahyog Complaint Ref",
             "description": "Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference"
+          },
+          "documented": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentedCase"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered"
           },
           "risk": {
             "anyOf": [
@@ -4307,7 +4318,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -4320,6 +4331,17 @@
             ],
             "title": "Sahyog Complaint Ref",
             "description": "Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference"
+          },
+          "documented": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentedCase"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered"
           }
         },
         "additionalProperties": false,
@@ -4771,7 +4793,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
           },
           "report_pdf": {
             "anyOf": [
@@ -5408,7 +5430,7 @@
             },
             "type": "object",
             "title": "Risk Classes",
-            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.",
             "default": {}
           }
         },
@@ -5659,6 +5681,60 @@
           "accessed"
         ],
         "title": "DirectorySource"
+      },
+      "DocumentedCase": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "what_happened": {
+            "type": "string",
+            "title": "What Happened",
+            "description": "The incident, as the cited sources state it"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement",
+            "description": "What the trace shows, and what it does not"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentedSource"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "what_happened",
+          "statement",
+          "sources"
+        ],
+        "title": "DocumentedCase",
+        "description": "A recorded case whose address comes from a publicly documented incident."
+      },
+      "DocumentedSource": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "url"
+        ],
+        "title": "DocumentedSource"
       },
       "EvidenceItem": {
         "properties": {
@@ -7608,6 +7684,17 @@
               }
             ],
             "description": "The benchmark table for every chain (the same whichever chain was asked for); null when `make benchmark` has not been run"
+          },
+          "risk_validation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskValidation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the risk score and the pattern rules did on real listed and ordinary wallets (the same for every chain); null when it was not measured"
           }
         },
         "additionalProperties": false,
@@ -9171,7 +9258,7 @@
               }
             ],
             "title": "Score",
-            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes. null: not assessed"
+            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints. null: not assessed"
           },
           "risk_class": {
             "anyOf": [
@@ -9239,7 +9326,7 @@
           "basis": {
             "type": "string",
             "title": "Basis",
-            "default": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes."
+            "default": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints."
           },
           "source": {
             "anyOf": [
@@ -9257,6 +9344,286 @@
         "additionalProperties": false,
         "type": "object",
         "title": "RiskInfo"
+      },
+      "RiskRuleCheck": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "positive": {
+            "type": "integer",
+            "title": "Positive"
+          },
+          "positive_of": {
+            "type": "integer",
+            "title": "Positive Of"
+          },
+          "positive_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positive Share"
+          },
+          "control": {
+            "type": "integer",
+            "title": "Control"
+          },
+          "control_of": {
+            "type": "integer",
+            "title": "Control Of"
+          },
+          "control_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Control Share"
+          },
+          "p_fisher": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P Fisher"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "positive",
+          "positive_of",
+          "control",
+          "control_of"
+        ],
+        "title": "RiskRuleCheck"
+      },
+      "RiskValidation": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "positives": {
+            "type": "integer",
+            "title": "Positives",
+            "description": "Wallets a public source lists as illicit"
+          },
+          "controls": {
+            "type": "integer",
+            "title": "Controls",
+            "description": "Wallets with a documented ordinary purpose"
+          },
+          "main_view": {
+            "type": "string",
+            "title": "Main View",
+            "description": "The view to quote: the wallet's own label hidden"
+          },
+          "views": {
+            "items": {
+              "$ref": "#/components/schemas/RiskValidationView"
+            },
+            "type": "array",
+            "title": "Views"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/RiskRuleCheck"
+            },
+            "type": "array",
+            "title": "Rules",
+            "description": "Each pattern rule: the wallets it fired on, in the main view"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "seed",
+          "positives",
+          "controls",
+          "main_view",
+          "views",
+          "rules",
+          "notes"
+        ],
+        "title": "RiskValidation",
+        "description": "The risk score measured on real wallets (`make risk-validation`). Show the notes."
+      },
+      "RiskValidationView": {
+        "properties": {
+          "view": {
+            "type": "string",
+            "enum": [
+              "as_shown",
+              "own_hidden",
+              "entity_hidden"
+            ],
+            "title": "View"
+          },
+          "words": {
+            "type": "string",
+            "title": "Words"
+          },
+          "positives_scored": {
+            "type": "integer",
+            "title": "Positives Scored"
+          },
+          "positives_high_or_above": {
+            "type": "integer",
+            "title": "Positives High Or Above"
+          },
+          "positives_interval": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positives Interval",
+            "description": "95% Clopper-Pearson"
+          },
+          "positives_nothing_to_trace": {
+            "type": "integer",
+            "title": "Positives Nothing To Trace"
+          },
+          "positives_classes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Positives Classes"
+          },
+          "controls_scored": {
+            "type": "integer",
+            "title": "Controls Scored"
+          },
+          "controls_high_or_above": {
+            "type": "integer",
+            "title": "Controls High Or Above"
+          },
+          "controls_interval": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Controls Interval"
+          },
+          "controls_nothing_to_trace": {
+            "type": "integer",
+            "title": "Controls Nothing To Trace"
+          },
+          "controls_classes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Controls Classes"
+          },
+          "positives_high_with_list_link": {
+            "type": "integer",
+            "title": "Positives High With List Link",
+            "description": "Of the listed wallets at High or above, those with a link to an address on a list"
+          },
+          "rules_firing_more_on_positives": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules Firing More On Positives",
+            "description": "Pattern rules that fired on a larger share of the listed wallets (p < 0.05)"
+          },
+          "p_fisher": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P Fisher",
+            "description": "Fisher's exact test on the two shares"
+          },
+          "auc_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auc Score",
+            "description": "The chance a positive outscores a control, ties counting half"
+          },
+          "auc_behaviour_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auc Behaviour Score",
+            "description": "The same for the points of the behaviour indicators alone (no list is read)"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "view",
+          "words",
+          "positives_scored",
+          "positives_high_or_above",
+          "positives_nothing_to_trace",
+          "positives_classes",
+          "controls_scored",
+          "controls_high_or_above",
+          "controls_nothing_to_trace",
+          "controls_classes",
+          "positives_high_with_list_link",
+          "rules_firing_more_on_positives"
+        ],
+        "title": "RiskValidationView"
       },
       "RuleBaseline": {
         "properties": {

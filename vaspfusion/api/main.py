@@ -1575,23 +1575,24 @@ def get_model(response: Response, chain: str = "tron"):
         raise HTTPException(404, "not found")
     from ..eval.benchmark import read_summary
     benchmark = read_summary(BENCHMARK_DIR)
+    from ..eval.risk_validation import read_summary as risk_summary
+    checked = risk_summary(RISK_VALIDATION_DIR)       # the same whichever chain was asked for
     metrics = read_metrics(MODEL_DIR, chain)
     if metrics is None and demo_mode():
         _source(response, "mock")
-        return {**load_mock("model"), "benchmark": benchmark}
+        return {**load_mock("model"), "benchmark": benchmark, "risk_validation": checked}
     if metrics is None:
         _source(response, "live")
         return {"status": "not_measured", "metrics": {}, "chain": chain,
                 "notes": [f"No model has been measured for {chain} on this machine."],
-                "benchmark": benchmark}
+                "benchmark": benchmark, "risk_validation": checked}
     _source(response, "live")
     from ..eval.abstain import abstain_info, read_validation
     validation = read_validation(ABSTAIN_DIR, chain)
-    from ..eval.risk_validation import read_summary
     return {**model_info(metrics),
             "abstain": abstain_info(validation) if validation else None,
             "benchmark": benchmark,
-            "risk_validation": read_summary(RISK_VALIDATION_DIR)}
+            "risk_validation": checked}
 
 
 # ------------------------------------------------------------------ problem-statement coverage (G2)

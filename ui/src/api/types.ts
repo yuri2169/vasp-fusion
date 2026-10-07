@@ -1505,7 +1505,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -1513,6 +1513,8 @@ export interface components {
              * @description Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference
              */
             sahyog_complaint_ref?: string | null;
+            /** @description Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered */
+            documented?: components["schemas"]["DocumentedCase"] | null;
             /** @description Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests */
             risk?: components["schemas"]["RiskInfo"] | null;
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
@@ -1726,7 +1728,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -1734,6 +1736,8 @@ export interface components {
              * @description Set when the case was opened by a complaint filed through the SAHYOG intake API: show 'Reported through SAHYOG' with this reference
              */
             sahyog_complaint_ref?: string | null;
+            /** @description Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered */
+            documented?: components["schemas"]["DocumentedCase"] | null;
         };
         /** ChainCheck */
         ChainCheck: {
@@ -1868,7 +1872,7 @@ export interface components {
             risk_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Risk Score
-             * @description An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @description An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
              */
             risk_score?: number | null;
             /**
@@ -2131,7 +2135,7 @@ export interface components {
             label_coverage: components["schemas"]["LabelCoverage"];
             /**
              * Risk Classes
-             * @description Finished cases by risk class. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @description Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
              * @default {}
              */
             risk_classes: {
@@ -2241,6 +2245,33 @@ export interface components {
              * Format: date
              */
             accessed: string;
+        };
+        /**
+         * DocumentedCase
+         * @description A recorded case whose address comes from a publicly documented incident.
+         */
+        DocumentedCase: {
+            /** Title */
+            title: string;
+            /**
+             * What Happened
+             * @description The incident, as the cited sources state it
+             */
+            what_happened: string;
+            /**
+             * Statement
+             * @description What the trace shows, and what it does not
+             */
+            statement: string;
+            /** Sources */
+            sources: components["schemas"]["DocumentedSource"][];
+        };
+        /** DocumentedSource */
+        DocumentedSource: {
+            /** Name */
+            name: string;
+            /** Url */
+            url: string;
         };
         /** EvidenceItem */
         EvidenceItem: {
@@ -2981,6 +3012,8 @@ export interface components {
             abstain?: components["schemas"]["AbstainInfo"] | null;
             /** @description The benchmark table for every chain (the same whichever chain was asked for); null when `make benchmark` has not been run */
             benchmark?: components["schemas"]["BenchmarkInfo"] | null;
+            /** @description What the risk score and the pattern rules did on real listed and ordinary wallets (the same for every chain); null when it was not measured */
+            risk_validation?: components["schemas"]["RiskValidation"] | null;
         };
         /** ModelMetrics */
         ModelMetrics: {
@@ -3578,7 +3611,7 @@ export interface components {
         RiskInfo: {
             /**
              * Score
-             * @description The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes. null: not assessed
+             * @description The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints. null: not assessed
              */
             score?: number | null;
             /**
@@ -3611,7 +3644,7 @@ export interface components {
             path_class?: ("low" | "medium" | "high" | "severe") | null;
             /**
              * Basis
-             * @default An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.
+             * @default An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.
              */
             basis: string;
             /**
@@ -3619,6 +3652,121 @@ export interface components {
              * @description The published list the indicators follow
              */
             source?: string | null;
+        };
+        /** RiskRuleCheck */
+        RiskRuleCheck: {
+            /** Code */
+            code: string;
+            /** Positive */
+            positive: number;
+            /** Positive Of */
+            positive_of: number;
+            /** Positive Share */
+            positive_share?: number | null;
+            /** Control */
+            control: number;
+            /** Control Of */
+            control_of: number;
+            /** Control Share */
+            control_share?: number | null;
+            /** P Fisher */
+            p_fisher?: number | null;
+        };
+        /**
+         * RiskValidation
+         * @description The risk score measured on real wallets (`make risk-validation`). Show the notes.
+         */
+        RiskValidation: {
+            /** Version */
+            version: string;
+            /** Seed */
+            seed: number;
+            /**
+             * Positives
+             * @description Wallets a public source lists as illicit
+             */
+            positives: number;
+            /**
+             * Controls
+             * @description Wallets with a documented ordinary purpose
+             */
+            controls: number;
+            /**
+             * Main View
+             * @description The view to quote: the wallet's own label hidden
+             */
+            main_view: string;
+            /** Views */
+            views: components["schemas"]["RiskValidationView"][];
+            /**
+             * Rules
+             * @description Each pattern rule: the wallets it fired on, in the main view
+             */
+            rules: components["schemas"]["RiskRuleCheck"][];
+            /** Notes */
+            notes: string[];
+        };
+        /** RiskValidationView */
+        RiskValidationView: {
+            /**
+             * View
+             * @enum {string}
+             */
+            view: "as_shown" | "own_hidden" | "entity_hidden";
+            /** Words */
+            words: string;
+            /** Positives Scored */
+            positives_scored: number;
+            /** Positives High Or Above */
+            positives_high_or_above: number;
+            /**
+             * Positives Interval
+             * @description 95% Clopper-Pearson
+             */
+            positives_interval?: number[] | null;
+            /** Positives Nothing To Trace */
+            positives_nothing_to_trace: number;
+            /** Positives Classes */
+            positives_classes: {
+                [key: string]: number;
+            };
+            /** Controls Scored */
+            controls_scored: number;
+            /** Controls High Or Above */
+            controls_high_or_above: number;
+            /** Controls Interval */
+            controls_interval?: number[] | null;
+            /** Controls Nothing To Trace */
+            controls_nothing_to_trace: number;
+            /** Controls Classes */
+            controls_classes: {
+                [key: string]: number;
+            };
+            /**
+             * Positives High With List Link
+             * @description Of the listed wallets at High or above, those with a link to an address on a list
+             */
+            positives_high_with_list_link: number;
+            /**
+             * Rules Firing More On Positives
+             * @description Pattern rules that fired on a larger share of the listed wallets (p < 0.05)
+             */
+            rules_firing_more_on_positives: string[];
+            /**
+             * P Fisher
+             * @description Fisher's exact test on the two shares
+             */
+            p_fisher?: number | null;
+            /**
+             * Auc Score
+             * @description The chance a positive outscores a control, ties counting half
+             */
+            auc_score?: number | null;
+            /**
+             * Auc Behaviour Score
+             * @description The same for the points of the behaviour indicators alone (no list is read)
+             */
+            auc_behaviour_score?: number | null;
         };
         /**
          * RuleBaseline
