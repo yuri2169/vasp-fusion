@@ -115,11 +115,11 @@
       "section": "The system may additionally support",
       "text": "cross-chain transaction mapping",
       "status": "partly",
-      "what": "A deposit into the Across bridge is matched to its payout by the bridge's own public index, the amount is read from the payout transaction on the destination chain, and the trace goes on from the recipient there with the same rules; the crossing counts as a hop and its cost as a fee. The recorded wallet is followed from Ethereum onto Base. A swap service on the path is named as a VASP and its request asks for the payout chain, address and transaction.",
+      "what": "Three bridge families are matched from deposit to payout through each bridge's own public index: Across, Stargate (through LayerZero Scan) and Wormhole's token bridge (through Wormholescan). The amount that arrived is read from the payout transaction on the destination chain, never taken from the bridge, and the trace goes on from the recipient there with the same rules; the crossing counts as a hop and its cost as a fee. Two recorded wallets: one followed from Ethereum onto Base through Across, and one whose USDC left Ethereum in eight Stargate deposits, seven of them followed onto Arbitrum (39,852.38 USDC sent, 39,828.50 arrived, each in about three minutes; recorded 8 Oct 2026, artifacts/crosschain/eth-stargate.json). A swap service on the path is named as a VASP and its request asks for the payout chain, address and transaction.",
       "where": "/cases",
       "evidence_kind": "test",
-      "evidence": "tests/test_demo_cases.py::test_eth_wallet_whose_money_went_into_a_bridge_is_followed_onto_base",
-      "gap": "Only Across deposits are matched. Stargate / LayerZero, Wormhole, Hop and the rollups' own bridges are recognised and flagged, and the trail ends there with the transaction to follow by hand. A payout in another asset than the deposit (a stablecoin paid out as ETH) is named but not followed. A swap service's payout cannot be matched on-chain at all: it is asked for.",
+      "evidence": "tests/test_stargate_case.py::test_the_money_is_followed_from_ethereum_onto_arbitrum_through_stargate",
+      "gap": "Followed: Across, Stargate, and Wormhole only when the transfer was redeemed on a chain this tool reads in an asset it follows; the one real Wormhole transfer recorded went to Kaia and is matched and named, not followed, and the token bridge pays out its own wrapped token. A Stargate deposit that waits for a shared delivery is not matched. Only flagged, with the transaction to follow by hand: Hop, Synapse, Celer, Multichain, Orbiter and the rollups' own bridges. A payout in another asset than the deposit is named but not followed. A swap service's payout cannot be matched on-chain at all: it is asked for. The Stargate wallet is a recorded test case, not yet one of the demo cases on the screen.",
       "computed": false
     },
     {
@@ -199,11 +199,11 @@
       "section": "Expected solution",
       "text": "Real-time generation of investigative intelligence.",
       "status": "partly",
-      "what": "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Measured on 5 Oct 2026: a complaint with the 12 recorded wallets, on six chains, went from intake to 12 results in 6.3 seconds (four runs, all between 6.3 and 6.4; artifacts/intake_timing.json).",
-      "where": "/cases/new",
+      "what": "A trace starts the moment a wallet is submitted and the case page shows what it has read so far. Watched wallets can be traced again in the background on a schedule (VASPFUSION_WATCH_INTERVAL, seconds per wallet), each check reading the chain afresh through the shared rate limiter; a new transfer, a new exchange contact, a new link to a tagged address or a rise in risk class is raised as a change with the time of the trace that found it. Measured live, from the public chain APIs with nothing cached, one trace took a median of 11.4 s on BNB Chain, 13.0 s on Polygon, 13.4 s on Ethereum, 15.4 s on Bitcoin, 21.5 s on Solana (the six-chain benchmark) and 40.8 s on Tron (8 traces, 5.6 to 67.8 s, 8 Oct 2026; artifacts/live_timing.json). Replayed with no network, a complaint with the 12 recorded wallets went from intake to 12 results in 6.3 seconds.",
+      "where": "/watchlist",
       "evidence_kind": "test",
-      "evidence": "tests/api/test_cases_live.py::test_a_running_case_says_what_the_trace_has_read_so_far",
-      "gap": "That figure replays recorded chain responses with no network. A live trace also waits on the public chain APIs and their rate limits, which was not timed. Nothing watches a chain continuously: a watched wallet is checked when the officer asks.",
+      "evidence": "tests/api/test_watcher.py::test_a_scheduled_check_finds_a_new_transfer_and_a_new_exchange_with_the_time",
+      "gap": "The watcher polls: it sees a transfer at the next scheduled check, not when the block is mined, and nothing subscribes to a chain. It is off in the offline demo, which cannot reach a chain, and it has been tested on recorded responses that change between checks, not left running against live chains for days. The live times are medians of single traces through free API tiers; the Tron figure is a sample of eight.",
       "computed": false
     },
     {
@@ -239,7 +239,7 @@
       "where": "/batch",
       "evidence_kind": "make",
       "evidence": "bench-scale",
-      "gap": "Measured on one laptop with chain responses replayed from a cache: live throughput, which the providers' rate limits bound, was not measured. More than four workers gave no gain there. The case store is a single file with one writing process, and nothing was run on more than one machine (docs/scaling.md).",
+      "gap": "Measured on one laptop with chain responses replayed from a cache. Live, the providers' free rate limits bound the volume: one live trace took a median of 11 to 41 seconds depending on the chain, one at a time; live throughput with several workers was not measured. More than four workers gave no gain there. The case store is a single file with one writing process, and nothing was run on more than one machine (docs/scaling.md).",
       "computed": false
     },
     {
@@ -247,11 +247,11 @@
       "section": "The solution should aim to",
       "text": "reduce investigation time",
       "status": "partly",
-      "what": "A wallet is traced, attributed and written up as a case file and a draft request without manual chain analysis.",
+      "what": "A wallet is traced, attributed and written up as a case file and a draft request without manual chain analysis. The tool's time is measured: replayed, 0.5 s a wallet; live, a median of 11 to 41 s a trace depending on the chain. A timing sheet for the same task done by hand with a block explorer, on five of the recorded wallets, is ready with its instructions (docs/manual_timing.md).",
       "where": "/cases",
       "evidence_kind": "make",
       "evidence": "intake-timing",
-      "gap": "The time the tool takes is measured. The time the same work takes by hand has not been measured, so no saving is claimed.",
+      "gap": "The manual timing is pending: nobody has filled the sheet yet, so the time the same work takes by hand is not measured and no saving is claimed. It has to be done by a person with a clock; the figures will be recorded in artifacts/manual_timing/ with who timed it, the date and the sample size.",
       "computed": false
     },
     {
@@ -259,11 +259,11 @@
       "section": "The solution should aim to",
       "text": "improve asset freezing efficiency",
       "status": "partly",
-      "what": "A freeze can be asked for in the request (section 106 BNSS is added to the legal basis) and the request is tracked until the exchange confirms the freeze.",
-      "where": "/desk",
-      "evidence_kind": "test",
-      "evidence": "tests/test_desk_service.py::test_the_legal_basis_names_the_notice_the_certificate_and_the_freeze_power",
-      "gap": "No request has gone to a real exchange, so no freeze has been made or timed.",
+      "what": "A freeze can be asked for in the request (section 106 BNSS is added to the legal basis) and the request is tracked until the exchange confirms the freeze. The part this tool controls is measured: on 8 Oct 2026 one complaint with the 13 recorded wallets went from arriving to four freezing requests drafted with their letters, one per exchange, ready for the officer's signature, in 4.3 seconds (median of three runs, chain responses replayed; make freeze-readiness, artifacts/freeze_readiness.json). The dashboard shows the figure with what it does not cover.",
+      "where": "/dashboard",
+      "evidence_kind": "make",
+      "evidence": "freeze-readiness",
+      "gap": "No real freeze was made or timed. No request of ours can reach an exchange, so how long an exchange takes to freeze, and whether this shortens it, is not known. The 4.3 seconds replays recorded chain responses; live, each wallet's trace also waits on the public chain APIs (a median of 11 to 41 seconds by chain).",
       "computed": false
     },
     {
