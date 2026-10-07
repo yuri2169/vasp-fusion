@@ -128,7 +128,7 @@ def test_source_families():
 def test_watch_a_traced_wallet_check_it_and_stop(client):
     cid, = _trace(client, "tron-coindcx")
     addr = SPECS["tron-coindcx"]["address"]
-    assert client.get("/api/watchlist").json() == {"items": []}
+    assert client.get("/api/watchlist").json()["items"] == []
     made = client.post("/api/watchlist", json={"address": addr, "note": "  complainant's payee "})
     assert made.status_code == 201
     item = S.WatchItem.model_validate(made.json())
@@ -147,7 +147,7 @@ def test_watch_a_traced_wallet_check_it_and_stop(client):
     assert client.post(f"/api/watchlist/{item.id}/seen").status_code == 200
     assert client.delete(f"/api/watchlist/{item.id}").json() == {"ok": True}
     assert client.delete(f"/api/watchlist/{item.id}").status_code == 404
-    assert client.get("/api/watchlist").json() == {"items": []}
+    assert client.get("/api/watchlist").json()["items"] == []
 
 
 def test_a_change_since_the_baseline_reaches_the_list_and_the_dashboard(client):

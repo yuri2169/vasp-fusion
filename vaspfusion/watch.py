@@ -1,10 +1,11 @@
 """The watchlist: has a watched wallet done anything since the officer last looked?
 
 A watched wallet keeps a baseline: a snapshot of its case taken when it was added, or
-when its changes were last marked as seen. "Check now" traces the wallet again; the list
-then compares the case as it is now with the baseline and says what is new, in
-sentences. Nothing runs in the background and nothing is estimated: a change is a
-difference between two stored traces.
+when its changes were last marked as seen. "Check now" traces the wallet again, reading
+the chain afresh, and so does the background watcher on its schedule when it is on
+(watcher.py). The list then compares the case as it is now with the baseline and says
+what is new, in sentences. Nothing is estimated: a change is a difference between two
+stored traces, with the time of the trace that found it.
 """
 from __future__ import annotations
 
@@ -119,6 +120,7 @@ def watch_item(entry: dict, case: dict | None, tracing: bool = False,
         "case_id": case["id"] if case else None,
         "state": state_of(case, tracing, found),
         "last_checked_at": snapshot(case)["traced_at"] if done else None,
+        "auto_checked_at": entry.get("auto_checked_at"),
         "baseline_at": (entry.get("baseline") or {}).get("traced_at"),
         "changes": found,
         "error": case.get("error") if case else None,

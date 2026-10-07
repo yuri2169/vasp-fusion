@@ -43,8 +43,23 @@ const later = (page: ReactNode) => (
   </Suspense>
 )
 
+/** True when this build is being served by the reference portal (refportal/, a separate program
+ *  that plays the portal's side): it marks the page it serves, and only the simulator is shown. */
+const servedByPortal = () => typeof document !== 'undefined' && document.querySelector('meta[name="vf-portal"]') !== null
+
+function PortalRoutes() {
+  return (
+    <div className="flex min-h-full flex-col bg-paper text-ink">
+      <main id="content" className="mx-auto w-full max-w-content flex-1 px-3 py-4 sm:px-6">
+        {later(<SahyogSimPage />)}
+      </main>
+    </div>
+  )
+}
+
 /** Every route sits inside the shell (header, status bar). `/` is the landing. The providers are in main.tsx. */
 export function AppRoutes() {
+  if (servedByPortal()) return <PortalRoutes />
   return (
     <Routes>
       <Route element={<AppShell />}>

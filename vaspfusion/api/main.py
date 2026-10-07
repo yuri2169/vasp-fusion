@@ -487,6 +487,8 @@ def trace_only(queued: dict, max_hops: int, incident: datetime | None,
                       max_nodes=budget.get("max_wallets") or DEFAULT_WALLETS,
                       max_seconds=budget.get("max_seconds"))
     fetcher = make_fetcher()
+    if budget.get("fresh") and not fetcher.offline:
+        fetcher.refresh = True      # a watched wallet's check: the chain, not the cache
     try:
         provider = trace_provider(queued["chain"], fetcher, cfg)
         with LabelStore(LABEL_DB) as labels:
@@ -570,7 +572,7 @@ def _job_args(job: dict, stored: dict | None) -> tuple[datetime | None, dict | N
                     "created_at": params["previous_created_at"]}
     since = params.get("since")
     return (datetime.fromisoformat(since) if since else None, previous,
-            {k: params.get(k) for k in ("max_wallets", "max_seconds")})
+            {k: params.get(k) for k in ("max_wallets", "max_seconds", "fresh")})
 
 
 def work_one(case_id: str | None = None, worker: str | None = None) -> bool:
@@ -720,10 +722,21 @@ def _start_workers() -> None:
             threading.Thread(target=drain, daemon=True).start()
     except Exception:  # noqa: BLE001 - a store that is not there yet must not stop the server
         pass
+    try:
+        if os.environ.get("SAHYOG_CREATE_CREDENTIALS") == "1":
+            # docker compose: the key and the signing secret the two programs share are
+            # made here, at first start, in the volume both mount. Never printed.
+            from ..desk.intake import ensure_demo_key, ensure_demo_secret
+            ensure_demo_key(SAHYOG_KEY)
+            ensure_demo_secret(SAHYOG_SECRET)
+        start_watcher()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 @app.on_event("shutdown")
 def _stop_workers() -> None:
+    stop_watcher()
     stop_pool()
 
 
@@ -746,9 +759,12 @@ def create_case(body: S.CaseCreate, request: Request, response: Response,
 
 
 def _start_case(chain: str, address: str, body: S.CaseCreate, background: BackgroundTasks,
-                refresh: bool = False, labels: LabelStore | None = None) -> dict:
+                refresh: bool = False, labels: LabelStore | None = None,
+                fresh: bool = False) -> dict:
     """Open (or find) the case of a wallet and queue its trace. The officer's POST and
-    the SAHYOG intake both come through here, so a case is the same however it began."""
+    the SAHYOG intake both come through here, so a case is the same however it began.
+    `fresh` (a watched wallet's check) reads the chain again instead of the cached pages,
+    which is the only way a new transfer can be seen."""
     if not Path(LABEL_DB).exists():
         raise HTTPException(503, "The label database is missing. Run `make labels` first.")
     store, queue = _cases(), _queue()
@@ -800,6 +816,8 @@ def _start_case(chain: str, address: str, body: S.CaseCreate, background: Backgr
             params["max_wallets"] = body.max_wallets
         if body.max_seconds is not None:
             params["max_seconds"] = body.max_seconds
+        if fresh:
+            params["fresh"] = True
         queue.enqueue(cid, params)
     except Exception:
         with _ACTIVE_LOCK:
@@ -1512,7 +1530,7 @@ def _watched(watch_id: str) -> dict:
 def get_watchlist(response: Response):
     """Watched wallets, newest first, each compared with its baseline (watch.py)."""
     _source(response, "live")
-    return {"items": _watch_items()}
+    return {"items": _watch_items(), "watcher": _watcher_state()}
 
 
 @app.post("/api/watchlist", response_model=S.WatchItem, status_code=201)
@@ -1536,18 +1554,103 @@ def add_watch(body: S.WatchCreate, request: Request, response: Response):
     return _watch_items([entry])[0]
 
 
+def _check_watched(entry: dict, background) -> dict:
+    """Queue a fresh trace of a watched wallet, with the hops its case was traced with."""
+    case = _cases().find(entry["chain"], entry["address"])
+    hops = (((case or {}).get("provenance") or {}).get("input") or {}).get("max_hops") or 3
+    return _start_case(entry["chain"], entry["address"],
+                       S.CaseCreate(address=entry["address"], chain=entry["chain"],
+                                    max_hops=hops), background, refresh=True, fresh=True)
+
+
 @app.post("/api/watchlist/{watch_id}/check", response_model=S.WatchItem, status_code=202)
 def check_watch(watch_id: str, request: Request, response: Response,
                 background: BackgroundTasks):
-    """Trace the watched wallet again (as `POST /api/cases?refresh=true` does). Poll the
-    watchlist: the item is `checking` until the trace is done, then says what is new."""
+    """Trace the watched wallet again, reading the chain afresh. Poll the watchlist: the
+    item is `checking` until the trace is done, then says what is new."""
     entry = _watched(watch_id)
-    case = _cases().find(entry["chain"], entry["address"])
-    hops = (((case or {}).get("provenance") or {}).get("input") or {}).get("max_hops") or 3
-    create_case(S.CaseCreate(address=entry["address"], chain=entry["chain"], max_hops=hops),
-                request, response, background, refresh=True)
-    _note(request, target=watch_id)
+    summary = _check_watched(entry, background)
+    _note(request, target=watch_id, address=entry["address"], chain=entry["chain"],
+          case=summary["id"])
+    _source(response, "live")
     return _watch_items([entry])[0]
+
+
+# ---- the background watcher (watcher.py): the same check, on a schedule
+class _RunNow:
+    """Stands in for a request's background tasks on the watcher's own thread: the trace
+    runs here, one wallet after another."""
+
+    @staticmethod
+    def add_task(func, *args) -> None:
+        func(*args)
+
+
+_WATCHER = None
+
+
+def watch_tick(now: datetime | None = None) -> list[str]:
+    """One pass of the watcher: hand over again any SAHYOG result the portal did not
+    take, then queue a fresh trace for every watched wallet that is due. Returns the ids
+    of the wallets it checked."""
+    from .. import watcher
+    try:
+        redeliver_results()
+    except Exception:  # noqa: BLE001 - the desk store is busy; the next tick tries again
+        pass
+    every_s = watcher.every()
+    if not every_s or not Path(LABEL_DB).exists():
+        return []
+    now = now or datetime.now(timezone.utc)
+    store, checked = _watch(), []
+    for entry in watcher.due(store.list(), now, every_s):
+        # stamped first, so a wallet whose trace fails is not tried again every pass
+        entry["auto_checked_at"] = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        store.save(entry)
+        try:
+            _check_watched(entry, _RunNow)
+        except Exception:  # noqa: BLE001 - this wallet's check failed; go on to the next
+            continue
+        checked.append(entry["id"])
+    return checked
+
+
+def start_watcher() -> None:
+    global _WATCHER
+    from .. import watcher
+    if _WATCHER is None and watcher.every():
+        _WATCHER = watcher.Watcher(watch_tick, watcher.every())
+        _WATCHER.start()
+
+
+def stop_watcher() -> None:
+    global _WATCHER
+    if _WATCHER is not None:
+        _WATCHER.stop()
+        _WATCHER = None
+
+
+def _watcher_state() -> dict:
+    from .. import watcher
+    every_s = watcher.every()
+    last = _WATCHER.last_run_at if _WATCHER is not None else None
+    return {"enabled": bool(every_s) and _WATCHER is not None, "every_seconds": every_s or None,
+            "last_run_at": last,
+            "says": (f"Every watched wallet is traced again every {_span(every_s)}, reading "
+                     "the chain afresh." if every_s and _WATCHER is not None else
+                     "Nothing runs in the background on this installation "
+                     "(VASPFUSION_WATCH_INTERVAL is not set): a wallet is checked when you "
+                     "ask.")}
+
+
+def _span(seconds: int) -> str:
+    if seconds % 3600 == 0:
+        n, unit = seconds // 3600, "hour"
+    elif seconds % 60 == 0:
+        n, unit = seconds // 60, "minute"
+    else:
+        n, unit = seconds, "second"
+    return f"{n} {unit}" if n == 1 else f"{n} {unit}s"
 
 
 @app.post("/api/watchlist/{watch_id}/seen", response_model=S.WatchItem)
@@ -1819,6 +1922,9 @@ def _sim_enabled() -> bool:
 
 
 def _sim_or_503() -> None:
+    if os.environ.get("SAHYOG_URL", "").strip():
+        raise HTTPException(503, "The simulator is the portal's own screen on this "
+                                 "installation (SAHYOG_URL is set).")
     if not _sim_enabled():
         raise HTTPException(503, "The simulator is off: no SAHYOG API key is configured. "
                                  "The demo set-up (`make demo`) creates one.")
@@ -1835,6 +1941,14 @@ def get_sahyog_sim(response: Response):
     _source(response, "live")
     out = {"enabled": _sim_enabled(), "notice": NOTICE, "why_disabled": None,
            "categories": list(get_args(S.FraudCategory)), "complaints": [], "requests": []}
+    portal = os.environ.get("SAHYOG_URL", "").strip()
+    if portal:      # a separate program plays the portal; this screen is that program's
+        public = (os.environ.get("SAHYOG_PUBLIC_URL", "").strip() or portal).rstrip("/")
+        out.update(enabled=False, portal_url=public, why_disabled=(
+            f"This installation is connected to a portal at {urlsplit(portal).netloc} over "
+            "signed HTTP. Complaints arrive from it and replies come back through it, so "
+            "the simulator is that program's own screen."))
+        return out
     if not out["enabled"]:
         out["why_disabled"] = ("No SAHYOG API key is configured on this installation. The "
                                "demo set-up (`make demo`) creates one.")

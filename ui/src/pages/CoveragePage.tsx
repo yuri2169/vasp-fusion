@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, CircleDot, type LucideIcon } from 'lucide-react'
+import { CircleCheck, CircleDashed, CircleDot, Plug, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
 import { ApiError } from '../api/client'
 import type { CoverageRow, CoverageStatus } from '../api/models'
@@ -9,7 +9,7 @@ import { Skeleton } from '../components/Skeleton'
 import { cx } from '../lib/cx'
 import { Ledger } from '../overview/parts'
 
-const ORDER: CoverageStatus[] = ['built', 'partly', 'planned']
+const ORDER: CoverageStatus[] = ['built', 'ready_to_connect', 'partly', 'planned']
 
 /** A status in a word, an icon and a fill pattern: solid, hatched, empty. Never colour alone. */
 const STATUS: Record<CoverageStatus, { words: string; Icon: LucideIcon; tag: string; cell: string; says: string }> = {
@@ -19,6 +19,13 @@ const STATUS: Record<CoverageStatus, { words: string; Icon: LucideIcon; tag: str
     tag: 'border-ink bg-ink text-surface',
     cell: 'bg-ink border-ink',
     says: 'It works today, on a screen you can open, with a test or a command that fails if it stops.',
+  },
+  ready_to_connect: {
+    words: 'Ready to connect',
+    Icon: Plug,
+    tag: 'border-2 border-ink text-ink',
+    cell: 'dotfill border-ink',
+    says: 'Built and tested on our side against a separate reference program. It waits only on access that is not ours to give; the row names it.',
   },
   partly: {
     words: 'Partly built',

@@ -1143,6 +1143,8 @@ class WatchItem(_M):
     case_id: str | None = None
     state: WatchState
     last_checked_at: datetime | None = None
+    auto_checked_at: datetime | None = Field(None, description=(
+        "When the background watcher last queued a check of this wallet"))
     baseline_at: datetime | None = None
     changes: list[WatchChange] = []
     error: str | None = None
@@ -1150,8 +1152,17 @@ class WatchItem(_M):
     risk_class: RiskClass | None = Field(None, description="Of the wallet's case as it is now")
 
 
+class WatcherState(_M):
+    """Whether watched wallets are re-checked in the background, and how often."""
+    enabled: bool
+    every_seconds: int | None = None
+    last_run_at: datetime | None = Field(None, description="The watcher's last pass")
+    says: str
+
+
 class WatchList(_M):
     items: list[WatchItem]
+    watcher: WatcherState | None = None
 
 
 class ReliabilityBin(_M):
@@ -1659,10 +1670,18 @@ class SahyogSim(_M):
     categories: list[str] = []
     complaints: list[ComplaintStatus] = Field([], description="Newest first")
     requests: list[SimRequest] = Field([], description="Newest first")
+    portal_url: str | None = Field(None, description=(
+        "Set when this installation is connected to a portal over HTTP (SAHYOG_URL): the "
+        "screen is then that program's, at this address, and `enabled` is false here"))
+    tool_url: str | None = Field(None, description=(
+        "Set by the reference portal when it serves this screen: where the tool is, so "
+        "links to a case or a request lead there"))
+    results_received: int | None = Field(None, description=(
+        "Set by the reference portal: results the tool has pushed to it"))
 
 
 # ------------------------------------------------------------------ problem-statement coverage (G2)
-CoverageStatus = Literal["built", "partly", "planned"]
+CoverageStatus = Literal["built", "ready_to_connect", "partly", "planned"]
 
 
 class CoverageRow(_M):

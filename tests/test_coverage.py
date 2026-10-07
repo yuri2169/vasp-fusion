@@ -64,7 +64,7 @@ def test_the_screen_of_every_row_exists(row):
     assert row["where"] in _ui_routes()
 
 
-@pytest.mark.parametrize("row", [r for r in ROWS if r["status"] == "built"],
+@pytest.mark.parametrize("row", [r for r in ROWS if r["status"] in ("built", "ready_to_connect")],
                          ids=lambda r: r["id"])
 def test_the_evidence_of_every_built_row_exists(row):
     if row["evidence_kind"] == "make":
@@ -105,3 +105,13 @@ def test_a_row_that_is_not_built_must_say_why(tmp_path):
                    "where: /cases, evidence: {make: demo}}\n")
     with pytest.raises(coverage.CoverageError, match="does not say what is missing"):
         coverage.load(bad)
+
+
+def test_a_row_that_only_waits_for_access_says_so_and_never_counts_as_built():
+    waiting = [r for r in ROWS if r["status"] == "ready_to_connect"]
+    assert {r["id"] for r in waiting} == {"sahyog-intake", "sahyog-apis", "request-routing"}
+    for r in waiting:
+        assert "reference portal" in r["gap"] and "not public" in r["gap"]
+    page = coverage.build(main.TRACEABLE)
+    assert page["counts"]["ready_to_connect"] == 3
+    assert page["counts"]["built"] == sum(1 for r in ROWS if r["status"] == "built")

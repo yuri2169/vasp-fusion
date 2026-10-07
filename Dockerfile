@@ -35,6 +35,8 @@ WORKDIR /app
 COPY requirements.lock ./
 RUN pip install --no-cache-dir -r requirements.lock
 COPY vaspfusion/ ./vaspfusion/
+# the reference portal: a second program in the same image (compose runs it as `portal`)
+COPY refportal/ ./refportal/
 COPY artifacts/ ./artifacts/
 COPY demo/ ./demo/
 COPY config/ ./config/
@@ -65,7 +67,9 @@ RUN python -m vaspfusion.cli demo-cache --out data/chain_cache.duckdb \
 FROM base
 COPY --from=data /app/data/ ./data/
 COPY --from=ui /ui/dist ./ui/dist
-RUN useradd --system --uid 10001 --home-dir /app vasp && chown -R vasp /app/data
+# /run/sahyog and /portal: where compose mounts the shared credentials and the portal's store
+RUN useradd --system --uid 10001 --home-dir /app vasp \
+ && mkdir -p /run/sahyog /portal && chown -R vasp /app/data /run/sahyog /portal
 USER vasp
 EXPOSE 8000
 VOLUME ["/app/data"]

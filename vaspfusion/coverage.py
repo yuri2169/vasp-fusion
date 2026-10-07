@@ -14,7 +14,10 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PATH = ROOT / "data" / "ps_coverage.yaml"
-STATUSES = ("built", "partly", "planned")
+# `ready_to_connect`: built and tested on our side against a separate reference program,
+# and waiting only on access that is not ours to give (the real portal). It is never
+# "built": the row must say what is missing, and its evidence must exist.
+STATUSES = ("built", "ready_to_connect", "partly", "planned")
 # How the problem statement spells a chain, where it differs from how the tool does.
 CHAIN_NAMES = {"bsc": "BNB Chain", "bitcoin": "Bitcoin", "ethereum": "Ethereum", "tron": "Tron",
                "solana": "Solana", "polygon": "Polygon", "arbitrum": "Arbitrum", "base": "Base",

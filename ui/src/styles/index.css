@@ -206,6 +206,12 @@
     background-image: repeating-linear-gradient(135deg, var(--ink-soft) 0, var(--ink-soft) 2px, transparent 2px, transparent 5px);
   }
 
+  /* Ready to connect on the coverage grid: a solid lower half, between "built" (solid) and
+     "partly" (hatched), so the three read apart without colour. */
+  .dotfill {
+    background-image: linear-gradient(to top, var(--ink) 0, var(--ink) 50%, transparent 50%);
+  }
+
   .skeleton {
     background: var(--surface-3);
     animation: skeleton-pulse 1.4s ease-in-out infinite;

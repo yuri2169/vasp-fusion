@@ -6,7 +6,7 @@ RESEARCH ?= ../research/data
 # Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
 OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce conformance portal serve-pair docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -131,8 +131,8 @@ ui-perf:          ## the case page on a synthetic graph of 2,000 wallets, timed 
 ui-a11y:          ## axe-core on every screen in both themes + a keyboard walk, against the tool on :$(PORT)
 	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/a11y.mjs
 
-demo-flow:        ## the 3-minute demo, driven and asserted in a real browser against :$(PORT); FRAMES=dir keeps the frames
-	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/demo-flow.mjs
+demo-flow:        ## the 3-minute demo, driven and asserted in a real browser against the tool on :$(PORT) and the reference portal on :$(PORTAL_PORT), which exchange signed HTTP calls (`make serve-pair` and `make portal`, or `make docker-up`); PORTAL= (empty) runs it on one program with the built-in simulator; FRAMES=dir keeps the frames
+	cd ui && BASE_URL=http://127.0.0.1:$(PORT) PORTAL_URL=$(PORTAL) node scripts/demo-flow.mjs
 
 final-shots:      ## docs/screenshots/final-*: every screen in both themes, from the tool on :$(PORT) (run after demo-flow)
 	cd ui && BASE_URL=http://127.0.0.1:$(PORT) node scripts/final-shots.mjs
@@ -147,6 +147,17 @@ ROUNDS ?= 25
 bench-scale:      ## measure throughput at 1, 2, 4 and 8 workers on the recorded wallets -> artifacts/scale/metrics.json (no network; after `make demo-cache`)
 	$(PY) scripts/bench_scale.py --rounds $(ROUNDS) --out artifacts/scale/metrics.json
 
+PORTAL_PORT ?= 8100
+PORTAL ?= http://127.0.0.1:$(PORTAL_PORT)
+conformance:      ## the SAHYOG contract, checked over real sockets between the tool and the reference portal (no network; CONFORMANCE_TOOL_URL / CONFORMANCE_PORTAL_URL point it at running programs)
+	$(PY) -m pytest tests/conformance tests/test_sahyog_signing.py tests/test_http_gateway.py tests/refportal -q
+
+portal:           ## the reference portal (a separate program; a simulator, not the SAHYOG portal) on :$(PORTAL_PORT), talking to the tool on :$(PORT)
+	$(PY) -m refportal --port $(PORTAL_PORT) --tool http://127.0.0.1:$(PORT)
+
+serve-pair:       ## the tool on :$(PORT) connected to the reference portal on :$(PORTAL_PORT) over signed HTTP (run `make portal` beside it; credentials from `make demo`)
+	SAHYOG_URL=http://127.0.0.1:$(PORTAL_PORT) $(PY) -m vaspfusion.cli serve --port $(PORT) $(if $(WORKERS),--workers $(WORKERS))
+
 offline-check:    ## fail if code outside vaspfusion/chains/ can reach the network
 	@! grep -rnE "https?://" --include=*.py --exclude-dir=chains vaspfusion/ \
 		| grep -vE "#|\"\"\"|docs|example\.com|source_url|SOURCE_URL|xmlns=" \
@@ -154,7 +165,7 @@ offline-check:    ## fail if code outside vaspfusion/chains/ can reach the netwo
 	@! grep -rnE "^\s*(import|from) (urllib\.request|http\.client|socket|requests|httpx)" \
 		--include=*.py --exclude=http.py vaspfusion/ \
 		|| (echo "FAIL: only vaspfusion/chains/http.py may open sockets" && exit 1)
-	@echo "PASS: the only outbound code is vaspfusion/chains/ (chain APIs), and OFFLINE=1 serves it from the cache."
+	@echo "PASS: the only outbound code is vaspfusion/chains/ (chain APIs, served from the cache under OFFLINE=1) and, only when SAHYOG_URL is set, the gateway's signed calls to that one address."
 
 reproduce:        ## regenerate every artifact that comes from tracked files and check nothing changed (no network)
 	$(PY) scripts/reproduce.py
@@ -165,9 +176,9 @@ docker:           ## build the offline image (needs data/labels.duckdb: `make la
 	@test -f data/labels.duckdb || (echo "data/labels.duckdb is missing: run 'make labels' (the full label database, needs the label sets) or 'make demo-labels' (the recorded demo's labels, from tracked files)" && exit 1)
 	GIT_COMMIT=$(GIT_COMMIT) docker compose build
 
-docker-up:        ## run it on http://127.0.0.1:$(PORT) (sign in with the account in demo/officer.json)
-	GIT_COMMIT=$(GIT_COMMIT) PORT=$(PORT) docker compose up -d
-	@echo "http://127.0.0.1:$(PORT)  |  stop: make docker-down  |  back to the image's demo data: docker compose down -v"
+docker-up:        ## run the tool on http://127.0.0.1:$(PORT) and the reference portal on :$(PORTAL_PORT) (sign in with the account in demo/officer.json)
+	GIT_COMMIT=$(GIT_COMMIT) PORT=$(PORT) PORTAL_PORT=$(PORTAL_PORT) docker compose up -d
+	@echo "http://127.0.0.1:$(PORT)  |  reference portal (a simulator): http://127.0.0.1:$(PORTAL_PORT)  |  stop: make docker-down  |  back to the image's demo data: docker compose down -v"
 
 docker-down:      ## stop it (its data volume is kept)
 	docker compose down

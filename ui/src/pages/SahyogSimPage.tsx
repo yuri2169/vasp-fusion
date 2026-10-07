@@ -1,5 +1,5 @@
 import { ArrowRight, TriangleAlert } from 'lucide-react'
-import { useId, useState, type FormEvent, type ReactNode } from 'react'
+import { createContext, useContext, useId, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../api/client'
 import type { ComplaintStatus, ComplaintWallet, ReplyStatus, SimRequest } from '../api/models'
@@ -20,6 +20,23 @@ import { cx } from '../lib/cx'
 import { formatConfidence, formatDateTime } from '../lib/format'
 
 const NOTICE = 'A simulator for demonstration. Not the SAHYOG portal.'
+
+/** Where the tool is, when this screen is served by the reference portal (another program on
+ *  another port): a link to a case or a request then leaves this origin. Null inside the tool. */
+const ToolUrl = createContext<string | null>(null)
+
+function ToolLink({ to, className, children }: { to: string; className?: string; children: ReactNode }) {
+  const tool = useContext(ToolUrl)
+  return tool ? (
+    <a href={`${tool}${to}`} className={className}>
+      {children}
+    </a>
+  ) : (
+    <Link to={to} className={className}>
+      {children}
+    </Link>
+  )
+}
 
 const CATEGORY_WORDS: Record<string, string> = {
   investment_fraud: 'Investment fraud',
@@ -226,14 +243,14 @@ function WalletLine({ w }: { w: ComplaintWallet }) {
       )}
       <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-soft">
         {w.case_id && (
-          <Link to={`/cases/${encodeURIComponent(w.case_id)}`} className="font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
+          <ToolLink to={`/cases/${encodeURIComponent(w.case_id)}`} className="font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
             Open the case
-          </Link>
+          </ToolLink>
         )}
         {w.request_ids.map((id) => (
-          <Link key={id} to={`/requests/${encodeURIComponent(id)}`} className="font-mono text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
+          <ToolLink key={id} to={`/requests/${encodeURIComponent(id)}`} className="font-mono text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
             {id}
-          </Link>
+          </ToolLink>
         ))}
         {w.result_sent_at && <span>Result handed back {formatDateTime(w.result_sent_at)}</span>}
       </span>
@@ -288,9 +305,9 @@ function RequestCard({ r }: { r: SimRequest }) {
     <li data-testid="sim-request" className="flex flex-col gap-2.5 panel p-4">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <span className="flex flex-col">
-          <Link to={`/requests/${encodeURIComponent(r.id)}`} className="font-mono text-base font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
+          <ToolLink to={`/requests/${encodeURIComponent(r.id)}`} className="font-mono text-base font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
             {r.reference}
-          </Link>
+          </ToolLink>
           <span className="text-sm text-ink-soft">
             To <span className="font-medium text-ink">{r.vasp}</span> · {r.wallets} wallet{r.wallets === 1 ? '' : 's'}
             {r.sent_at && ` · sent ${formatDateTime(r.sent_at)}`}
@@ -316,17 +333,18 @@ function RequestCard({ r }: { r: SimRequest }) {
 }
 
 function Requests({ items }: { items: SimRequest[] }) {
+  const tool = useContext(ToolUrl)
   return (
     <section aria-label="Requests received" className="flex flex-col gap-2">
       <h2 className="eyebrow">Requests received</h2>
-      <p className="-mt-1 text-sm text-ink-soft">The outbox as the portal would see it. The buttons play the exchange; each reply arrives at the request desk through the same route a real reply would.</p>
+      <p className="-mt-1 text-sm text-ink-soft">{tool ? 'What the tool submitted to this program over signed HTTP, each with its letter.' : 'The outbox as the portal would see it.'} The buttons play the exchange; each reply arrives at the request desk through the same route a real reply would.</p>
       {items.length === 0 ? (
         <EmptyState
           title="No request has been sent yet"
           action={
-            <Link to="/desk" className="text-base font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
+            <ToolLink to="/desk" className="text-base font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
               Open the request desk
-            </Link>
+            </ToolLink>
           }
         >
           Draft a request to an exchange on the request desk, approve it and mark it as sent. It then appears here.
@@ -353,7 +371,8 @@ export function SahyogSimPage() {
         <TriangleAlert size={18} aria-hidden className="mt-0.5 shrink-0 text-ink" />
         <p className="text-base text-ink">
           <strong className="font-semibold">{d?.notice ?? NOTICE}</strong> SAHYOG's own interface is not public. This screen plays the portal's side of a proposed
-          contract, so the round trip can be shown: a complaint in, the result back, a request out, the exchange's reply in. Nothing leaves this installation.
+          contract, so the round trip can be shown: a complaint in, the result back, a request out, the exchange's reply in.{' '}
+          {d?.tool_url ? `This is a separate program from the tool at ${d.tool_url.replace(/^https?:\/\//, '')}; the two exchange signed HTTP calls and nothing else leaves this machine.` : 'Nothing leaves this installation.'}
         </p>
       </div>
       <PageHeader eyebrow="Demonstration" title="SAHYOG simulator">
@@ -368,8 +387,22 @@ export function SahyogSimPage() {
       ) : q.isError || !d ? (
         <ErrorState title="The simulator could not be read" detail={q.error instanceof ApiError ? q.error.detail : 'Reload the page to try again.'} onRetry={() => void q.refetch()} />
       ) : !d.enabled ? (
-        <EmptyState title="The simulator is switched off">{d.why_disabled ?? 'No intake key is set on this installation.'}</EmptyState>
+        d.portal_url ? (
+          <EmptyState
+            title="The portal's side runs as its own program"
+            action={
+              <a href={`${d.portal_url}/sahyog-sim`} className="text-base font-medium text-ink underline decoration-ink-dim underline-offset-2 hover:decoration-ink">
+                Open the reference portal
+              </a>
+            }
+          >
+            {d.why_disabled}
+          </EmptyState>
+        ) : (
+          <EmptyState title="The simulator is switched off">{d.why_disabled ?? 'No intake key is set on this installation.'}</EmptyState>
+        )
       ) : (
+        <ToolUrl.Provider value={d.tool_url ?? null}>
         <div className="grid items-start gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-5">
             <ComplaintForm categories={d.categories.length ? d.categories : Object.keys(CATEGORY_WORDS)} />
@@ -377,6 +410,7 @@ export function SahyogSimPage() {
           </div>
           <Requests items={d.requests} />
         </div>
+        </ToolUrl.Provider>
       )}
     </>
   )

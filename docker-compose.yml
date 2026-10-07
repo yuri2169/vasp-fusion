@@ -1,8 +1,11 @@
 # VASP-FUSION offline demo: `make docker-up` (or `docker compose up`), then
 # http://127.0.0.1:8000. Sign in with the demonstration account in demo/officer.json.
 #
-# Nothing here reaches the network: OFFLINE=1 makes the tool refuse any chain request
-# that is not in the cache baked into the image.
+# Two programs: the tool, and a reference portal that plays SAHYOG's side of our contract
+# (a simulator for demonstration, not the SAHYOG portal) on http://127.0.0.1:8100. They
+# exchange signed HTTP calls with each other and with nothing else: OFFLINE=1 makes the
+# tool refuse any chain request that is not in the cache baked into the image, and the
+# only address the tool's gateway calls is the portal container.
 name: vasp-fusion
 services:
   vasp-fusion:
@@ -21,7 +24,17 @@ services:
       # The audit log's key. Unset: a key file is made beside the log, inside the volume.
       # Set (32 characters or more), it stays out of the volume, which is stronger.
       VASPFUSION_AUDIT_KEY: ${VASPFUSION_AUDIT_KEY:-}
+      # The portal the gateway submits to. Plain http is accepted because the call never
+      # leaves the compose network; a real portal is https, and this line is its address.
+      SAHYOG_URL: http://portal:8100
+      SAHYOG_ALLOW_HTTP: "1"
+      SAHYOG_PUBLIC_URL: http://127.0.0.1:${PORTAL_PORT:-8100}
+      # The shared API key and signing secret: random, made by whichever program starts
+      # first, in a volume both mount. Never printed, never in the image.
+      VASPFUSION_SAHYOG_KEY_FILE: /run/sahyog/api_key
+      VASPFUSION_SAHYOG_SECRET_FILE: /run/sahyog/signing_secret
     volumes:
+      - sahyog-credentials:/run/sahyog
       # cases, requests, the audit log and the token secret outlive the container.
       # A rebuilt image does NOT replace what is already in this volume:
       # `docker compose down -v` starts again from the image's demo data.
@@ -35,5 +48,37 @@ services:
       - no-new-privileges:true
     restart: unless-stopped
 
+  portal:
+    image: vasp-fusion:offline
+    command: ["python", "-m", "refportal", "--host", "0.0.0.0", "--port", "8100"]
+    depends_on:
+      - vasp-fusion
+    ports:
+      - "127.0.0.1:${PORTAL_PORT:-8100}:8100"     # this machine only
+    environment:
+      PORTAL_TOOL_URL: http://vasp-fusion:8000
+      PORTAL_TOOL_PUBLIC_URL: http://127.0.0.1:${PORT:-8000}
+      PORTAL_KEY_FILE: /run/sahyog/api_key
+      PORTAL_SECRET_FILE: /run/sahyog/signing_secret
+      PORTAL_DB: /portal/refportal.sqlite
+    volumes:
+      - sahyog-credentials:/run/sahyog
+      - portal-data:/portal
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8100/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
 volumes:
   vaspfusion-data: {}
+  sahyog-credentials: {}
+  portal-data: {}
