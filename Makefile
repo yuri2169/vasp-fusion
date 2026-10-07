@@ -6,7 +6,7 @@ RESEARCH ?= ../research/data
 # Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
 OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -58,6 +58,9 @@ model:            ## train, calibrate and measure the deposit model on that set;
 
 abstain-eval:     ## measure the abstain threshold on label-hidden traces of real customers (cached; OFFLINE=1 replays)
 	$(PY) -m vaspfusion.cli abstain-eval
+
+benchmark:        ## measure attribution on every chain beside the naive baseline (cached in data/benchmark_cache/; OFFLINE=1 replays; BENCH_CHAIN=ethereum for one)
+	$(PY) -m vaspfusion.cli benchmark --chain "$(BENCH_CHAIN)" --commit "$$(git rev-parse --short HEAD)"
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q

@@ -557,6 +557,85 @@ def cmd_abstain_eval(args) -> None:
     print(f"wrote {out}/")
 
 
+def cmd_benchmark(args) -> None:
+    """Measure attribution on each chain against the naive baseline (eval/benchmark.py)."""
+    from datetime import datetime, timezone
+
+    from . import chains
+    from .cases import trace_provider
+    from .eval import abstain as A
+    from .eval import benchmark as B
+    from .labels.lookup import LabelStore
+
+    cfg = B.BenchmarkConfig(seed=args.seed)
+    root = Path(args.out)
+    for chain in (args.chain.split(",") if args.chain else B.CHAINS):
+        out = root / chain
+        was = json.loads((out / "validation.json").read_text()) \
+            if (out / "validation.json").exists() else {}
+        report, collected = was.get("sampling"), was.get("collected")
+        if chain == "tron":
+            rows = B.tron_rows(A.read_claims(Path(args.abstain) / "tron" / "claims.csv"),
+                               cfg.rules.attribute_min)
+        elif args.from_wallets:
+            if not (out / "wallets.csv").exists():
+                print(f"{chain}: no wallets.csv yet, skipped", file=sys.stderr)
+                continue
+            rows = B.read_csv(out / "wallets.csv")
+        else:
+            cache = chains.ChainCache(Path(args.cache) / f"{chain}.duckdb", hold=True)
+            limiter = None
+            if not chains.cache.offline_mode():
+                from .chains.ratelimit import RateLimiter
+                limiter = RateLimiter()
+            fetcher = chains.Fetcher(cache, chains.UrllibTransport(), limiter=limiter)
+            provider = trace_provider(chain, fetcher, cfg.trace)
+            earlier = B.read_csv(out / "wallets.csv") if (out / "wallets.csv").exists() else []
+
+            def progress(stage: str, i: int, n: int) -> None:
+                if i == n or i % 10 == 0:
+                    print(f"  {chain} {stage}: {i}/{n}  ({_pages(fetcher)})", file=sys.stderr,
+                          flush=True)
+
+            with LabelStore(args.labels_db) as labels:
+                sample, report = B.sample_chain(chain, labels.non_derived_exchanges(chain),
+                                                provider, labels, cfg, progress)
+                B.write_csv(out / "sample.csv", sample, B.SAMPLE_COLUMNS)
+                print(f"{chain}: {len(sample)} wallets sampled ({_pages(fetcher)})",
+                      file=sys.stderr, flush=True)
+                rows = B.collect(sample, chain, provider, labels, cfg, fetcher, earlier,
+                                 progress, save=lambda r: B.write_csv(out / "wallets.csv", r,
+                                                                      B.COLUMNS))
+            if fetcher.stats["live"]:
+                collected = {"on": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                             "code_commit": args.commit, "pages_live": fetcher.stats["live"],
+                             "pages_cached": fetcher.stats["hits"],
+                             "retries": fetcher.stats["retries"]}
+            cache.close()
+        if chain != "tron" or not args.from_wallets:
+            B.write_csv(out / "wallets.csv", rows, B.COLUMNS)
+        m = B.measure(rows, chain, cfg, report, collected)
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "validation.json").write_text(json.dumps(m, indent=1, allow_nan=False) + "\n")
+    per = {c: json.loads((root / c / "validation.json").read_text())
+           for c in B.CHAINS if (root / c / "validation.json").exists()}
+    summary = B.summarise(per)
+    (root / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False) + "\n")
+    print(f"{'chain':<10}{'wallets':>8}{'named':>7}{'wrong':>7}{'error':>8}{'upper':>8}"
+          f"{'none':>6} | baseline {'named':>6}{'wrong':>7}{'error':>8} | {'sec':>6}")
+    pct = lambda v: "-" if v is None else f"{v:.1%}"     # noqa: E731
+    for r in summary["chains"]:
+        if not r["measured"]:
+            print(f"{r['chain']:<10} not measured")
+            continue
+        sec = "-" if r["median_seconds"] is None else f"{r['median_seconds']:.1f}"
+        print(f"{r['chain']:<10}{r['wallets']:>8}{r['named']:>7}{r['wrong']:>7}"
+              f"{pct(r['error']):>8}{pct(r['error_upper_95']):>8}{r['not_named']:>6} |"
+              f"          {r['baseline_named']:>6}{r['baseline_wrong']:>7}"
+              f"{pct(r['baseline_error']):>8} | {sec:>6}")
+    print(f"wrote {root}/")
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -1140,6 +1219,21 @@ def main(argv: list[str] | None = None) -> None:
                    help="no tracing: measure again from the tracked claims.csv")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_abstain_eval)
+
+    s = sub.add_parser("benchmark", help="measure attribution on every chain, labels one hop "
+                                         "away hidden, beside a naive baseline")
+    s.add_argument("--chain", default="", help="comma-separated; default: all six")
+    s.add_argument("--out", default=str(ROOT / "artifacts" / "benchmark_v1"))
+    s.add_argument("--abstain", default=str(ROOT / "artifacts" / "abstain_v1"),
+                   help="the Tron run's folder: its claims.csv is the Tron row")
+    s.add_argument("--cache", default=str(ROOT / "data" / "benchmark_cache"),
+                   help="folder of the caches the traces are fetched into, one per chain")
+    s.add_argument("--seed", type=int, default=26182)
+    s.add_argument("--commit", default="", help="recorded when wallets are traced live")
+    s.add_argument("--from-wallets", action="store_true",
+                   help="no tracing: measure again from the tracked wallets.csv")
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_benchmark)
 
     s = sub.add_parser("demo-labels", help="a label database of only the rows the recorded "
                                            "demo read (no research data needed)")

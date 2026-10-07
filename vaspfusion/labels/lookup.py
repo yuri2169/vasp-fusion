@@ -164,6 +164,15 @@ class LabelStore:
             "AND kind <> 'deposit' ORDER BY address", [normalize_chain(chain)]).fetchall()
         return [Label(*r) for r in rows]
 
+    def non_derived_exchanges(self, chain: str) -> list[Label]:
+        """A chain's own exchange labels from the sources (not derived, and not the
+        chain-agnostic EVM rows): where the benchmark looks for paying wallets."""
+        rows = self.con.execute(
+            f"SELECT {self._cols} FROM labels WHERE chain = ? AND category = 'exchange' "
+            "AND tier <> 'derived' ORDER BY entity, address",
+            [normalize_chain(chain)]).fetchall()
+        return [Label(*r) for r in rows]
+
     def by_tier(self, chain: str, tier: str) -> list[Label]:
         """Every label of one tier on a chain, by address (the hold-out test samples
         its ground truth from the explorer-tagged ones)."""
