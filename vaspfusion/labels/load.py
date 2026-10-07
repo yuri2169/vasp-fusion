@@ -470,6 +470,8 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
         stats["derived_exchange"] = con.execute(
             "SELECT count(*) FROM labels WHERE tier = 'derived' AND category = 'exchange'"
         ).fetchone()[0]
+        stats["by_source_checked_tags"] = con.execute(
+            "SELECT count(*) FROM labels WHERE source = ?", [TAG_CHECKED_SOURCE]).fetchone()[0]
         stats["derived_model_scored"] = con.execute(
             "SELECT count(*) FROM labels WHERE confidence_low IS NOT NULL").fetchone()[0]
         stats["tagpack_kept"] = con.execute(

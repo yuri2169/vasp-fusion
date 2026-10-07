@@ -153,9 +153,12 @@ def cmd_labels(args) -> None:
           "writes the checks.")
     ex = stats["by_category"].get("exchange", 0)
     derived_ex = stats["derived_exchange"]
-    print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted'] - derived_ex:,} upstream "
+    checked = stats["by_source_checked_tags"]
+    print(f"  exchange rows {ex:,} = "
+          f"{ex - stats['exchange_tag_promoted'] - derived_ex - checked:,} upstream "
           f"+ Dune exchange rows + {stats['exchange_tag_promoted']:,} promoted by Etherscan's "
-          f"Exchange tag + {derived_ex:,} derived deposit addresses")
+          f"Exchange tag + {checked:,} deposit tags named after an on-chain check "
+          f"+ {derived_ex:,} derived deposit addresses")
     print(f"  derived deposit addresses merged from {args.derived}: "
           f"{stats['by_tier'].get('derived', 0):,} (of {stats['derived_loaded']:,} in the "
           f"discovery files; {stats['derived_shadowed']:,} already labelled by a stronger "
