@@ -2,6 +2,9 @@
 
     python scripts/build_validation_corpus.py [--labels data/labels.duckdb]
                                               [--benchmark artifacts/benchmark_v1]
+    # a fresh set, after the points were changed: another seed, and no wallet of the first
+    python scripts/build_validation_corpus.py --seed 26183 --taken 2026-10-08 \
+        --exclude data/validation/corpus.json --out data/validation/corpus_v2.json
 
 Every address is drawn by this script from a named public source, with a fixed seed, from
 the full label database (`make labels`) and from the wallets of the six-chain benchmark.
@@ -35,6 +38,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "validation" / "corpus.json"
 SEED = 26182
 TAKEN = "2026-10-08"
+# an explorer-tagged exploiter or hacker wallet (it carried no threat tag when the first set
+# was drawn and carries `theft` since; the rule reads the name tag, not the threat)
+EXPLOITER = ("source = 'eth-labels' and category = 'entity' "
+             "and regexp_matches(label, '(Exploiter|Hacker)( [0-9]+)?$')")
 OFAC = "category = 'sanctioned' and source like 'ofac-sdn%'"
 TAGGED = "source = 'eth-labels' and category = 'entity' and threat is null"
 
@@ -53,8 +60,7 @@ POSITIVES = [
     ("scam_list_bitcoin", "On a scam list (EtherScamDB)", "bitcoin", 5,
      "category = 'scam' and source like '%etherscamdb%'", None),
     ("exploiter_ethereum", "Explorer-tagged exploiter or hacker wallet", "ethereum", 10,
-     f"{TAGGED} and regexp_matches(label, '(Exploiter|Hacker)( [0-9]+)?$') "
-     "and entity <> 'Wazirx Exploit'", 2),
+     f"{EXPLOITER} and entity <> 'Wazirx Exploit'", 2),
     ("phishing_ethereum", "Explorer-tagged phishing address", "ethereum", 5,
      "source = 'eth-labels' and label like 'Fake_Phishing%'", None),
 ]
@@ -93,28 +99,28 @@ def draw(rng: random.Random, rows: list[dict], n: int, per_entity: int | None) -
     return taken
 
 
-def from_labels(db, rng, arm: str, strata) -> list[dict]:
+def from_labels(db, rng, arm: str, strata, used: set[str], taken: str) -> list[dict]:
     out = []
     for stratum, what, chain, n, where, per_entity in strata:
         found = db.execute(f"select {', '.join(COLUMNS)} from labels where chain = ? "
                            f"and ({where})", [chain]).fetchall()
-        rows = [dict(zip(COLUMNS, r)) for r in found]
+        rows = [dict(zip(COLUMNS, r)) for r in found if r[0] not in used]
         for r in draw(rng, rows, n, per_entity):
             out.append({"address": r["address"], "chain": chain, "arm": arm, "stratum": stratum,
                         "what": what, "entity": r["entity"], "label": r["label"],
                         "source": r["source"], "source_url": r["source_url"],
                         "threat": r["threat"], "threat_source": r["threat_source"],
-                        "threat_url": r["threat_url"], "taken": TAKEN,
+                        "threat_url": r["threat_url"], "taken": taken,
                         "available": len(rows)})
     return out
 
 
-def customers(rng, benchmark: Path, commit: str) -> list[dict]:
+def customers(rng, benchmark: Path, commit: str, used: set[str], taken: str) -> list[dict]:
     out = []
     for chain, n in CUSTOMERS:
         with (benchmark / chain / "wallets.csv").open() as f:
             rows = [{"address": r["wallet"], "entity": r["exchange"]} for r in csv.DictReader(f)]
-        rows = list({r["address"]: r for r in rows}.values())
+        rows = [r for r in {r["address"]: r for r in rows}.values() if r["address"] not in used]
         for r in draw(rng, rows, n, None):
             out.append({"address": r["address"], "chain": chain, "arm": "control",
                         "stratum": f"exchange_customer_{chain}",
@@ -124,7 +130,7 @@ def customers(rng, benchmark: Path, commit: str) -> list[dict]:
                         "source": "vasp-fusion benchmark_v1",
                         "source_url": f"artifacts/benchmark_v1/{chain}/wallets.csv"
                                       + (f" at commit {commit}" if commit else ""),
-                        "taken": TAKEN, "available": len(rows)})
+                        "taken": taken, "available": len(rows)})
     return out
 
 
@@ -134,12 +140,18 @@ def main() -> None:
     ap.add_argument("--benchmark", default=str(ROOT / "artifacts" / "benchmark_v1"))
     ap.add_argument("--benchmark-commit", default="")
     ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--seed", type=int, default=SEED)
+    ap.add_argument("--taken", default=TAKEN, help="the date written beside each wallet")
+    ap.add_argument("--exclude", action="append", default=[],
+                    help="an earlier set: none of its wallets is drawn again (repeatable)")
     args = ap.parse_args()
-    rng = random.Random(SEED)
+    rng = random.Random(args.seed)
+    used = {w["address"] for f in args.exclude for w in json.loads(Path(f).read_text())["wallets"]}
     db = duckdb.connect(args.labels, read_only=True)
-    wallets = from_labels(db, rng, "positive", POSITIVES) + from_labels(db, rng, "control", CONTROLS)
+    wallets = from_labels(db, rng, "positive", POSITIVES, used, args.taken) \
+        + from_labels(db, rng, "control", CONTROLS, used, args.taken)
     db.close()
-    wallets += customers(rng, Path(args.benchmark), args.benchmark_commit)
+    wallets += customers(rng, Path(args.benchmark), args.benchmark_commit, used, args.taken)
     both = {w["address"] for w in wallets if w["arm"] == "positive"} & \
            {w["address"] for w in wallets if w["arm"] == "control"}
     if both:
@@ -148,7 +160,8 @@ def main() -> None:
                       "public source named beside it. The list was fixed before any of them "
                       "was traced. A control being here alleges nothing about its owner; a "
                       "positive is here because the named source lists it.",
-           "seed": SEED, "taken": TAKEN,
+           "seed": args.seed, "taken": args.taken,
+           "excludes": [str(Path(f).as_posix()) for f in args.exclude],
            "labels_sha256": hashlib.sha256(Path(args.labels).read_bytes()).hexdigest(),
            "positives": sum(w["arm"] == "positive" for w in wallets),
            "controls": sum(w["arm"] == "control" for w in wallets),

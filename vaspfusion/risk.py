@@ -33,6 +33,11 @@ RANK = {c: i for i, c in enumerate(CLASSES)}
 # a typology flag -> the indicator it is counted as; the label flags are split by side below
 PATTERNS = ("coinjoin_shape", "peel_chain", "rapid_forwarding", "fan_out", "fan_in",
             "round_amounts")
+# The pattern rules that read only how money moved. Together they add at most
+# `pattern_cap` points (config/risk.yaml): measured on real wallets, each fired on
+# ordinary wallets as often as on listed ones, so by themselves they must not lift a
+# wallet out of Low.
+CAPPED = ("peel_chain", "rapid_forwarding", "fan_out", "fan_in", "round_amounts")
 # threat_contact: a link to an address with a threat tag that is neither sanctioned nor a
 # mixer (typologies.py raises one flag per address, so nothing is counted twice)
 LABEL_FLAGS = {"sanctioned_contact": "sanctioned", "mixer_contact": "mixer",
@@ -75,7 +80,11 @@ def _load(path: str) -> dict:
         raise RiskConfigError("distance_weight must be three numbers from 0 to 1")
     if not src.get("title") or not src.get("url") or not src.get("publisher"):
         raise RiskConfigError("source needs a title, a publisher and a url")
+    cap = doc.get("pattern_cap")
+    if cap is not None and (not isinstance(cap, int) or isinstance(cap, bool) or not 0 <= cap <= 100):
+        raise RiskConfigError("pattern_cap must be a whole number from 0 to 100")
     return {"classes": dict(classes), "indicators": inds, "distance_weight": list(weights),
+            "pattern_cap": cap,
             "source": f"{src['publisher']}, \"{src['title']}\", {src.get('published')}"}
 
 
@@ -188,8 +197,19 @@ def _merge(found: list[dict], cfg: dict) -> list[dict]:
     return merged
 
 
+def total(points: dict[str, int], cfg: dict) -> int:
+    """The score of a set of indicators (code -> points): their sum, with the pattern
+    rules together counted up to `pattern_cap`, capped at 100. Adding an indicator never
+    lowers it."""
+    patterns = sum(p for c, p in points.items() if c in CAPPED)
+    cap = cfg.get("pattern_cap")
+    if cap is not None:
+        patterns = min(patterns, cap)
+    return min(100, patterns + sum(p for c, p in points.items() if c not in CAPPED))
+
+
 def _info(indicators: list[dict], cfg: dict, **extra) -> dict:
-    score = min(100, sum(i["points"] for i in indicators))
+    score = total({i["code"]: i["points"] for i in indicators}, cfg)
     return {"score": score, "risk_class": class_of(score, cfg), "indicators": indicators,
             "reasons": [i["text"] for i in indicators], "flows": [], "path_class": None,
             "basis": RISK_BASIS, "source": cfg["source"], **extra}
@@ -206,7 +226,7 @@ def _flows(case: dict, found: list[dict], cfg: dict) -> tuple[list[dict], str | 
 
     def grade(codes: dict[str, int]) -> tuple[str, list[str]]:
         ranked = sorted(codes, key=lambda c: (-codes[c], CODES.index(c)))
-        return (class_of(min(100, sum(codes.values())), cfg),
+        return (class_of(total(codes, cfg), cfg),
                 [cfg["indicators"][c]["name"] for c in ranked])
 
     flows = []

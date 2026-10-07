@@ -62,11 +62,12 @@ abstain-eval:     ## measure the abstain threshold on label-hidden traces of rea
 benchmark:        ## measure attribution on every chain beside the naive baseline (cached in data/benchmark_cache/; OFFLINE=1 replays; BENCH_CHAIN=ethereum for one)
 	$(PY) -m vaspfusion.cli benchmark --chain "$(BENCH_CHAIN)" --commit "$$(git rev-parse --short HEAD)"
 
-risk-validation:  ## the risk score and the pattern rules on the validation wallets, from the tracked traced cases (no network) -> artifacts/risk_validation_v1/results.json
-	$(PY) -m vaspfusion.cli risk-validation
+risk-validation:  ## the risk score and the pattern rules on both validation sets, from the tracked traced cases (no network) -> artifacts/risk_validation_v1 (the first set, the points as they were) and _v2 (a fresh set, the points in use)
+	$(PY) -m vaspfusion.cli risk-validation --set v1
+	$(PY) -m vaspfusion.cli risk-validation --set v2
 
-risk-validation-trace: ## trace the validation wallets again (network; OFFLINE=1 replays data/risk_validation_cache.duckdb), then measure
-	$(PY) -m vaspfusion.cli risk-validation --trace
+risk-validation-trace: ## trace the fresh set (v2) again (network; OFFLINE=1 replays data/risk_validation_v2_cache.duckdb), then measure
+	$(PY) -m vaspfusion.cli risk-validation --set v2 --trace
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q

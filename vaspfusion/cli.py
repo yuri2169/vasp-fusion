@@ -111,7 +111,9 @@ def cmd_labels(args) -> None:
     print(f"  threat tags ({args.threats}): {stats['threat_rows']:,} tagged addresses, "
           f"{stats['threat_joined']:,} joined onto a label already held, "
           f"{stats['threat_new_rows']:,} added as labels of their own; "
-          f"{stats['scam_retagged']:,} rows filed as scam tagged fraud. "
+          f"{stats['scam_retagged']:,} rows filed as scam tagged fraud; "
+          f"{stats.get('explorer_tagged', 0):,} explorer name tags (phishing, hack or "
+          f"exploit wallets) tagged. "
           f"{stats['sanctioned_without_programme']:,} sanctioned rows are not in the SDN XML "
           "(no programme code, no tag). `make threats` writes the file.")
     if tagged:
@@ -657,9 +659,19 @@ def cmd_risk_validation(args) -> None:
     from .labels.lookup import LabelStore
     from .risk import DEFAULT_PATH, load_config
 
-    out = Path(args.out)
-    corpus = json.loads(Path(args.corpus).read_text())
+    # v1: the first set, scored with the points as they were (the copy kept beside it);
+    # v2: the fresh set, scored with the points in use
+    version = f"risk_validation_{args.set}"
+    out = Path(args.out or ROOT / "artifacts" / version)
+    first = args.set == "v1"
+    corpus_path = Path(args.corpus or ROOT / "data" / "validation"
+                       / ("corpus.json" if first else f"corpus_{args.set}.json"))
+    config_path = out / "risk.yaml" if first else DEFAULT_PATH
+    corpus = json.loads(corpus_path.read_text())
     packed = out / "cases.json.gz"
+    if args.trace and first:
+        raise SystemExit("the first set is kept as it was traced (its labels and points have "
+                         "changed since): only `--set v2` can be traced again")
     if args.trace:
         part = Path(args.cache).with_suffix(".rows.jsonl")     # traced so far, to resume
         done = {}
@@ -687,10 +699,11 @@ def cmd_risk_validation(args) -> None:
                                   done=done, on_done=told)
         V.write_cases(packed, rows)
         print(f"{len(rows)} wallets traced under {len(V.VIEWS)} views -> {packed}")
-    m = V.measure(corpus, V.read_cases(packed), load_config(),
-                  config_sha256=V.sha256(DEFAULT_PATH), corpus_sha256=V.sha256(args.corpus))
+    m = V.measure(corpus, V.read_cases(packed), load_config(config_path),
+                  config_sha256=V.sha256(config_path), corpus_sha256=V.sha256(corpus_path),
+                  version=version)
     (out / "results.json").write_text(json.dumps(m, indent=1, allow_nan=False) + "\n")
-    print(f"risk score on {m['positives']} positives and {m['controls']} controls (seed "
+    print(f"{version}: risk score on {m['positives']} positives and {m['controls']} controls (seed "
           f"{m['seed']}); High or above:")
     for view in V.VIEWS:
         v = m["views"][view]
@@ -1313,12 +1326,15 @@ def main(argv: list[str] | None = None) -> None:
 
     s = sub.add_parser("risk-validation", help="measure the risk score and the pattern rules on "
                                                "real positives and controls")
-    s.add_argument("--corpus", default=str(ROOT / "data" / "validation" / "corpus.json"))
-    s.add_argument("--out", default=str(ROOT / "artifacts" / "risk_validation_v1"))
+    s.add_argument("--set", choices=["v1", "v2"], default="v2",
+                   help="v2 (default): the fresh set, scored with config/risk.yaml. v1: the "
+                        "first set, scored with the points as they were when it was measured")
+    s.add_argument("--corpus", default=None, help="default: data/validation/corpus[_v2].json")
+    s.add_argument("--out", default=None, help="default: artifacts/risk_validation_<set>")
     s.add_argument("--trace", action="store_true",
                    help="trace the wallets (network, or OFFLINE=1 with the cache) and rewrite "
                         "cases.json.gz; without it the tracked cases are scored again")
-    s.add_argument("--cache", default=str(ROOT / "data" / "risk_validation_cache.duckdb"))
+    s.add_argument("--cache", default=str(ROOT / "data" / "risk_validation_v2_cache.duckdb"))
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_risk_validation)
 

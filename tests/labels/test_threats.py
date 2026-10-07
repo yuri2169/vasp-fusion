@@ -211,3 +211,45 @@ def test_a_db_built_before_threat_tags_still_reads(tagged, tmp_path):
         assert store.lookup("TBXMiRqUp1XH1zLazWu8cWitMAScv4HsYq", "tron").threat is None
         assert store.search(threat="fraud") == (0, [])
         assert store.stats()["by_threat"] == {}
+
+
+# ------------------------------------------------------------------ explorer name tags (E2)
+def _rows(*rows):
+    import polars as pl
+    from vaspfusion.labels.load import LABEL_COLUMNS as COLS
+    blank = {c: None for c in COLS}
+    full = [{**blank, "chain": "ethereum", "category": "entity", "kind": "unknown",
+             "tier": "explorer_tag", "source": "eth-labels", "source_url": "https://x",
+             **r, "_promoted": False} for r in rows]
+    schema = {c: pl.String for c in COLS} | {"confidence": pl.Float64, "confidence_low": pl.Float64,
+                                              "confidence_high": pl.Float64, "_promoted": pl.Boolean}
+    return pl.DataFrame(full, schema=schema)
+
+
+def test_an_explorers_exploiter_or_phishing_tag_becomes_a_threat_tag_in_its_own_words():
+    from vaspfusion.labels.load import _apply_threats
+    df, stats = _apply_threats(_rows(
+        {"address": "0x01", "entity": "Wazirx Exploit", "label": "WazirX Exploiter 4"},
+        {"address": "0x02", "entity": "Kucoin Hacker", "label": "Kucoin Hacker"},
+        {"address": "0x03", "entity": "Brand Infringement", "label": "Fake_Phishing1065264"},
+        # not the wallet of a hack: a charity whose name contains the word, a whitehat
+        {"address": "0x04", "entity": "Charity", "label": "Endaoment: Tampa Hackerspace"},
+        {"address": "0x05", "entity": "Balancer", "label": "Balancer Exploit Whitehat 1"},
+        # the same words from a source that is not the explorer's tags
+        {"address": "0x06", "entity": "X", "label": "X Exploiter", "source": "dune-spellbook"},
+        # an address a listed source already tagged keeps that tag
+        {"address": "0x07", "entity": "Lazarus", "label": "Ronin Bridge Exploiter"},
+    ), [{"address": "0x07", "chain": "ethereum", "threat": "sanctioned_other", "entity": "LAZARUS",
+         "source": "ofac-sdn-xml", "source_url": "u", "evidence": "programme DPRK3"}])
+    got = {r["address"]: r for r in df.to_dicts()}
+    assert (got["0x01"]["threat"], got["0x01"]["threat_entity"], got["0x01"]["threat_source"]) == \
+        ("theft", "Wazirx Exploit", "eth-labels")
+    assert got["0x01"]["threat_evidence"] == ("Tagged as the wallet of a hack or exploit by "
+                                              "the block explorer: WazirX Exploiter 4")
+    assert got["0x02"]["threat"] == "theft" and got["0x03"]["threat"] == "fraud"
+    assert "phishing address" in got["0x03"]["threat_evidence"]
+    assert [got[a]["threat"] for a in ("0x04", "0x05", "0x06")] == [None, None, None]
+    assert got["0x07"]["threat"] == "sanctioned_other"
+    assert stats["explorer_tagged"] == 3
+    # no category is changed: the outcome rules read the category, not the tag
+    assert {r["category"] for r in got.values()} == {"entity"}

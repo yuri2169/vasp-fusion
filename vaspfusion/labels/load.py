@@ -66,7 +66,7 @@ CREATE TABLE labels (
     confidence_low  DOUBLE,  -- model-scored rows only: the calibrated range
     confidence_high DOUBLE,
     model      VARCHAR,  -- rows the model scored: JSON {p, low, high, basis, reasons}
-    threat          VARCHAR,  -- tagged addresses only: ransomware, darknet_market,
+    threat          VARCHAR,  -- tagged addresses only: ransomware, darknet_market, theft,
                               -- terrorism_financing, fraud or sanctioned_other
     threat_entity   VARCHAR,  -- who the source names (a ransomware family, a listed entity)
     threat_source   VARCHAR,  -- the source of the tag (may differ from the label's source)
@@ -293,11 +293,32 @@ def _apply_threats(df: pl.DataFrame, tags: list[dict]) -> tuple[pl.DataFrame, di
         pl.when(scam).then(pl.format("Filed as a scam address by {}: {}", pl.col("source"),
                                      pl.col("label").fill_null(pl.col("entity"))))
           .otherwise(pl.col("threat_evidence")).alias("threat_evidence"))
+    # Explorer name tags that say what the wallet is (config/threats.yaml, `explorer_tags`):
+    # a phishing address, the wallet of a hack or exploit. Only rows nothing has tagged.
+    explorer = (threat_config().get("explorer_tags") or {})
+    from_explorer = pl.col("source").str.split("+").list.eval(
+        pl.element().str.strip_chars().is_in(explorer.get("sources", []))).list.any()
+    explorer_tagged = 0
+    for rule in explorer.get("rules", []):
+        hit = from_explorer & pl.col("threat").is_null() & \
+            pl.col("label").fill_null("").str.contains(rule["pattern"])
+        explorer_tagged += int(df.select(hit.sum()).item())
+        df = df.with_columns(
+            pl.when(hit).then(pl.lit(rule["threat"])).otherwise(pl.col("threat")).alias("threat"),
+            pl.when(hit).then(pl.col("entity")).otherwise(pl.col("threat_entity"))
+              .alias("threat_entity"),
+            pl.when(hit).then(pl.col("source")).otherwise(pl.col("threat_source"))
+              .alias("threat_source"),
+            pl.when(hit).then(pl.col("source_url")).otherwise(pl.col("threat_url"))
+              .alias("threat_url"),
+            pl.when(hit).then(pl.format("{}: {}", pl.lit(rule["words"]), pl.col("label")))
+              .otherwise(pl.col("threat_evidence")).alias("threat_evidence"))
     unlisted = int(df.select(((pl.col("category") == "sanctioned")
                               & pl.col("threat").is_null()).sum()).item())
     return df.sort(["address", "chain"]), {
         "threat_rows": len(tags), "threat_joined": joined, "threat_new_rows": len(fresh),
-        "scam_retagged": retagged, "sanctioned_without_programme": unlisted}
+        "scam_retagged": retagged, "explorer_tagged": explorer_tagged,
+        "sanctioned_without_programme": unlisted}
 
 
 def threat_stats(con: duckdb.DuckDBPyConnection) -> dict:
@@ -325,7 +346,7 @@ def threat_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 from .sources import by_source, family  # noqa: E402
-from .threats import OFAC_SOURCE, read_csv as read_threat_tags, source_family  # noqa: E402
+from .threats import OFAC_SOURCE, config as threat_config, read_csv as read_threat_tags, source_family  # noqa: E402
 
 
 def label_stats(con: duckdb.DuckDBPyConnection) -> dict:

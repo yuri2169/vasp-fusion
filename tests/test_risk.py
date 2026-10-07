@@ -313,3 +313,31 @@ def test_a_tagged_address_is_severe_by_its_tag_in_the_sources_words():
     r = risk.wallet_risk("RW", label, [])
     assert (r["risk_class"], r["indicators"][0]["code"]) == ("severe", "threat_self")
     assert r["reasons"][0].endswith(TAG["evidence"])
+
+
+# ------------------------------------------------------------------ the pattern cap (E2)
+def test_the_pattern_rules_together_never_lift_a_wallet_out_of_low():
+    cfg = risk.load_config()
+    every = {c: cfg["indicators"][c]["points"] for c in risk.CAPPED}
+    assert sum(every.values()) > cfg["pattern_cap"]
+    assert risk.total(every, cfg) == cfg["pattern_cap"] < cfg["classes"]["medium"]
+    assert risk.class_of(risk.total(every, cfg), cfg) == "low"
+
+
+def test_the_cap_leaves_every_other_indicator_whole_and_never_lowers_a_score():
+    cfg = risk.load_config()
+    every = {c: cfg["indicators"][c]["points"] for c in risk.CAPPED}
+    hub = {"unlabelled_hub": cfg["indicators"]["unlabelled_hub"]["points"]}
+    assert risk.total({**every, **hub}, cfg) == cfg["pattern_cap"] + hub["unlabelled_hub"]
+    assert risk.total({"mixer_contact": 75, **every}, cfg) == 95
+    grown: dict = {}
+    for code, pts in {**every, **hub, "bridge_hop": 15}.items():
+        before = risk.total(grown, cfg)
+        grown[code] = pts
+        assert risk.total(grown, cfg) >= before
+
+
+def test_a_config_with_no_cap_adds_the_patterns_in_full():
+    cfg = {**risk.load_config(), "pattern_cap": None}
+    every = {c: cfg["indicators"][c]["points"] for c in risk.CAPPED}
+    assert risk.total(every, cfg) == sum(every.values())

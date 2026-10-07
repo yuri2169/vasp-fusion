@@ -1,6 +1,6 @@
 # Threat tags: which public source says an address belongs to a ransomware, darknet-market,
 # terrorism-financing or fraud ecosystem, and the rule that turns the source's own words
-# into one of five tags. Nothing here is a judgement of this tool: every rule names the
+# into one of six tags. Nothing here is a judgement of this tool: every rule names the
 # source field it reads, and every entity override cites the publication it rests on.
 #
 # `python -m vaspfusion.cli threats` reads the raw files with these rules and writes
@@ -10,6 +10,7 @@ threats:            # most specific first: when two sources tag one address, the
   - terrorism_financing
   - ransomware
   - darknet_market
+  - theft               # the wallets of a hack or an exploit (E2: see `explorer_tags` below)
   - fraud
   - sanctioned_other
 
@@ -133,3 +134,20 @@ graphsense:
     ransomwhere: "superseded by the Ransomwhere export itself"
     lazarus: "abuse: sanction; covered by the SDN XML"
     lazarus2: "abuse: sanction; covered by the SDN XML"
+
+# Block-explorer name tags already in the label store (source eth-labels: Etherscan's
+# public tags). The tag restates the explorer's own words; it adds no claim. Read when the
+# label table is built (`make labels`), for rows no source above has tagged.
+#   pattern: a regular expression over the row's `label` (the explorer's name tag)
+# Why (8 Oct 2026, artifacts/risk_validation_v1): with their label shown, 7 of 10 sampled
+# exploiter wallets and 4 of 5 sampled phishing addresses scored Low, because an explorer
+# tag carried no threat.
+explorer_tags:
+  sources: [eth-labels]
+  rules:
+    - pattern: "^Fake_Phishing"
+      threat: fraud
+      words: "Tagged as a phishing address by the block explorer"
+    - pattern: "(Exploiter|Hacker)( [0-9]+)?$"
+      threat: theft
+      words: "Tagged as the wallet of a hack or exploit by the block explorer"

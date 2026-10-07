@@ -2,6 +2,7 @@
  "version": "risk_validation_v1",
  "seed": 26182,
  "main_view": "own_hidden",
+ "pattern_cap": null,
  "positives": 65,
  "controls": 70,
  "trace": {

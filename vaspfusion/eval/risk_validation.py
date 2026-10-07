@@ -21,8 +21,14 @@ and the case that view traced. The points in config/risk.yaml were set before th
 measurement and were not changed after it; a changed file needs a fresh set of wallets.
 
 The traced cases are kept slim (only what risk.py reads) in
-artifacts/risk_validation_v1/cases.json.gz, so the measurement regenerates with no
+artifacts/risk_validation_<version>/cases.json.gz, so the measurement regenerates with no
 network: `make risk-validation`.
+
+Two measurements are kept. `risk_validation_v1` is the first set (135 wallets), scored
+with the points as they were then (the copy in artifacts/risk_validation_v1/risk.yaml):
+it is what led to the change of 8 Oct 2026 and is no measure of the points in use.
+`risk_validation_v2` is a fresh set, drawn after the change from wallets the first set did
+not hold, scored with config/risk.yaml: THE FIGURE TO QUOTE for the score as it is.
 """
 from __future__ import annotations
 
@@ -51,6 +57,18 @@ BEHAVIOUR = RULES + ("coinjoin_shape", "unlabelled_hub")
 LIST_LINKS = ("sanctioned_", "mixer_", "threat_", "scam_")
 LABEL_KEYS = ("category", "entity", "label", "source", "threat", "threat_entity",
               "threat_source", "threat_url", "threat_evidence")
+POINTS_NOTE = "{points}"
+POINTS = {
+    "risk_validation_v1": "The points in config/risk.yaml were set before this measurement "
+                          "and not changed after it. They are a stated judgement, checked "
+                          "here, not fitted.",
+    "risk_validation_v2": "The points were changed once, on 8 Oct 2026, after the first "
+                          "measurement (risk_validation_v1) and before these wallets were "
+                          "drawn: the five pattern rules together now add at most 20 points, "
+                          "and an explorer's exploiter or phishing tag is a threat tag. None "
+                          "of these wallets was in the first set, and nothing was changed "
+                          "after they were traced.",
+}
 NOTES = (
     "The positives are addresses a public list names; the controls are addresses with a "
     "documented ordinary purpose. Neither is a sample of the wallets a complaint brings in.",
@@ -66,8 +84,7 @@ NOTES = (
     "The two sets differ in more than guilt: most positives are old Bitcoin and Ethereum "
     "addresses, most controls are Ethereum service wallets and recent exchange customers. "
     "A difference between the arms is not all due to the rules.",
-    "The points in config/risk.yaml were set before this measurement and not changed after "
-    "it. They are a stated judgement, checked here, not fitted.",
+    POINTS_NOTE,
     "Each wallet was traced once at the default budget (3 hops, 40 wallets per direction) "
     "from its most recent transfers; a different budget or date can change a wallet's result.",
 )
@@ -280,7 +297,7 @@ def _groups(wallets: list[dict], scored: dict[str, dict], key: str) -> list[dict
 
 
 def measure(corpus: dict, rows: dict, cfg: dict | None = None, *, config_sha256: str = "",
-            corpus_sha256: str = "") -> dict:
+            corpus_sha256: str = "", version: str = VERSION) -> dict:
     cfg = cfg or R.load_config()
     wallets = corpus["wallets"]
     missing = [w["address"] for w in wallets if w["address"] not in rows]
@@ -329,13 +346,15 @@ def measure(corpus: dict, rows: dict, cfg: dict | None = None, *, config_sha256:
             "by_chain": _groups(wallets, scored, "chain"),
         }
     return {
-        "version": VERSION, "seed": corpus["seed"], "main_view": MAIN_VIEW,
+        "version": version, "seed": corpus["seed"], "main_view": MAIN_VIEW,
+        "pattern_cap": cfg.get("pattern_cap"),
         "positives": sum(w["arm"] == "positive" for w in wallets),
         "controls": sum(w["arm"] == "control" for w in wallets),
         "trace": {"max_hops": 3, "max_wallets": 40, "inbound_hops": 1, "since": None,
                   "deposit_model_leads": "not scored (not a risk indicator)"},
         "risk_config_sha256": config_sha256, "corpus_sha256": corpus_sha256,
-        "classes": cfg["classes"], "views": views, "notes": list(NOTES),
+        "classes": cfg["classes"], "views": views,
+        "notes": [n.format(points=POINTS[version]) if n == POINTS_NOTE else n for n in NOTES],
         "wallets": [{"address": w["address"], "chain": w["chain"], "arm": w["arm"],
                      "stratum": w["stratum"], **{v: per_wallet[w["address"]][v] for v in VIEWS}}
                     for w in wallets],

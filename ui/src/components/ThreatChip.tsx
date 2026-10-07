@@ -1,4 +1,4 @@
-import { BadgeAlert, Ban, LockKeyhole, ShieldAlert, ShieldCheck, Siren, Store, type LucideIcon } from 'lucide-react'
+import { BadgeAlert, Ban, KeyRound, LockKeyhole, ShieldAlert, ShieldCheck, Siren, Store, type LucideIcon } from 'lucide-react'
 import type { LabelOut, Screening, Threat, ThreatTag } from '../api/models'
 import { cx } from '../lib/cx'
 import { Tip, useTip } from './Tip'
@@ -8,6 +8,7 @@ export const THREATS: Record<Threat, { name: string; Icon: LucideIcon }> = {
   terrorism_financing: { name: 'Terrorism financing', Icon: Siren },
   ransomware: { name: 'Ransomware', Icon: LockKeyhole },
   darknet_market: { name: 'Darknet market', Icon: Store },
+  theft: { name: 'Hack or exploit', Icon: KeyRound },
   fraud: { name: 'Fraud', Icon: BadgeAlert },
   sanctioned_other: { name: 'Sanctioned', Icon: Ban },
 }

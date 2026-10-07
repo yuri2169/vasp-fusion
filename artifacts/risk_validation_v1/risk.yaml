@@ -44,15 +44,6 @@ classes:
 # How much a contact counts by how far the money travelled to it: 1 hop, 2 hops, 3 or more.
 distance_weight: [1.0, 0.8, 0.6]
 
-# The five pattern rules (peel chain, forwarding within minutes, fan-out, fan-in, round
-# amounts) together add at most this many points, which is below Medium: a pattern
-# describes how money moved and, with no link to a listed address, leaves a wallet Low.
-# Set on 8 Oct 2026 after the first measurement (artifacts/risk_validation_v1: each of the
-# five fired on ordinary wallets as often as on listed ones, and they alone put 16 of 70
-# ordinary wallets at Medium and 2 at High). Measured afterwards on wallets it was not set
-# on (artifacts/risk_validation_v2).
-pattern_cap: 20
-
 # points:  what the indicator adds when present.
 # extra:   added on top, scaled by (share of the traced funds) x (distance weight), so a
 #          contact that took most of the money one hop away counts in full.

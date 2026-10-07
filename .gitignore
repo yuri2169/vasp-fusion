@@ -46,3 +46,5 @@ data/reproduce/
 data/risk_validation_cache.duckdb
 data/risk_validation_cache.rows.jsonl
 data/documented_cache.duckdb
+data/risk_validation_v2_cache.duckdb
+data/risk_validation_v2_cache.rows.jsonl

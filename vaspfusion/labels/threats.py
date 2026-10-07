@@ -31,7 +31,8 @@ OFAC_SOURCE = "ofac-sdn-xml"
 RANSOMWHERE_SOURCE = "ransomwhere"
 TAGPACK_PREFIX = "graphsense-tagpack:"
 THREAT_WORDS = {"terrorism_financing": "terrorism financing", "ransomware": "ransomware",
-                "darknet_market": "a darknet market", "fraud": "fraud",
+                "darknet_market": "a darknet market", "theft": "a hack or exploit",
+                "fraud": "fraud",
                 "sanctioned_other": "a sanctioned party"}
 _ID_PREFIX = "Digital Currency Address - "
 _Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
@@ -42,7 +43,8 @@ def _config(path: str) -> dict:
     cfg = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     known = set(cfg["threats"])
     used = set(cfg["ofac"]["programmes"].values()) | set(cfg["graphsense"]["abuse"].values()) \
-        | {e["threat"] for e in cfg["ofac"]["entities"].values()}
+        | {e["threat"] for e in cfg["ofac"]["entities"].values()} \
+        | {r["threat"] for r in (cfg.get("explorer_tags") or {}).get("rules", [])}
     if not used <= known:
         raise ValueError(f"config/threats.yaml maps to unknown threats: {sorted(used - known)}")
     for uid, e in cfg["ofac"]["entities"].items():
