@@ -50,7 +50,10 @@ def test_a_traced_case_has_a_timeline_of_what_was_recorded(client):
     S.CaseDetail.model_validate(case)
     done = {s["key"]: s for s in _steps(case, "done")}
     assert done["case_opened"]["source"] == "audit log"
-    assert done["trace_started"]["source"] == done["trace_finished"]["source"] == "trace queue"
+    assert done["trace_started"]["source"] == "trace queue"
+    # the result is stored a moment before the queue row closes; whichever second is
+    # earlier is the one shown
+    assert done["trace_finished"]["source"] in ("trace queue", "case store")
     assert done["exchange_named"]["label"] == "Exchange named: CoinDCX, HTX"
     assert done["exchange_named"]["at"] == done["trace_finished"]["at"]
     assert done["case_opened"]["at"] <= done["trace_started"]["at"] <= done["trace_finished"]["at"]
