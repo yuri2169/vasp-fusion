@@ -271,7 +271,7 @@
       "section": "The solution should aim to",
       "text": "enhance attribution capabilities",
       "status": "built",
-      "what": "Attribution is measured, not asserted: the share of wallets named wrongly at the bar in use, the calibration error of the deposit-address model and its coverage are on the model page.",
+      "what": "Attribution is measured, not asserted, on six chains beside a naive baseline: 761 real wallets that paid a labelled exchange were traced with the labels one hop away hidden (Tron 280, Ethereum 213, Bitcoin 96, BNB Chain 84, Polygon 74, Solana 14). The share named wrongly is on the model page for each chain (Tron 15 of 155, Ethereum 22 of 69, Bitcoin 2 of 28, BNB Chain 0 of 19, Polygon 0 of 11, Solana 0 of 3), with the deposit-address model's calibration error and coverage.",
       "where": "/model",
       "evidence_kind": "make",
       "evidence": "reproduce",
