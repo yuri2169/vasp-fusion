@@ -97,6 +97,23 @@ def cmd_check_tags(args) -> None:
     print(f"check-tags -> {args.out}\n  {summary(rows)}")
 
 
+def cmd_indian_coverage(args) -> None:
+    from .api.main import TRACEABLE
+    from .labels.india import coverage, markdown
+    from .labels.lookup import LabelStore
+    with LabelStore(args.db) as labels:
+        cov = coverage(labels, TRACEABLE)
+    print(f"{cov['can_name']} of {cov['listed']} providers on the list of "
+          f"{cov['source']['published']} can be named; {cov['in_recorded_cases']} named by a "
+          "recorded case.\n")
+    rows = cov["providers"] if args.all else [r for r in cov["providers"]
+                                             if r["labels"] or r["other_labels"]]
+    print(markdown({**cov, "providers": rows}), end="")
+    if not args.all:
+        rest = [r["trade_name"] or r["legal_name"] for r in cov["providers"] if r not in rows]
+        print(f"\nNo labelled address for the other {len(rest)}: {', '.join(rest)}.")
+
+
 def cmd_labels(args) -> None:
     import sys
 
@@ -1230,6 +1247,12 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--checks", default=str(ROOT / "data" / "tag_checks"),
                    help="on-chain checks of explorer deposit tags (`check-tags` writes them)")
     s.set_defaults(fn=cmd_labels)
+
+    s = sub.add_parser("indian-coverage", help="the providers registered with FIU-IND against "
+                       "the label store, as a Markdown table")
+    s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.add_argument("--all", action="store_true", help="one row per provider, not only the held")
+    s.set_defaults(fn=cmd_indian_coverage)
 
     s = sub.add_parser("check-tags", help="check on chain the explorer deposit tags that "
                        "upstream files under another exchange's name (cached; OFFLINE=1 replays)")

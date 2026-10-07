@@ -419,7 +419,7 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "8b915c7cd9512e51e09ebc5cf07483a08d24c1212ee9604a0190a4f117fe00a0",
-    "content_sha256": "3a6db0534cca326703601e229bb0a93dc7334f4fd233e14cc4a9c71c3bcac37e"
+    "content_sha256": "218d4978e5870b107f6ab1e7233705147fd99aaf7316b1abf3172933adff6a33"
   },
   "screening": {
     "hit": false,
