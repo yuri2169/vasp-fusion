@@ -291,6 +291,38 @@ describe('the model page', () => {
   })
 })
 
+describe('the landing’s measured line', () => {
+  const abstain = {
+    chain: 'tron', wallets: 280, claims: 303, current_threshold: 0.6, measured_threshold: null, target_risk: 0.05, delta: 0.05, risk_coverage: [], notes: [],
+    bars: [{ threshold: 0.6, claims_answered: 163, claims_wrong: 20, wallets_named: 155, wallets_wrong: 15, wallets_abstained: 125, risk: 0.0968, risk_upper_bound: 0.1733 }],
+  }
+
+  it('lists what was measured on the other chains, each with its sample size', async () => {
+    const model = await api.model('tron')
+    const benchmark = {
+      version: 'benchmark_v1', seed: 26182, bar: 0.6, notes: [], model_gates: [],
+      chains: [
+        { chain: 'tron', measured: true, wallets: 280, named: 155, wrong: 15, by_hops: [] },
+        { chain: 'polygon', measured: true, wallets: 74, named: 11, wrong: 0, by_hops: [] },
+        { chain: 'solana', measured: false, by_hops: [] },
+      ],
+    }
+    vi.spyOn(api, 'model').mockResolvedValue({ ...model, abstain, benchmark } as unknown as ModelInfo)
+    open('/')
+    const line = await screen.findByTestId('naming-record')
+    expect(line).toHaveTextContent('280 real exchange customers’ wallets on Tron: 155 named, 15 of those wrongly')
+    expect(within(line).getByTestId('naming-record-others')).toHaveTextContent('Measured on fewer wallets elsewhere: Polygon 74 (11 named, 0 wrongly). Each answer quotes the figure of its own chain.')
+    expect(line).not.toHaveTextContent('Solana')
+  })
+
+  it('says the error does not cover the other chains when nothing was measured there', async () => {
+    const model = await api.model('tron')
+    vi.spyOn(api, 'model').mockResolvedValue({ ...model, abstain, benchmark: null } as unknown as ModelInfo)
+    open('/')
+    expect(await screen.findByTestId('naming-record')).toHaveTextContent('that error rate does not cover it')
+  })
+})
+
 describe('a wallet’s page', () => {
   const address = 'TFdHux43bs21qRsygv5WQWfgtbQeT6nXey'
   const sanctioned: WalletDetail = {

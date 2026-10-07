@@ -95,15 +95,28 @@ function CaseTile({ c }: { c: CaseSummary }) {
 /** How often naming is right, beside the recorded wallets. Read from the measurement; with
  *  no measurement the line is not drawn (the figures below the fold say "not yet measured"). */
 function NamingRecord() {
-  const a = useModel('tron').data?.abstain
+  const model = useModel('tron').data
+  const a = model?.abstain
   const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
   if (!a || !bar) return null
+  const others = (model?.benchmark?.chains ?? []).filter((r) => r.measured && r.chain !== a.chain && (r.wallets ?? 0) > 0)
   const measuredOn = CHAINS[a.chain as Chain]?.name ?? a.chain
   const n = (v: number) => <span className="font-mono text-ink">{v.toLocaleString('en-US')}</span>
   return (
     <p className="mt-3 border-l-2 border-fusion pl-3 text-sm text-ink-soft" data-testid="naming-record">
       Measured on {n(a.wallets)} real exchange customers’ wallets on {measuredOn}: {n(bar.wallets_named)} named, {n(bar.wallets_wrong)} of those wrongly.
-      The rest got “insufficient evidence”. On every other chain an answer rests on labels and tracing rules, and that error rate does not cover it.
+      The rest got “insufficient evidence”.{' '}
+      {others.length > 0 ? (
+        <span data-testid="naming-record-others">
+          Measured on fewer wallets elsewhere:{' '}
+          {others
+            .map((r) => `${CHAINS[r.chain as Chain]?.name ?? r.chain} ${r.wallets} (${r.named} named, ${r.wrong} wrongly)`)
+            .join('; ')}
+          . Each answer quotes the figure of its own chain.
+        </span>
+      ) : (
+        'On every other chain an answer rests on labels and tracing rules, and that error rate does not cover it.'
+      )}
     </p>
   )
 }
