@@ -170,7 +170,9 @@ def findings_sha256(case: dict) -> str:
 NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "complaint_no",
                          "amount_lost_inr", "demo", "provenance", "progress", "risk",
                          "risk_class", "risk_score", "sahyog_complaint_ref",
-                         "documented", "timeline", "write_order"})
+                         "documented", "timeline", "write_order",
+                         # worked out when the case is read, from the VASP directory
+                         "destinations_by_jurisdiction"})
 
 
 def content_sha256(case: dict) -> str:
