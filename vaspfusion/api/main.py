@@ -19,6 +19,7 @@ workstation, as BTC-FUSION did, and the log says "not signed in".
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import threading
@@ -52,6 +53,7 @@ MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
 MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
+log = logging.getLogger(__name__)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
 DESK_DB: Path | None = None      # None = data/desk.duckdb (or VASPFUSION_DESK_DB)
 WATCH_DB: Path | None = None     # None = data/watch.duckdb (or VASPFUSION_WATCH_DB)
@@ -579,7 +581,8 @@ def work_one(case_id: str | None = None, worker: str | None = None) -> bool:
     cid = job["case_id"]
     with _ACTIVE_LOCK:
         _ACTIVE.add(cid)
-    incident, previous, budget = _job_args(job, _cases().get(cid))
+    # the result to put back if a refresh fails: the record itself, not as read
+    incident, previous, budget = _job_args(job, _cases().get(cid, as_stored=True))
     stats: dict = {}
     started, error = time.perf_counter(), "the trace was interrupted"
     try:
@@ -607,7 +610,7 @@ def begin_job(job: dict) -> dict | None:
     None when the case no longer exists."""
     cid = job["case_id"]
     store = _cases()
-    queued = store.get(cid)
+    queued = store.get(cid, as_stored=True)     # put back as it is if a refresh fails
     if queued is None:
         return None
     store.set_status(cid, "running")
@@ -657,6 +660,7 @@ def release_job(job: dict, worker: str) -> None:
             _PROGRESS.pop(cid, None)
 
 
+NO_FIT = "it does not fit the current case format"
 GAVE_UP = ("The trace stopped three times before it finished. Trace the wallet again, or "
            "with a smaller budget.")
 
@@ -769,8 +773,10 @@ def _start_case(chain: str, address: str, body: S.CaseCreate, background: Backgr
         created_at=datetime.now(timezone.utc)).model_dump(mode="json")
     try:
         if finished:    # keep the finished result on screen (and on disk) while it re-runs
-            previous = {**existing, **{k: summary[k] for k in ("case_ref", "complaint_no",
-                                                               "amount_lost_inr")}, "error": None}
+            # the record as it was stored: its content digest is of that
+            previous = {**store.get(cid, as_stored=True),
+                        **{k: summary[k] for k in ("case_ref", "complaint_no",
+                                                   "amount_lost_inr")}, "error": None}
             store.save({**previous, "status": "queued", "created_at": summary["created_at"]})
         else:
             previous = None
@@ -813,9 +819,28 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
 
     store = _cases()
     refs = _complaints().refs_by_case()
-    live = [{**c, **(R.summary(store.get(c["id"])) if c["status"] == "done" else {}),
-             "sahyog_complaint_ref": refs.get(c["id"])}
-            for c in store.list(outcome=outcome, status=status) if touches(c)]
+
+    def item(c: dict) -> dict | None:
+        """The summary as served. One stored case that cannot be shown must not hide the
+        others: it is listed as unreadable under its id."""
+        try:
+            out = {**c, **(R.summary(store.get(c["id"])) if c["status"] == "done" else {}),
+                   "sahyog_complaint_ref": refs.get(c["id"])}
+            S.CaseSummary.model_validate(out)
+            return out
+        except Exception:
+            log.exception("stored case %s does not fit the contract", c.get("id"))
+        try:
+            out = {k: v for k, v in store.unreadable(c["id"], NO_FIT).items()
+                   if k in S.CaseSummary.model_fields}
+            S.CaseSummary.model_validate(out)
+            return out if outcome is None and status in (None, "failed") else None
+        except Exception:
+            log.exception("stored case %s cannot be listed at all", c.get("id"))
+            return None
+
+    live = [c for c in map(item, (c for c in store.list(outcome=outcome, status=status)
+                                  if touches(c))) if c is not None]
     mock = [c for c in _demo_cases()
             if (outcome is None or c.get("outcome") == outcome)
             and (status is None or c["status"] == status) and touches(c)]
@@ -1024,7 +1049,13 @@ def get_case(case_id: str, response: Response):
             if snapshot is not None:
                 live["progress"] = {**snapshot,
                                     "message": progress_sentence(live["chain"], snapshot)}
-        return _enrich(live)
+        try:
+            out = _enrich(live)
+            S.CaseDetail.model_validate(out)
+            return out
+        except Exception:        # as in the list: it opens as a failed case that says so
+            log.exception("stored case %s does not fit the contract", case_id)
+            return _cases().unreadable(case_id, NO_FIT)
     fixture = demo_fixture(f"cases/{case_id}", _no_case(case_id))
     _source(response, "mock")
     return fixture
@@ -1063,7 +1094,7 @@ def verify_case(case_id: str, response: Response):
     """Trace the wallet again from the cached chain responses only (never the network)
     and compare the findings fingerprint with the receipt's."""
     from ..cases import verify_stored
-    live = _cases().get(case_id)
+    live = _cases().get(case_id, as_stored=True)    # digests are of the record as written
     if live is None:
         demo_fixture(f"cases/{case_id}", _no_case(case_id))      # 404 for an unknown id
         raise HTTPException(422, "A demo fixture has no trace to verify.")

@@ -825,7 +825,7 @@ def cmd_verify(args) -> None:
                 raise SystemExit(1)
             results = []
             for cid in ids:
-                case = store.get(cid)
+                case = store.get(cid, as_stored=True)
                 if case is None:
                     print(f"error: no case {cid} in {store.path}", file=sys.stderr)
                     raise SystemExit(1)
