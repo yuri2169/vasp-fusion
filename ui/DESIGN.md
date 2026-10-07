@@ -194,6 +194,17 @@ A screen that plays the portal's side of our proposed contract. **It must never 
 - Right: **Requests received**: each sent request with its status tag and, as buttons, exactly the replies that can follow ("Acknowledge", "Reply with records", "Confirm freeze", "Refuse"), under "Reply as ‹exchange›". The toast repeats the verb ("Freeze confirmed").
 - A case opened by a complaint reads **"Reported through SAHYOG · ‹ref›"** in its header line.
 
+## Indian exchanges the tool can name (`overview/IndianProviders.tsx`, on `/labels`)
+A full-width panel under the coverage panels. One sentence of count ("6 of 47 can be named today"), a table of the providers the store holds any address for (entity and trade name, exchange labels, chains, best tier, recorded cases, and "Can it be named?" in words: Yes, or No with the reason), then **every provider with no labelled address, named in a sentence**. The gaps are the point: never hide them behind a toggle. The source line gives the official list, its date and the day it was read.
+
+## Where the traced money went (`overview/JurisdictionPanel.tsx`, `WorldMap.tsx`, `places.ts`)
+On the dashboard (full width, last) and on a case (the Jurisdiction tab). The caption is fixed and always shown: **"Where the exchange is registered, not where the suspect is."**
+- The map is drawn from bundled Natural Earth borders (`world-atlas`, 1:110m, loaded with the panel, not with the first screen). Nothing is fetched and there are no tiles.
+- **Every jurisdiction with money gets a labelled dot** in `--fusion`, sized by its share of the largest sum; a country large enough to see is also shaded. The dot is what makes Singapore, the Seychelles or the British Virgin Islands findable at world scale.
+- A dot is a button (pointer and keyboard): choosing it filters the table under the map; "Show every jurisdiction" undoes it. The dot's name carries the country, the sum, the cases and the exchanges.
+- The table under the map is the same data in full and is the alternative for a screen reader: jurisdiction, exchange (a link to its page), FIU-IND registration with its date ("No source" is never "Not registered"), sum in dollars and rupees, cases, and the source of the country.
+- An exchange with no cited jurisdiction is listed under "Jurisdiction not on record", never placed. A jurisdiction with no point in `places.ts` is listed and said to be not drawn. `places.ts` holds geography only.
+
 ## Charts (`src/charts/`)
 
 Hand-built (HTML bars, SVG plots): no chart library, so the demo needs no network and every mark takes the tokens of both themes.

@@ -3,8 +3,8 @@
   "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
   "total": 474142,
   "by_category": {
-    "exchange": 378616,
-    "entity": 74360,
+    "exchange": 383595,
+    "entity": 69381,
     "defi": 11087,
     "scam": 6146,
     "bridge": 2062,
@@ -88,9 +88,9 @@
       "obtained_from": "wallet-attribution set",
       "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
       "url": "https://github.com/dawsbot/eth-labels",
-      "labels": 111673,
+      "labels": 106694,
       "tiers": {
-        "explorer_tag": 111673
+        "explorer_tag": 106694
       }
     },
     {
@@ -113,6 +113,17 @@
       "labels": 5497,
       "tiers": {
         "derived": 5497
+      }
+    },
+    {
+      "source": "eth-labels-checked-deposit-tags",
+      "name": "eth-labels: Etherscan \"Binance Dep\" tags, filed upstream under another name and checked on chain here",
+      "obtained_from": "wallet-attribution set",
+      "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
+      "url": "https://github.com/dawsbot/eth-labels",
+      "labels": 4979,
+      "tiers": {
+        "explorer_tag": 4979
       }
     },
     {
@@ -844,13 +855,13 @@
         "n": 47,
         "legal_name": "Binance International Limited",
         "trade_name": "Binance",
-        "labels": 420,
-        "traceable_labels": 130,
+        "labels": 5399,
+        "traceable_labels": 5109,
         "other_labels": 2,
         "by_chain": {
+          "ethereum": 5035,
           "avalanche": 145,
           "worldchain": 145,
-          "ethereum": 56,
           "bitcoin": 44,
           "bsc": 19,
           "tron": 8,
@@ -861,7 +872,7 @@
         "by_tier": {
           "published_por": 41,
           "curated": 64,
-          "explorer_tag": 315
+          "explorer_tag": 5294
         },
         "recorded_cases": [],
         "can_name": true

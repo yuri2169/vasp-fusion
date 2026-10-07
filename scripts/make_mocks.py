@@ -573,15 +573,16 @@ def main() -> None:
                                           if c in TRACEABLE)
         labels_coverage = {**coverage, "indian_providers": india_coverage(store, TRACEABLE)}
         from vaspfusion.desk.directory import Directory
-        from vaspfusion.desk.jurisdictions import destinations
+        from vaspfusion.desk.jurisdictions import group
         directory = Directory.load()
 
-        def places(some: list[dict]) -> dict:
-            return S.DestinationsByJurisdiction.model_validate(
-                destinations(some, directory)).model_dump(mode="json")
-
-        for c, full in zip(cases, as_json):
-            c["destinations_by_jurisdiction"] = places([full])
+        def places(sums: dict[str, tuple[float, str]]) -> dict:
+            """The mock dashboard's exchanges (its `top_vasps`) under their real, cited
+            jurisdictions. The mock cases carry none: theirs is worked out from a real
+            trace's routed wallets, which a mock case does not have."""
+            return S.DestinationsByJurisdiction.model_validate(group(
+                {v: [{"amount_usd": usd, "case_id": cid}] for v, (usd, cid) in sums.items()},
+                directory)).model_dump(mode="json")
         files = {
             "cases": {"total": 3, "items": [summary(c) for c in cases]},
             **{f"cases/{c['id']}": c for c in cases},
@@ -628,7 +629,8 @@ def main() -> None:
                 "label_coverage": coverage,
                 "risk_classes": {k: sum(1 for c in cases if c["risk_class"] == k)
                                  for k in R.CLASSES},
-                "destinations_by_jurisdiction": places(as_json)},
+                "destinations_by_jurisdiction": places({"OKX": (41_150.0, c1["id"]),
+                                                        "CoinDCX": (990.0, c3["id"])})},
             "labels/coverage": labels_coverage,
             "coverage": ps_coverage.build(TRACEABLE),
             "sahyog-sim": sim_mock(c1, req),

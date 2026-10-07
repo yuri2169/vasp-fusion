@@ -212,7 +212,7 @@ rows:
     section: The solution should aim to
     text: "strengthen cross-border cybercrime investigations involving VDAs"
     status: partly
-    what: "Foreign exchanges are named and requests are routed to them with their legal name, jurisdiction and law-enforcement channel where a source for these was found. For an exchange that no source shows as registered with FIU-IND, the desk makes a draft letter of request for a Court to issue to an authority outside India (section 112 BNSS), with the same evidence table as the domestic letter, and a case that reaches several exchanges says who to write to first, with reasons."
+    what: "Foreign exchanges are named and requests are routed to them with their legal name, jurisdiction and law-enforcement channel where a source for these was found. For an exchange that no source shows as registered with FIU-IND, the desk makes a draft letter of request for a Court to issue to an authority outside India (section 112 BNSS), with the same evidence table as the domestic letter, and a case that reaches several exchanges says who to write to first, with reasons. The dashboard and each case show the traced money on a map by the country each exchange is registered in, with the source of every country."
     where: /desk
     evidence: {test: "tests/test_desk_foreign.py"}
-    gap: "The letter of request is a draft for the officer and the Court: nothing is transmitted, and no jurisdiction is cited yet for the exchanges the recorded cases reach, so the country is a blank on the draft. The jurisdiction map is not built."
+    gap: "The letter of request is a draft for the officer and the Court: nothing is transmitted. A cited jurisdiction is on file for 13 of the 22 exchanges in the directory, among them every exchange the recorded cases reach; Bitget's is the office location a regulator lists, not a place of incorporation. An exchange with no cited country is listed beside the map, not placed."

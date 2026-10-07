@@ -32,6 +32,11 @@ def destinations(cases: list[dict], directory) -> dict:
     for case in cases:
         for w in routed_wallets(case, canonical=directory.canonical):
             by_vasp.setdefault(w["vasp"], []).append(w)
+    return group(by_vasp, directory)
+
+
+def group(by_vasp: dict[str, list[dict]], directory) -> dict:
+    """`by_vasp`: exchange -> its routed wallets (each with `amount_usd` and `case_id`)."""
     places: dict[str, list[dict]] = {}
     unplaced = []
     for name in sorted(by_vasp):

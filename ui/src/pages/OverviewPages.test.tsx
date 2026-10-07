@@ -48,6 +48,22 @@ const live: Dashboard = {
 }
 
 describe('the dashboard', () => {
+  it("places the traced money by each exchange's cited jurisdiction, under the caption that says what that is", async () => {
+    const d = await api.dashboard()
+    open('/dashboard')
+    const table = await screen.findByRole('table', { name: 'Traced money by the jurisdiction of the exchange it reached' })
+    const panel = table.closest('section')!
+    expect(panel).toHaveTextContent('Where the exchange is registered, not where the suspect is.')
+    const places = d.destinations_by_jurisdiction!.places
+    expect(places.map((p) => p.jurisdiction)).toEqual(['Seychelles', 'India'])
+    expect(within(table).getByRole('row', { name: /Seychelles/ })).toHaveTextContent('OKX')
+    expect(within(table).getByRole('row', { name: /India/ })).toHaveTextContent('Registered, as of 2 Dec 2024')
+    // the sums are the ones the exchanges panel shows
+    expect(places.map((p) => p.total_usd)).toEqual(d.top_vasps.map((v) => v.total_usd))
+    const map = await within(panel).findByRole('group', { name: /World map/ })
+    expect(within(map).getAllByRole('button')).toHaveLength(2)
+  })
+
   it('counts what is on file, and every count leads to the list behind it (the demo fixture)', async () => {
     open('/dashboard')
     const counts = await screen.findByLabelText('Counts')

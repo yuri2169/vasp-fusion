@@ -55,8 +55,8 @@
   "label_coverage": {
     "total": 474142,
     "by_category": {
-      "exchange": 378616,
-      "entity": 74360,
+      "exchange": 383595,
+      "entity": 69381,
       "defi": 11087,
       "scam": 6146,
       "bridge": 2062,
@@ -140,9 +140,9 @@
         "obtained_from": "wallet-attribution set",
         "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
         "url": "https://github.com/dawsbot/eth-labels",
-        "labels": 111673,
+        "labels": 106694,
         "tiers": {
-          "explorer_tag": 111673
+          "explorer_tag": 106694
         }
       },
       {
@@ -165,6 +165,17 @@
         "labels": 5497,
         "tiers": {
           "derived": 5497
+        }
+      },
+      {
+        "source": "eth-labels-checked-deposit-tags",
+        "name": "eth-labels: Etherscan \"Binance Dep\" tags, filed upstream under another name and checked on chain here",
+        "obtained_from": "wallet-attribution set",
+        "licence": "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)",
+        "url": "https://github.com/dawsbot/eth-labels",
+        "labels": 4979,
+        "tiers": {
+          "explorer_tag": 4979
         }
       },
       {
@@ -263,7 +274,58 @@
   },
   "destinations_by_jurisdiction": {
     "basis": "Where the exchange is registered, not where the suspect is.",
-    "places": [],
+    "places": [
+      {
+        "jurisdiction": "Seychelles",
+        "total_usd": 41150.0,
+        "wallets": 1,
+        "unpriced_wallets": 0,
+        "case_ids": [
+          "demo-tron-okx"
+        ],
+        "exchanges": [
+          {
+            "vasp": "OKX",
+            "total_usd": 41150.0,
+            "wallets": 1,
+            "unpriced_wallets": 0,
+            "case_ids": [
+              "demo-tron-okx"
+            ],
+            "fiu_ind_registered": null,
+            "fiu_ind_as_of": null,
+            "source_urls": [
+              "https://www.justice.gov/usao-sdny/pr/okx-pleads-guilty-violating-us-anti-money-laundering-laws-and-agrees-pay-penalties"
+            ]
+          }
+        ]
+      },
+      {
+        "jurisdiction": "India",
+        "total_usd": 990.0,
+        "wallets": 1,
+        "unpriced_wallets": 0,
+        "case_ids": [
+          "demo-tron-sanctioned"
+        ],
+        "exchanges": [
+          {
+            "vasp": "CoinDCX",
+            "total_usd": 990.0,
+            "wallets": 1,
+            "unpriced_wallets": 0,
+            "case_ids": [
+              "demo-tron-sanctioned"
+            ],
+            "fiu_ind_registered": true,
+            "fiu_ind_as_of": "2024-12-02",
+            "source_urls": [
+              "https://coindcx.s3.amazonaws.com/static/documents/terms-of-use.pdf"
+            ]
+          }
+        ]
+      }
+    ],
     "not_on_record": []
   }
 }
