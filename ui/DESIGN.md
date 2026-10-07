@@ -140,6 +140,11 @@ The unit of work is an exchange, not a complaint. The desk's own parts are in `s
 - **`/requests/:id`** is the letter on an A4 sheet with, beside it: the next step (the one the fusion colour button), what to check, the routing slip, the gateway's receipt, and print. Each step is a dialog that says what it does; the buttons are the ones `allowed_next` allows, nothing else. Under 1024px the side column comes first.
 - **`/requests`** is the register: every request, with filters kept in the address (`?status=&vasp=&q=`).
 
+- **Who to write to first** (`case/WriteOrderPanel`, on the case page under the graph and on `/desk` under the table): a numbered list, one exchange per row with its share, its route as an outlined tag, the server's reasons word for word, and its action (draft request, open request, letter-of-request draft). It states its rule in small type above the list and never gives a response time.
+- **Case events** (`case/tabs/EventsTab`, the "Case events" tab): a vertical list. A recorded step has a filled check, its time to the second in mono, the elapsed time since the step before, who, and the record it was read from. A pending step is dashed, muted and has no time. "Timeline" stays the name of the on-chain transfers tab.
+- **`/vasps/:name/letter-of-request`**: the same A4 sheet with the draft mark that never comes off, no reference (a blank for the Court), no seal circle; beside it a red-washed "Standing" note (draft, not sent, not a request of this desk), the checks, the directory's cited facts and print. Signed out, it asks for the officer's line before anything is made.
+- **Follow up** now lists the replies still awaited under the overdue ones, in the neutral wash with the days left; only an overdue row is red.
+
 **The routing slip** (`RoutingSlip`) is this part's one drawn element: the slip on a file. Five boxes in order (Drafted, Approved, Sent, Acknowledged, Reply), each stamped with its day once it happened. A box not reached is dashed and empty; the one awaited is shaded; a step passed over has a dash; a refusal or a withdrawal ends the slip in a red-washed box with a cross. `layout="row"` fits a table row (the whole sentence is on hover and in the box's name); `layout="column"` beside the letter adds who and the note of each step, as recorded. It is never tilted and never the fusion colour.
 
 **Status** (`StatusTag`) is an icon and a word: Not requested and Draft are dashed, Approved solid, Sent and Acknowledged shaded, Answered and Freeze confirmed the label (network) colour, Refused red, Withdrawn struck through.
@@ -345,7 +350,7 @@ The picture is sparse on purpose: it draws the suspect wallet's money and nothin
 
 The case page's own parts are in `src/case/` (they are not general components): `FlowGraph` + `GraphLegend` + `flowStyle.ts`, `AnswerPanel`, `AbstainPanel`, `CandidateCard`, `WalletPanel`, `TraceProgress`, `TraceAgain` (with `HopLimit`), the six `tabs/`, `caseText.ts` (words for roles, checks, audit actions) and `rules.ts` (the naming bar, what can be routed to the desk).
 
-The request desk's parts are in `src/desk/`: `RoutingSlip`, `StatusTag`, `DeskNav`, `DraftDialog`, `DirectoryFacts`, `LetterSheet` + `letter.css` + `pageRule.ts`, `RequestActions`, and `status.ts` (the words for statuses, asks and replies; the slip's steps; overdue).
+The request desk's parts are in `src/desk/`: `RoutingSlip`, `StatusTag`, `DeskNav`, `DraftDialog`, `DirectoryFacts`, `LetterSheet` + `letter.css` + `pageRule.ts`, `RequestActions`, and `status.ts` (the words for statuses, asks and replies; the slip's steps; overdue, days left, elapsed time).
 
 `AddressChip` takes `onSelect` / `selected` / `marked`: the address then is a button that shows the wallet on the case page.
 

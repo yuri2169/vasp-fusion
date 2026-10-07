@@ -11,6 +11,7 @@ import { AppShell } from './shell/AppShell'
 // The request desk is loaded when it is first opened, so the first paint of a case does not carry it.
 const DeskPage = lazy(() => import('./pages/DeskPage').then((m) => ({ default: m.DeskPage })))
 const VaspPage = lazy(() => import('./pages/VaspPage').then((m) => ({ default: m.VaspPage })))
+const LetterOfRequestPage = lazy(() => import('./pages/LetterOfRequestPage').then((m) => ({ default: m.LetterOfRequestPage })))
 const RequestsPage = lazy(() => import('./pages/RequestsPage').then((m) => ({ default: m.RequestsPage })))
 const RequestPage = lazy(() => import('./pages/RequestPage').then((m) => ({ default: m.RequestPage })))
 
@@ -71,6 +72,7 @@ export function AppRoutes() {
         <Route path="batch/:id" element={later(<BatchPage />)} />
         <Route path="desk" element={later(<DeskPage />)} />
         <Route path="vasps/:name" element={later(<VaspPage />)} />
+        <Route path="vasps/:name/letter-of-request" element={later(<LetterOfRequestPage />)} />
         <Route path="requests" element={later(<RequestsPage />)} />
         <Route path="requests/:id" element={later(<RequestPage />)} />
         <Route path="dashboard" element={later(<DashboardPage />)} />

@@ -31,6 +31,7 @@ export const keys = {
   vasp: (name: string) => ['vasp', name] as const,
   requests: ['requests'] as const,
   request: (id: string) => ['request', id] as const,
+  letterOfRequest: (name: string, officer: string, cases: string[]) => ['letter-of-request', name, officer, cases] as const,
   dashboard: ['dashboard'] as const,
   model: (chain?: string) => ['model', chain ?? 'tron'] as const,
   wallet: (chain: string, address: string) => ['wallet', chain, address] as const,
@@ -114,6 +115,15 @@ export const useRequests = () => useQuery({ queryKey: keys.requests, queryFn: ()
 
 export const useRequest = (id: string) => useQuery({ queryKey: keys.request(id), queryFn: () => api.request(id) })
 
+/** A letter-of-request draft. Asked for only once an officer's name is given; the server keeps nothing. */
+export const useLetterOfRequest = (name: string, officer: string, cases: string[]) =>
+  useQuery({
+    queryKey: keys.letterOfRequest(name, officer, cases),
+    queryFn: () => api.letterOfRequest(name, officer, cases),
+    enabled: name !== '' && officer.trim() !== '',
+    staleTime: Infinity,
+  })
+
 /** A request changes what the desk, the exchange's page and the register say. */
 function useDeskChanged() {
   const client = useQueryClient()
@@ -122,6 +132,7 @@ function useDeskChanged() {
     void client.invalidateQueries({ queryKey: ['vasp'] })
     void client.invalidateQueries({ queryKey: keys.requests })
     void client.invalidateQueries({ queryKey: keys.dashboard })
+    void client.invalidateQueries({ queryKey: ['case'] })
   }
 }
 

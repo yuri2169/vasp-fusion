@@ -6,6 +6,7 @@
  */
 import type {
   AuditPage,
+  LetterOfRequest,
   BatchCreate,
   BatchDetail,
   BatchList,
@@ -206,6 +207,9 @@ export function createApi(transport: Transport) {
     createRequest: (body: RequestCreate) => call<RequestDetail>('POST', '/requests', { body }),
     patchRequest: (id: string, body: RequestPatch) => call<RequestDetail>('PATCH', `/requests/${seg(id)}`, { body }),
     requestPdfUrl: (id: string) => `/api/requests/${seg(id)}/pdf`,
+    /** A letter-of-request draft for an authority outside India. Made on demand: nothing is stored or sent. */
+    letterOfRequest: (name: string, officer: string, cases?: string[]) =>
+      get<LetterOfRequest>(`/vasps/${seg(name)}/letter-of-request`, { officer, cases: cases?.length ? cases.join(',') : undefined }),
 
     dashboard: () => get<Dashboard>('/dashboard'),
     fx: () => get<FxRate>('/fx'),

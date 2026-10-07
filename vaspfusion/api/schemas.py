@@ -44,7 +44,8 @@ EvidenceKind = Literal["label", "path", "sweep", "gas_payer", "model", "counterf
 RequestStatus = Literal["drafted", "approved", "sent", "acknowledged", "answered",
                         "freeze_confirmed", "refused", "withdrawn"]
 Ask = Literal["kyc", "transactions", "freeze", "preservation"]
-FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
+FollowUpKind = Literal["reply_overdue", "reply_due", "freeze_lapsing", "preservation_closing"]
+RequestRoute = Literal["domestic_notice", "direct_channel", "letter_of_request"]
 Direction = Literal["outbound", "inbound"]
 RiskClass = Literal["low", "medium", "high", "severe"]
 
@@ -743,6 +744,13 @@ class RiskInfo(_M):
 
 
 class CaseDetail(CaseSummary):
+    timeline: "CaseTimeline | None" = Field(None, description=(
+        "The case's recorded events in order. Built when the case is read from the "
+        "complaint store, the audit log, the trace queue and the requests; never stored, "
+        "so it is not part of the case's digests"))
+    write_order: "WriteOrder | None" = Field(None, description=(
+        "The exchanges a request can be drafted on, in the order to write to them, with "
+        "reasons. null when the case names none. Never stored"))
     risk: RiskInfo | None = Field(None, description=(
         "Wallet and flow risk of a finished case. Worked out when the case is read from "
         "its stored flags, labels and transfers; never stored, so it is not part of the "
@@ -855,12 +863,85 @@ class WalletDetail(_M):
     watched: bool = False
 
 
+# ------------------------------------------------------------------ timeline / order (E5)
+class TimelineStep(_M):
+    key: str = Field(description=(
+        "complaint_received, case_opened, trace_started, trace_finished, exchange_named, "
+        "letter_of_request_drafted, or request_<status> (request_replied while no reply "
+        "has come)"))
+    label: str
+    state: Literal["done", "pending", "not_recorded"] = Field(description=(
+        "done: it happened and a record holds its time. pending: it has not happened. "
+        "not_recorded: it happened, but no record of this tool holds when"))
+    at: datetime | None = Field(None, description=(
+        "Read from the record named in `source`. Always null unless state is done: no "
+        "time is ever estimated"))
+    by: str | None = Field(None, description=(
+        "The signed-in officer, or the worker that traced; null when none was recorded"))
+    via: Literal["sahyog"] | None = None
+    detail: str | None = None
+    source: Literal["complaint store", "audit log", "trace queue", "case store",
+                    "request history"] | None = Field(None, description=(
+                        "The record the time was read from"))
+    request_id: str | None = None
+    after_previous_s: float | None = Field(None, description=(
+        "Seconds since the timed step before it; the difference of two recorded times"))
+    since_first_s: float | None = Field(None, description=(
+        "Seconds since the first timed step of the case"))
+
+
+class CaseTimeline(_M):
+    """Built when the case is read, only from events the tool recorded."""
+    steps: list[TimelineStep] = Field(description=(
+        "Steps with no record first, then the timed steps in time order, then what is "
+        "still pending"))
+    note: str
+
+
+class WriteOrderRow(_M):
+    rank: int = Field(ge=1)
+    vasp: str
+    share_of_funds: float = Field(ge=0, le=1)
+    amount: float
+    asset: str | None = None
+    last_arrival: datetime = Field(description="When traced funds last reached it")
+    fiu_ind_registered: bool | None = None
+    fiu_ind_as_of: date | None = None
+    channel_on_record: bool
+    route: RequestRoute = Field(description=(
+        "domestic_notice: a source says it is registered with FIU-IND. direct_channel: "
+        "not shown as registered, but it publishes a law-enforcement channel. "
+        "letter_of_request: neither"))
+    letter_of_request: bool = Field(description=(
+        "true: a letter-of-request draft is offered (no source shows it as registered)"))
+    reasons: list[str] = Field(description="Sentences; show them verbatim")
+    request_id: str | None = Field(None, description="The open request that lists this case")
+    request_status: RequestStatus | None = None
+
+
+class WriteOrder(_M):
+    """Who to write to first. A stated rule over the share of funds, the last arrival,
+    the cited FIU-IND registration and whether a channel is on record. Never a response
+    time: the tool holds no cited figure for one."""
+    rule: str
+    note: str
+    exchanges: list[WriteOrderRow]
+
+
+class CaseWriteOrder(_M):
+    case_id: str
+    case_ref: str | None = None
+    order: WriteOrder
+
+
 # ------------------------------------------------------------------ desk / requests
 class FollowUp(_M):
     kind: FollowUpKind
     vasp: str
     request_id: str
     due: date
+    days_left: int = Field(0, description=(
+        "Whole days from today (UTC) to `due`; negative once it has passed"))
     text: str
 
 
@@ -875,11 +956,19 @@ class DeskRow(_M):
     last_request_id: str | None = None
     unrequested_wallets: int = Field(0, description=(
         "Routed wallets of this VASP that no request asks about yet"))
+    route: RequestRoute | None = Field(None, description=(
+        "From the directory's cited facts; see WriteOrderRow.route"))
+    letter_of_request: bool = Field(False, description=(
+        "true: a letter-of-request draft can be made for this VASP's wallets"))
 
 
 class Desk(_M):
-    follow_ups: list[FollowUp]
+    follow_ups: list[FollowUp] = Field(description=(
+        "Overdue replies first (longest overdue first), then replies still awaited "
+        "(soonest due first)"))
     rows: list[DeskRow]
+    write_first: list[CaseWriteOrder] = Field([], description=(
+        "For every case that reaches two or more exchanges: who to write to first"))
 
 
 class DirectorySource(_M):
@@ -963,6 +1052,9 @@ class RequestCreate(_M):
 class RequestPatch(_M):
     status: RequestStatus
     note: str | None = None
+    due: date | None = Field(None, description=(
+        "Only with status sent: the day the officer expects the reply by. Not before "
+        "today. Left out, the office's reminder setting is used"))
 
 
 class LetterWallet(_M):
@@ -1000,7 +1092,10 @@ class LegalCitation(_M):
 
 
 class RequestLetter(_M):
-    reference: str
+    kind: Literal["notice", "letter_of_request"] = Field("notice", description=(
+        "letter_of_request: a draft for a Court to issue to an authority outside India "
+        "(section 112 BNSS). Never stored as a request, never sent, always a draft"))
+    reference: str = Field(description="Empty on a letter-of-request draft: the Court assigns it")
     date: date
     to: str
     subject: str
@@ -1038,6 +1133,22 @@ class RequestDetail(RequestSummary):
     allowed_next: list[RequestStatus] = Field([], description=(
         "The statuses a PATCH may move this request to now"))
     receipt: GatewayReceipt | None = Field(None, description="Set once sent")
+    due_basis: Literal["officer", "office_setting"] | None = Field(None, description=(
+        "Who set `due`: the officer when marking the request sent, or the office's "
+        "reminder setting. Neither is a period fixed by law"))
+
+
+class LetterOfRequest(_M):
+    """A letter-of-request draft for one exchange: made on demand from the finished
+    cases, with the same evidence table as the domestic letter."""
+    vasp: str
+    case_ids: list[str]
+    letter: RequestLetter
+    pdf_url: str
+    directory: VaspDirectoryEntry
+    recommended: bool = Field(description=(
+        "true: FIU-IND named the exchange as unregistered, or it has neither a cited "
+        "registration nor a channel on record"))
 
 
 class RequestList(_M):
@@ -1518,7 +1629,7 @@ AuditAction = Literal[
     "case.open", "case.list", "case.view", "case.export", "case.receipt", "case.verify",
     "case.context",
     "wallet.view", "label.search", "desk.view", "vasp.view", "request.draft", "request.view",
-    "request.status", "request.export", "dashboard.view", "model.view", "fx.view", "audit.view",
+    "request.status", "request.export", "request.letter_of_request", "dashboard.view", "model.view", "fx.view", "audit.view",
     "watch.list", "watch.add", "watch.check", "watch.seen", "watch.remove", "label.coverage",
     "coverage.view", "sahyog.complaint", "sahyog.status", "sahyog.reply", "sim.view",
     "sim.complaint", "sim.reply",

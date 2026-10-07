@@ -135,9 +135,11 @@ class AuditLog:
         return {**row, "detail": json.loads(row["detail"]) if row["detail"] else None}
 
     def list(self, limit: int = 100, offset: int = 0, officer: str | None = None,
-             action: str | None = None, target: str | None = None) -> tuple[int, list[dict]]:
-        """(how many rows match, the page of them), newest first. `action` matches a whole
-        action ("case.view") or a family ("case"); `target` matches exactly."""
+             action: str | None = None, target: str | None = None,
+             oldest_first: bool = False) -> tuple[int, list[dict]]:
+        """(how many rows match, the page of them), newest first unless `oldest_first`.
+        `action` matches a whole action ("case.view") or a family ("case"); `target`
+        matches exactly."""
         where, params = [], []
         if officer:
             where.append("officer = ?")
@@ -151,7 +153,8 @@ class AuditLog:
         clause = f"WHERE {' AND '.join(where)}" if where else ""
         with self._con() as con:
             total = con.execute(f"SELECT count(*) FROM audit {clause}", params).fetchone()[0]
-            rows = con.execute(f"SELECT {COLS} FROM audit {clause} ORDER BY seq DESC "
+            rows = con.execute(f"SELECT {COLS} FROM audit {clause} ORDER BY seq "
+                               f"{'ASC' if oldest_first else 'DESC'} "
                                f"LIMIT ? OFFSET ?", params + [limit, offset]).fetchall()
         return total, [self._out(dict(zip(FIELDS + ("hash",), r))) for r in rows]
 

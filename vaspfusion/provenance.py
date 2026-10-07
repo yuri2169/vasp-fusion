@@ -170,7 +170,7 @@ def findings_sha256(case: dict) -> str:
 NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "complaint_no",
                          "amount_lost_inr", "demo", "provenance", "progress", "risk",
                          "risk_class", "risk_score", "sahyog_complaint_ref",
-                         "documented"})
+                         "documented", "timeline", "write_order"})
 
 
 def content_sha256(case: dict) -> str:

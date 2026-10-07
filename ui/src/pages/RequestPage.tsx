@@ -14,7 +14,7 @@ import { LetterSheet } from '../desk/LetterSheet'
 import { RequestActions } from '../desk/RequestActions'
 import { RoutingSlip } from '../desk/RoutingSlip'
 import { StatusTag } from '../desk/StatusTag'
-import { isOverdue, standing } from '../desk/status'
+import { daysLeft, daysLeftWords, isOverdue, standing } from '../desk/status'
 import { formatDate, formatDateTime } from '../lib/format'
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
@@ -132,7 +132,7 @@ export function RequestPage() {
               {r.due && (
                 <span className={overdue ? 'font-medium text-seal-text' : undefined}>
                   · reply due {formatDate(r.due)}
-                  {overdue && ', overdue'}
+                  {(r.status === 'sent' || r.status === 'acknowledged') && `, ${daysLeftWords(daysLeft(r.due))}`}
                 </span>
               )}
             </span>

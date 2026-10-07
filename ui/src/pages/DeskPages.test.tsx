@@ -42,7 +42,7 @@ describe('the request desk', () => {
     vi.spyOn(api, 'desk').mockResolvedValue(deskAfter)
     open('/desk')
     await screen.findByRole('link', { name: 'CoinDCX' })
-    expect(screen.getByText('Nothing is overdue. No reply is past its day.')).toBeInTheDocument()
+    expect(screen.getByText('Nothing is overdue, and no reply is awaited.')).toBeInTheDocument()
 
     const row = rowOf('CoinDCX')
     expect(row).toHaveTextContent('$7,530')
@@ -63,7 +63,7 @@ describe('the request desk', () => {
   })
 
   it('says how to get an exchange here when no case names one', async () => {
-    vi.spyOn(api, 'desk').mockResolvedValue({ follow_ups: [], rows: [] })
+    vi.spyOn(api, 'desk').mockResolvedValue({ follow_ups: [], rows: [], write_first: [] })
     open('/desk')
     expect(await screen.findByRole('heading', { name: 'No exchange to write to yet' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open a case' })).toHaveAttribute('href', '/cases/new')

@@ -17,7 +17,7 @@ from __future__ import annotations
 import hashlib
 import threading
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Callable
 
 from ..cases import CODE_VERSION
@@ -97,7 +97,57 @@ class DeskService:
 
     def desk(self) -> dict:
         return build_desk(self._all_cases(), self.requests.list(), self.now().date(),
-                          canonical=self.directory.canonical)
+                          canonical=self.directory.canonical, directory=self.directory)
+
+    def write_order(self, case: dict) -> dict | None:
+        from .priority import write_order
+        return write_order(case, self.directory, self.requests.list())
+
+    def named(self, case: dict) -> list[str]:
+        """The exchanges of a case a request can be drafted on, nearest first."""
+        return list(dict.fromkeys(
+            w["vasp"] for w in routed_wallets(case, canonical=self.directory.canonical)))
+
+    def letter_of_request(self, vasp: str, case_ids: list[str] | None, officer: str) -> dict:
+        """`LetterOfRequest`: a draft for a Court to issue to an authority outside India,
+        on the wallets the named cases (or every finished case) route to this exchange.
+        Nothing is stored and nothing is sent."""
+        from .foreign import letter_of_request
+        from .priority import OFFSHORE, offers_letter_of_request, route_of
+        vasp = self.directory.canonical(_clean(vasp, 100))
+        officer = _clean(officer or "", 200)
+        if not officer:
+            raise DeskError(422, "Name the investigating officer for the draft.")
+        try:
+            officer.encode("cp1252")
+        except UnicodeEncodeError:
+            raise DeskError(422, "Write the officer's name and post in Latin letters: the "
+                                 "PDF's standard fonts cannot print other scripts.") from None
+        entry = self.directory.get(vasp)
+        if not offers_letter_of_request(entry):
+            raise DeskError(422, (
+                f"{vasp} is registered with FIU-IND as of {entry['fiu_ind_as_of']} (as "
+                "cited in the directory): the domestic notice applies. Draft a request "
+                "instead."))
+        if case_ids:
+            cases = []
+            for cid in dict.fromkeys(case_ids):
+                case = self.cases.get(cid)
+                if case is None:
+                    raise DeskError(404, f"No case {cid}.")
+                cases.append(case)
+        else:
+            cases = self._all_cases()
+        wallets = [w for case in cases for w in self._routed(case, vasp)]
+        if not wallets:
+            raise DeskError(404, f"No finished case routes a wallet to {vasp}"
+                            + (f" (asked for: {', '.join(case_ids)})." if case_ids else "."))
+        letter = letter_of_request(vasp=vasp, entry=entry, wallets=wallets, officer=officer,
+                                   today=self.now().date())
+        return {"vasp": vasp, "case_ids": [c["case_id"] for c in letter["cases"]],
+                "letter": letter, "directory": entry,
+                "recommended": entry.get("fiu_ind_registered") is False
+                or route_of(entry) == OFFSHORE}
 
     def vasp(self, name: str, label_counts: dict[str, int]) -> dict:
         return vasp_detail(name, self.directory, label_counts, self._all_cases(),
@@ -239,9 +289,11 @@ class DeskService:
 
     # ------------------------------------------------------------------ status
     def patch(self, request_id: str, status: str, note: str | None = None,
-              by: str | None = None) -> dict:
+              by: str | None = None, due: date | None = None) -> dict:
+        """`due`, only when marking a request sent: the day the officer expects the reply
+        by. Left out, the office's reminder setting applies."""
         with _LOCK:
-            return self._view(self._patch(request_id, status, note, by))
+            return self._view(self._patch(request_id, status, note, by, due=due))
 
     def reply(self, request_id: str, status: str, note: str | None = None,
               reply_ref: str | None = None) -> tuple[dict, dict | None]:
@@ -282,7 +334,8 @@ class DeskService:
             return self._view(self._patch(request_id, status, said, via="sahyog")), receipt
 
     def _patch(self, request_id: str, status: str, note: str | None,
-               by: str | None = None, via: str | None = None) -> dict:
+               by: str | None = None, via: str | None = None,
+               due: date | None = None) -> dict:
         req = self.requests.get(request_id)
         if req is None:
             raise DeskError(404, f"No request {request_id}.")
@@ -294,6 +347,12 @@ class DeskService:
         if status in ("approved", "sent"):
             self._still_supported(req)
         now = self.now()
+        if due is not None:
+            if status != "sent":
+                raise DeskError(422, "A reply-due day is set when a request is marked as "
+                                     "sent, not when it becomes " + status + ".")
+            if due < now.date():
+                raise DeskError(422, f"The reply-due day {due.isoformat()} is in the past.")
         note = _clean(note, 500) if note else None
         req["letter"]["watermark"] = WATERMARK if status in ("drafted", "withdrawn") else None
         req["payload"]["draft"] = req["letter"]["watermark"] is not None
@@ -306,7 +365,8 @@ class DeskService:
                 req["receipt"] = self.gateway.submit(req["payload"], pdf, now=now)
             except GatewayError as e:
                 raise DeskError(502, f"Not sent: {e}.") from e
-            req["due"] = (now.date() + timedelta(days=self.cfg.reply_days)).isoformat()
+            req["due"] = (due or now.date() + timedelta(days=self.cfg.reply_days)).isoformat()
+            req["due_basis"] = "officer" if due else "office_setting"
             sent = (f"Written to the SAHYOG outbox ({self.gateway.name}); nothing left this "
                     "machine" if self.gateway.name == "mock-outbox"
                     else f"Submitted through {self.gateway.name}") \

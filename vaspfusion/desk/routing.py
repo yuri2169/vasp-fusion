@@ -95,8 +95,32 @@ def _overdue(request: dict, today: date) -> bool:
             and date.fromisoformat(str(request["due"])[:10]) < today)
 
 
+def days_left(request: dict, today: date) -> int:
+    return (date.fromisoformat(str(request["due"])[:10]) - today).days
+
+
+def follow_ups(requests: list[dict], today: date) -> list[dict]:
+    """Every request a reply is still owed on and that has a day to expect it by:
+    overdue first (longest overdue first), then the soonest due."""
+    out = []
+    for r in requests:
+        if r["status"] not in AWAITING or r.get("due") is None:
+            continue
+        left = days_left(r, today)
+        if left < 0:
+            kind, text = "reply_overdue", (f"{r['vasp']} has not replied; the reply was due "
+                                           f"{day(r['due'])}")
+        else:
+            when = "today" if left == 0 else f"in {left} day{'s' if left != 1 else ''}"
+            kind, text = "reply_due", f"{r['vasp']}: reply due {when} ({day(r['due'])})"
+        out.append({"kind": kind, "vasp": r["vasp"], "request_id": r["id"],
+                    "due": str(r["due"])[:10], "days_left": left, "text": text})
+    out.sort(key=lambda f: (f["days_left"], f["request_id"]))
+    return out
+
+
 def build_desk(cases: list[dict], requests: list[dict], today: date,
-               bar: float = BAR, canonical=_same) -> dict:
+               bar: float = BAR, canonical=_same, directory=None) -> dict:
     """`Desk`: one row per exchange (largest sum first), and the follow-ups due.
     A withdrawn request counts for nothing here: its wallets are open again."""
     wallets: dict[str, list[dict]] = {}
@@ -143,12 +167,23 @@ def build_desk(cases: list[dict], requests: list[dict], today: date,
                      "unrequested_wallets": len(open_ws)})
     rows.sort(key=lambda r: (-r["total_usd"], r["vasp"]))
 
-    follow_ups = [{"kind": "reply_overdue", "vasp": r["vasp"], "request_id": r["id"],
-                   "due": str(r["due"])[:10],
-                   "text": f"{r['vasp']} has not replied; the reply was due {day(r['due'])}"}
-                  for r in sorted(requests, key=lambda r: (str(r.get("due")), r["id"]))
-                  if _overdue(r, today)]
-    return {"follow_ups": follow_ups, "rows": rows}
+    write_first = []
+    if directory is not None:
+        from .priority import offers_letter_of_request, route_of, write_order
+        for row in rows:
+            entry = directory.get(row["vasp"])
+            row["route"] = route_of(entry)
+            # a draft needs a routed wallet; rows left only with their requests have none
+            row["letter_of_request"] = bool(wallets.get(row["vasp"])) and \
+                offers_letter_of_request(entry)
+        for case in cases:
+            order = write_order(case, directory, requests)
+            if order and len(order["exchanges"]) > 1:
+                write_first.append({"case_id": case["id"], "case_ref": case.get("case_ref"),
+                                    "order": order})
+        write_first.sort(key=lambda w: w["case_id"])
+    return {"follow_ups": follow_ups(requests, today), "rows": rows,
+            "write_first": write_first}
 
 
 SUMMARY_KEYS = ("id", "reference", "vasp", "status", "case_ids", "created_at", "due")

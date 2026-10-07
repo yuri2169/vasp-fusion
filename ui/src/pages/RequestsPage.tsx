@@ -12,7 +12,7 @@ import { PageHeader } from '../components/PageHeader'
 import { DeskNav } from '../desk/DeskNav'
 import { RoutingSlip } from '../desk/RoutingSlip'
 import { StatusTag } from '../desk/StatusTag'
-import { ASK_WORDS, isOpen, isOverdue, STATUS_ORDER, STATUS_WORDS } from '../desk/status'
+import { ASK_WORDS, daysLeft, daysLeftWords, isOpen, isOverdue, STATUS_ORDER, STATUS_WORDS } from '../desk/status'
 import { cx } from '../lib/cx'
 import { formatDate } from '../lib/format'
 
@@ -109,7 +109,7 @@ export function RequestsPage() {
         r.due ? (
           <span className={cx('tabular whitespace-nowrap text-base', isOverdue(r) ? 'font-medium text-seal-text' : 'text-muted')}>
             {formatDate(r.due)}
-            {isOverdue(r) && <span className="block text-sm">overdue</span>}
+            {(r.status === 'sent' || r.status === 'acknowledged') && <span className="block text-sm">{daysLeftWords(daysLeft(r.due))}</span>}
           </span>
         ) : (
           <span className="whitespace-nowrap text-base text-muted">not sent</span>

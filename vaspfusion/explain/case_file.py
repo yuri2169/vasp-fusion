@@ -577,8 +577,47 @@ def _risk(case: dict) -> list[dict]:
 
 
 # ------------------------------------------------------------------ the document
+def _timeline(timeline: dict | None) -> list[dict]:
+    """The case's recorded events (desk/timeline.py). Only in a file the server makes:
+    the events are in its stores, not in the case."""
+    if not timeline:
+        return []
+    from ..desk.timeline import elapsed_words
+    items = []
+    for s in timeline["steps"]:
+        if s["state"] == "done":
+            line = f"{when(s['at'])}: {s['label']}"
+            if s.get("by"):
+                line += f", by {s['by']}"
+            line += f" (from the {s['source']})"
+            if s.get("after_previous_s") is not None:
+                line += f"; {elapsed_words(s['after_previous_s'])} after the step before"
+        elif s["state"] == "pending":
+            line = f"Pending: {s['label']}"
+        else:
+            line = f"Time not on record: {s['label']}"
+        items.append(line + ".")
+    return [{"t": "h", "text": "Case timeline"}, {"t": "small", "text": timeline["note"]},
+            {"t": "list", "items": items}]
+
+
+def _write_order(order: dict | None) -> list[dict]:
+    if not order:
+        return []
+    many = len(order["exchanges"]) > 1
+    items = [(f"{x['rank']}. " if many else "") + f"{x['vasp']}: " + " ".join(x["reasons"])
+             + (" A letter-of-request draft for an authority outside India can be made for "
+                "it." if x["letter_of_request"] else "")
+             for x in order["exchanges"]]
+    return [{"t": "h", "text": "Who to write to first" if many else "Where to write"},
+            *([{"t": "small", "text": f"{order['rule']} {order['note']}"}] if many
+              else [{"t": "small", "text": order["note"]}]),
+            {"t": "list", "items": items}]
+
+
 def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
-              bar_check: dict | None = None) -> list[dict]:
+              bar_check: dict | None = None, timeline: dict | None = None,
+              write_order: dict | None = None) -> list[dict]:
     if case.get("status") != "done" or case.get("outcome") is None:
         raise NotReady(f"Case {case.get('id')} has no result yet (status "
                        f"{case.get('status')}).")
@@ -597,6 +636,8 @@ def case_file(case: dict, *, rules: RuleConfig = RuleConfig(),
     blocks += _risk(case)
     blocks += _confidence(case, rules, bar_check)
     blocks += _lists(case)
+    blocks += _write_order(write_order)
+    blocks += _timeline(timeline)
     blocks += [{"t": "h", "text": "Limitations"}, {"t": "list", "items": limitations(case)}]
     blocks += _receipt(case)
     return blocks

@@ -16,6 +16,8 @@ import { TraceAgain } from '../case/TraceAgain'
 import { TraceProgress } from '../case/TraceProgress'
 import { WalletPanel } from '../case/WalletPanel'
 import { AuditTab } from '../case/tabs/AuditTab'
+import { EventsTab } from '../case/tabs/EventsTab'
+import { WriteOrderPanel } from '../case/WriteOrderPanel'
 import { InboundTab } from '../case/tabs/InboundTab'
 import { PatternsTab } from '../case/tabs/PatternsTab'
 import { TimelineTab } from '../case/tabs/TimelineTab'
@@ -59,7 +61,7 @@ function markedFor(c: CaseDetail, selected: string | null): ReadonlySet<string> 
   return pathTo(buildFlow(c, { fans: false }), selected).nodes
 }
 
-const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'audit'] as const
+const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'events', 'audit'] as const
 type TabId = (typeof TAB_IDS)[number]
 
 function Meta({ c }: { c: CaseDetail }) {
@@ -173,6 +175,7 @@ export function CasePage() {
     { id: 'patterns', label: 'Patterns', count: c.typology_flags.length || undefined },
     ...(c.risk ? [{ id: 'risk' as const, label: 'Risk', count: c.risk.indicators.length || undefined }] : []),
     { id: 'inbound', label: 'Inbound funding', count: inbound || undefined },
+    { id: 'events', label: 'Case events', count: c.timeline?.steps.filter((s) => s.state === 'done').length || undefined },
     { id: 'audit', label: 'Audit' },
   ]
 
@@ -346,6 +349,8 @@ export function CasePage() {
         )}
       </div>
 
+      {c.write_order && !tracing && <WriteOrderPanel order={c.write_order} caseId={c.id} />}
+
       <div className="mt-6">
         <Tabs label="Case records" tabs={tabs} active={tab} onChange={(next) => setParam('tab', next === 'timeline' ? null : next)}>
           {tab === 'timeline' && <TimelineTab c={c} onSelect={selectFromBelow} />}
@@ -366,6 +371,7 @@ export function CasePage() {
             </div>
           )}
           {tab === 'inbound' && <InboundTab c={c} onSelect={selectFromBelow} />}
+          {tab === 'events' && <EventsTab timeline={c.timeline} />}
           {tab === 'audit' && <AuditTab c={c} />}
         </Tabs>
       </div>

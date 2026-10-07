@@ -247,12 +247,14 @@ def _story(blocks: list[dict]) -> list:
 
 
 def case_pdf(case: dict, *, watermark: str | None = None, bar_check: dict | None = None,
-             blocks: list[dict] | None = None) -> bytes:
+             blocks: list[dict] | None = None, timeline: dict | None = None,
+             write_order: dict | None = None) -> bytes:
     """The case file of a finished case. `watermark` marks a file that is not evidence
     (a mock demo fixture). Raises `case_file.NotReady` for a case with no result."""
     if blocks is None:
         blocks = case_file(case, bar_check=bar_check if bar_check is not None
-                           else bar_check_for(case["chain"]))
+                           else bar_check_for(case["chain"]),
+                           timeline=timeline, write_order=write_order)
     ref = reference(case)
     fingerprint = (case.get("provenance") or {}).get("findings_sha256")
     footer = f"Case file {ref}  |  VASP-FUSION {case['provenance']['code_version']}" + \

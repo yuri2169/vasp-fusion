@@ -1,0 +1,128 @@
+{
+ "vasp": "HTX",
+ "case_ids": [
+  "tron-htx-coindcx"
+ ],
+ "letter": {
+  "kind": "letter_of_request",
+  "reference": "",
+  "date": "2026-10-07",
+  "to": "The competent Court or authority, ____________________",
+  "subject": "Draft letter of request for evidence held by HTX, in respect of 1 wallet (DEMO/2026/104)",
+  "paragraphs": [
+   "This is a draft of a letter of request, prepared for the Court's consideration on the application of the investigating officer in the matter referred to above (DEMO/2026/104).",
+   "Analysis of public blockchain records traced funds from the wallet under investigation (TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr on Tron, DEMO/2026/104) to the 1 wallet listed in the table below, which the analysis attributes to HTX. The table states, for each wallet, the amount traced, the transactions, and the evidence tier and confidence of the attribution.",
+   "The records of the accounts behind these wallets are held by HTX. The country or place where HTX holds them is to be stated by the officer: none is on record with this office.",
+   "The competent Court or authority is requested to require HTX, or any other person in possession of them, to produce, and to forward to the Court issuing this letter, the authenticated copies of: (a) the KYC and account-opening records of the account or accounts that the wallets listed below belong to, or that were credited through them; and (b) the transaction history of those accounts, including the deposits listed below, internal transfers, withdrawals and the destination of the funds. It is further requested to require HTX to preserve all records, logs and communications relating to those accounts until the request is executed.",
+   "This letter is to be transmitted in the manner specified by the Central Government."
+  ],
+  "wallets": [
+   {
+    "address": "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a",
+    "chain": "tron",
+    "amount_usd": 7000.0,
+    "tier": "published_por",
+    "first_seen": "2024-08-01T15:01:15Z",
+    "tx_hashes": [
+     "a6fa68918ea98b868caf2ac75afa3259582f619acb038c422eca1ee92b66084d",
+     "b10ac24698993828cd5087ce14c9f09591d28d551c6175ba687ed7c5183dc645",
+     "9c024ea72b811f571b7d03aac3bea95d5026df11990767cbd992097f40471081",
+     "9fea3778a8b8953083be95165d34c0657cfe6f0c675b1bdf7aef93ecdb430354"
+    ],
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "asset": "USDT",
+    "amount": 7000.0,
+    "confidence": 0.7071,
+    "paid_into": "TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu",
+    "label": "HTX (Huobi) (proof-of-reserves)"
+   }
+  ],
+  "asks": [
+   "kyc",
+   "transactions",
+   "preservation"
+  ],
+  "legal_basis": "Letter of request under Section 112 of the Bharatiya Nagarik Suraksha Sanhita, 2023: issued by a Criminal Court on the application of the investigating officer, to a Court or authority competent to deal with it in the country or place where the evidence may be available, and transmitted in the manner the Central Government specifies.",
+  "officer": "Insp. A. Rao, Cyber PS",
+  "watermark": "Draft: officer and competent authority review required",
+  "cases": [
+   {
+    "case_id": "tron-htx-coindcx",
+    "case_ref": "DEMO/2026/104",
+    "complaint_no": null,
+    "wallet": "TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr",
+    "chain": "tron"
+   }
+  ],
+  "legal_citations": [
+   {
+    "section": "112",
+    "act": "Bharatiya Nagarik Suraksha Sanhita, 2023",
+    "heading": "Letter of request to competent authority for investigation in a country or place outside India",
+    "url": "https://www.indiacode.nic.in/handle/123456789/20099"
+   }
+  ],
+  "channel": null,
+  "review_notes": [
+   "This is a draft. A letter of request is issued by a Criminal Court on the application of the investigating officer or an officer superior in rank, and is transmitted in the manner the Central Government specifies. This tool sends nothing and records no sending.",
+   "The draft asks for evidence only. An order attaching property outside India is a separate order of the Court; it is not drafted here.",
+   "No reference is printed: the issuing Court gives the letter its number.",
+   "No jurisdiction is on record for HTX. Fill in the country or place, and the Court or authority competent there, before the application is made.",
+   "THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a carries no label. It is named because it passed on everything it received from this trail to HTX's wallet TFTWNgDBkQ5wQoP8RXpRznnHvAVV8x5jLu; it may be a customer's deposit address or an intermediary.",
+   "Naming HTX for THW7GJwxsZgZMdVrKTn2brDnNXXguUJt6a rests on one label (published by the exchange itself): without it the trace does not reach HTX.",
+   "Confidence figures are the tool's assessment (label weight, hops and share of funds; calibrated only where a range is shown in the case). They are a lead for investigation, not proof of ownership.",
+   "No source was found for HTX's FIU-IND registration. Check whether it is a reporting entity before relying on a reply.",
+   "No legal entity name is on file for HTX; the letter is addressed to the trade name.",
+   "On file for HTX: Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source.",
+   "On file for HTX: HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+  ]
+ },
+ "pdf_url": "/api/vasps/HTX/letter-of-request/pdf?cases=tron-htx-coindcx&officer=Insp.%20A.%20Rao%2C%20Cyber%20PS",
+ "directory": {
+  "name": "HTX",
+  "legal_name": null,
+  "fiu_ind_registered": null,
+  "fiu_ind_as_of": null,
+  "jurisdiction": null,
+  "le_request_channel": "regulatory@htx-inc.com",
+  "notes": [
+   "Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source.",
+   "HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
+  ],
+  "sources": [
+   {
+    "field": "le_request_channel",
+    "title": "HTX - Law Enforcement Requests",
+    "publisher": "HTX",
+    "kind": "exchange",
+    "url": "https://www.htx.com/terms/legal",
+    "published": null,
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "notes",
+    "title": "FIU IND issues compliance Show Cause Notices to nine offshore Virtual Digital Assets Service Providers",
+    "publisher": "Press Information Bureau, Ministry of Finance (Release ID 1991372)",
+    "kind": "official",
+    "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1991372",
+    "published": "2023-12-28",
+    "accessed": "2026-10-02"
+   },
+   {
+    "field": "notes",
+    "title": "HTX - Law Enforcement Requests",
+    "publisher": "HTX",
+    "kind": "exchange",
+    "url": "https://www.htx.com/terms/legal",
+    "published": null,
+    "accessed": "2026-10-02"
+   }
+  ],
+  "source_urls": [
+   "https://www.htx.com/terms/legal",
+   "https://www.pib.gov.in/PressReleasePage.aspx?PRID=1991372"
+  ]
+ },
+ "recommended": false
+}

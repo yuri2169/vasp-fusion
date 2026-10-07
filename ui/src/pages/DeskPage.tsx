@@ -1,7 +1,7 @@
 import { CalendarClock, Inbox } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { ApiError } from '../api/client'
-import type { DeskRow, FollowUp } from '../api/models'
+import type { CaseWriteOrder, DeskRow, FollowUp } from '../api/models'
 import { useCases, useDesk, useRequests } from '../api/queries'
 import { Button, buttonClass } from '../components/Button'
 import { DataTable, type Column } from '../components/DataTable'
@@ -9,6 +9,9 @@ import { EmptyState } from '../components/EmptyState'
 import { ErrorState } from '../components/ErrorState'
 import { PageHeader } from '../components/PageHeader'
 import { DeskNav } from '../desk/DeskNav'
+import { WriteOrderPanel } from '../case/WriteOrderPanel'
+import { daysLeft, daysLeftWords, letterOfRequestLink } from '../desk/status'
+import { cx } from '../lib/cx'
 import { DraftDialog } from '../desk/DraftDialog'
 import { StatusTag } from '../desk/StatusTag'
 import { FOLLOW_UP_WORDS, STATUS_ORDER } from '../desk/status'
@@ -21,7 +24,8 @@ const requestLink = (id: string) => `/requests/${encodeURIComponent(id)}`
 /** A wallet no request asks about yet: the row offers a draft. */
 const canDraft = (row: DeskRow) => row.status === 'not_requested' || (row.unrequested_wallets ?? 0) > 0
 
-/** What is past its day, first on the page: an overdue reply is the one thing here that gets worse by waiting. */
+/** What is past its day, first on the page: an overdue reply is the one thing here that gets worse by waiting.
+ *  Under it, the replies still awaited with the days left, soonest first. */
 function FollowUps({ items }: { items: FollowUp[] }) {
   return (
     <section aria-labelledby="follow-up" className="mb-7">
@@ -29,20 +33,28 @@ function FollowUps({ items }: { items: FollowUp[] }) {
         Follow up
       </h2>
       {items.length === 0 ? (
-        <p className="border-l-2 border-data bg-surface-2 px-4 py-3 text-base text-ink-soft">Nothing is overdue. No reply is past its day.</p>
+        <p className="border-l-2 border-data bg-surface-2 px-4 py-3 text-base text-ink-soft">Nothing is overdue, and no reply is awaited.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((f) => (
             <li
               key={f.request_id + f.kind}
-              className="flex flex-wrap items-center gap-x-4 gap-y-2 border-l-2 border-danger bg-danger-wash px-4 py-3"
+              data-kind={f.kind}
+              className={cx(
+                'flex flex-wrap items-center gap-x-4 gap-y-2 border-l-2 px-4 py-3',
+                f.kind === 'reply_due' ? 'border-data bg-surface-2' : 'border-danger bg-danger-wash',
+              )}
             >
-              <CalendarClock size={18} aria-hidden className="shrink-0 text-seal-text" />
+              <CalendarClock size={18} aria-hidden className={cx('shrink-0', f.kind === 'reply_due' ? 'text-ink-soft' : 'text-seal-text')} />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold uppercase tracking-wide text-seal-text">{FOLLOW_UP_WORDS[f.kind]}</p>
+                <p className={cx('text-sm font-semibold uppercase tracking-wide', f.kind === 'reply_due' ? 'text-ink-soft' : 'text-seal-text')}>
+                  {FOLLOW_UP_WORDS[f.kind]}
+                </p>
                 <p className="text-base text-fg">{f.text}</p>
               </div>
-              <span className="tabular whitespace-nowrap font-mono text-sm text-muted">due {formatDate(f.due)}</span>
+              <span className="tabular whitespace-nowrap font-mono text-sm text-muted">
+                {daysLeftWords(daysLeft(f.due))} · due {formatDate(f.due)}
+              </span>
               <Link to={requestLink(f.request_id)} aria-label={`Open request to ${f.vasp}`} className={buttonClass('secondary', 'sm')}>
                 Open request
               </Link>
@@ -50,6 +62,32 @@ function FollowUps({ items }: { items: FollowUp[] }) {
           ))}
         </ul>
       )}
+    </section>
+  )
+}
+
+/** For every case whose money reached two or more exchanges: the order to write to them, with reasons. */
+function WriteFirst({ items }: { items: CaseWriteOrder[] }) {
+  if (items.length === 0) return null
+  return (
+    <section aria-labelledby="write-first" className="mt-8">
+      <h2 id="write-first" className="eyebrow mb-2">
+        Who to write to first
+      </h2>
+      <div className="flex flex-col gap-4">
+        {items.map((item) => (
+          <div key={item.case_id} className="panel p-4">
+            <p className="mb-2 text-base text-fg">
+              Case{' '}
+              <Link to={`/cases/${encodeURIComponent(item.case_id)}`} className="font-medium underline decoration-rule-strong underline-offset-2 hover:decoration-current">
+                {item.case_ref ?? item.case_id}
+              </Link>{' '}
+              reaches {item.order.exchanges.length} exchanges.
+            </p>
+            <WriteOrderPanel order={item.order} caseId={item.case_id} compact />
+          </div>
+        ))}
+      </div>
     </section>
   )
 }
@@ -137,6 +175,11 @@ export function DeskPage() {
                 Draft request
               </Button>
             )}
+            {canDraft(r) && r.letter_of_request && (
+              <Link to={letterOfRequestLink(r.vasp)} aria-label={`Letter-of-request draft for ${r.vasp}`} className={buttonClass('secondary', 'sm')}>
+                Letter of request
+              </Link>
+            )}
           </span>
         </span>
       ),
@@ -182,8 +225,11 @@ export function DeskPage() {
             onRowOpen={(r) => navigate(vaspLink(r.vasp))}
           />
           <p className="mt-2 text-sm text-muted">
-            Traced, USD counts US-dollar stablecoins only. The day a reply is due is an office reminder set for this installation, not a period set by law.
+            Traced, USD counts US-dollar stablecoins only. The day a reply is due is the day the officer set when marking the request sent, or else this
+            office's reminder setting; neither is a period set by law. "Letter of request" is offered where no source shows the exchange as registered
+            with FIU-IND.
           </p>
+          {desk.data && <WriteFirst items={desk.data.write_first ?? []} />}
         </>
       )}
       {drafting && <DraftDialog key={drafting} vasp={drafting} preselect={fromCase ? [fromCase] : undefined} onClose={closeDraft} />}

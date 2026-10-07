@@ -440,6 +440,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/vasps/{name}/letter-of-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Letter Of Request
+         * @description A draft letter of request for a Court to issue to an authority outside India
+         *     (section 112 BNSS), with the same evidence table as the domestic letter. Offered for
+         *     an exchange no source shows as registered with FIU-IND; 422 for one that is. Made on
+         *     demand: nothing is stored, nothing is sent, and it is always a draft. 404 when no
+         *     finished case routes a wallet to the exchange.
+         */
+        get: operations["get_letter_of_request_api_vasps__name__letter_of_request_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/vasps/{name}/letter-of-request/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Letter Of Request Pdf
+         * @description The same draft as an A4 PDF: watermarked on every page, marked not sent. The same
+         *     cases, officer and day give the same bytes.
+         */
+        get: operations["get_letter_of_request_pdf_api_vasps__name__letter_of_request_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/requests": {
         parameters: {
             query?: never;
@@ -905,7 +950,7 @@ export interface components {
              * Action
              * @enum {string}
              */
-            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "case.context" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "batch.upload" | "batch.list" | "batch.view" | "batch.export" | "scale.view" | "auth.login" | "auth.logout" | "api.other";
+            action: "case.open" | "case.list" | "case.view" | "case.export" | "case.receipt" | "case.verify" | "case.context" | "wallet.view" | "label.search" | "desk.view" | "vasp.view" | "request.draft" | "request.view" | "request.status" | "request.export" | "request.letter_of_request" | "dashboard.view" | "model.view" | "fx.view" | "audit.view" | "watch.list" | "watch.add" | "watch.check" | "watch.seen" | "watch.remove" | "label.coverage" | "coverage.view" | "sahyog.complaint" | "sahyog.status" | "sahyog.reply" | "sim.view" | "sim.complaint" | "sim.reply" | "batch.upload" | "batch.list" | "batch.view" | "batch.export" | "scale.view" | "auth.login" | "auth.logout" | "api.other";
             /**
              * Target
              * @description case id, `chain:address`, exchange name, request id, search text or user name, by action
@@ -1515,6 +1560,10 @@ export interface components {
             sahyog_complaint_ref?: string | null;
             /** @description Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered */
             documented?: components["schemas"]["DocumentedCase"] | null;
+            /** @description The case's recorded events in order. Built when the case is read from the complaint store, the audit log, the trace queue and the requests; never stored, so it is not part of the case's digests */
+            timeline?: components["schemas"]["CaseTimeline"] | null;
+            /** @description The exchanges a request can be drafted on, in the order to write to them, with reasons. null when the case names none. Never stored */
+            write_order?: components["schemas"]["WriteOrder"] | null;
             /** @description Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests */
             risk?: components["schemas"]["RiskInfo"] | null;
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
@@ -1738,6 +1787,27 @@ export interface components {
             sahyog_complaint_ref?: string | null;
             /** @description Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered */
             documented?: components["schemas"]["DocumentedCase"] | null;
+        };
+        /**
+         * CaseTimeline
+         * @description Built when the case is read, only from events the tool recorded.
+         */
+        CaseTimeline: {
+            /**
+             * Steps
+             * @description Steps with no record first, then the timed steps in time order, then what is still pending
+             */
+            steps: components["schemas"]["TimelineStep"][];
+            /** Note */
+            note: string;
+        };
+        /** CaseWriteOrder */
+        CaseWriteOrder: {
+            /** Case Id */
+            case_id: string;
+            /** Case Ref */
+            case_ref?: string | null;
+            order: components["schemas"]["WriteOrder"];
         };
         /** ChainCheck */
         ChainCheck: {
@@ -2192,10 +2262,19 @@ export interface components {
         };
         /** Desk */
         Desk: {
-            /** Follow Ups */
+            /**
+             * Follow Ups
+             * @description Overdue replies first (longest overdue first), then replies still awaited (soonest due first)
+             */
             follow_ups: components["schemas"]["FollowUp"][];
             /** Rows */
             rows: components["schemas"]["DeskRow"][];
+            /**
+             * Write First
+             * @description For every case that reaches two or more exchanges: who to write to first
+             * @default []
+             */
+            write_first: components["schemas"]["CaseWriteOrder"][];
         };
         /** DeskRow */
         DeskRow: {
@@ -2224,6 +2303,17 @@ export interface components {
              * @default 0
              */
             unrequested_wallets: number;
+            /**
+             * Route
+             * @description From the directory's cited facts; see WriteOrderRow.route
+             */
+            route?: ("domestic_notice" | "direct_channel" | "letter_of_request") | null;
+            /**
+             * Letter Of Request
+             * @description true: a letter-of-request draft can be made for this VASP's wallets
+             * @default false
+             */
+            letter_of_request: boolean;
         };
         /** DirectorySource */
         DirectorySource: {
@@ -2407,7 +2497,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "reply_overdue" | "freeze_lapsing" | "preservation_closing";
+            kind: "reply_overdue" | "reply_due" | "freeze_lapsing" | "preservation_closing";
             /** Vasp */
             vasp: string;
             /** Request Id */
@@ -2417,6 +2507,12 @@ export interface components {
              * Format: date
              */
             due: string;
+            /**
+             * Days Left
+             * @description Whole days from today (UTC) to `due`; negative once it has passed
+             * @default 0
+             */
+            days_left: number;
             /** Text */
             text: string;
         };
@@ -2864,6 +2960,26 @@ export interface components {
             wallet: string;
             /** Chain */
             chain: string;
+        };
+        /**
+         * LetterOfRequest
+         * @description A letter-of-request draft for one exchange: made on demand from the finished
+         *     cases, with the same evidence table as the domestic letter.
+         */
+        LetterOfRequest: {
+            /** Vasp */
+            vasp: string;
+            /** Case Ids */
+            case_ids: string[];
+            letter: components["schemas"]["RequestLetter"];
+            /** Pdf Url */
+            pdf_url: string;
+            directory: components["schemas"]["VaspDirectoryEntry"];
+            /**
+             * Recommended
+             * @description true: FIU-IND named the exchange as unregistered, or it has neither a cited registration nor a channel on record
+             */
+            recommended: boolean;
         };
         /** LetterWallet */
         LetterWallet: {
@@ -3498,10 +3614,25 @@ export interface components {
             allowed_next: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn")[];
             /** @description Set once sent */
             receipt?: components["schemas"]["GatewayReceipt"] | null;
+            /**
+             * Due Basis
+             * @description Who set `due`: the officer when marking the request sent, or the office's reminder setting. Neither is a period fixed by law
+             */
+            due_basis?: ("officer" | "office_setting") | null;
         };
         /** RequestLetter */
         RequestLetter: {
-            /** Reference */
+            /**
+             * Kind
+             * @description letter_of_request: a draft for a Court to issue to an authority outside India (section 112 BNSS). Never stored as a request, never sent, always a draft
+             * @default notice
+             * @enum {string}
+             */
+            kind: "notice" | "letter_of_request";
+            /**
+             * Reference
+             * @description Empty on a letter-of-request draft: the Court assigns it
+             */
             reference: string;
             /**
              * Date
@@ -3567,6 +3698,11 @@ export interface components {
             status: "drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn";
             /** Note */
             note?: string | null;
+            /**
+             * Due
+             * @description Only with status sent: the day the officer expects the reply by. Not before today. Left out, the office's reminder setting is used
+             */
+            due?: string | null;
         };
         /** RequestSummary */
         RequestSummary: {
@@ -4130,6 +4266,53 @@ export interface components {
              */
             evidence?: string | null;
         };
+        /** TimelineStep */
+        TimelineStep: {
+            /**
+             * Key
+             * @description complaint_received, case_opened, trace_started, trace_finished, exchange_named, letter_of_request_drafted, or request_<status> (request_replied while no reply has come)
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * State
+             * @description done: it happened and a record holds its time. pending: it has not happened. not_recorded: it happened, but no record of this tool holds when
+             * @enum {string}
+             */
+            state: "done" | "pending" | "not_recorded";
+            /**
+             * At
+             * @description Read from the record named in `source`. Always null unless state is done: no time is ever estimated
+             */
+            at?: string | null;
+            /**
+             * By
+             * @description The signed-in officer, or the worker that traced; null when none was recorded
+             */
+            by?: string | null;
+            /** Via */
+            via?: "sahyog" | null;
+            /** Detail */
+            detail?: string | null;
+            /**
+             * Source
+             * @description The record the time was read from
+             */
+            source?: ("complaint store" | "audit log" | "trace queue" | "case store" | "request history") | null;
+            /** Request Id */
+            request_id?: string | null;
+            /**
+             * After Previous S
+             * @description Seconds since the timed step before it; the difference of two recorded times
+             */
+            after_previous_s?: number | null;
+            /**
+             * Since First S
+             * @description Seconds since the first timed step of the case
+             */
+            since_first_s?: number | null;
+        };
         /**
          * TraceBudget
          * @description What the trace was allowed to read and whether that, not the evidence, ended it.
@@ -4558,6 +4741,68 @@ export interface components {
             last_run_at?: string | null;
             /** Says */
             says: string;
+        };
+        /**
+         * WriteOrder
+         * @description Who to write to first. A stated rule over the share of funds, the last arrival,
+         *     the cited FIU-IND registration and whether a channel is on record. Never a response
+         *     time: the tool holds no cited figure for one.
+         */
+        WriteOrder: {
+            /** Rule */
+            rule: string;
+            /** Note */
+            note: string;
+            /** Exchanges */
+            exchanges: components["schemas"]["WriteOrderRow"][];
+        };
+        /** WriteOrderRow */
+        WriteOrderRow: {
+            /** Rank */
+            rank: number;
+            /** Vasp */
+            vasp: string;
+            /** Share Of Funds */
+            share_of_funds: number;
+            /** Amount */
+            amount: number;
+            /** Asset */
+            asset?: string | null;
+            /**
+             * Last Arrival
+             * Format: date-time
+             * @description When traced funds last reached it
+             */
+            last_arrival: string;
+            /** Fiu Ind Registered */
+            fiu_ind_registered?: boolean | null;
+            /** Fiu Ind As Of */
+            fiu_ind_as_of?: string | null;
+            /** Channel On Record */
+            channel_on_record: boolean;
+            /**
+             * Route
+             * @description domestic_notice: a source says it is registered with FIU-IND. direct_channel: not shown as registered, but it publishes a law-enforcement channel. letter_of_request: neither
+             * @enum {string}
+             */
+            route: "domestic_notice" | "direct_channel" | "letter_of_request";
+            /**
+             * Letter Of Request
+             * @description true: a letter-of-request draft is offered (no source shows it as registered)
+             */
+            letter_of_request: boolean;
+            /**
+             * Reasons
+             * @description Sentences; show them verbatim
+             */
+            reasons: string[];
+            /**
+             * Request Id
+             * @description The open request that lists this case
+             */
+            request_id?: string | null;
+            /** Request Status */
+            request_status?: ("drafted" | "approved" | "sent" | "acknowledged" | "answered" | "freeze_confirmed" | "refused" | "withdrawn") | null;
         };
     };
     responses: never;
@@ -5212,6 +5457,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VaspDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_letter_of_request_api_vasps__name__letter_of_request_get: {
+        parameters: {
+            query: {
+                /** @description The investigating officer's name and post, printed under the draft (Latin letters) */
+                officer: string;
+                /** @description Case ids, comma-separated. Default: every finished case that routes a wallet to this exchange */
+                cases?: string | null;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LetterOfRequest"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_letter_of_request_pdf_api_vasps__name__letter_of_request_pdf_get: {
+        parameters: {
+            query: {
+                officer: string;
+                cases?: string | null;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The letter-of-request draft, A4 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
                 };
             };
             /** @description Validation Error */

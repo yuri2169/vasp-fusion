@@ -283,11 +283,11 @@
       "section": "The solution should aim to",
       "text": "strengthen cross-border cybercrime investigations involving VDAs",
       "status": "partly",
-      "what": "Foreign exchanges are named and requests are routed to them with their legal name, jurisdiction and law-enforcement channel where a source for these was found.",
+      "what": "Foreign exchanges are named and requests are routed to them with their legal name, jurisdiction and law-enforcement channel where a source for these was found. For an exchange that no source shows as registered with FIU-IND, the desk makes a draft letter of request for a Court to issue to an authority outside India (section 112 BNSS), with the same evidence table as the domestic letter, and a case that reaches several exchanges says who to write to first, with reasons.",
       "where": "/desk",
       "evidence_kind": "test",
-      "evidence": "tests/test_desk_directory.py",
-      "gap": "The jurisdiction map is not built: no cited jurisdiction was found for the exchanges the recorded cases reach.",
+      "evidence": "tests/test_desk_foreign.py",
+      "gap": "The letter of request is a draft for the officer and the Court: nothing is transmitted, and no jurisdiction is cited yet for the exchanges the recorded cases reach, so the country is a blank on the draft. The jurisdiction map is not built.",
       "computed": false
     }
   ],

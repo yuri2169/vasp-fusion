@@ -45,6 +45,8 @@ ACTIONS: dict[tuple[str, str], tuple[str, str | None]] = {
     ("GET", "/api/labels/search"): ("label.search", "?q"),
     ("GET", "/api/desk"): ("desk.view", None),
     ("GET", "/api/vasps/{name}"): ("vasp.view", "name"),
+    ("GET", "/api/vasps/{name}/letter-of-request"): ("request.letter_of_request", "name"),
+    ("GET", "/api/vasps/{name}/letter-of-request/pdf"): ("request.letter_of_request", "name"),
     ("POST", "/api/requests"): ("request.draft", None),         # target set by the handler
     ("GET", "/api/requests/{request_id}"): ("request.view", "request_id"),
     ("PATCH", "/api/requests/{request_id}"): ("request.status", "request_id"),

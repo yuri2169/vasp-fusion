@@ -26,6 +26,9 @@ export function RequestActions({ request }: { request: RequestDetail }) {
   const [intent, setIntent] = useState<Intent | null>(null)
   const [note, setNote] = useState('')
   const [reply, setReply] = useState<RequestStatus | null>(null)
+  const [due, setDue] = useState('')
+  const dueId = useId()
+  const today = new Date().toISOString().slice(0, 10)
 
   const next = request.allowed_next ?? []
   const replies = next.filter(isReply)
@@ -35,6 +38,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
   const open = (to: Intent) => {
     move.reset()
     setNote('')
+    setDue('')
     setReply(replies[0] ?? null)
     setIntent(to)
   }
@@ -46,7 +50,7 @@ export function RequestActions({ request }: { request: RequestDetail }) {
   const confirm = () => {
     if (!intent || !status) return
     move.mutate(
-      { status, note: note.trim() || null },
+      { status, note: note.trim() || null, ...(intent === 'send' && due ? { due } : {}) },
       {
         onSuccess: () => {
           toast.show({ kind: 'success', title: TOAST[intent], detail: `${request.reference} to ${request.vasp}` })
@@ -161,6 +165,24 @@ export function RequestActions({ request }: { request: RequestDetail }) {
         >
           <div className="flex flex-col gap-4">
             {dialog.body}
+            {intent === 'send' && (
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={dueId} className="eyebrow">
+                  Reply due (optional)
+                </label>
+                <input
+                  id={dueId}
+                  type="date"
+                  min={today}
+                  value={due}
+                  onChange={(e) => setDue(e.target.value)}
+                  className="w-48 rounded border border-rule-strong bg-surface px-2.5 py-1.5 text-base text-fg"
+                />
+                <p className="text-sm text-muted">
+                  The day you expect the reply by. Left empty, this office's reminder setting is used. Neither is a period set by law.
+                </p>
+              </div>
+            )}
             <div className="flex flex-col gap-1.5">
               <label htmlFor={noteId} className="eyebrow">
                 {dialog.noteLabel}

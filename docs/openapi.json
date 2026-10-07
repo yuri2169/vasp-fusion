@@ -1063,6 +1063,140 @@
         }
       }
     },
+    "/api/vasps/{name}/letter-of-request": {
+      "get": {
+        "summary": "Get Letter Of Request",
+        "description": "A draft letter of request for a Court to issue to an authority outside India\n(section 112 BNSS), with the same evidence table as the domestic letter. Offered for\nan exchange no source shows as registered with FIU-IND; 422 for one that is. Made on\ndemand: nothing is stored, nothing is sent, and it is always a draft. 404 when no\nfinished case routes a wallet to the exchange.",
+        "operationId": "get_letter_of_request_api_vasps__name__letter_of_request_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "officer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "The investigating officer's name and post, printed under the draft (Latin letters)",
+              "title": "Officer"
+            },
+            "description": "The investigating officer's name and post, printed under the draft (Latin letters)"
+          },
+          {
+            "name": "cases",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Case ids, comma-separated. Default: every finished case that routes a wallet to this exchange",
+              "title": "Cases"
+            },
+            "description": "Case ids, comma-separated. Default: every finished case that routes a wallet to this exchange"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LetterOfRequest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/vasps/{name}/letter-of-request/pdf": {
+      "get": {
+        "summary": "Get Letter Of Request Pdf",
+        "description": "The same draft as an A4 PDF: watermarked on every page, marked not sent. The same\ncases, officer and day give the same bytes.",
+        "operationId": "get_letter_of_request_pdf_api_vasps__name__letter_of_request_pdf_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "officer",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "title": "Officer"
+            }
+          },
+          {
+            "name": "cases",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cases"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The letter-of-request draft, A4",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/requests": {
       "post": {
         "summary": "Create Request",
@@ -2047,6 +2181,7 @@
               "request.view",
               "request.status",
               "request.export",
+              "request.letter_of_request",
               "dashboard.view",
               "model.view",
               "fx.view",
@@ -3731,6 +3866,28 @@
             ],
             "description": "Set on a recorded case that is a publicly documented incident (demo/cases.json): show the statement and the sources wherever the case is offered"
           },
+          "timeline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CaseTimeline"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The case's recorded events in order. Built when the case is read from the complaint store, the audit log, the trace queue and the requests; never stored, so it is not part of the case's digests"
+          },
+          "write_order": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WriteOrder"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The exchanges a request can be drafted on, in the order to write to them, with reasons. null when the case names none. Never stored"
+          },
           "risk": {
             "anyOf": [
               {
@@ -4358,6 +4515,59 @@
           "created_at"
         ],
         "title": "CaseSummary"
+      },
+      "CaseTimeline": {
+        "properties": {
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineStep"
+            },
+            "type": "array",
+            "title": "Steps",
+            "description": "Steps with no record first, then the timed steps in time order, then what is still pending"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "steps",
+          "note"
+        ],
+        "title": "CaseTimeline",
+        "description": "Built when the case is read, only from events the tool recorded."
+      },
+      "CaseWriteOrder": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "order": {
+            "$ref": "#/components/schemas/WriteOrder"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "order"
+        ],
+        "title": "CaseWriteOrder"
       },
       "ChainCheck": {
         "properties": {
@@ -5534,7 +5744,8 @@
               "$ref": "#/components/schemas/FollowUp"
             },
             "type": "array",
-            "title": "Follow Ups"
+            "title": "Follow Ups",
+            "description": "Overdue replies first (longest overdue first), then replies still awaited (soonest due first)"
           },
           "rows": {
             "items": {
@@ -5542,6 +5753,15 @@
             },
             "type": "array",
             "title": "Rows"
+          },
+          "write_first": {
+            "items": {
+              "$ref": "#/components/schemas/CaseWriteOrder"
+            },
+            "type": "array",
+            "title": "Write First",
+            "description": "For every case that reaches two or more exchanges: who to write to first",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -5630,6 +5850,29 @@
             "title": "Unrequested Wallets",
             "description": "Routed wallets of this VASP that no request asks about yet",
             "default": 0
+          },
+          "route": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "domestic_notice",
+                  "direct_channel",
+                  "letter_of_request"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Route",
+            "description": "From the directory's cited facts; see WriteOrderRow.route"
+          },
+          "letter_of_request": {
+            "type": "boolean",
+            "title": "Letter Of Request",
+            "description": "true: a letter-of-request draft can be made for this VASP's wallets",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -6117,6 +6360,7 @@
             "type": "string",
             "enum": [
               "reply_overdue",
+              "reply_due",
               "freeze_lapsing",
               "preservation_closing"
             ],
@@ -6134,6 +6378,12 @@
             "type": "string",
             "format": "date",
             "title": "Due"
+          },
+          "days_left": {
+            "type": "integer",
+            "title": "Days Left",
+            "description": "Whole days from today (UTC) to `due`; negative once it has passed",
+            "default": 0
           },
           "text": {
             "type": "string",
@@ -7303,6 +7553,48 @@
           "chain"
         ],
         "title": "LetterCase"
+      },
+      "LetterOfRequest": {
+        "properties": {
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "case_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Case Ids"
+          },
+          "letter": {
+            "$ref": "#/components/schemas/RequestLetter"
+          },
+          "pdf_url": {
+            "type": "string",
+            "title": "Pdf Url"
+          },
+          "directory": {
+            "$ref": "#/components/schemas/VaspDirectoryEntry"
+          },
+          "recommended": {
+            "type": "boolean",
+            "title": "Recommended",
+            "description": "true: FIU-IND named the exchange as unregistered, or it has neither a cited registration nor a channel on record"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "vasp",
+          "case_ids",
+          "letter",
+          "pdf_url",
+          "directory",
+          "recommended"
+        ],
+        "title": "LetterOfRequest",
+        "description": "A letter-of-request draft for one exchange: made on demand from the finished\ncases, with the same evidence table as the domestic letter."
       },
       "LetterWallet": {
         "properties": {
@@ -8966,6 +9258,22 @@
               }
             ],
             "description": "Set once sent"
+          },
+          "due_basis": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "officer",
+                  "office_setting"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Basis",
+            "description": "Who set `due`: the officer when marking the request sent, or the office's reminder setting. Neither is a period fixed by law"
           }
         },
         "additionalProperties": false,
@@ -8986,9 +9294,20 @@
       },
       "RequestLetter": {
         "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "notice",
+              "letter_of_request"
+            ],
+            "title": "Kind",
+            "description": "letter_of_request: a draft for a Court to issue to an authority outside India (section 112 BNSS). Never stored as a request, never sent, always a draft",
+            "default": "notice"
+          },
           "reference": {
             "type": "string",
-            "title": "Reference"
+            "title": "Reference",
+            "description": "Empty on a letter-of-request draft: the Court assigns it"
           },
           "date": {
             "type": "string",
@@ -9148,6 +9467,19 @@
               }
             ],
             "title": "Note"
+          },
+          "due": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due",
+            "description": "Only with status sent: the day the officer expects the reply by. Not before today. Left out, the office's reminder setting is used"
           }
         },
         "additionalProperties": false,
@@ -10533,6 +10865,139 @@
         "title": "ThreatTag",
         "description": "What a public source says an address belongs to (config/threats.yaml has the rule\nthat produced it). Never an inference of this tool."
       },
+      "TimelineStep": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key",
+            "description": "complaint_received, case_opened, trace_started, trace_finished, exchange_named, letter_of_request_drafted, or request_<status> (request_replied while no reply has come)"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "done",
+              "pending",
+              "not_recorded"
+            ],
+            "title": "State",
+            "description": "done: it happened and a record holds its time. pending: it has not happened. not_recorded: it happened, but no record of this tool holds when"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At",
+            "description": "Read from the record named in `source`. Always null unless state is done: no time is ever estimated"
+          },
+          "by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "By",
+            "description": "The signed-in officer, or the worker that traced; null when none was recorded"
+          },
+          "via": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "sahyog"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Via"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "complaint store",
+                  "audit log",
+                  "trace queue",
+                  "case store",
+                  "request history"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "description": "The record the time was read from"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "after_previous_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Previous S",
+            "description": "Seconds since the timed step before it; the difference of two recorded times"
+          },
+          "since_first_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since First S",
+            "description": "Seconds since the first timed step of the case"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "state"
+        ],
+        "title": "TimelineStep"
+      },
       "TraceBudget": {
         "properties": {
           "max_wallets": {
@@ -11638,6 +12103,171 @@
         ],
         "title": "WatcherState",
         "description": "Whether watched wallets are re-checked in the background, and how often."
+      },
+      "WriteOrder": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "exchanges": {
+            "items": {
+              "$ref": "#/components/schemas/WriteOrderRow"
+            },
+            "type": "array",
+            "title": "Exchanges"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule",
+          "note",
+          "exchanges"
+        ],
+        "title": "WriteOrder",
+        "description": "Who to write to first. A stated rule over the share of funds, the last arrival,\nthe cited FIU-IND registration and whether a channel is on record. Never a response\ntime: the tool holds no cited figure for one."
+      },
+      "WriteOrderRow": {
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Rank"
+          },
+          "vasp": {
+            "type": "string",
+            "title": "Vasp"
+          },
+          "share_of_funds": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Share Of Funds"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset"
+          },
+          "last_arrival": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Arrival",
+            "description": "When traced funds last reached it"
+          },
+          "fiu_ind_registered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fiu Ind Registered"
+          },
+          "fiu_ind_as_of": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fiu Ind As Of"
+          },
+          "channel_on_record": {
+            "type": "boolean",
+            "title": "Channel On Record"
+          },
+          "route": {
+            "type": "string",
+            "enum": [
+              "domestic_notice",
+              "direct_channel",
+              "letter_of_request"
+            ],
+            "title": "Route",
+            "description": "domestic_notice: a source says it is registered with FIU-IND. direct_channel: not shown as registered, but it publishes a law-enforcement channel. letter_of_request: neither"
+          },
+          "letter_of_request": {
+            "type": "boolean",
+            "title": "Letter Of Request",
+            "description": "true: a letter-of-request draft is offered (no source shows it as registered)"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reasons",
+            "description": "Sentences; show them verbatim"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id",
+            "description": "The open request that lists this case"
+          },
+          "request_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "drafted",
+                  "approved",
+                  "sent",
+                  "acknowledged",
+                  "answered",
+                  "freeze_confirmed",
+                  "refused",
+                  "withdrawn"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rank",
+          "vasp",
+          "share_of_funds",
+          "amount",
+          "last_arrival",
+          "channel_on_record",
+          "route",
+          "letter_of_request",
+          "reasons"
+        ],
+        "title": "WriteOrderRow"
       }
     }
   }

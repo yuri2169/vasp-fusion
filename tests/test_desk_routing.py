@@ -154,11 +154,14 @@ def test_a_reply_is_overdue_the_day_after_it_was_due():
     w = routed_wallets(cases[0])[0]
     reqs = [_req("req-2026-0001", "Bitget", "sent", [("eth-bitget", w["address"])],
                  due="2026-10-09")]
-    assert build_desk(cases, reqs, date(2026, 10, 9))["follow_ups"] == []
+    assert build_desk(cases, reqs, date(2026, 10, 9))["follow_ups"] == [{
+        "kind": "reply_due", "vasp": "Bitget", "request_id": "req-2026-0001",
+        "due": "2026-10-09", "days_left": 0, "text": "Bitget: reply due today (9 Oct 2026)"}]
     desk = build_desk(cases, reqs, date(2026, 10, 10))
     assert desk["follow_ups"] == [{
         "kind": "reply_overdue", "vasp": "Bitget", "request_id": "req-2026-0001",
-        "due": "2026-10-09", "text": "Bitget has not replied; the reply was due 9 Oct 2026"}]
+        "due": "2026-10-09", "days_left": -1,
+        "text": "Bitget has not replied; the reply was due 9 Oct 2026"}]
     assert desk["rows"][0]["next_action"] == "Follow up: the reply was due 9 Oct 2026"
     answered = [{**reqs[0], "status": "answered"}]
     assert build_desk(cases, answered, date(2026, 10, 10))["follow_ups"] == []

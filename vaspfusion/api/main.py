@@ -27,7 +27,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
@@ -37,7 +37,7 @@ from .. import chains
 from ..auth import tokens
 from ..auth.officers import USERNAME, Locked, Officers
 from ..documented import documented_for
-from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
+from ..cases import CODE_VERSION, case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..explain.progress import progress_sentence
 from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..screening import screen
@@ -1075,7 +1075,8 @@ def _case_pdf(case_id: str) -> Response:
     from ..explain.case_pdf import case_pdf
     case, mock = _case_or_mock(case_id)
     try:
-        pdf = case_pdf(case, watermark=MOCK_WATERMARK if mock else None)
+        views = {} if mock else _desk_views(case)
+        pdf = case_pdf(case, watermark=MOCK_WATERMARK if mock else None, **views)
     except NotReady as e:
         raise HTTPException(409, str(e)) from None
     name = f"case-{case_id}" + ("-demo" if mock else "")
@@ -1353,6 +1354,61 @@ def get_vasp(name: str, response: Response):
     return page
 
 
+def _letter_of_request(name: str, cases: str | None, officer: str, request: Request) -> dict:
+    from ..desk.service import DeskError
+    if not _SAFE.match(name):
+        raise HTTPException(404, "not found")
+    ids = [c.strip() for c in (cases or "").split(",") if c.strip()][:50]
+    _note(request, target=name)
+    try:
+        made = _desk().letter_of_request(name, ids or None, officer)
+    except DeskError as e:
+        raise _refused(e) from None
+    _note(request, target=made["vasp"], cases=made["case_ids"])
+    query = "&".join(f"{k}={quote(v, safe='')}" for k, v in
+                     (("cases", ",".join(made["case_ids"])), ("officer", officer)))
+    made["pdf_url"] = f"/api/vasps/{quote(made['vasp'], safe='')}/letter-of-request/pdf?{query}"
+    return made
+
+
+_LOR_HELP = ("The investigating officer's name and post, printed under the draft "
+             "(Latin letters)")
+
+
+@app.get("/api/vasps/{name}/letter-of-request", response_model=S.LetterOfRequest)
+def get_letter_of_request(name: str, request: Request, response: Response,
+                          officer: str = Query(..., min_length=1, max_length=200,
+                                               description=_LOR_HELP),
+                          cases: str | None = Query(None, description=(
+                              "Case ids, comma-separated. Default: every finished case "
+                              "that routes a wallet to this exchange"))):
+    """A draft letter of request for a Court to issue to an authority outside India
+    (section 112 BNSS), with the same evidence table as the domestic letter. Offered for
+    an exchange no source shows as registered with FIU-IND; 422 for one that is. Made on
+    demand: nothing is stored, nothing is sent, and it is always a draft. 404 when no
+    finished case routes a wallet to the exchange."""
+    _source(response, "live")
+    return _letter_of_request(name, cases, officer, request)
+
+
+@app.get("/api/vasps/{name}/letter-of-request/pdf", response_class=Response,
+         responses={200: {"content": {"application/pdf": {}},
+                          "description": "The letter-of-request draft, A4"}})
+def get_letter_of_request_pdf(name: str, request: Request,
+                              officer: str = Query(..., min_length=1, max_length=200),
+                              cases: str | None = None):
+    """The same draft as an A4 PDF: watermarked on every page, marked not sent. The same
+    cases, officer and day give the same bytes."""
+    from ..desk.foreign import as_request
+    from ..desk.pdf import letter_pdf
+    made = _letter_of_request(name, cases, officer, request)
+    pdf = letter_pdf(as_request(made["vasp"], made["letter"]), CODE_VERSION)
+    return Response(pdf, media_type="application/pdf", headers={
+        "Content-Disposition":
+            f'inline; filename="letter-of-request-{made["vasp"].replace(" ", "-")}-draft.pdf"',
+        "X-Data-Source": "live"})
+
+
 def _demo_request_for(vasp: str) -> dict:
     for path in sorted((MOCKS / "requests").glob("*.json")):
         req = load_mock(f"requests/{path.stem}")
@@ -1458,7 +1514,8 @@ def patch_request(request_id: str, body: S.RequestPatch, request: Request,
     if svc.get(request_id) is not None:
         _source(response, "live")
         try:
-            return svc.patch(request_id, body.status, body.note, by=_by(request))
+            return svc.patch(request_id, body.status, body.note, by=_by(request),
+                             due=body.due)
         except DeskError as e:
             raise _refused(e) from None
     # a mock demo request: the new status is applied to the reply, nothing persists
@@ -1775,7 +1832,50 @@ def _enrich(case: dict) -> dict:
     case["risk_score"] = risk["score"] if risk else None
     case["sahyog_complaint_ref"] = _complaints().refs_by_case().get(case["id"])
     case["documented"] = documented_for(case)
+    case.update(_desk_views(case))
     return case
+
+
+def _first_drafts(rows: list[dict], case_id: str) -> list[dict]:
+    """The audit rows of a letter-of-request draft being made for this case: the first
+    for each exchange (opening the same draft again is not another event)."""
+    first: dict[str, dict] = {}
+    for r in sorted(rows, key=lambda r: r["seq"]):
+        if r["status"] == 200 and case_id in ((r["detail"] or {}).get("cases") or []):
+            first.setdefault(r["target"], r)
+    return list(first.values())
+
+
+def _desk_views(case: dict) -> dict:
+    """{timeline, write_order} of a stored case: its recorded events in order, and who
+    to write to first. Read from the complaint store, the audit log, the trace queue and
+    the requests each time; a store that cannot be read leaves the view out, never the
+    case."""
+    from ..desk.timeline import case_timeline
+    cid = case["id"]
+    try:
+        svc = _desk()
+        requests = svc.requests.list()
+        named = svc.named(case)
+        order = svc.write_order(case)
+        log_ = AuditLog(AUDIT_DB)
+        _, opened = log_.list(limit=50, action="case.open", target=cid, oldest_first=True)
+        _, drafts = log_.list(limit=5000, action="request.letter_of_request",
+                              oldest_first=True)
+        timeline = case_timeline(
+            case,
+            complaints=sorted((c for c in _complaints().list()
+                               if any(w.get("case_id") == cid for w in c["wallets"])),
+                              key=lambda c: str(c["received_at"])),
+            job=_queue().get(cid),
+            opened=sorted((r for r in opened if r["status"] == 202), key=lambda r: r["seq"]),
+            requests=[r for r in requests if cid in r["case_ids"]],
+            letters_of_request=_first_drafts(drafts, cid),
+            named=named)
+    except Exception:  # noqa: BLE001
+        log.exception("the desk views of case %s could not be built", cid)
+        return {"timeline": None, "write_order": None}
+    return {"timeline": timeline, "write_order": order}
 
 
 async def _sahyog_key(request: Request) -> None:

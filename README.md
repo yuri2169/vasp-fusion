@@ -188,7 +188,7 @@ python -m vaspfusion.cli audit --verify
 | `vaspfusion/cases.py`, `vaspfusion/store/cases.py` | `run_case` → the API's `CaseDetail`; cases in `data/case.duckdb` |
 | `vaspfusion/provenance.py` | The receipt: digests of the input, the responses, the findings; `verify_case` |
 | `vaspfusion/explain/case_file.py`, `flow.py`, `case_pdf.py` | The case file: what it says (blocks, text), the flow diagram's layout, the A4 PDF |
-| `vaspfusion/desk/`, `data/vasp_directory.yaml` | The request desk: routing, the cited exchange directory, letters, the SAHYOG gateways (a local outbox by default; signed HTTP to a portal when `SAHYOG_URL` is set) |
+| `vaspfusion/desk/`, `data/vasp_directory.yaml` | The request desk: routing, the cited exchange directory, letters, the SAHYOG gateways (a local outbox by default; signed HTTP to a portal when `SAHYOG_URL` is set); the case timeline from recorded events (`timeline.py`), who to write to first (`priority.py`), and the letter-of-request draft for an authority outside India under section 112 BNSS (`foreign.py`) |
 | `refportal/`, `tests/conformance/` | The reference portal: a separate small program (own port, own store, own signing code) that plays the portal's half of the contract, and the conformance suite that runs the contract between the two over real sockets. A simulator, not the SAHYOG portal |
 | `vaspfusion/watcher.py` | The background watcher: watched wallets traced again on a schedule (`VASPFUSION_WATCH_INTERVAL`), off in the offline demo |
 | `vaspfusion/desk/intake.py`, `vaspfusion/store/complaints.py`, `docs/sahyog_contract.md` | SAHYOG, both directions: complaints in (one case per wallet, traced at once), results back, replies in; the simulator's routes |

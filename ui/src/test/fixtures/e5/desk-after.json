@@ -1,0 +1,132 @@
+{
+ "follow_ups": [
+  {
+   "kind": "reply_due",
+   "vasp": "CoinDCX",
+   "request_id": "req-2026-0001",
+   "due": "2026-10-17",
+   "days_left": 10,
+   "text": "CoinDCX: reply due in 10 days (17 Oct 2026)"
+  }
+ ],
+ "rows": [
+  {
+   "vasp": "Bitget",
+   "category": "exchange",
+   "wallet_count": 2,
+   "total_usd": 552938.3,
+   "case_ids": [
+    "eth-bitget",
+    "polygon-bitget"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 2,
+   "route": "direct_channel",
+   "letter_of_request": true
+  },
+  {
+   "vasp": "OKX",
+   "category": "exchange",
+   "wallet_count": 1,
+   "total_usd": 12739.49,
+   "case_ids": [
+    "sol-okx"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 1,
+   "route": "direct_channel",
+   "letter_of_request": true
+  },
+  {
+   "vasp": "CoinDCX",
+   "category": "exchange",
+   "wallet_count": 3,
+   "total_usd": 7786.56,
+   "case_ids": [
+    "bnb-coindcx",
+    "tron-coindcx",
+    "tron-htx-coindcx"
+   ],
+   "status": "sent",
+   "next_action": "Draft a request for 2 wallets not yet requested",
+   "last_request_id": "req-2026-0001",
+   "unrequested_wallets": 2,
+   "route": "domestic_notice",
+   "letter_of_request": false
+  },
+  {
+   "vasp": "HTX",
+   "category": "exchange",
+   "wallet_count": 2,
+   "total_usd": 7000.0,
+   "case_ids": [
+    "btc-htx",
+    "tron-htx-coindcx"
+   ],
+   "status": "not_requested",
+   "next_action": "Draft request",
+   "last_request_id": null,
+   "unrequested_wallets": 2,
+   "route": "direct_channel",
+   "letter_of_request": true
+  }
+ ],
+ "write_first": [
+  {
+   "case_id": "tron-htx-coindcx",
+   "case_ref": "DEMO/2026/104",
+   "order": {
+    "rule": "Exchanges registered with FIU-IND (as cited) come first: a notice under Indian law can be served on them. Then exchanges with a published law-enforcement channel, then the rest. Within each group: the larger share of the funds first, then the more recent arrival.",
+    "note": "The order is this tool's rule, for the officer to weigh. No response time is stated: no cited figure is held for how fast any exchange answers.",
+    "exchanges": [
+     {
+      "rank": 1,
+      "vasp": "CoinDCX",
+      "share_of_funds": 0.4615,
+      "amount": 6000.0,
+      "asset": "USDT",
+      "last_arrival": "2024-07-23T08:44:12Z",
+      "fiu_ind_registered": true,
+      "fiu_ind_as_of": "2023-12-04",
+      "channel_on_record": false,
+      "route": "domestic_notice",
+      "letter_of_request": false,
+      "reasons": [
+       "46% of the wallet's funds reached it (6,000 USDT).",
+       "The funds last arrived there on 23 Jul 2024, 08:44 UTC.",
+       "Registered with FIU-IND as of 4 Dec 2023 (an official list).",
+       "No law-enforcement channel is on record for it."
+      ],
+      "request_id": "req-2026-0001",
+      "request_status": "sent"
+     },
+     {
+      "rank": 2,
+      "vasp": "HTX",
+      "share_of_funds": 0.5385,
+      "amount": 7000.0,
+      "asset": "USDT",
+      "last_arrival": "2024-08-01T15:01:15Z",
+      "fiu_ind_registered": null,
+      "fiu_ind_as_of": null,
+      "channel_on_record": true,
+      "route": "direct_channel",
+      "letter_of_request": true,
+      "reasons": [
+       "54% of the wallet's funds reached it (7,000 USDT).",
+       "The funds last arrived there on 1 Aug 2024, 15:01 UTC, the most recent arrival among these exchanges.",
+       "No source was found for its FIU-IND registration: not on record, which is not a \"no\".",
+       "A law-enforcement channel is on record: regulatory@htx-inc.com."
+      ],
+      "request_id": null,
+      "request_status": null
+     }
+    ]
+   }
+  }
+ ]
+}

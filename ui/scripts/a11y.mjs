@@ -79,6 +79,9 @@ const ROUTES = [
   '/requests',
   request && `/requests/${request.id}`,
   '/vasps/CoinDCX',
+  '/vasps/HTX/letter-of-request?case=tron-htx-coindcx', // signed out: the officer field; the draft sheet is the request page's
+  '/cases/tron-htx-coindcx', // who to write to first
+  '/cases/tron-htx-coindcx?tab=events',
   '/dashboard',
   '/labels',
   '/labels?q=CoinDCX',

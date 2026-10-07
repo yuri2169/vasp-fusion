@@ -292,6 +292,51 @@ try {
   await shot('desk-freeze-confirmed')
   await pause(3000)
 
+  // --- the case's own record of events: every time is one a store holds ------------------------
+  await page.send('Page.navigate', { url: BASE + '/cases/tron-coindcx?tab=events' })
+  await waitFor(() => page.evaluate(`!!document.querySelector('section[aria-label="Case events"] ol li')`), 'the case events')
+  const events = await page.evaluate(`[...document.querySelectorAll('section[aria-label="Case events"] ol li')].map((li) => ({ state: li.dataset.state, text: li.innerText, timed: !!li.querySelector('time') }))`)
+  expect(events.some((e) => e.state === 'done' && e.text.includes('Freeze confirmed by CoinDCX')), 'the freeze the exchange confirmed is an event with its time')
+  expect(events.some((e) => e.state === 'done' && e.text.includes('Request to CoinDCX sent')), 'the sent request is an event')
+  expect(events.filter((e) => e.state === 'done').every((e) => e.timed) && events.filter((e) => e.state !== 'done').every((e) => !e.timed), 'recorded steps carry a time and no other step does')
+  say(`Case events: ${events.filter((e) => e.state === 'done').length} recorded steps of this case, each with its time and the record it was read from; nothing estimated`)
+  await page.evaluate(`document.querySelector('section[aria-label="Case events"]').scrollIntoView({ block: 'start' })`)
+  await shot('case-events')
+  await pause(3000)
+
+  // --- a case that reaches two exchanges: who to write to first -------------------------------
+  await page.send('Page.navigate', { url: BASE + '/cases/tron-htx-coindcx' })
+  await waitFor(() => page.evaluate(`!!document.querySelector('section[aria-label="Who to write to first"] ol li')`), 'the order on the two-exchange case')
+  const order = await page.evaluate(`[...document.querySelectorAll('section[aria-label="Who to write to first"] > ol > li')].map((li) => li.querySelector('a').textContent.trim())`)
+  expect(order.join(',') === 'CoinDCX,HTX', `the registered exchange first, then the other (${order.join(',')})`)
+  const why = await page.evaluate(`document.querySelector('section[aria-label="Who to write to first"]').innerText`)
+  expect(why.includes('Registered with FIU-IND as of 4 Dec 2023') && why.includes('not on record'), 'each exchange has its reasons, a blank said as a blank')
+  expect(why.includes('No response time is stated') && !/within \d+ (hours|days)/i.test(why), 'no response time is promised')
+  await page.evaluate(`document.querySelector('section[aria-label="Who to write to first"]').scrollIntoView({ block: 'center' })`)
+  say('A case that reaches two exchanges says who to write to first, with reasons from the share of funds, the last arrival and the cited directory; no response time is promised')
+  await shot('write-first')
+  await pause(3500)
+
+  // --- the offshore route: a draft for a Court, never sent -------------------------------------
+  await click('Letter-of-request draft for HTX', 'main a')
+  await waitFor(async () => (await path()).startsWith('/vasps/HTX/letter-of-request'), 'the letter-of-request page')
+  await waitFor(() => page.evaluate(`!!document.querySelector('.sheet') || !!document.querySelector('main form input')`), 'the draft or the officer field')
+  if (!(await page.evaluate(`!!document.querySelector('.sheet')`))) {
+    await page.evaluate(dom.type('main form input', `${officer.name}, ${officer.post}`))
+    await click('Make draft', 'main form button')
+  }
+  await waitFor(() => page.evaluate(`document.querySelector('.sheet')?.getAttribute('data-draft') === 'true'`), 'the draft sheet')
+  const sheet = await page.evaluate(`document.querySelector('.sheet').innerText`)
+  expect(/officer and competent authority review required\. Not sent\./i.test(sheet), 'the draft mark says it is not sent')
+  expect(sheet.includes('Section 112') && sheet.includes('Bharatiya Nagarik Suraksha Sanhita, 2023'), 'the legal basis cites section 112 BNSS')
+  expect(sheet.includes('____________________'), 'what is not on record is a blank for the officer')
+  const lor = await page.evaluate(`fetch(document.querySelector('aside a[href*="/pdf"]').getAttribute('href')).then(async (r) => ({ status: r.status, type: r.headers.get('content-type'), head: new TextDecoder().decode((await r.arrayBuffer()).slice(0, 5)) }))`)
+  expect(lor.status === 200 && lor.type === 'application/pdf' && lor.head === '%PDF-', `the draft PDF is served (${JSON.stringify(lor)})`)
+  expect(await page.evaluate(`fetch('/api/requests').then((r) => r.json()).then((d) => d.items.every((q) => q.vasp !== 'HTX'))`), 'the draft is not a stored request')
+  say('For HTX, which no source shows as registered with FIU-IND: a letter-of-request draft under section 112 BNSS, same evidence table, marked "not sent", stored nowhere')
+  await shot('letter-of-request')
+  await pause(3500)
+
   if (FRAMES) {
     await page.send('Page.stopScreencast')
     writeFileSync(join(FRAMES, 'frames.json'), JSON.stringify(frames))

@@ -34,6 +34,7 @@ export const ASK_WORDS: Record<Ask, string> = {
 
 export const FOLLOW_UP_WORDS: Record<FollowUp['kind'], string> = {
   reply_overdue: 'Reply overdue',
+  reply_due: 'Reply awaited',
   freeze_lapsing: 'Freeze about to lapse',
   preservation_closing: 'Preservation window closing',
 }
@@ -51,6 +52,19 @@ export const isReply = (status: RequestStatus) => status in REPLY_WORDS
 export function isOverdue(r: Pick<RequestSummary, 'status' | 'due'>, today: Date = new Date()): boolean {
   if (!r.due || (r.status !== 'sent' && r.status !== 'acknowledged')) return false
   return today.toISOString().slice(0, 10) > r.due
+}
+
+/** Whole days from today (UTC, as the server counts) to the day a reply is due; negative once it has passed. */
+export function daysLeft(due: string, today: Date = new Date()): number {
+  const day = (iso: string) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)))
+  return Math.round((day(due) - day(today.toISOString())) / 86_400_000)
+}
+
+/** "5 days left", "due today", "3 days overdue". */
+export function daysLeftWords(left: number): string {
+  const n = Math.abs(left)
+  const days = `${n} ${n === 1 ? 'day' : 'days'}`
+  return left < 0 ? `${days} overdue` : left === 0 ? 'due today' : `${days} left`
 }
 
 export type SlipKey = 'drafted' | 'approved' | 'sent' | 'acknowledged' | 'reply' | 'withdrawn'
@@ -99,6 +113,9 @@ export function slipSteps(history: StatusEvent[], status: RequestStatus): SlipSt
   })
 }
 
+const dueBasis = (r: RequestDetail) =>
+  r.due_basis === 'officer' ? ', the day the officer set' : r.due_basis === 'office_setting' ? ", by this office's reminder setting" : ''
+
 /** One line under the status: what the request is waiting for. */
 export function standing(r: RequestDetail): string {
   switch (r.status) {
@@ -107,7 +124,7 @@ export function standing(r: RequestDetail): string {
     case 'approved':
       return 'Approved, not sent yet. Mark it as sent to hand it to the SAHYOG gateway.'
     case 'sent':
-      return r.due ? `Sent. A reply is expected by ${formatDate(r.due)}.` : 'Sent. A reply is awaited.'
+      return r.due ? `Sent. A reply is expected by ${formatDate(r.due)}${dueBasis(r)}.` : 'Sent. A reply is awaited.'
     case 'acknowledged':
       return r.due ? `${r.vasp} confirmed receipt. Its answer is expected by ${formatDate(r.due)}.` : `${r.vasp} confirmed receipt. Its answer is awaited.`
     case 'answered':
@@ -128,3 +145,16 @@ export function registrationWords(d: Pick<VaspDirectoryEntry, 'fiu_ind_registere
   if (d.fiu_ind_registered === false) return `Named by FIU-IND as operating unregistered${asOf}`
   return 'No source found'
 }
+
+/** 14 s; 2 min 30 s; 3 h 2 min; 2 d 1 h. The server's own wording (desk/timeline.py). */
+export function elapsedWords(seconds: number): string {
+  if (seconds < 1) return 'under 1 s'
+  const s = Math.round(seconds)
+  if (s < 60) return `${s} s`
+  if (s < 3600) return `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ''}`
+  if (s < 86400) return `${Math.floor(s / 3600)} h${Math.floor((s % 3600) / 60) ? ` ${Math.floor((s % 3600) / 60)} min` : ''}`
+  return `${Math.floor(s / 86400)} d${Math.floor((s % 86400) / 3600) ? ` ${Math.floor((s % 86400) / 3600)} h` : ''}`
+}
+
+export const letterOfRequestLink = (vasp: string, caseId?: string) =>
+  `/vasps/${encodeURIComponent(vasp)}/letter-of-request${caseId ? `?case=${encodeURIComponent(caseId)}` : ''}`

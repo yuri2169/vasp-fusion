@@ -13,7 +13,7 @@ import { TierTag } from '../components/TierTag'
 import { DirectoryFacts } from '../desk/DirectoryFacts'
 import { DraftDialog } from '../desk/DraftDialog'
 import { StatusTag } from '../desk/StatusTag'
-import { isOverdue } from '../desk/status'
+import { isOverdue, letterOfRequestLink } from '../desk/status'
 import { CHAINS } from '../lib/chains'
 import { Rupees } from '../components/Rupees'
 import { formatConfidence, formatDate, formatUsd } from '../lib/format'
@@ -155,15 +155,22 @@ export function VaspPage() {
         title={title}
         meta={directory ? (directory.legal_name ?? 'No legal name on file') : undefined}
         actions={
-          canDraft ? (
-            <Button variant="primary" onClick={() => setParams({ draft: '1' })}>
-              Draft request to {title}
-            </Button>
-          ) : row?.last_request_id ? (
-            <Link to={`/requests/${encodeURIComponent(row.last_request_id)}`} className={buttonClass('secondary')}>
-              Open request
-            </Link>
-          ) : undefined
+          <>
+            {row?.letter_of_request && (
+              <Link to={letterOfRequestLink(title)} className={buttonClass('secondary')}>
+                Letter-of-request draft
+              </Link>
+            )}
+            {canDraft ? (
+              <Button variant="primary" onClick={() => setParams({ draft: '1' })}>
+                Draft request to {title}
+              </Button>
+            ) : row?.last_request_id ? (
+              <Link to={`/requests/${encodeURIComponent(row.last_request_id)}`} className={buttonClass('secondary')}>
+                Open request
+              </Link>
+            ) : null}
+          </>
         }
       />
 

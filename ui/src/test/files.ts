@@ -25,5 +25,10 @@ export function readDesk<T>(name: string): T {
   return JSON.parse(readFileSync(resolve(process.cwd(), 'src', 'test', 'fixtures', 'desk', `${name}.json`), 'utf8')) as T
 }
 
+/** An answer of the real API for the E5 screens: the timeline, the write order, the letter-of-request draft (src/test/fixtures/e5/record.py). */
+export function readE5<T>(name: string): T {
+  return JSON.parse(readFileSync(resolve(process.cwd(), 'src', 'test', 'fixtures', 'e5', `${name}.json`), 'utf8')) as T
+}
+
 export const MOCK_CASES = ['demo-tron-okx', 'demo-eth-abstain', 'demo-tron-sanctioned'] as const
 export const REAL_CASES = ['tron-coindcx', 'tron-htx-coindcx', 'tron-abstain', 'tron-ofac', 'eth-bridge'] as const
