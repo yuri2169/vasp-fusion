@@ -26,7 +26,7 @@
   "model_version": null,
   "model_sha256": null,
   "findings_sha256": "63a6f64b9046e60de6115c4e0b751f44355b0ddb1a799d95969802a673f62c70",
-  "content_sha256": "77ecc15a69e46f383cb2df84810c42a87a1ec8ae98acf6247d1938abf460697e",
+  "content_sha256": "6a27fdb75e0e17e1778a859dcdfa56d245cdbafbb395623bee459f6c98527772",
   "fetched_at": null,
   "offline_replay": true,
   "data_sources": [
@@ -47,5 +47,5 @@
       "sha256": "c1b0204688c6b34121c8d3ab6f25d600c33b90d5f5d43f199ab26948568211fd"
     }
   ],
-  "receipt_sha256": "89e3b42f12e0420cf08fa63c81813935fb3dbf11ffea8eca05765e7a92d3bacd"
+  "receipt_sha256": "74325e4f1feffb0a44d19ec4c0ae45ff63370418ce3cde594d06129f29a005a4"
 }

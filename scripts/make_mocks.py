@@ -572,6 +572,16 @@ def main() -> None:
         coverage["traceable_total"] = sum(n for c, n in st["by_chain"].items()
                                           if c in TRACEABLE)
         labels_coverage = {**coverage, "indian_providers": india_coverage(store, TRACEABLE)}
+        from vaspfusion.desk.directory import Directory
+        from vaspfusion.desk.jurisdictions import destinations
+        directory = Directory.load()
+
+        def places(some: list[dict]) -> dict:
+            return S.DestinationsByJurisdiction.model_validate(
+                destinations(some, directory)).model_dump(mode="json")
+
+        for c, full in zip(cases, as_json):
+            c["destinations_by_jurisdiction"] = places([full])
         files = {
             "cases": {"total": 3, "items": [summary(c) for c in cases]},
             **{f"cases/{c['id']}": c for c in cases},
@@ -617,7 +627,8 @@ def main() -> None:
                                            "address"}],
                 "label_coverage": coverage,
                 "risk_classes": {k: sum(1 for c in cases if c["risk_class"] == k)
-                                 for k in R.CLASSES}},
+                                 for k in R.CLASSES},
+                "destinations_by_jurisdiction": places(as_json)},
             "labels/coverage": labels_coverage,
             "coverage": ps_coverage.build(TRACEABLE),
             "sahyog-sim": sim_mock(c1, req),

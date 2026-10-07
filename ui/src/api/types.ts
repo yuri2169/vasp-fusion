@@ -1564,6 +1564,8 @@ export interface components {
             timeline?: components["schemas"]["CaseTimeline"] | null;
             /** @description The exchanges a request can be drafted on, in the order to write to them, with reasons. null when the case names none. Never stored */
             write_order?: components["schemas"]["WriteOrder"] | null;
+            /** @description This case's routed exchanges by cited jurisdiction. Worked out when the case is read; never stored. null on a mock case */
+            destinations_by_jurisdiction?: components["schemas"]["DestinationsByJurisdiction"] | null;
             /** @description Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests */
             risk?: components["schemas"]["RiskInfo"] | null;
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
@@ -2218,6 +2220,8 @@ export interface components {
             };
             /** @description The measured time from a complaint to a request ready to sign; null when it was not measured on this installation */
             freeze_readiness?: components["schemas"]["FreezeReadiness"] | null;
+            /** @description Every finished case's routed exchanges by cited jurisdiction */
+            destinations_by_jurisdiction?: components["schemas"]["DestinationsByJurisdiction"] | null;
         };
         /** DashboardCounts */
         DashboardCounts: {
@@ -2314,6 +2318,19 @@ export interface components {
              * @default false
              */
             letter_of_request: boolean;
+        };
+        /**
+         * DestinationsByJurisdiction
+         * @description Traced money by the country the receiving exchange is registered in. Not where a
+         *     suspect is. An exchange with no cited jurisdiction is in `not_on_record`.
+         */
+        DestinationsByJurisdiction: {
+            /** Basis */
+            basis: string;
+            /** Places */
+            places: components["schemas"]["JurisdictionPlace"][];
+            /** Not On Record */
+            not_on_record: components["schemas"]["JurisdictionExchange"][];
         };
         /** DirectorySource */
         DirectorySource: {
@@ -2880,6 +2897,57 @@ export interface components {
              * @description true only with at least one exchange label on a traceable chain. false = a trace can pass through this provider's wallets and not know it
              */
             can_name: boolean;
+        };
+        /** JurisdictionExchange */
+        JurisdictionExchange: {
+            /** Vasp */
+            vasp: string;
+            /**
+             * Total Usd
+             * @description Dollar stablecoins only; see unpriced_wallets
+             */
+            total_usd: number;
+            /** Wallets */
+            wallets: number;
+            /**
+             * Unpriced Wallets
+             * @description Routed wallets whose asset is not a dollar stablecoin: counted, not in total_usd
+             * @default 0
+             */
+            unpriced_wallets: number;
+            /** Case Ids */
+            case_ids: string[];
+            /** Fiu Ind Registered */
+            fiu_ind_registered?: boolean | null;
+            /** Fiu Ind As Of */
+            fiu_ind_as_of?: string | null;
+            /**
+             * Source Urls
+             * @description The source(s) of the jurisdiction
+             * @default []
+             */
+            source_urls: string[];
+        };
+        /** JurisdictionPlace */
+        JurisdictionPlace: {
+            /**
+             * Jurisdiction
+             * @description As cited in the VASP directory; never inferred
+             */
+            jurisdiction: string;
+            /** Total Usd */
+            total_usd: number;
+            /** Wallets */
+            wallets: number;
+            /**
+             * Unpriced Wallets
+             * @default 0
+             */
+            unpriced_wallets: number;
+            /** Case Ids */
+            case_ids: string[];
+            /** Exchanges */
+            exchanges: components["schemas"]["JurisdictionExchange"][];
         };
         /** LabelCoverage */
         LabelCoverage: {

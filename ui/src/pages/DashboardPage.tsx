@@ -17,6 +17,7 @@ import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { useRupees } from '../components/Rupees'
 import { formatDate, formatDuration, formatUsd } from '../lib/format'
+import { JurisdictionPanel } from '../overview/JurisdictionPanel'
 import { Ledger, Panel, type LedgerEntry } from '../overview/parts'
 import { chainName, count, plural } from '../overview/words'
 import type { Tier } from '../api/models'
@@ -331,6 +332,7 @@ export function DashboardPage() {
               <Coverage d={d} />
             </div>
           </div>
+          {d.destinations_by_jurisdiction && <JurisdictionPanel data={d.destinations_by_jurisdiction} scope="all" />}
         </div>
       )}
     </>

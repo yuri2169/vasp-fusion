@@ -32,6 +32,7 @@ import { HopRail } from '../components/HopRail'
 import { PageHeader } from '../components/PageHeader'
 import { ScreeningNote, ThreatChips } from '../components/ThreatChip'
 import { RiskPanel } from '../components/RiskPanel'
+import { JurisdictionPanel } from '../overview/JurisdictionPanel'
 import { RiskTag } from '../components/RiskTag'
 import { Skeleton } from '../components/Skeleton'
 import { Tabs, type TabItem } from '../components/Tabs'
@@ -61,7 +62,7 @@ function markedFor(c: CaseDetail, selected: string | null): ReadonlySet<string> 
   return pathTo(buildFlow(c, { fans: false }), selected).nodes
 }
 
-const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'events', 'audit'] as const
+const TAB_IDS = ['timeline', 'transfers', 'wallets', 'patterns', 'risk', 'inbound', 'events', 'where', 'audit'] as const
 type TabId = (typeof TAB_IDS)[number]
 
 function Meta({ c }: { c: CaseDetail }) {
@@ -176,6 +177,7 @@ export function CasePage() {
     ...(c.risk ? [{ id: 'risk' as const, label: 'Risk', count: c.risk.indicators.length || undefined }] : []),
     { id: 'inbound', label: 'Inbound funding', count: inbound || undefined },
     { id: 'events', label: 'Case events', count: c.timeline?.steps.filter((s) => s.state === 'done').length || undefined },
+    ...(c.destinations_by_jurisdiction ? [{ id: 'where' as const, label: 'Jurisdiction', count: c.destinations_by_jurisdiction.places.length || undefined }] : []),
     { id: 'audit', label: 'Audit' },
   ]
 
@@ -372,6 +374,7 @@ export function CasePage() {
           )}
           {tab === 'inbound' && <InboundTab c={c} onSelect={selectFromBelow} />}
           {tab === 'events' && <EventsTab timeline={c.timeline} />}
+          {tab === 'where' && c.destinations_by_jurisdiction && <JurisdictionPanel data={c.destinations_by_jurisdiction} scope="case" />}
           {tab === 'audit' && <AuditTab c={c} />}
         </Tabs>
       </div>

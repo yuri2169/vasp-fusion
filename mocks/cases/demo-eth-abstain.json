@@ -288,7 +288,7 @@
     "git_commit": null,
     "git_dirty": null,
     "findings_sha256": "0ffe1ce4f0721735c4cc1d27a0fbde73547b40fec66e014a0d206afd6f4ef601",
-    "content_sha256": "1ad0ee1b0fc0869ef0368b3be75f27850e67a8385408fcb5adc8f5e20c1287f4"
+    "content_sha256": "e5a631a20de9badfae4f58afeb17b1f8e624dd4d3106fd97e8b31c63039538c6"
   },
   "screening": {
     "hit": false,
@@ -356,5 +356,10 @@
     "source": "Financial Action Task Force (FATF), \"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing\", September 2020"
   },
   "risk_class": "medium",
-  "risk_score": 35
+  "risk_score": 35,
+  "destinations_by_jurisdiction": {
+    "basis": "Where the exchange is registered, not where the suspect is.",
+    "places": [],
+    "not_on_record": []
+  }
 }

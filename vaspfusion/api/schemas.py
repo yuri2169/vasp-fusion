@@ -743,6 +743,35 @@ class RiskInfo(_M):
     source: str | None = Field(None, description="The published list the indicators follow")
 
 
+class JurisdictionExchange(_M):
+    vasp: str
+    total_usd: float = Field(description="Dollar stablecoins only; see unpriced_wallets")
+    wallets: int
+    unpriced_wallets: int = Field(0, description=(
+        "Routed wallets whose asset is not a dollar stablecoin: counted, not in total_usd"))
+    case_ids: list[str]
+    fiu_ind_registered: bool | None = None
+    fiu_ind_as_of: date | None = None
+    source_urls: list[str] = Field([], description="The source(s) of the jurisdiction")
+
+
+class JurisdictionPlace(_M):
+    jurisdiction: str = Field(description="As cited in the VASP directory; never inferred")
+    total_usd: float
+    wallets: int
+    unpriced_wallets: int = 0
+    case_ids: list[str]
+    exchanges: list[JurisdictionExchange]
+
+
+class DestinationsByJurisdiction(_M):
+    """Traced money by the country the receiving exchange is registered in. Not where a
+    suspect is. An exchange with no cited jurisdiction is in `not_on_record`."""
+    basis: str
+    places: list[JurisdictionPlace]
+    not_on_record: list[JurisdictionExchange]
+
+
 class CaseDetail(CaseSummary):
     timeline: "CaseTimeline | None" = Field(None, description=(
         "The case's recorded events in order. Built when the case is read from the "
@@ -751,6 +780,9 @@ class CaseDetail(CaseSummary):
     write_order: "WriteOrder | None" = Field(None, description=(
         "The exchanges a request can be drafted on, in the order to write to them, with "
         "reasons. null when the case names none. Never stored"))
+    destinations_by_jurisdiction: DestinationsByJurisdiction | None = Field(None, description=(
+        "This case's routed exchanges by cited jurisdiction. Worked out when the case is "
+        "read; never stored. null on a mock case"))
     risk: RiskInfo | None = Field(None, description=(
         "Wallet and flow risk of a finished case. Worked out when the case is read from "
         "its stored flags, labels and transfers; never stored, so it is not part of the "
@@ -1293,6 +1325,8 @@ class Dashboard(_M):
     freeze_readiness: FreezeReadiness | None = Field(None, description=(
         "The measured time from a complaint to a request ready to sign; null when it was "
         "not measured on this installation"))
+    destinations_by_jurisdiction: DestinationsByJurisdiction | None = Field(None, description=(
+        "Every finished case's routed exchanges by cited jurisdiction"))
 
 
 # ------------------------------------------------------------------ watchlist (U4)

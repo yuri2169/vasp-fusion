@@ -39,6 +39,7 @@ from ..auth.officers import USERNAME, Locked, Officers
 from ..documented import documented_for
 from ..cases import CODE_VERSION, case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..explain.progress import progress_sentence
+from ..desk.jurisdictions import destinations
 from ..labels.india import coverage as india_coverage
 from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..screening import screen
@@ -1559,6 +1560,7 @@ def get_dashboard(response: Response):
         watched = _watch_items()
         dash = build_dashboard(details, svc.desk(), svc.list(),
                                [a for w in watched for a in alerts_of(w)], len(watched))
+        dash["destinations_by_jurisdiction"] = destinations(details, _directory())
         dash["label_coverage"] = (load_mock("dashboard")["label_coverage"] if demo_mode()
                                   else {"total": 0, "by_category": {}, "by_tier": {},
                                         "by_chain": {}, "by_source": [], "traceable_total": 0,
@@ -1835,8 +1837,14 @@ def _enrich(case: dict) -> dict:
     case["risk_score"] = risk["score"] if risk else None
     case["sahyog_complaint_ref"] = _complaints().refs_by_case().get(case["id"])
     case["documented"] = documented_for(case)
+    case["destinations_by_jurisdiction"] = destinations([case], _directory())
     case.update(_desk_views(case))
     return case
+
+
+def _directory():
+    from ..desk.directory import Directory
+    return Directory.load(DIRECTORY)
 
 
 def _first_drafts(rows: list[dict], case_id: str) -> list[dict]:

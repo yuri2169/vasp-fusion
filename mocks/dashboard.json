@@ -260,5 +260,10 @@
     "medium": 1,
     "high": 0,
     "severe": 1
+  },
+  "destinations_by_jurisdiction": {
+    "basis": "Where the exchange is registered, not where the suspect is.",
+    "places": [],
+    "not_on_record": []
   }
 }
