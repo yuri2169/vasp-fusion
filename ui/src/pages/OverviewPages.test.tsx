@@ -256,6 +256,39 @@ describe('the model page', () => {
     expect(model).toHaveBeenLastCalledWith('ethereum')
     expect(await screen.findByRole('heading', { name: 'Not yet measured on Ethereum' })).toBeInTheDocument()
   })
+
+  it('shows the benchmark for every chain beside the baseline, each count with what it is out of', async () => {
+    const model = await api.model('tron')
+    const benchmark = {
+      version: 'benchmark_v1',
+      seed: 26182,
+      bar: 0.6,
+      notes: ['Every wallet here paid an exchange.'],
+      model_gates: [
+        { chain: 'ethereum', switch_on: false, because: 'only 27 held-out addresses were flagged; the rule needs 30', rule: 'r', lead_bar: 0.9, reference_upper: 0.1728, min_flagged: 30, held_out: 1196, deposit_addresses: 599, flagged: 27, flagged_wrong: 0, deposit_addresses_found: 0.0451 },
+      ],
+      chains: [
+        { chain: 'tron', measured: true, wallets: 280, named: 155, wrong: 15, error: 0.0968, error_upper_95: 0.1451, not_named: 125, by_hops: [{ hops: 2, named: 154, wrong: 14 }], baseline_named: 190, baseline_wrong: 40, baseline_error: 0.2105, baseline_error_upper_95: 0.26, median_seconds: null },
+        { chain: 'polygon', measured: true, wallets: 74, named: 0, wrong: 0, error: null, error_upper_95: null, not_named: 74, by_hops: [], baseline_named: 0, baseline_wrong: 0, median_seconds: 12.5 },
+        { chain: 'solana', measured: false, by_hops: [] },
+      ],
+    }
+    vi.spyOn(api, 'model').mockResolvedValue({ ...model, benchmark } as unknown as ModelInfo)
+    open('/model')
+    const panel = await screen.findByRole('region', { name: 'Attribution measured on every chain' })
+    const tron = within(panel).getByText('Tron').closest('tr')!
+    expect(tron).toHaveTextContent('280')
+    expect(tron).toHaveTextContent('15 of 155 (9.7%; at most 14.5%)')
+    expect(tron).toHaveTextContent('40 of 190 (21.1%; at most 26.0%)')
+    expect(tron).toHaveTextContent('not recorded')
+    const polygon = within(panel).getByText('Polygon').closest('tr')!
+    expect(polygon).toHaveTextContent('none named')
+    expect(polygon).toHaveTextContent('12.5')
+    expect(within(panel).getByText('Solana').closest('tr')).toHaveTextContent('not measured')
+    expect(within(panel).getByTestId('benchmark-hops')).toHaveTextContent('Tron 2 hops: 154 (14 wrong)')
+    expect(within(panel).getByTestId('model-gate-ethereum')).toHaveTextContent('The Ethereum deposit-address model is not used when tracing')
+    expect(within(panel).getByText('Every wallet here paid an exchange.')).toBeInTheDocument()
+  })
 })
 
 describe('a wallet’s page', () => {

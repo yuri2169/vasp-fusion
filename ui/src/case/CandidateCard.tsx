@@ -45,6 +45,25 @@ function BarChecked({ chain }: { chain: Chain }) {
   const a = model.data?.abstain?.chain === chain ? model.data.abstain : undefined
   const bar = a?.bars.find((b) => b.threshold === a.current_threshold)
   if (model.isPending || model.isError) return null
+  // The benchmark's own row for this chain (GET /api/model, `benchmark`): never another chain's.
+  const row = model.data?.benchmark?.chains.find((r) => r.chain === chain && r.measured && (r.wallets ?? 0) > 0)
+  if ((!a || !bar || bar.wallets_named === 0) && row) {
+    const pc = (v?: number | null) => (v == null ? 'not measured' : `${(v * 100).toFixed(1)}%`)
+    return (
+      <p className="text-sm text-muted" data-testid="bar-benchmark">
+        Measured on {CHAINS[chain].name}: {row.wallets} real wallets that paid a labelled exchange were traced with the labels one hop away hidden.{' '}
+        <span className="font-medium text-fg">
+          {row.named
+            ? `${row.named} were named an exchange, ${row.wrong} of them wrongly (${pc(row.error)}; upper bound ${pc(row.error_upper_95)}); ${row.not_named} got "insufficient evidence".`
+            : `None was named an exchange: all ${row.not_named} got "insufficient evidence", so no error rate could be measured on this chain.`}
+        </span>{' '}
+        That test is harder than a case that keeps those labels. An attribution is a lead to confirm with the exchange, not proof.{' '}
+        <Link to="/model" className="underline underline-offset-2 hover:no-underline">
+          The measurement
+        </Link>
+      </p>
+    )
+  }
   if (!a || !bar || bar.wallets_named === 0)
     return (
       <p className="text-sm text-muted" data-testid="bar-not-measured">

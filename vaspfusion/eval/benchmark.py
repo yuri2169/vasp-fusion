@@ -447,8 +447,15 @@ def measure(rows: list[dict], chain: str, cfg: BenchmarkConfig = BenchmarkConfig
     return m
 
 
-def summarise(per_chain: dict[str, dict]) -> dict:
-    """validation.json of each chain -> summary.json (the table)."""
+def read_summary(out_dir: Path | str) -> dict | None:
+    import json
+    path = Path(out_dir) / "summary.json"
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def summarise(per_chain: dict[str, dict], model_gates: list[dict] = ()) -> dict:
+    """validation.json of each chain -> summary.json (the table). `model_gates`: for each
+    chain with a deposit-address model, whether it is used when tracing (model_gate.py)."""
     table = []
     for chain in CHAINS:
         m = per_chain.get(chain)
@@ -468,7 +475,11 @@ def summarise(per_chain: dict[str, dict]) -> dict:
             "confidence_informative": m["calibration"].get("informative"),
             "hidden": m["protocol"]["hidden"]})
     return {"version": VERSION, "seed": SEED, "bar": RuleConfig().attribute_min,
-            "chains": table, "notes": NOTES}
+            "chains": table, "notes": NOTES,
+            "model_gates": [{k: g[k] for k in (
+                "chain", "switch_on", "because", "lead_bar", "reference_upper", "min_flagged",
+                "held_out", "deposit_addresses", "flagged", "flagged_wrong", "error",
+                "error_upper_95", "deposit_addresses_found", "rule")} for g in model_gates]}
 
 
 NOTES = [

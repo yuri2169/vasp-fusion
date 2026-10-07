@@ -52,6 +52,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
 MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
+BENCHMARK_DIR = ROOT / "artifacts" / "benchmark_v1"   # summary.json (`make benchmark`)
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
 log = logging.getLogger(__name__)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
@@ -1569,19 +1570,23 @@ def get_model(response: Response, chain: str = "tron"):
     from ..classify.report import model_info, read_metrics
     if not _SAFE.match(chain):
         raise HTTPException(404, "not found")
+    from ..eval.benchmark import read_summary
+    benchmark = read_summary(BENCHMARK_DIR)
     metrics = read_metrics(MODEL_DIR, chain)
     if metrics is None and demo_mode():
         _source(response, "mock")
-        return load_mock("model")
+        return {**load_mock("model"), "benchmark": benchmark}
     if metrics is None:
         _source(response, "live")
         return {"status": "not_measured", "metrics": {}, "chain": chain,
-                "notes": [f"No model has been measured for {chain} on this machine."]}
+                "notes": [f"No model has been measured for {chain} on this machine."],
+                "benchmark": benchmark}
     _source(response, "live")
     from ..eval.abstain import abstain_info, read_validation
     validation = read_validation(ABSTAIN_DIR, chain)
     return {**model_info(metrics),
-            "abstain": abstain_info(validation) if validation else None}
+            "abstain": abstain_info(validation) if validation else None,
+            "benchmark": benchmark}
 
 
 # ------------------------------------------------------------------ problem-statement coverage (G2)

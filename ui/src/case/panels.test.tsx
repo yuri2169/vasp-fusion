@@ -331,4 +331,45 @@ describe('the naming bar, checked', () => {
     expect(line).toHaveTextContent('the error measured on Tron wallets does not cover it')
     expect(screen.queryByText(/were named an exchange/)).not.toBeInTheDocument()
   })
+
+  const benchmark = (rows: object[]) => ({ version: 'benchmark_v1', seed: 26182, bar: 0.6, notes: [], model_gates: [], chains: rows })
+
+  it('quotes the benchmark figure of the case\'s own chain, with its sample size', async () => {
+    vi.spyOn(api, 'model').mockResolvedValue({
+      status: 'not_measured',
+      metrics: {},
+      abstain: null,
+      benchmark: benchmark([
+        { chain: 'tron', measured: true, wallets: 280, named: 155, wrong: 15, error: 0.0968, error_upper_95: 0.1451, not_named: 125, by_hops: [] },
+        { chain: 'solana', measured: true, wallets: 60, named: 20, wrong: 3, error: 0.15, error_upper_95: 0.3444, not_named: 40, by_hops: [] },
+      ]),
+    } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={{ ...hero, chain: 'solana' }} onSelect={noop} />)
+    const line = await screen.findByTestId('bar-benchmark')
+    expect(line).toHaveTextContent('Measured on Solana: 60 real wallets')
+    expect(line).toHaveTextContent('20 were named an exchange, 3 of them wrongly (15.0%; upper bound 34.4%); 40 got "insufficient evidence".')
+    expect(line).not.toHaveTextContent('155')
+  })
+
+  it('says no error rate could be measured where the benchmark named nobody', async () => {
+    vi.spyOn(api, 'model').mockResolvedValue({
+      status: 'not_measured',
+      metrics: {},
+      abstain: null,
+      benchmark: benchmark([{ chain: 'polygon', measured: true, wallets: 74, named: 0, wrong: 0, error: null, error_upper_95: null, not_named: 74, by_hops: [] }]),
+    } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={{ ...hero, chain: 'polygon' }} onSelect={noop} />)
+    expect(await screen.findByTestId('bar-benchmark')).toHaveTextContent('None was named an exchange: all 74 got "insufficient evidence"')
+  })
+
+  it('still says not measured for a chain the benchmark has no row for', async () => {
+    vi.spyOn(api, 'model').mockResolvedValue({
+      status: 'not_measured',
+      metrics: {},
+      abstain: null,
+      benchmark: benchmark([{ chain: 'solana', measured: false, by_hops: [] }]),
+    } as unknown as ModelInfo)
+    renderApp(<AnswerPanel c={{ ...hero, chain: 'solana' }} onSelect={noop} />)
+    expect(await screen.findByTestId('bar-not-measured')).toHaveTextContent('has not been measured on Solana')
+  })
 })

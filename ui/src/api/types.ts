@@ -1168,6 +1168,111 @@ export interface components {
             /** Case Ref */
             case_ref?: string | null;
         };
+        /** BenchmarkHops */
+        BenchmarkHops: {
+            /** Hops */
+            hops: number;
+            /** Named */
+            named: number;
+            /** Wrong */
+            wrong: number;
+        };
+        /**
+         * BenchmarkInfo
+         * @description Attribution measured on every chain beside a naive baseline (`make benchmark`).
+         */
+        BenchmarkInfo: {
+            /** Version */
+            version: string;
+            /** Seed */
+            seed: number;
+            /** Bar */
+            bar: number;
+            /** Chains */
+            chains: components["schemas"]["BenchmarkRow"][];
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            /**
+             * Model Gates
+             * @default []
+             */
+            model_gates: components["schemas"]["ModelGate"][];
+        };
+        /**
+         * BenchmarkRow
+         * @description One chain of the benchmark: real wallets that paid a labelled exchange address,
+         *     traced again with the labels one hop away hidden.
+         */
+        BenchmarkRow: {
+            /** Chain */
+            chain: string;
+            /** Measured */
+            measured: boolean;
+            /**
+             * Wallets
+             * @description Wallets traced (the sample size)
+             */
+            wallets?: number | null;
+            /** Exchanges */
+            exchanges?: number | null;
+            /**
+             * Named
+             * @description Wallets the tool named an exchange for
+             */
+            named?: number | null;
+            /** Wrong */
+            wrong?: number | null;
+            /**
+             * Error
+             * @description wrong / named
+             */
+            error?: number | null;
+            /**
+             * Error Upper 95
+             * @description One-sided 95% Clopper-Pearson bound on the error among the named
+             */
+            error_upper_95?: number | null;
+            /**
+             * Not Named
+             * @description Wallets answered 'insufficient evidence'
+             */
+            not_named?: number | null;
+            /**
+             * By Hops
+             * @default []
+             */
+            by_hops: components["schemas"]["BenchmarkHops"][];
+            /**
+             * Baseline Named
+             * @description Named by the baseline: the nearest labelled exchange reached, never abstaining
+             */
+            baseline_named?: number | null;
+            /** Baseline Wrong */
+            baseline_wrong?: number | null;
+            /** Baseline Error */
+            baseline_error?: number | null;
+            /** Baseline Error Upper 95 */
+            baseline_error_upper_95?: number | null;
+            /**
+             * Median Seconds
+             * @description Per trace, fetched live
+             */
+            median_seconds?: number | null;
+            /** Median Requests */
+            median_requests?: number | null;
+            /** Calibration Brier */
+            calibration_brier?: number | null;
+            /** Confidence Informative */
+            confidence_informative?: boolean | null;
+            /**
+             * Hidden
+             * @description Exactly which labels were hidden
+             */
+            hidden?: string | null;
+        };
         /** Candidate */
         Candidate: {
             /** Vasp */
@@ -2788,6 +2893,41 @@ export interface components {
             auth_required: boolean;
             officer?: components["schemas"]["OfficerOut"] | null;
         };
+        /**
+         * ModelGate
+         * @description Whether a chain's deposit-address model is used when tracing, and the held-out
+         *     figures the fixed rule decided it by.
+         */
+        ModelGate: {
+            /** Chain */
+            chain: string;
+            /** Switch On */
+            switch_on: boolean;
+            /** Because */
+            because: string;
+            /** Rule */
+            rule: string;
+            /** Lead Bar */
+            lead_bar: number;
+            /** Reference Upper */
+            reference_upper: number;
+            /** Min Flagged */
+            min_flagged: number;
+            /** Held Out */
+            held_out: number;
+            /** Deposit Addresses */
+            deposit_addresses: number;
+            /** Flagged */
+            flagged: number;
+            /** Flagged Wrong */
+            flagged_wrong: number;
+            /** Error */
+            error?: number | null;
+            /** Error Upper 95 */
+            error_upper_95?: number | null;
+            /** Deposit Addresses Found */
+            deposit_addresses_found?: number | null;
+        };
         /** ModelInfo */
         ModelInfo: {
             /**
@@ -2839,6 +2979,8 @@ export interface components {
             notes: string[];
             /** @description How the bar below which no exchange is named was measured on this chain; null when it was not */
             abstain?: components["schemas"]["AbstainInfo"] | null;
+            /** @description The benchmark table for every chain (the same whichever chain was asked for); null when `make benchmark` has not been run */
+            benchmark?: components["schemas"]["BenchmarkInfo"] | null;
         };
         /** ModelMetrics */
         ModelMetrics: {

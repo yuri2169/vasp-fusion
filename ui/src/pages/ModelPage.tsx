@@ -12,6 +12,7 @@ import { PageHeader } from '../components/PageHeader'
 import { Skeleton } from '../components/Skeleton'
 import { cx } from '../lib/cx'
 import { formatDate, formatPercent } from '../lib/format'
+import { BenchmarkTable } from '../overview/BenchmarkTable'
 import { Ledger, Panel, type LedgerEntry } from '../overview/parts'
 import { Throughput } from '../overview/Throughput'
 import { count, plural, score, share } from '../overview/words'
@@ -252,6 +253,12 @@ export function ModelPage() {
         A model that reads how an address behaves and says how likely it is an exchange's deposit address. It confirms labels and raises leads; it never names an exchange by
         itself.
       </PageHeader>
+
+      {model.data?.benchmark && (
+        <div className="mb-4">
+          <BenchmarkTable b={model.data.benchmark} />
+        </div>
+      )}
 
       {model.isError ? (
         <ErrorState

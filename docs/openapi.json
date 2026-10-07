@@ -2791,6 +2791,291 @@
         ],
         "title": "BatchWallet"
       },
+      "BenchmarkHops": {
+        "properties": {
+          "hops": {
+            "type": "integer",
+            "title": "Hops"
+          },
+          "named": {
+            "type": "integer",
+            "title": "Named"
+          },
+          "wrong": {
+            "type": "integer",
+            "title": "Wrong"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "hops",
+          "named",
+          "wrong"
+        ],
+        "title": "BenchmarkHops"
+      },
+      "BenchmarkInfo": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "seed": {
+            "type": "integer",
+            "title": "Seed"
+          },
+          "bar": {
+            "type": "number",
+            "title": "Bar"
+          },
+          "chains": {
+            "items": {
+              "$ref": "#/components/schemas/BenchmarkRow"
+            },
+            "type": "array",
+            "title": "Chains"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "default": []
+          },
+          "model_gates": {
+            "items": {
+              "$ref": "#/components/schemas/ModelGate"
+            },
+            "type": "array",
+            "title": "Model Gates",
+            "default": []
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "version",
+          "seed",
+          "bar",
+          "chains"
+        ],
+        "title": "BenchmarkInfo",
+        "description": "Attribution measured on every chain beside a naive baseline (`make benchmark`)."
+      },
+      "BenchmarkRow": {
+        "properties": {
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "measured": {
+            "type": "boolean",
+            "title": "Measured"
+          },
+          "wallets": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallets",
+            "description": "Wallets traced (the sample size)"
+          },
+          "exchanges": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchanges"
+          },
+          "named": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Named",
+            "description": "Wallets the tool named an exchange for"
+          },
+          "wrong": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "wrong / named"
+          },
+          "error_upper_95": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Upper 95",
+            "description": "One-sided 95% Clopper-Pearson bound on the error among the named"
+          },
+          "not_named": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Not Named",
+            "description": "Wallets answered 'insufficient evidence'"
+          },
+          "by_hops": {
+            "items": {
+              "$ref": "#/components/schemas/BenchmarkHops"
+            },
+            "type": "array",
+            "title": "By Hops",
+            "default": []
+          },
+          "baseline_named": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Named",
+            "description": "Named by the baseline: the nearest labelled exchange reached, never abstaining"
+          },
+          "baseline_wrong": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Wrong"
+          },
+          "baseline_error": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Error"
+          },
+          "baseline_error_upper_95": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Error Upper 95"
+          },
+          "median_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Seconds",
+            "description": "Per trace, fetched live"
+          },
+          "median_requests": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Requests"
+          },
+          "calibration_brier": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calibration Brier"
+          },
+          "confidence_informative": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Informative"
+          },
+          "hidden": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden",
+            "description": "Exactly which labels were hidden"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chain",
+          "measured"
+        ],
+        "title": "BenchmarkRow",
+        "description": "One chain of the benchmark: real wallets that paid a labelled exchange address,\ntraced again with the labels one hop away hidden."
+      },
       "Candidate": {
         "properties": {
           "vasp": {
@@ -7084,6 +7369,104 @@
         ],
         "title": "Me"
       },
+      "ModelGate": {
+        "properties": {
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "switch_on": {
+            "type": "boolean",
+            "title": "Switch On"
+          },
+          "because": {
+            "type": "string",
+            "title": "Because"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "lead_bar": {
+            "type": "number",
+            "title": "Lead Bar"
+          },
+          "reference_upper": {
+            "type": "number",
+            "title": "Reference Upper"
+          },
+          "min_flagged": {
+            "type": "integer",
+            "title": "Min Flagged"
+          },
+          "held_out": {
+            "type": "integer",
+            "title": "Held Out"
+          },
+          "deposit_addresses": {
+            "type": "integer",
+            "title": "Deposit Addresses"
+          },
+          "flagged": {
+            "type": "integer",
+            "title": "Flagged"
+          },
+          "flagged_wrong": {
+            "type": "integer",
+            "title": "Flagged Wrong"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "error_upper_95": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Upper 95"
+          },
+          "deposit_addresses_found": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deposit Addresses Found"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "chain",
+          "switch_on",
+          "because",
+          "rule",
+          "lead_bar",
+          "reference_upper",
+          "min_flagged",
+          "held_out",
+          "deposit_addresses",
+          "flagged",
+          "flagged_wrong"
+        ],
+        "title": "ModelGate",
+        "description": "Whether a chain's deposit-address model is used when tracing, and the held-out\nfigures the fixed rule decided it by."
+      },
       "ModelInfo": {
         "properties": {
           "status": {
@@ -7214,6 +7597,17 @@
               }
             ],
             "description": "How the bar below which no exchange is named was measured on this chain; null when it was not"
+          },
+          "benchmark": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BenchmarkInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The benchmark table for every chain (the same whichever chain was asked for); null when `make benchmark` has not been run"
           }
         },
         "additionalProperties": false,

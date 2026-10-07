@@ -1191,6 +1191,67 @@ class AbstainInfo(_M):
     notes: list[str] = []
 
 
+class BenchmarkHops(_M):
+    hops: int
+    named: int
+    wrong: int
+
+
+class BenchmarkRow(_M):
+    """One chain of the benchmark: real wallets that paid a labelled exchange address,
+    traced again with the labels one hop away hidden."""
+    chain: str
+    measured: bool
+    wallets: int | None = Field(None, description="Wallets traced (the sample size)")
+    exchanges: int | None = None
+    named: int | None = Field(None, description="Wallets the tool named an exchange for")
+    wrong: int | None = None
+    error: float | None = Field(None, description="wrong / named")
+    error_upper_95: float | None = Field(None, description=(
+        "One-sided 95% Clopper-Pearson bound on the error among the named"))
+    not_named: int | None = Field(None, description="Wallets answered 'insufficient evidence'")
+    by_hops: list[BenchmarkHops] = []
+    baseline_named: int | None = Field(None, description=(
+        "Named by the baseline: the nearest labelled exchange reached, never abstaining"))
+    baseline_wrong: int | None = None
+    baseline_error: float | None = None
+    baseline_error_upper_95: float | None = None
+    median_seconds: float | None = Field(None, description="Per trace, fetched live")
+    median_requests: int | None = None
+    calibration_brier: float | None = None
+    confidence_informative: bool | None = None
+    hidden: str | None = Field(None, description="Exactly which labels were hidden")
+
+
+class ModelGate(_M):
+    """Whether a chain's deposit-address model is used when tracing, and the held-out
+    figures the fixed rule decided it by."""
+    chain: str
+    switch_on: bool
+    because: str
+    rule: str
+    lead_bar: float
+    reference_upper: float
+    min_flagged: int
+    held_out: int
+    deposit_addresses: int
+    flagged: int
+    flagged_wrong: int
+    error: float | None = None
+    error_upper_95: float | None = None
+    deposit_addresses_found: float | None = None
+
+
+class BenchmarkInfo(_M):
+    """Attribution measured on every chain beside a naive baseline (`make benchmark`)."""
+    version: str
+    seed: int
+    bar: float
+    chains: list[BenchmarkRow]
+    notes: list[str] = []
+    model_gates: list[ModelGate] = []
+
+
 class ModelInfo(_M):
     status: Literal["not_measured", "measured"]
     version: str | None = None
@@ -1208,6 +1269,9 @@ class ModelInfo(_M):
     abstain: AbstainInfo | None = Field(None, description=(
         "How the bar below which no exchange is named was measured on this chain; null "
         "when it was not"))
+    benchmark: BenchmarkInfo | None = Field(None, description=(
+        "The benchmark table for every chain (the same whichever chain was asked for); "
+        "null when `make benchmark` has not been run"))
 
 
 # ------------------------------------------------------------------ receipt / verify (B9)

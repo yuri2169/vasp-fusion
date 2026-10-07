@@ -619,7 +619,13 @@ def cmd_benchmark(args) -> None:
         (out / "validation.json").write_text(json.dumps(m, indent=1, allow_nan=False) + "\n")
     per = {c: json.loads((root / c / "validation.json").read_text())
            for c in B.CHAINS if (root / c / "validation.json").exists()}
-    summary = B.summarise(per)
+    from .classify.dataset import read_dataset
+    from .eval.model_gate import decide
+    reference = json.loads((Path(args.abstain) / "tron" / "validation.json").read_text())[
+        "at_current"]["risk_upper_bound"]
+    gates = [decide(c, read_dataset(Path(args.model) / c / "dataset.csv"), reference)
+             for c in ("tron", "ethereum") if (Path(args.model) / c / "dataset.csv").exists()]
+    summary = B.summarise(per, gates)
     (root / "summary.json").write_text(json.dumps(summary, indent=1, allow_nan=False) + "\n")
     print(f"{'chain':<10}{'wallets':>8}{'named':>7}{'wrong':>7}{'error':>8}{'upper':>8}"
           f"{'none':>6} | baseline {'named':>6}{'wrong':>7}{'error':>8} | {'sec':>6}")
@@ -633,6 +639,9 @@ def cmd_benchmark(args) -> None:
               f"{pct(r['error']):>8}{pct(r['error_upper_95']):>8}{r['not_named']:>6} |"
               f"          {r['baseline_named']:>6}{r['baseline_wrong']:>7}"
               f"{pct(r['baseline_error']):>8} | {sec:>6}")
+    for g in gates:
+        print(f"deposit model on {g['chain']}: {'used' if g['switch_on'] else 'not used'} when "
+              f"tracing ({g['because']}; {g['flagged']} flagged, {g['flagged_wrong']} wrong)")
     print(f"wrote {root}/")
 
 
@@ -1230,6 +1239,9 @@ def main(argv: list[str] | None = None) -> None:
                    help="folder of the caches the traces are fetched into, one per chain")
     s.add_argument("--seed", type=int, default=26182)
     s.add_argument("--commit", default="", help="recorded when wallets are traced live")
+    s.add_argument("--model", default=str(ROOT / "artifacts" / "model_v1"),
+                   help="the deposit models' folder: their held-out predictions decide "
+                        "which chain's model is used when tracing")
     s.add_argument("--from-wallets", action="store_true",
                    help="no tracing: measure again from the tracked wallets.csv")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
