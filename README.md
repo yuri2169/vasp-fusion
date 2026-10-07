@@ -194,7 +194,6 @@ python -m vaspfusion.cli audit --verify
 | `Dockerfile`, `docker-compose.yml`, `requirements.lock`, `scripts/docker_smoke.py` | The offline image |
 | `scripts/reproduce.py` | `make reproduce` |
 | `docs/api_contract.md` | Endpoints, conventions, mock rules |
-| `docs/plans/` | Per-phase implementation plans |
 | `mocks/` | Demo fixtures for the UI track (labelled addresses real, the rest synthetic, all marked `_demo`) |
 
 ## Label store

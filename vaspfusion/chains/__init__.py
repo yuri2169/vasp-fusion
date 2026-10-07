@@ -1,7 +1,7 @@
 """Chain adapters: `get_provider(chain).transfers(address, direction, since, limit)`.
 
 Every request goes through a cache-first `Fetcher` (cache.py); OFFLINE=1 serves
-from the cache only. See docs/plans/2026-10-01-b2-chain-adapters.md.
+from the cache only.
 """
 from __future__ import annotations
 
