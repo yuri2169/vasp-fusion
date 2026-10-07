@@ -588,7 +588,10 @@ def cmd_benchmark(args) -> None:
             if not chains.cache.offline_mode():
                 from .chains.ratelimit import RateLimiter
                 limiter = RateLimiter()
-            fetcher = chains.Fetcher(cache, chains.UrllibTransport(), limiter=limiter)
+            pace = {h: float(v) for h, _, v in (p.partition("=") for p in args.pace.split(",")
+                                                if p)}
+            fetcher = chains.Fetcher(cache, chains.UrllibTransport(), limiter=limiter,
+                                     min_interval=pace)
             provider = trace_provider(chain, fetcher, cfg.trace)
             earlier = B.read_csv(out / "wallets.csv") if (out / "wallets.csv").exists() else []
 
@@ -1239,6 +1242,9 @@ def main(argv: list[str] | None = None) -> None:
                    help="folder of the caches the traces are fetched into, one per chain")
     s.add_argument("--seed", type=int, default=26182)
     s.add_argument("--commit", default="", help="recorded when wallets are traced live")
+    s.add_argument("--pace", default="", help="seconds between live calls to a host when a "
+                                              "provider refuses the default pace, e.g. "
+                                              "blockstream.info=2")
     s.add_argument("--model", default=str(ROOT / "artifacts" / "model_v1"),
                    help="the deposit models' folder: their held-out predictions decide "
                         "which chain's model is used when tracing")
