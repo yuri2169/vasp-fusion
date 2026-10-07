@@ -169,3 +169,14 @@ def test_the_summary_has_a_row_for_every_chain_measured_or_not():
     tron = s["chains"][0]
     assert (tron["wallets"], tron["named"], tron["wrong"], tron["median_seconds"]) == (280, 155, 15, None)
     assert "derived label" in tron["hidden"]
+
+
+def test_the_wallets_listing_is_read_the_way_the_trace_reads_it():
+    """Bitcoin lists a wallet's multi-address spends differently once it is the wallet
+    being traced, so the provider is told before the direct payments are read."""
+    class Utxo(ToyProvider):
+        def trace_from(self, address):
+            self.calls.append(("trace_from", address))
+    p = Utxo(ROWS)
+    B.hidden_for("W1", "DEP_A", "ExA", None, CHAIN, p, labels(), CFG)
+    assert p.calls[0] == ("trace_from", "W1")

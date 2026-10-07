@@ -218,6 +218,8 @@ def hidden_for(wallet: str, paid: str, exchange: str, since: datetime | None, ch
     """(addresses whose label is hidden, the known answer). Reads the listings the trace
     reads first: the wallet's outgoing transfers of each traceable asset."""
     direct = {paid}
+    if hasattr(provider, "trace_from"):
+        provider.trace_from(wallet)     # Bitcoin: list its spends as the trace will
     for asset in provider.traceable_assets:
         for t in provider.transfers(wallet, "out", since=since, limit=cfg.trace.fetch_limit,
                                     asset=asset):
