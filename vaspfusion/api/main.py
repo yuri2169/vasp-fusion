@@ -39,6 +39,7 @@ from ..auth.officers import USERNAME, Locked, Officers
 from ..documented import documented_for
 from ..cases import CODE_VERSION, case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..explain.progress import progress_sentence
+from ..labels.india import coverage as india_coverage
 from ..labels.lookup import DEFAULT_DB, LabelStore
 from ..screening import screen
 from ..store.audit import AuditLog
@@ -1275,7 +1276,9 @@ def label_coverage(response: Response):
         _source(response, "mock")
         return load_mock("labels/coverage")
     _source(response, "live")
-    return _coverage(store)
+    with LabelStore(LABEL_DB) as again:          # `_coverage` closes the one it is given
+        indian = india_coverage(again, TRACEABLE)
+    return {**_coverage(store), "indian_providers": indian}
 
 
 @app.get("/api/labels/search", response_model=S.LabelSearch)

@@ -108,6 +108,22 @@ def test_label_coverage_names_each_source_and_never_guesses_a_licence(client):
     assert all(sum(s.tiers.values()) == s.labels for s in cov.by_source)
 
 
+def test_label_coverage_lists_the_providers_registered_in_india(client):
+    cov = S.LabelCoverage.model_validate(client.get("/api/labels/coverage").json())
+    india = cov.indian_providers
+    assert india.listed == 47 == len(india.providers)
+    assert india.source.published == "2024-12-02" and "sansad.in" in india.source.url
+    assert india.can_name == sum(p.can_name for p in india.providers)
+    dcx = india.providers[0]
+    assert dcx.legal_name == "Neblio Technologies Private Limited" and dcx.can_name
+    assert "tron-coindcx" in dcx.recorded_cases
+    # the demo's label store holds nothing for most of the list, and each such row says so
+    unocoin = next(p for p in india.providers if p.trade_name == "Unocoin")
+    assert (unocoin.labels, unocoin.can_name) == (0, False)
+    # the dashboard carries the counts without the table
+    assert client.get("/api/dashboard").json()["label_coverage"].get("indian_providers") is None
+
+
 def test_source_families():
     assert family("graphsense-tagpack:exchange-wallets-bitmex_4") == "graphsense-tagpacks"
     assert family("cex-list+eth-labels") == "cex-list"

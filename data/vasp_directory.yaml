@@ -18,8 +18,14 @@
 # A registration is shown with its date and is a claim about that date only: the letter's
 # review notes ask the officer to confirm it is current, and say when the only source is
 # the exchange's own statement.
-# FIU-IND does not publish a register on its website (checked 2 Oct 2026); the one
-# official list of names is the annexure to a Lok Sabha answer of 4 Dec 2023.
+# FIU-IND does not publish a register on its website (checked 2 Oct and 8 Oct 2026); the
+# official lists of names are the annexures to two Lok Sabha answers: 4 Dec 2023 (28
+# entities) and 2 Dec 2024 (47 entities; data/indian_exchanges.yaml holds all 47).
+#
+# What `jurisdiction` means here: the country a named official source, or the exchange's
+# own terms, gives for the entity that operates the exchange. A group can have companies
+# in several countries; where the sources name more than one, a note says so. Where the
+# only source gives a location of office and not a place of incorporation, a note says so.
 # Registration is always shown with its date. It can have changed since.
 
 sources:
@@ -30,6 +36,55 @@ sources:
     url: "https://sansad.in/getFile/loksabhaquestions/annex/1714/AU112.pdf?source=pqals"
     published: 2023-12-04
     accessed: 2026-10-02
+  lok-sabha-usq-966:
+    kind: official
+    title: "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: 47 VDA SPs registered with FIU-IND"
+    publisher: "Ministry of Finance, Department of Revenue (Lok Sabha)"
+    url: "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals"
+    published: 2024-12-02
+    accessed: 2026-10-08
+  coindcx-terms:
+    kind: exchange
+    title: "CoinDCX Exchange Terms of Use, valid with effect from 22 Sep 2026"
+    publisher: "CoinDCX (the exchange's own terms)"
+    url: "https://coindcx.s3.amazonaws.com/static/documents/terms-of-use.pdf"
+    published: 2026-09-22
+    accessed: 2026-10-08
+  doj-binance:
+    kind: official
+    title: "Binance and CEO Plead Guilty to Federal Charges in $4B Resolution"
+    publisher: "US Department of Justice, Office of Public Affairs"
+    url: "https://www.justice.gov/archives/opa/pr/binance-and-ceo-plead-guilty-federal-charges-4b-resolution"
+    published: 2023-11-21
+    accessed: 2026-10-08
+  doj-okx:
+    kind: official
+    title: "OKX Pleads Guilty To Violating U.S. Anti-Money Laundering Laws And Agrees To Pay Penalties Totaling More Than $500 Million"
+    publisher: "US Attorney's Office, Southern District of New York"
+    url: "https://www.justice.gov/usao-sdny/pr/okx-pleads-guilty-violating-us-anti-money-laundering-laws-and-agrees-pay-penalties"
+    published: 2025-02-24
+    accessed: 2026-10-08
+  doj-kucoin:
+    kind: official
+    title: "Kucoin Pleads Guilty To Unlicensed Money Transmission Charge And Agrees To Pay Penalties Totaling Nearly $300 Million"
+    publisher: "US Attorney's Office, Southern District of New York"
+    url: "https://www.justice.gov/usao-sdny/pr/kucoin-pleads-guilty-unlicensed-money-transmission-charge-and-agrees-pay-penalties"
+    published: 2025-01-27
+    accessed: 2026-10-08
+  fca-htx-proceedings:
+    kind: official
+    title: "HTX (formerly Huobi): legal proceedings information (FCA v Huobi Global S.A. and Others)"
+    publisher: "UK Financial Conduct Authority"
+    url: "https://www.fca.org.uk/news/statements/htx-huobi-legal-proceedings"
+    published: 2026-02-10
+    accessed: 2026-10-08
+  jfsa-unregistered:
+    kind: official
+    title: "Names, etc. of persons who conduct crypto-asset exchange business without registration (list of warned operators; file dated 1 Sep 2026)"
+    publisher: "Financial Services Agency, Japan"
+    url: "https://www.fsa.go.jp/policy/virtual_currency/angoushisan_mutouroku.pdf"
+    published: 2026-09-01
+    accessed: 2026-10-08
   pib-2023-12-28:
     kind: official
     title: "FIU IND issues compliance Show Cause Notices to nine offshore Virtual Digital Assets Service Providers"
@@ -134,83 +189,126 @@ vasps:
   - name: CoinDCX
     legal_name: "Neblio Technologies Private Limited"
     fiu_ind_registered: true
-    fiu_ind_as_of: 2023-12-04
+    fiu_ind_as_of: 2024-12-02
+    jurisdiction: "India"
+    notes:
+      - text: "CoinDCX's terms call Neblio Technologies Private Limited \"an Indian company\" and give its FIU-IND registration number as VA00030982 (the exchange's own statement)."
+        cites: [coindcx-terms]
     cites:
-      legal_name: [lok-sabha-usq-112]
-      fiu_ind_registered: [lok-sabha-usq-112]
+      legal_name: [lok-sabha-usq-966, lok-sabha-usq-112]
+      fiu_ind_registered: [lok-sabha-usq-966, lok-sabha-usq-112]
+      jurisdiction: [coindcx-terms]
 
   - name: WazirX
     legal_name: "Zanmai Labs Pvt Ltd"
     fiu_ind_registered: true
-    fiu_ind_as_of: 2023-12-04
+    fiu_ind_as_of: 2024-12-02
     cites:
-      legal_name: [lok-sabha-usq-112]
-      fiu_ind_registered: [lok-sabha-usq-112]
+      legal_name: [lok-sabha-usq-966, lok-sabha-usq-112]
+      fiu_ind_registered: [lok-sabha-usq-966, lok-sabha-usq-112]
 
   - name: CoinSwitch
     aliases: [Coinswitch]
     legal_name: "Bitcipher Labs LLP"
     fiu_ind_registered: true
-    fiu_ind_as_of: 2023-12-04
+    fiu_ind_as_of: 2024-12-02
     cites:
-      legal_name: [lok-sabha-usq-112]
-      fiu_ind_registered: [lok-sabha-usq-112]
+      legal_name: [lok-sabha-usq-966, lok-sabha-usq-112]
+      fiu_ind_registered: [lok-sabha-usq-966, lok-sabha-usq-112]
+
+  - name: Bitbns
+    legal_name: "Bitbns Internet Private Limited"
+    fiu_ind_registered: true
+    fiu_ind_as_of: 2024-12-02
+    cites:
+      legal_name: [lok-sabha-usq-966]
+      fiu_ind_registered: [lok-sabha-usq-966]
+
+  - name: Delta Exchange
+    legal_name: "Excellium Technologies Pvt Ltd"
+    fiu_ind_registered: true
+    fiu_ind_as_of: 2024-12-02
+    cites:
+      legal_name: [lok-sabha-usq-966]
+      fiu_ind_registered: [lok-sabha-usq-966]
 
   # ---------------------------------------------------------------- offshore
   - name: Binance
-    # no single legal name: FIU-IND's order names three Binance entities
+    # no single legal name: FIU-IND's list names one Binance company, its order three more
     fiu_ind_registered: true
-    fiu_ind_as_of: 2024-08-15
+    fiu_ind_as_of: 2024-12-02
+    jurisdiction: "Cayman Islands"
     le_request_channel: "https://app.kodexglobal.com/binance/signup"
     notes:
-      - text: "Registration is Binance's own statement of 15 Aug 2024; no official list naming Binance was found."
-        cites: [binance-blog-india]
+      - text: "Binance announced its registration in its own statement of 15 Aug 2024; the official list of 2 Dec 2024 names Binance International Limited and does not state that company's country."
+        cites: [binance-blog-india, lok-sabha-usq-966]
+      - text: "The jurisdiction is that of Binance Holdings Limited, which the US Department of Justice (21 Nov 2023) calls the entity that operates Binance.com and which FIU-IND's order places in the Cayman Islands. It is not the company on FIU-IND's list."
+        cites: [doj-binance, fiu-order-binance]
       - text: "FIU-IND's order of 19 Jun 2024 (penalty Rs 18.82 crore under section 13 PMLA) names Binance Investments Co., Ltd (Seychelles), Binance Holdings Limited (Cayman Islands) and Binance (Switzerland) AG."
         cites: [fiu-order-binance]
     cites:
-      fiu_ind_registered: [binance-blog-india]
+      fiu_ind_registered: [lok-sabha-usq-966]
+      jurisdiction: [doj-binance, fiu-order-binance]
       le_request_channel: [binance-le]
 
   - name: KuCoin
     legal_name: "Peken Global Limited"
     fiu_ind_registered: true
-    fiu_ind_as_of: 2025-12-16
+    fiu_ind_as_of: 2024-12-02
+    jurisdiction: "Seychelles"
     le_request_channel: "https://www.kucoin.com/legal/requests"
     notes:
-      - text: "Registration is KuCoin's own statement (support page dated 16 Dec 2025); no official list naming KuCoin was found."
+      - text: "KuCoin also states its registration itself (support page dated 16 Dec 2025)."
         cites: [kucoin-fiu]
+      - text: "The US Attorney's Office, SDNY (27 Jan 2025) calls Peken Global Limited \"a Seychelles-based entity\" that has operated KuCoin since at least September 2019."
+        cites: [doj-kucoin]
       - text: "FIU-IND's order of 22 Mar 2024 (penalty Rs 34.5 lakh under section 13 PMLA) is in the matter of Peken Global Limited (\"Kucoin\")."
         cites: [fiu-order-kucoin]
     cites:
-      legal_name: [fiu-order-kucoin]
-      fiu_ind_registered: [kucoin-fiu]
+      legal_name: [fiu-order-kucoin, lok-sabha-usq-966]
+      fiu_ind_registered: [lok-sabha-usq-966]
+      jurisdiction: [doj-kucoin]
       le_request_channel: [kucoin-le]
 
   - name: OKX
+    # no legal_name: OKX asks to be addressed as "OKX" (its note below)
+    jurisdiction: "Seychelles"
     le_request_channel: "https://app.kodexglobal.com/okx/signin"
     notes:
+      - text: "The US Attorney's Office, SDNY (24 Feb 2025) calls Aux Cayes Fintech Co. Ltd, doing business as OKX, \"a Seychelles-based entity\" that has operated OKX since at least 2017."
+        cites: [doj-okx]
       - text: "OKX asks that requests be addressed to \"OKX\" rather than to a specific legal entity; enforcement@okx.com is its channel for extraordinary circumstances."
         cites: [okx-le]
     cites:
+      jurisdiction: [doj-okx]
       le_request_channel: [okx-le]
 
   - name: Bitget
+    jurisdiction: "Singapore"
     le_request_channel: "https://app.kodexglobal.com/bitget/signup"
     notes:
+      - text: "Japan's Financial Services Agency lists \"Bitget Limited\", the operator of Bitget, at Singapore (warned November 2024). That column is the location of the office or address: the list does not state where the company is incorporated, and no official source for that was found."
+        cites: [jfsa-unregistered]
       - text: "A news report of 24 Jun 2025 (DeFi Planet, republished on bitget.com) says Bitget joined I4C's Sahyog portal. Not confirmed from an official source."
         cites: [bitget-sahyog-news]
     cites:
+      jurisdiction: [jfsa-unregistered]
       le_request_channel: [bitget-le]
 
   - name: HTX
     aliases: [Huobi, "HTX (Huobi)"]
+    # no legal_name: the FCA names one company and "persons unknown" (its note below)
+    jurisdiction: "Panama"
     le_request_channel: "regulatory@htx-inc.com"
     notes:
+      - text: "The UK Financial Conduct Authority's proceedings of 21 Oct 2025 over the HTX exchange name Huobi Global S.A., \"a company incorporated in Panama\", and also \"persons unknown\" who own or control the exchange: the FCA does not say the company is its only operator."
+        cites: [fca-htx-proceedings]
       - text: "Named as Huobi (Sinohope Technology Holdings Ltd, Hong Kong; Huobi Global Limited, Singapore) in FIU-IND's show cause notices of 28 Dec 2023 for operating without complying with the PML Act. Its status since then was not found in a public source."
         cites: [pib-2023-12-28]
       - text: "HTX asks for requests in English, with wallet addresses and transaction hashes in a copyable format."
         cites: [htx-le]
     cites:
+      jurisdiction: [fca-htx-proceedings]
       le_request_channel: [htx-le]
 
   - name: Gate.io

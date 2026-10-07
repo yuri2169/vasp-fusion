@@ -1205,6 +1205,43 @@ class LabelSource(_M):
     tiers: dict[str, int]
 
 
+class IndianListSource(_M):
+    title: str
+    publisher: str
+    url: str
+    licence: str
+    published: str = Field(description="The date the list speaks for (ISO date)")
+    accessed: str
+
+
+class IndianProvider(_M):
+    n: int = Field(description="Serial number in the official list")
+    legal_name: str
+    trade_name: str | None = Field(None, description="null: the list gives none")
+    labels: int = Field(description="Labelled addresses held under its name and filed as an "
+                                    "exchange's wallets")
+    traceable_labels: int = Field(description="Of those, on chains a trace can run on")
+    other_labels: int = Field(0, description=(
+        "Addresses held under its name but not filed as an exchange's wallets: a trace "
+        "that reaches one does not name the provider"))
+    by_chain: dict[str, int] = {}
+    by_tier: dict[str, int] = {}
+    recorded_cases: list[str] = Field([], description="Recorded demo cases that name it")
+    can_name: bool = Field(description=(
+        "true only with at least one exchange label on a traceable chain. false = a trace "
+        "can pass through this provider's wallets and not know it"))
+
+
+class IndianCoverage(_M):
+    """Providers registered with FIU-IND (one official list, with its date) against the
+    label store. Registration is a claim about the list's date only."""
+    source: IndianListSource
+    listed: int
+    can_name: int
+    in_recorded_cases: int
+    providers: list[IndianProvider]
+
+
 class LabelCoverage(_M):
     total: int
     by_category: dict[str, int]
@@ -1216,6 +1253,9 @@ class LabelCoverage(_M):
         "Labels on the chains a trace can run on today: the figure to show as a headline. "
         "`total` also counts labels on chains the tool cannot trace"))
     traceable_chains: list[str] = []
+    indian_providers: IndianCoverage | None = Field(None, description=(
+        "On `GET /api/labels/coverage` only (null inside the dashboard): which providers "
+        "registered with FIU-IND the tool can name"))
 
 
 class FreezeReadiness(_M):

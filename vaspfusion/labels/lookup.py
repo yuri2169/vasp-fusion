@@ -187,6 +187,17 @@ class LabelStore:
             "SELECT chain, count(*) FROM labels WHERE entity = ? GROUP BY 1 "
             "ORDER BY 2 DESC, 1", [entity]).fetchall())
 
+    def entity_breakdown(self, names: Iterable[str]) -> list[tuple[str, str, str, str, int]]:
+        """(entity in lower case, category, chain, tier, count) for the entities whose
+        name, in lower case, is one of `names`."""
+        names = sorted({n.lower() for n in names})
+        if not names:
+            return []
+        return self.con.execute(
+            "SELECT lower(entity), category, chain, tier, count(*) FROM labels "
+            f"WHERE lower(entity) IN ({', '.join('?' * len(names))}) "
+            "GROUP BY ALL ORDER BY 1, 2, 3, 4", names).fetchall()
+
     def stats(self) -> dict:
         from .load import label_stats
         return label_stats(self.con)

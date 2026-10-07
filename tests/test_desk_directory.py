@@ -30,21 +30,37 @@ def test_an_entry_is_shaped_like_the_contract(directory):
 def test_coindcx_is_registered_per_the_lok_sabha_annexure(directory):
     e = directory.get("CoinDCX")
     assert e["legal_name"] == "Neblio Technologies Private Limited"
-    assert e["fiu_ind_registered"] is True and e["fiu_ind_as_of"] == date(2023, 12, 4)
-    assert e["jurisdiction"] is None            # the annexure does not state it
-    cited = {s["field"]: s for s in e["sources"]}
-    assert set(cited) == {"legal_name", "fiu_ind_registered"}
-    assert all("sansad.in" in s["url"] and s["kind"] == "official" for s in cited.values())
+    assert e["fiu_ind_registered"] is True and e["fiu_ind_as_of"] == date(2024, 12, 2)
+    assert e["jurisdiction"] == "India"         # its own terms; the annexures do not state it
+    assert {s["field"] for s in e["sources"]} == {"legal_name", "fiu_ind_registered",
+                                                  "jurisdiction", "notes"}
+    listed = [s for s in e["sources"] if s["field"] in ("legal_name", "fiu_ind_registered")]
+    assert all("sansad.in" in s["url"] and s["kind"] == "official" for s in listed)
+    assert [s["kind"] for s in e["sources"] if s["field"] == "jurisdiction"] == ["exchange"]
     assert e["source_urls"] == sorted({s["url"] for s in e["sources"]})
 
 
-def test_a_self_reported_registration_says_so(directory):
+def test_binance_is_registered_per_the_official_list_of_december_2024(directory):
     e = directory.get("Binance")
-    assert e["fiu_ind_registered"] is True
-    assert [s["kind"] for s in e["sources"] if s["field"] == "fiu_ind_registered"] == ["exchange"]
+    assert e["fiu_ind_registered"] is True and e["fiu_ind_as_of"] == date(2024, 12, 2)
+    assert [s["kind"] for s in e["sources"] if s["field"] == "fiu_ind_registered"] == ["official"]
     assert any("own statement" in n for n in e["notes"])
-    assert {s["field"] for s in e["sources"]} == {"fiu_ind_registered", "le_request_channel",
-                                                  "notes"}
+    assert e["legal_name"] is None              # several companies; none is "the" Binance
+    assert {s["field"] for s in e["sources"]} == {"fiu_ind_registered", "jurisdiction",
+                                                  "le_request_channel", "notes"}
+
+
+def test_every_exchange_the_recorded_cases_reach_has_a_cited_jurisdiction(directory):
+    found = {n: directory.get(n)["jurisdiction"] for n in
+             ("CoinDCX", "Bitget", "HTX", "Binance", "OKX", "Bitfinex")}
+    assert found == {"CoinDCX": "India", "Bitget": "Singapore", "HTX": "Panama",
+                     "Binance": "Cayman Islands", "OKX": "Seychelles",
+                     "Bitfinex": "British Virgin Islands"}
+    for name in found:
+        assert any(s["field"] == "jurisdiction" for s in directory.get(name)["sources"])
+    # the one source for Bitget gives an office location, and the entry says so
+    assert any("does not state where the company is incorporated" in n
+               for n in directory.get("Bitget")["notes"])
 
 
 def test_what_we_could_not_cite_is_blank(directory):

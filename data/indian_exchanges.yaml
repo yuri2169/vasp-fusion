@@ -1,0 +1,171 @@
+# VDA service providers registered with FIU-IND, exactly as the official list names them.
+#
+# RULE: this file copies one source and adds nothing to it. `legal_name` and `trade_name`
+# are the list's "RE Name" and "Trade Name" columns, in the list's order (`n` is its
+# serial number); a "-" in the list is a blank trade name here. The list does not say which
+# providers are exchanges, where a company is incorporated, or whether a registration is
+# still current: neither does this file.
+#
+# `names` is ours: the name(s) the label store files that provider's wallets under, used
+# only to count the labels we hold (vaspfusion/labels/india.py). Left out, it is the trade
+# name. An empty list means "never match by name" (a trade name another company shares).
+#
+# FIU-IND publishes no register on its website (checked 2 Oct and 8 Oct 2026). This
+# annexure is the newest official list of names found; an older one (Lok Sabha Unstarred
+# Question 112, 4 Dec 2023) has 28 of these entities.
+
+source:
+  title: "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: Details of 47 Virtual Digital Asset Service Providers (VDA SPs) Registered with Financial Intelligence Unit-India (FIU-IND)"
+  publisher: "Ministry of Finance, Department of Revenue (Lok Sabha)"
+  url: "https://sansad.in/getFile/loksabhaquestions/annex/183/AU966_nhWk4P.pdf?source=pqals"
+  licence: "Government of India parliamentary record (public)"
+  published: 2024-12-02
+  accessed: 2026-10-08
+
+providers:
+  - n: 1
+    legal_name: "Neblio Technologies Private Limited"
+    trade_name: "Coin DCX"
+    names: ["CoinDCX"]
+  - n: 2
+    legal_name: "ANQ Digital Finserv Private Limited"
+    trade_name: "ANQ Finance"
+  - n: 3
+    legal_name: "Unocoin Technologies Pvt Ltd"
+    trade_name: "Unocoin"
+  - n: 4
+    legal_name: "Buyhatke Internet Private Limited"
+    trade_name: "Onramp"
+    names: ["Onramp", "Onramp.money"]
+  - n: 5
+    legal_name: "Giottus Technologies Pvt Ltd"
+    trade_name: "Giottus"
+  - n: 6
+    legal_name: "Bitbns Internet Private Limited"
+    trade_name: "Bitbns"
+  - n: 7
+    legal_name: "Awlencan Innovations India Limited"
+    trade_name: "Zebpay"
+    names: ["ZebPay", "Zebpay"]
+  - n: 8
+    legal_name: "Zanmai Labs Pvt Ltd"
+    trade_name: "WazirX"
+  - n: 9
+    legal_name: "Bitcipher Labs LLP"
+    trade_name: "Coinswitch"
+    names: ["CoinSwitch", "Coinswitch"]
+  - n: 10
+    legal_name: "Nextgendev Solutions Private Limited"
+    trade_name: "CoinswitchX"
+  - n: 11
+    legal_name: "RPFAS Technologies Pvt Ltd"
+    trade_name: "Mudrex"
+  - n: 12
+    legal_name: "IBLOCK Technologies Pvt Ltd"
+    trade_name: "Buyucoin"
+    names: ["BuyUcoin", "Buyucoin"]
+  - n: 13
+    legal_name: "WOLLFISH Labs Pvt Ltd"
+    trade_name: "Coindhan"
+  - n: 14
+    legal_name: "Rario Digital Private Limited"
+    trade_name: "Rario"
+  - n: 15
+    legal_name: "Angelic Infotech Pvt Ltd"
+    trade_name: "Suncrypto"
+    names: ["SunCrypto", "Suncrypto"]
+  - n: 16
+    legal_name: "Carretx Technologies Pvt Ltd"
+    trade_name: "Carret"
+  - n: 17
+    legal_name: "Ante Multimedia Pvt Ltd"
+  - n: 18
+    legal_name: "ABHIBHA Technologies Pvt Ltd"
+    trade_name: "Onmeta"
+  - n: 19
+    legal_name: "Smartliving Digital Technologies Pvt Ltd"
+    trade_name: "Cryptosmartlife"
+  - n: 20
+    legal_name: "UCY Technology Pvt Ltd"
+    trade_name: "Pyor"
+  - n: 21
+    legal_name: "Digital Collectibles Pte Ltd"
+    trade_name: "Rario"
+  - n: 22
+    legal_name: "Veeratva Technologies Pvt Ltd"
+    trade_name: "Vair"
+  - n: 23
+    legal_name: "Transak Technology India Pvt Ltd"
+    trade_name: "Transak"
+  - n: 24
+    legal_name: "REMIZO Technologies India Pvt Ltd"
+    trade_name: "Getbit"
+  - n: 25
+    legal_name: "FIN GENIE Tech Pvt Ltd"
+    trade_name: "Bytex"
+  - n: 26
+    legal_name: "ARDOUR labs Pvt Ltd"
+  - n: 27
+    legal_name: "Inocyx Technologies Pvt Ltd"
+    trade_name: "Inocyx"
+  - n: 28
+    legal_name: "Metatoken Technologies Pvt Ltd"
+    trade_name: "Fanztar"
+  - n: 29
+    legal_name: "Excellium Technologies Pvt Ltd"
+    trade_name: "Delta Exchange"
+  - n: 30
+    legal_name: "Rovi91 Innovations Pvt Ltd"
+  - n: 31
+    legal_name: "Longreen India Pvt Ltd"
+    trade_name: "Bitbse.com"
+    names: ["Bitbse", "Bitbse.com"]
+  - n: 32
+    legal_name: "Flitpay Pvt Ltd"
+    trade_name: "Flitpay"
+  - n: 33
+    legal_name: "Fincrypt LLP"
+    trade_name: "Stable Pay"
+    names: ["StablePay", "Stable Pay"]
+  - n: 34
+    legal_name: "Arthbit Pvt Ltd"
+    trade_name: "ArthBit"
+  - n: 35
+    legal_name: "Pagarpay India Pvt Ltd"
+    trade_name: "Density Exchange"
+  - n: 36
+    legal_name: "Lightningnodes Technologies Pvt Ltd"
+    trade_name: "pi42"
+    names: ["Pi42"]
+  - n: 37
+    legal_name: "Kooz Advisors and Technologies Pvt Ltd"
+    trade_name: "KoinBX"
+  - n: 38
+    legal_name: "Mindless Pandora Tech Solutions Pvt Ltd"
+  - n: 39
+    legal_name: "FanzCraze Technologies Inc"
+  - n: 40
+    legal_name: "SUBHX Infotech (OPC) Pvt Ltd"
+    trade_name: "BIT24HR"
+  - n: 41
+    legal_name: "Peken Global Ltd"
+    trade_name: "KuCoin"
+  - n: 42
+    legal_name: "ALSD Technologies Pvt Ltd"
+    trade_name: "Alpyne"
+  - n: 43
+    legal_name: "Damsol Pvt Ltd"
+    trade_name: "Square"
+    names: []
+  - n: 44
+    legal_name: "First Answer India Technologies Pvt Ltd"
+    trade_name: "Liminal"
+  - n: 45
+    legal_name: "Eclipton Technologies Pvt Ltd"
+    trade_name: "Eclipton"
+  - n: 46
+    legal_name: "Blockoville OU"
+    trade_name: "Blockoville"
+  - n: 47
+    legal_name: "Binance International Limited"
+    trade_name: "Binance"

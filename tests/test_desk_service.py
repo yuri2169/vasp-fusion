@@ -115,7 +115,7 @@ def test_review_notes_say_what_the_officer_should_check(desk):
     coindcx = " ".join(_draft(desk)["letter"]["review_notes"])
     assert "labelled by VASP-FUSION's own rules" in coindcx
     assert "No published law-enforcement channel is on file for CoinDCX" in coindcx
-    assert ("CoinDCX's FIU-IND registration is as of 4 Dec 2023 (an official list). "
+    assert ("CoinDCX's FIU-IND registration is as of 2 Dec 2024 (an official list). "
             "Confirm it is still current.") in coindcx
     assert "sweeps into a labelled CoinDCX wallet" in coindcx
 
@@ -148,7 +148,7 @@ def test_the_payload_follows_the_documented_contract(desk):
     assert (p["schema"], p["draft"], p["documents"]) == ("vaspfusion-sahyog-request/1", True, [])
     assert p["recipient"] == {
         "vasp": "CoinDCX", "legal_name": "Neblio Technologies Private Limited",
-        "jurisdiction": None, "fiu_ind_registered": True, "fiu_ind_as_of": "2023-12-04",
+        "jurisdiction": "India", "fiu_ind_registered": True, "fiu_ind_as_of": "2024-12-02",
         "channel": None}
     assert [w["address"] for w in p["wallets"]] == [w["address"] for w in req["letter"]["wallets"]]
     assert p["wallets"][0]["evidence_tier"] == "derived"

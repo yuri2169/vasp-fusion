@@ -31,6 +31,7 @@ from vaspfusion import coverage as ps_coverage  # noqa: E402
 from vaspfusion import risk as R  # noqa: E402
 from vaspfusion.api.main import MOCKS, TRACEABLE, mock_model_for  # noqa: E402
 from vaspfusion.desk import intake  # noqa: E402
+from vaspfusion.labels.india import coverage as india_coverage  # noqa: E402
 from vaspfusion.labels.lookup import DEFAULT_DB, LabelStore  # noqa: E402
 from vaspfusion.labels.threats import tag_of  # noqa: E402
 from vaspfusion.screening import case_threats, screen  # noqa: E402
@@ -570,6 +571,7 @@ def main() -> None:
         coverage["traceable_chains"] = list(TRACEABLE)
         coverage["traceable_total"] = sum(n for c, n in st["by_chain"].items()
                                           if c in TRACEABLE)
+        labels_coverage = {**coverage, "indian_providers": india_coverage(store, TRACEABLE)}
         files = {
             "cases": {"total": 3, "items": [summary(c) for c in cases]},
             **{f"cases/{c['id']}": c for c in cases},
@@ -616,7 +618,7 @@ def main() -> None:
                 "label_coverage": coverage,
                 "risk_classes": {k: sum(1 for c in cases if c["risk_class"] == k)
                                  for k in R.CLASSES}},
-            "labels/coverage": coverage,
+            "labels/coverage": labels_coverage,
             "coverage": ps_coverage.build(TRACEABLE),
             "sahyog-sim": sim_mock(c1, req),
             "batches": {"total": 1, "items": [
