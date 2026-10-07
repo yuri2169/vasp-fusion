@@ -281,15 +281,15 @@ def collect(sample: list[dict], chain: str, provider, labels,
             progress=None, save=None) -> list[dict]:
     """Every sampled wallet's row, in wallet order. `earlier`: the rows of a previous
     run; a wallet that needed nothing from the network this time keeps the seconds it
-    was first traced in."""
+    was first traced in, and has none if that was never recorded."""
     was = {r["wallet"]: r for r in earlier}
     rows = []
     for i, item in enumerate(sorted(sample, key=lambda s: s["wallet"]), 1):
         row = trace_wallet(item, chain, provider, labels, cfg, fetcher)
         live = row.pop("_live", None)
         old = was.get(row["wallet"])
-        if old is not None and not live and old.get("seconds") not in ("", None):
-            row["seconds"] = old["seconds"]
+        if live == 0:               # a replay: its own timing says nothing about a trace
+            row["seconds"] = old["seconds"] if old is not None else ""
         rows.append(row)
         if progress:
             progress("wallets", i, len(sample))
