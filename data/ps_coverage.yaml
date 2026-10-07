@@ -101,15 +101,15 @@ rows:
     section: The system may additionally support
     text: "risk scoring"
     status: built
-    what: "A score from 0 to 100 built from named red-flag indicators, each with its points and the transactions behind it. It is an indicator score, not a probability, and it is not measured against known outcomes."
+    what: "A score from 0 to 100 built from named red-flag indicators, each with its points and the transactions behind it. It is an indicator score, not a probability. Checked on 8 Oct 2026 on 65 wallets public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all 14 through a link to another listed address; none of the five pattern rules fired more often on the listed wallets. The points were not fitted to these wallets."
     where: /cases
-    evidence: {test: "tests/test_risk.py::test_the_score_never_goes_down_when_an_indicator_is_added"}
+    evidence: {make: risk-validation}
 
   - id: typologies
     section: The system may additionally support
     text: "identification of laundering typologies"
     status: built
-    what: "Peel chains, fan-out, fan-in, forwarding within minutes, round amounts, bridge hops and CoinJoin shapes are flagged, each with the wallet, the figures and the transaction hashes."
+    what: "Peel chains, fan-out, fan-in, forwarding within minutes, round amounts, bridge hops and CoinJoin shapes are flagged, each with the wallet, the figures and the transaction hashes. Checked on 8 Oct 2026 on 65 listed and 70 ordinary real wallets: each of the five pattern rules fired on ordinary wallets as often as on listed ones (peel chain 3 of 65 against 3 of 70, fan-out 8 against 15, fan-in 20 against 26, forwarding within minutes 13 against 21, round amounts 4 against 5), so a flag describes how money moved and is not by itself a sign of crime."
     where: /cases
     evidence: {test: "tests/test_typologies.py::test_wallets_that_each_peel_a_little_and_pass_the_rest_on_are_a_peel_chain"}
 

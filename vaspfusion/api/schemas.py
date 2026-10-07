@@ -57,15 +57,21 @@ def _risk_basis() -> str:
     path = Path(__file__).resolve().parents[2] / "artifacts" / "risk_validation_v1" / "results.json"
     try:
         m = json.loads(path.read_text())
-        arms = m["views"][m["main_view"]]["arms"]
-        p, c = arms["positive"], arms["control"]
+        view = m["views"][m["main_view"]]
+        p, c = view["arms"]["positive"], view["arms"]["control"]
         p_n, c_n = p["wallets"] - p["could_not_be_read"], c["wallets"] - c["could_not_be_read"]
+        linked, better = view["positives_high_with_list_link"], view["rules_firing_more_on_positives"]
     except (OSError, ValueError, KeyError):
         return start + ", and not measured against known outcomes."
+    rules = ("No pattern rule fired more often on the listed wallets than on the ordinary ones"
+             if not better else
+             f"{len(better)} of the pattern rules fired more often on the listed wallets")
+    how = "all of those" if linked == p["high_or_above"] else \
+        f"{linked} of those {p['high_or_above']}"
     return (f"{start}. Checked on {p_n} wallets that public sources list as illicit and {c_n} "
             f"with a documented ordinary purpose, each with its own label hidden: "
             f"{p['high_or_above']} of {p_n} and {c['high_or_above']} of {c_n} scored High or "
-            "above. The points were not fitted to these wallets, and the wallets are not a "
+            f"above, {how} through a link to another listed address. {rules}. The points were not fitted to these wallets, which are not a "
             "sample of real complaints.")
 
 
@@ -1305,6 +1311,10 @@ class RiskValidationView(_M):
     controls_interval: list[float] | None = None
     controls_nothing_to_trace: int
     controls_classes: dict[str, int]
+    positives_high_with_list_link: int = Field(description=(
+        "Of the listed wallets at High or above, those with a link to an address on a list"))
+    rules_firing_more_on_positives: list[str] = Field(description=(
+        "Pattern rules that fired on a larger share of the listed wallets (p < 0.05)"))
     p_fisher: float | None = Field(None, description="Fisher's exact test on the two shares")
     auc_score: float | None = Field(None, description=(
         "The chance a positive outscores a control, ties counting half"))

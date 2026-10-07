@@ -101,6 +101,8 @@ def test_the_tables_count_wallets_per_arm_and_rule():
     hidden = m["views"]["entity_hidden"]["arms"]["positive"]
     assert hidden["could_not_be_read"] == 1 and sum(hidden["classes"].values()) == 1
     assert main["separation"]["auc_score"] == 1.0
+    assert main["positives_high_with_list_link"] == 1
+    assert main["rules_firing_more_on_positives"] == []      # 1 of 2 against 1 of 2
 
 
 def test_a_wallet_of_the_corpus_that_was_never_traced_stops_the_measurement():
@@ -150,3 +152,16 @@ def test_the_wazirx_statement_says_what_the_trace_table_holds():
     main = next(r for r in rows if r["address"] == SPECS["wazirx-2024"]["address"])
     assert [(x["vasp"], x["direction"]) for x in main["as_shown"]["exchanges"]] == \
         [("WazirX", "inbound")]
+
+
+def test_the_sentence_that_travels_with_the_score_quotes_the_measurement():
+    from vaspfusion.api.schemas import RISK_BASIS, RiskValidation
+    m = json.loads((ROOT / "artifacts" / "risk_validation_v1" / "results.json").read_text())
+    arms = m["views"]["own_hidden"]["arms"]
+    p, c = arms["positive"], arms["control"]
+    assert f"{p['high_or_above']} of {p['wallets']} and {c['high_or_above']} of {c['wallets']}" \
+        in RISK_BASIS
+    assert "not measured" not in RISK_BASIS and "Not a probability" in RISK_BASIS
+    shown = RiskValidation.model_validate(V.summary(m))
+    assert shown.main_view == "own_hidden" and len(shown.views) == 3 and len(shown.rules) == 5
+    assert m["risk_config_sha256"] == V.sha256(R.DEFAULT_PATH)   # scored with today's points

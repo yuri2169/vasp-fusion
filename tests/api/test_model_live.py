@@ -95,3 +95,11 @@ def test_the_tracked_table_has_six_measured_chains_each_with_its_sample_size():
     for r in rows:
         assert r["wallets"] == r["named"] + r["not_named"] and r["wrong"] <= r["named"]
         assert r["baseline_named"] >= r["named"] and r["hidden"]
+
+
+def test_the_model_route_carries_the_risk_scores_check(client):
+    from vaspfusion.eval.risk_validation import read_summary
+    body = client.get("/api/model", params={"chain": "toy"}).json()
+    assert body["risk_validation"] == read_summary(main.RISK_VALIDATION_DIR)
+    main_view = next(v for v in body["risk_validation"]["views"] if v["view"] == "own_hidden")
+    assert main_view["positives_scored"] == 65 and main_view["controls_scored"] == 70

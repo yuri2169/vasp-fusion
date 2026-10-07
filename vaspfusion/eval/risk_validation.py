@@ -48,6 +48,7 @@ ARMS = ("positive", "control")
 RULES = ("peel_chain", "fan_out", "fan_in", "rapid_forwarding", "round_amounts")
 # the indicators that read behaviour only, never a list
 BEHAVIOUR = RULES + ("coinjoin_shape", "unlabelled_hub")
+LIST_LINKS = ("sanctioned_", "mixer_", "threat_", "scam_")
 LABEL_KEYS = ("category", "entity", "label", "source", "threat", "threat_entity",
               "threat_source", "threat_url", "threat_evidence")
 NOTES = (
@@ -57,8 +58,11 @@ NOTES = (
     "a positive can still score by paying a listed neighbour; the entity-hidden view "
     "removes the neighbours of its own entry, and the behaviour-only score removes every "
     "list.",
-    "A wallet with nothing to trace (no outgoing transfer of an asset the tool follows) "
+    "A wallet with nothing to trace (no transfer, in or out, of an asset the tool follows) "
     "scores Low by default. It stays in every count and is also reported apart.",
+    "A pattern rule counts for a wallet when it fired anywhere on that wallet's trail, not "
+    "only on the wallet itself. The p-values are Fisher's exact test on each row alone, "
+    "not corrected for the number of rows.",
     "The two sets differ in more than guilt: most positives are old Bitcoin and Ethereum "
     "addresses, most controls are Ethereum service wallets and recent exchange customers. "
     "A difference between the arms is not all due to the rules.",
@@ -293,8 +297,17 @@ def measure(corpus: dict, rows: dict, cfg: dict | None = None, *, config_sha256:
         p, c = arms["positive"], arms["control"]
         ok = {arm: [s for s in by_arm[arm] if "error" not in s] for arm in ARMS}
         tr = {arm: [s for s in ok[arm] if s["traced"]] for arm in ARMS}
+        rules = _fired(by_arm, RULES, "rules", traced_only=False)
+        high = [x for x in ok["positive"] if R.RANK[x["risk_class"]] >= R.RANK["high"]]
         views[view] = {
             "arms": arms,
+            # the listed wallets at High or above that got there with a link to an address
+            # on a list (their own label apart), and the rules that pick the listed ones out
+            "positives_high_with_list_link": sum(
+                any(c.startswith(LIST_LINKS) for c in x["indicators"]) for x in high),
+            "rules_firing_more_on_positives": [
+                r["code"] for r in rules if (r["positive_share"] or 0) > (r["control_share"] or 0)
+                and r["p_fisher"] is not None and r["p_fisher"] < 0.05],
             "separation": {
                 "positives_high_or_above": p["high_or_above_share"],
                 "controls_high_or_above": c["high_or_above_share"],
@@ -309,7 +322,7 @@ def measure(corpus: dict, rows: dict, cfg: dict | None = None, *, config_sha256:
                 "auc_behaviour_score_traced": _auc([s["behaviour_score"] for s in tr["positive"]],
                                                    [s["behaviour_score"] for s in tr["control"]]),
             },
-            "rules": _fired(by_arm, RULES, "rules", traced_only=False),
+            "rules": rules,
             "rules_traced": _fired(by_arm, RULES, "rules", traced_only=True),
             "indicators": _fired(by_arm, R.CODES, "indicators", traced_only=False),
             "by_stratum": _groups(wallets, scored, "stratum"),
@@ -356,6 +369,8 @@ def summary(m: dict) -> dict:
             "controls_interval": c["high_or_above_interval"],
             "controls_nothing_to_trace": c["nothing_to_trace"],
             "controls_classes": c["classes"],
+            "positives_high_with_list_link": v["positives_high_with_list_link"],
+            "rules_firing_more_on_positives": v["rules_firing_more_on_positives"],
             "p_fisher": v["separation"]["p_fisher"], "auc_score": v["separation"]["auc_score"],
             "auc_behaviour_score": v["separation"]["auc_behaviour_score"]})
     return {"version": m["version"], "seed": m["seed"], "positives": m["positives"],

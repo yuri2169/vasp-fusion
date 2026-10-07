@@ -1,7 +1,8 @@
 """Wallet and flow risk: an indicator score, built from what a case already found.
 
-An indicator score from published red-flag rules. Not a probability, and not measured
-against known outcomes. Each indicator present adds its points (config/risk.yaml); the
+An indicator score from published red-flag rules. Not a probability. What it does on real
+listed and ordinary wallets is measured by eval/risk_validation.py (`make risk-validation`);
+the sentence that travels with the score (`RISK_BASIS`) quotes that file. Each indicator present adds its points (config/risk.yaml); the
 score is their sum, capped at 100, and the class is read off the score. Every indicator
 carries the sentence it rests on and the transactions behind it.
 

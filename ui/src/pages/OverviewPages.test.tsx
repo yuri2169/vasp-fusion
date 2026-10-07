@@ -240,7 +240,7 @@ describe('the model page', () => {
     const model = await api.model('tron')
     const view = (v: 'as_shown' | 'own_hidden', words: string, high: number, auc: number) => ({
       view: v, words, positives_scored: 65, positives_high_or_above: high, positives_interval: [0.1, 0.3], positives_nothing_to_trace: 14, positives_classes: {},
-      controls_scored: 70, controls_high_or_above: 2, controls_interval: [0, 0.1], controls_nothing_to_trace: 20, controls_classes: {}, p_fisher: 0.01, auc_score: auc, auc_behaviour_score: 0.43,
+      controls_scored: 70, controls_high_or_above: 2, controls_interval: [0, 0.1], controls_nothing_to_trace: 20, controls_classes: {}, positives_high_with_list_link: high, rules_firing_more_on_positives: [], p_fisher: 0.01, auc_score: auc, auc_behaviour_score: 0.43,
     })
     const risk_validation: NonNullable<ModelInfo['risk_validation']> = {
       version: 'risk_validation_v1', seed: 26182, positives: 65, controls: 70, main_view: 'own_hidden',
@@ -385,7 +385,7 @@ describe('a wallet’s page', () => {
       reasons: ['This address is on a sanctions list: OFAC sanctioned (USDT) (source: ofac-sdn).'],
       flows: [],
       path_class: null,
-      basis: 'An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.',
+      basis: 'An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.',
       source: 'Financial Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September 2020',
     },
     cases: [{ case_id: 'tron-ofac', role: 'sanctioned', hop: 1 }],
@@ -414,7 +414,7 @@ describe('a wallet’s page', () => {
     expect(within(record).getByText('+100')).toBeInTheDocument()
     expect(record).toHaveTextContent('Filed under: Source of funds or wealth')
     // the score says what it is wherever it is shown
-    expect(record).toHaveTextContent('An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.')
+    expect(record).toHaveTextContent('An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.')
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(address) // whole, never shortened
     expect(screen.getByRole('region', { name: 'Label' })).toHaveTextContent('OFAC SDN')

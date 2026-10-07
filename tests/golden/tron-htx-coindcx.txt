@@ -165,9 +165,13 @@ does not change the result.
 RISK INDICATORS
 ---------------
 Risk class: Low (score 5 of 100). An indicator score from published red-flag rules. Not a
-probability, and not measured against known outcomes. The indicator list follows Financial
-Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
-Terrorist Financing", September 2020; the points are this tool's.
+probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented
+ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all
+of those through a link to another listed address. No pattern rule fired more often on the
+listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are
+not a sample of real complaints. The indicator list follows Financial Action Task Force (FATF),
+"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September
+2020; the points are this tool's.
 
     [Mostly round amounts (+5)] 3 of the wallet's 3 USDT payments are whole multiples of 100
     (13,000 USDT in all)

@@ -12,7 +12,7 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **What this does.** Paste the wallet. VASP-FUSION follows its money on chain (Tron, Ethereum, Bitcoin), names the nearest exchange that took it, shows the evidence transfer by transfer, gives a confidence that has been measured, and drafts the request to that exchange for the SAHYOG channel. **When the evidence does not hold, it says "insufficient evidence" and says what would change that, instead of guessing.**
 
-**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 9 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability, and not measured against known outcomes** (`config/risk.yaml`).
+**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 9 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability**; on 65 listed and 70 ordinary real wallets it separates them only through links to other listed addresses, and none of its five pattern rules does (`make risk-validation`, the table below).
 
 **Check it yourself** (no network needed after the image is built):
 
@@ -36,7 +36,10 @@ make reproduce                           # every figure below, regenerated from 
 | Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
 | Labelled addresses on file | 474,142 (1,690 published by exchanges, 349,440 curated, 117,515 explorer tags, 5,497 derived here) | `make labels` |
 | ...of which carry a threat tag from a cited public source | 18,646: ransomware 11,271, fraud 6,213, terrorism financing 367, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
-| Recorded demonstration cases that replay offline to the same fingerprint | 12 of 12 (7 name an exchange, 3 say insufficient evidence, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
+| Risk score at High or above, each wallet's own label hidden | 14 of 65 wallets public sources list as illicit (21.5%; 95% interval 12.3% to 33.5%), 2 of 70 with a documented ordinary purpose (2.9%; 0.4% to 9.9%). All 14 through a link to another listed address | `artifacts/risk_validation_v1/results.json` |
+| ...with every label of the wallet's own list entry hidden too | 3 of 65 against 2 of 70 (no difference: p = 0.67) | same |
+| Pattern rules that fired more often on the listed wallets than on the ordinary ones | 0 of 5 | same |
+| Recorded demonstration cases that replay offline to the same fingerprint | 13 of 13 (7 name an exchange, 4 say insufficient evidence, one of them the documented WazirX theft of July 2024, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
 
 **Volume.** A batch of wallets is uploaded at `/batch`, queued, and traced by a pool of worker processes (`make serve WORKERS=4`). Measured by `make bench-scale` on one laptop (Darwin arm64, 10 cores, 5 Oct 2026), 300 cases per run, chain responses replayed from a cache, read from `artifacts/scale/metrics.json`:
 
@@ -69,12 +72,12 @@ Rupee amounts are shown beside US dollars at one dated reference rate (`config/f
 Needs: Python 3.12 with [uv](https://docs.astral.sh/uv/), `make`, and Node 22 for the interface. No API key, no network after the install, and **no data from outside this repository**.
 ```bash
 make setup                 # uv venv (Python 3.12) + install (network once)
-make offline-demo          # the recorded labels, the demo cache, the 12 recorded cases checked against their fingerprints, verify
+make offline-demo          # the recorded labels, the demo cache, the 13 recorded cases checked against their fingerprints, verify
 make ui-setup ui-build     # the interface (network once, for npm)
 make offline-serve         # http://127.0.0.1:8000, with no network
 ```
-- `make offline-demo` must end with "12/12 as expected" and "12/12 golden fingerprints reproduced". Everything it reads is tracked: the chain responses the traces read (`tests/fixtures/demo/`) and the label rows those traces were answered with (`tests/fixtures/demo/labels.json`).
-- **What that label database is.** `make demo-labels` (run by `offline-demo` when there is no `data/labels.duckdb`) writes the 24 real label rows the recorded traces read, exactly as the full label database returned them. The recorded cases give the same findings on it. It is **not** the full label store: the label counts in "Label store" below do not apply to it, the Labels page lists 24 labels, and a wallet that was not recorded meets almost no label. It never replaces a database that is already there.
+- `make offline-demo` must end with "13/13 as expected" and "13/13 golden fingerprints reproduced". Everything it reads is tracked: the chain responses the traces read (`tests/fixtures/demo/`) and the label rows those traces were answered with (`tests/fixtures/demo/labels.json`).
+- **What that label database is.** `make demo-labels` (run by `offline-demo` when there is no `data/labels.duckdb`) writes the 27 real label rows the recorded traces read, exactly as the full label database returned them. The recorded cases give the same findings on it. It is **not** the full label store: the label counts in "Label store" below do not apply to it, the Labels page lists 24 labels, and a wallet that was not recorded meets almost no label. It never replaces a database that is already there.
 - Served this way the tool asks for no sign-in (there is no officer account on the machine). The Docker image has the demonstration account in `demo/officer.json`.
 - With Docker instead: `make demo-labels && UI=build make docker && make docker-up && make docker-smoke`. The smoke test says which label database the image holds.
 - `make test` and `make reproduce` in such a clone: see the note under the prerequisites below.
@@ -126,7 +129,7 @@ UI=build make docker # the same image with the interface compiled in (what the d
 make demo-flow       # drives the 3-minute demo in a real browser against :8000 and asserts every step
 ```
 - **Nothing reaches the network at run time.** The image sets `OFFLINE=1`: a chain request that is not in its cache is refused, never fetched. `make docker-smoke` proves it by running the whole demo with networking disabled.
-- **What is baked in:** the label database; the chain responses the twelve demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the twelve demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
+- **What is baked in:** the label database; the chain responses the thirteen demo wallets' traces read, replayed from the tracked recordings in `tests/fixtures/demo/` into a cache (`cli demo-cache`, no network); the twelve demo cases, traced while the image is built. **The build fails unless every case reproduces its golden findings fingerprint (`tests/golden/fingerprints.json`) and verifies.**
 - **The interface.** `UI=build make docker` compiles `ui/` into the image (Node 22 stage; the build checks that the bundle carries no fixture and that the first load stays under 200 KB gzipped). The demo script is `docs/demo_script.md`. Without `UI=build` the API serves a plain console page at `/`: sign in, the cases with their case files and receipts, a Verify button, the desk, the audit log.
 - **Only real records.** The fixtures in `mocks/` stand in for empty stores only with `VASPFUSION_DEMO_MODE=1` (off by default, off in the image): a server lists its own cases and nothing else.
 - **Login.** The image holds one demonstration account (`demo/officer.json`, published in the repository, so it protects nothing). `VASPFUSION_AUTH=off docker compose up` runs without a login. For real use, disable it and add officers: `docker compose exec vasp-fusion python -m vaspfusion.cli officer add <user> --name "..."`.
@@ -163,7 +166,7 @@ python -m vaspfusion.cli audit --verify
 - No file upload exists in this tool, so there is nothing to sandbox; cross-origin writes are refused (403), and every API reply is `no-store`, `nosniff`, not frameable.
 
 ## Reproduce
-`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the six-chain benchmark (from the tracked `wallets.csv` of each chain), the demo's chain cache (from the recorded fixtures), the twelve demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
+`make reproduce` regenerates, with no network: the label database, both models (trained from the tracked `dataset.csv`), the abstain measurement (from the tracked `claims.csv`), the six-chain benchmark (from the tracked `wallets.csv` of each chain), the risk measurement (from the tracked `cases.json.gz`), the demo's chain cache (from the recorded fixtures), the thirteen demo cases (checked against the golden fingerprints, then verified), the golden case files, the mocks and the OpenAPI schema; then runs the tests. It then compares every tracked artifact with what git holds. Only `trained_at` in a model's `metrics.json` may differ. `--full` also replays discovery, the model's dataset and the abstain traces from the crawl caches where they are on the machine.
 
 ## Layout
 | Path | What |
@@ -363,6 +366,44 @@ No exchange is named below confidence 0.60. There is no labelled set of "wallet 
 - **Test:** each is traced from the start of its discovery window with all 5,497 derived labels hidden, so the exchange must be found through an unlabelled wallet. Each exchange reached is a claim; it is right if it is in the known answer. A claim through a wallet the rules did not derive counts as wrong, although that wallet may be a deposit address the rules missed.
 - **Result** (`artifacts/abstain_v1/tron/validation.json`): 303 claims, 224 right. At 0.60, 155 of the 280 wallets get an exchange named, 15 of them wrong (9.7%; upper bound 17.3%, one-sided Clopper-Pearson over wallets, corrected for the nine bars tried), and 125 abstain. At 0.80: 121 named, 8 wrong (6.6%; bound 14.6%). **No bar on the grid brings the bound under 5%**, so the measurement does not single out a bar and 0.60 stays a rule-set value. Claims three hops away are right 2 times in 20.
 - **What it is not.** The wallets were picked by the pattern the label-hidden trace walks (which favours right claims), the known answer includes the tool's own derived labels, every wallet is an exchange customer, and the confidence is rule-set. The bar is checked, not calibrated. Plot: `artifacts/abstain_v1/tron/risk_coverage.svg`.
+
+## The risk score, measured
+```bash
+make risk-validation              # score the tracked traced cases again (no network) -> artifacts/risk_validation_v1/results.json
+make risk-validation-trace        # trace the 135 wallets again (network; OFFLINE=1 replays the cache)
+```
+The risk score (`config/risk.yaml`) is a sum of points for named indicators. To see what it does on wallets with a known story, two sets were fixed by script before any wallet was traced (`scripts/build_validation_corpus.py`, seed 26182, `data/validation/corpus.json`, every address with its source):
+- **65 positives**: on the OFAC SDN list (Tron 10, Ethereum 5, Bitcoin 5), Ransomwhere payment addresses (Bitcoin 10), scam lists (Ethereum 10, Bitcoin 5), a DeFi-fraud list (Ethereum 5), explorer-tagged exploiter wallets (Ethereum 10) and phishing addresses (Ethereum 5).
+- **70 controls**: explorer-tagged charities (10), mining pools (10), treasuries (8), airdrop and reward distributors (7), a payment processor (5), and 30 customers of exchanges from the six-chain benchmark's wallets (Tron 8, Bitcoin 8, Ethereum 6, BNB Chain 4, Polygon 4).
+
+Each wallet was traced once with the pipeline a case runs, at the interface's defaults (3 hops, 40 wallets per direction), under three views of the label store. A wallet that is itself on a list scores Severe by lookup, which proves nothing, so **the figure to quote hides each wallet's own label**.
+
+| Labels the score could read | Listed wallets at High or above | Ordinary wallets at High or above | Listed outscores ordinary (AUC) |
+|---|---|---|---|
+| Every label, as the tool shows it | 52 of 65 (80.0%) | 2 of 70 (2.9%) | 0.885 |
+| **The wallet's own label hidden** | **14 of 65 (21.5%; 12.3% to 33.5%)** | **2 of 70 (2.9%; 0.4% to 9.9%)** | **0.557** |
+| Every label of the wallet's own entity hidden | 3 of 65 (4.6%) | 2 of 70 (2.9%) | 0.473 |
+
+| Pattern rule (own label hidden) | Fired on listed wallets | Fired on ordinary wallets | p (Fisher) |
+|---|---|---|---|
+| Peel chain | 3 of 65 | 3 of 70 | 1.00 |
+| Fan-out | 8 of 65 | 15 of 70 | 0.18 |
+| Fan-in | 20 of 65 | 26 of 70 | 0.47 |
+| Forwarded within minutes | 13 of 65 | 21 of 70 | 0.23 |
+| Round amounts | 4 of 65 | 5 of 70 | 1.00 |
+
+- **What it shows.** With its own label hidden a listed wallet is still far more often High or above than an ordinary one (p = 0.0009), but all 14 got there through a link to another listed address (funded by, or paying, a sanctioned address, a mixer or a threat-tagged address). With the neighbours of its own list entry hidden as well, the difference is gone. **No pattern rule fired more often on the listed wallets**; four of the five fired more often on the ordinary ones, and the points of the behaviour indicators alone rank a listed wallet above an ordinary one less than half the time (AUC 0.44). On this set the score is a list-proximity score; the pattern rules add points to ordinary busy wallets (16 of 70 controls are Medium, 2 are High, on patterns alone).
+- **What it is not.** 14 positives and 17 controls had nothing to trace (old or contract addresses with no transfer of a followed asset) and score Low by default; they stay in every count. The two sets differ in chain and age as well as in story. Neither is a sample of real complaints. Each wallet was traced once, from its most recent transfers.
+- **The points were not changed.** They were set before the measurement. What the result suggests (lower points for fan-in, fan-out and rapid forwarding, or counting them only in combination; an indicator for explorer-tagged exploiter wallets, which today score nothing) is a proposal: a changed `config/risk.yaml` has to be measured on a fresh set of wallets.
+
+## A documented case: the WazirX theft of July 2024
+```bash
+python scripts/trace_documented_case.py data/validation/wazirx_2024.json   # --offline replays the cache
+```
+On 18 July 2024 assets worth over USD 230 million were taken from a multi-signature wallet of the Indian exchange WazirX on Ethereum. Sources, each with its URL in `data/validation/wazirx_2024.json`: WazirX's own preliminary report (the affected wallet `0x27fd…c9b4`), CloudSEK's published investigation (the theft addresses), and the block explorer's public tags "WazirX Exploiter" to "WazirX Exploiter 27" (as collected in the eth-labels data set). The 27 tagged addresses were taken from the label store by script, none added or removed.
+- **The recorded case `wazirx-2024`** traces the wallet the assets were moved to (`0x04b2…1a88`) at the interface's defaults (3 hops, 40 wallets, nothing else set). The tool reads 5,792,698.56 USDT arriving straight from WazirX's own wallet on 18 July 2024 and moving on to a second tagged wallet; it names WazirX as the source of the funds, **names no exchange the money was cashed out at ("insufficient evidence")**, and does not follow the 15,302 ETH the same wallet moved (a trace follows one asset). Its risk class is Low: an explorer's "exploiter" tag is not a risk indicator today.
+- **All 27 tagged wallets, one by one** (`artifacts/wazirx_2024/trace_table.json`): 23 stop at another tagged wallet, 2 reach Tornado Cash, 1 stops at an unlabelled high-activity wallet, 1 has nothing to trace. With the explorer's tags hidden (what a trace finds before anyone has tagged the thief's wallets): 6 reach Tornado Cash, 18 run past the 3-hop limit, 2 stop at an unlabelled high-activity wallet, 1 has nothing to trace. **In neither run does any of the 27 reach a named exchange.**
+- It replays offline with the other recorded cases (`make offline-demo`), and the landing page offers it apart from them, with its sources.
 
 ## Trace and attribution
 ```bash

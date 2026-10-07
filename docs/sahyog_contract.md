@@ -85,7 +85,7 @@ Status codes and their sentences (`detail`):
 | `outcome` | `ATTRIBUTED`, `INSUFFICIENT_EVIDENCE` or `SANCTIONED_OR_MIXER_REACHED` |
 | `top_vasp`, `confidence` | the exchange the case names, if it names one |
 | `exchanges[]` | every exchange the trace reached, nearest first: `vasp`, `direction`, `proximity_rank`, `hops`, `confidence`. **Proximity and confidence are separate**; only `top_vasp` is named |
-| `risk_class`, `risk_score` | Low, Medium, High or Severe, and 0 to 100. **An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes** |
+| `risk_class`, `risk_score` | Low, Medium, High or Severe, and 0 to 100. **An indicator score from published red-flag rules, not a probability; `risk_basis` says what it was checked on** |
 | `report_pdf` | the case file, `/api/cases/{id}/pdf` (needs an officer's session) |
 | `request_ids[]` | requests drafted from this case, withdrawn ones left out |
 | `result_sent_at` | when the result was handed to the gateway |
@@ -109,7 +109,7 @@ When a wallet's trace finishes, its result is handed to the gateway. The mock wr
                             "hops": 1, "confidence": 0.8491}],
              "risk_class": "low", "risk_score": 0,
              "report_pdf": "/api/cases/c-3f0e1b2a9d/pdf"},
-  "risk_basis": "An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.",
+  "risk_basis": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose, each with its own label hidden: 14 of 65 and 2 of 70 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. The points were not fitted to these wallets, which are not a sample of real complaints.",
   "generated_by": {"tool": "VASP-FUSION", "code_version": "b5-bitcoin-1"}
 }
 ```

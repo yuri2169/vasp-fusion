@@ -1,8 +1,18 @@
 # The wallet and flow risk score: named indicators, each with points.
 #
-# WHAT THIS IS. An indicator score from published red-flag rules. Not a probability, and
-# not measured against known outcomes: there is no labelled set of "risky" wallets to
-# check it against, so the points below are a stated judgement, not a fitted model.
+# WHAT THIS IS. An indicator score from published red-flag rules. Not a probability. The
+# points below are a stated judgement, not a fitted model.
+#
+# WHAT WAS MEASURED (8 Oct 2026, `make risk-validation`, artifacts/risk_validation_v1/):
+# 65 wallets that public sources list as illicit and 70 with a documented ordinary purpose,
+# fixed before tracing. With each wallet's own label hidden, 14 of 65 and 2 of 70 scored
+# High or above; all 14 through a link to another listed address. None of the five pattern
+# rules (peel chain, fan-out, fan-in, forwarding within minutes, round amounts) fired more
+# often on the listed wallets than on the ordinary ones.
+#
+# DO NOT RETUNE THE POINTS ON THOSE WALLETS. The points were set before the measurement
+# and left as they were. A changed file is a new score: it has to be measured on a fresh
+# set of wallets, not on the 135 it was changed to fit.
 #
 # RULES (held by tests/test_risk.py):
 #   * score = the sum of the points of the indicators present, capped at 100;
