@@ -64,6 +64,39 @@ def cmd_threats(args) -> None:
         print(f"  {'':<27}  by source: {sources}")
 
 
+def cmd_check_tags(args) -> None:
+    import sys
+
+    from . import chains
+    from .chains import cache as chain_cache
+    from .chains.ratelimit import RateLimiter
+    from .labels.load import read_wallet_attribution, unresolved_deposit_tags
+    from .labels.lookup import LabelStore
+    from .labels.tagcheck import run, summary, tag_owner, write_csv
+    research = Path(args.research)
+    targets = [(r["address"], r["chain"], tag_owner(r["label"])) for r in
+               unresolved_deposit_tags(read_wallet_attribution(
+                   research / "wallet-attribution" / "data"))]
+    targets = sorted(targets, key=lambda t: (t[1], t[0]))[:args.max]
+    offline = chain_cache.offline_mode()
+    fetcher = chains.Fetcher(chains.ChainCache(args.cache, hold=not offline, read_only=offline),
+                             chains.UrllibTransport(),
+                             limiter=None if offline else RateLimiter())
+
+    def progress(done: int, total: int, counts: dict) -> None:
+        print(f"  {done:,}/{total:,} {counts}", file=sys.stderr, flush=True)
+
+    providers: dict[str, object] = {}
+    rows = []
+    with LabelStore(args.db) as labels:
+        for chain in sorted({t[1] for t in targets}):
+            providers[chain] = chains.get_provider(chain, fetcher)
+            rows += run(providers[chain], labels, [t for t in targets if t[1] == chain],
+                        limit=args.limit, progress=progress)
+    write_csv(rows, args.out)
+    print(f"check-tags -> {args.out}\n  {summary(rows)}")
+
+
 def cmd_labels(args) -> None:
     import sys
 
@@ -82,7 +115,8 @@ def cmd_labels(args) -> None:
     stats = build_labels(Path(args.db), research / "wallet-attribution" / "data",
                          research / "indian_vasps_dune_spellbook.csv",
                          derived_dir=Path(args.derived), model_dir=Path(args.model),
-                         tagpacks_csv=research / TAGPACKS_CSV, threats_csv=Path(args.threats))
+                         tagpacks_csv=research / TAGPACKS_CSV, threats_csv=Path(args.threats),
+                         checks_dir=Path(args.checks))
     t = stats["total"]
     print(f"labels -> {args.db}")
     print(f"  raw rows {stats['raw_rows']:,}  duplicates dropped "
@@ -93,6 +127,13 @@ def cmd_labels(args) -> None:
           f"{TAGPACKS_CSV}.")
     print(f"  unusable addresses dropped {stats['invalid_dropped']:,} (valid on no chain, e.g. "
           f"truncated upstream)  re-filed to their real chain {stats['chain_refiled']:,}")
+    tc = stats["tag_checks"]
+    print(f"  explorer deposit tags filed upstream under another name: {tc['unresolved']:,}; "
+          f"named after the tag once checked on chain {tc['loaded']:,} (pays into the "
+          f"exchange's labelled wallet {tc['confirmed']:,}, used {tc['used']:,}); left as "
+          f"filed: never used {tc['unused']:,}, contradicted {tc['contradicted']:,}, could "
+          f"not be read {tc['unread']:,}, not checked {tc['unchecked']:,}. `check-tags` "
+          "writes the checks.")
     ex = stats["by_category"].get("exchange", 0)
     derived_ex = stats["derived_exchange"]
     print(f"  exchange rows {ex:,} = {ex - stats['exchange_tag_promoted'] - derived_ex:,} upstream "
@@ -1186,7 +1227,19 @@ def main(argv: list[str] | None = None) -> None:
                         "confidence of the derived labels it scored")
     s.add_argument("--threats", default=str(ROOT / "data" / "threat_tags.csv"),
                    help="threat tags (`threats` writes it); joined onto the labels")
+    s.add_argument("--checks", default=str(ROOT / "data" / "tag_checks"),
+                   help="on-chain checks of explorer deposit tags (`check-tags` writes them)")
     s.set_defaults(fn=cmd_labels)
+
+    s = sub.add_parser("check-tags", help="check on chain the explorer deposit tags that "
+                       "upstream files under another exchange's name (cached; OFFLINE=1 replays)")
+    s.add_argument("--research", default=str(ROOT.parent / "research" / "data"))
+    s.add_argument("--db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.add_argument("--out", default=str(ROOT / "data" / "tag_checks" / "binance_dep_ethereum.csv"))
+    s.add_argument("--cache", default=str(ROOT / "data" / "tag_check_cache.duckdb"))
+    s.add_argument("--limit", type=int, default=50, help="transfers read per address")
+    s.add_argument("--max", type=int, default=None, help="check only the first N (a trial run)")
+    s.set_defaults(fn=cmd_check_tags)
 
     s = sub.add_parser("threats", help="flatten the OFAC SDN XML, Ransomwhere and the "
                                        "GraphSense threat packs into the CSV `labels` reads")

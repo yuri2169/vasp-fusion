@@ -15,6 +15,11 @@ Inputs (both real, both in ../research/data):
     is joined onto the label of its address as the `threat_*` columns; a tagged address
     that nothing else labels gets a row of its own. Rows filed as `scam` are tagged fraud.
 
+  * data/tag_checks/*.csv (optional) - on-chain checks of explorer deposit tags that
+    upstream files under another exchange's name (`cli check-tags`, labels/tagcheck.py).
+    A checked tag is loaded as the tagged exchange's deposit address; an unchecked,
+    unused, unread or contradicted one stays as filed.
+
   * data/derived/<chain>.csv (optional) - deposit addresses derived by B4's discovery
     rules (`make discover`). Only rows with status `derived` are loaded, as tier
     `derived`, each with its rule confidence and evidence text.
@@ -38,6 +43,8 @@ from .normalize import (
     CATEGORY_RANK, DERIVED_SOURCE, TIER_RANK, canonical_entity, infer_kind, map_category,
     normalize_address, normalize_chain, tagpack_entity, tier_for,
 )
+from .sources import TAG_CHECKED_SOURCE
+from .tagcheck import LOADED, VERDICTS, read_checks, tag_owner
 
 THREAT_COLUMNS = ["threat", "threat_entity", "threat_source", "threat_url", "threat_evidence"]
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
@@ -115,6 +122,43 @@ def read_wallet_attribution(data_dir: Path) -> list[dict]:
             rows.append(_row(r["address"], r["network"], r["entity"], r["label"],
                              r["category"], r["source"], r["source_url"]))
     return rows
+
+
+def unresolved_deposit_tags(rows: list[dict]) -> list[dict]:
+    """Rows an explorer tags "<Exchange> Dep: 0x..." that upstream files under another
+    name, so they were left unattributed (5,000 "Binance Dep" rows under `bilaxy`)."""
+    out = []
+    for r in rows:
+        owner = tag_owner(r["label"])
+        if owner and r["category"] == "entity" and owner.lower() != r["entity"].lower():
+            out.append(r)
+    return out
+
+
+def apply_tag_checks(rows: list[dict], checks: dict[tuple[str, str], dict]) -> dict:
+    """Name an unresolved deposit tag after the exchange in the tag where the on-chain
+    check (tagcheck.py) saw the address used and nothing against the tag. The rest stay
+    as filed. Returns the counts by verdict; rows are changed in place."""
+    counts = {"unresolved": 0, "loaded": 0, "unchecked": 0, **{v: 0 for v in VERDICTS}}
+    for r in unresolved_deposit_tags(rows):
+        counts["unresolved"] += 1
+        check = checks.get((r["address"], r["chain"]))
+        if check is None:
+            counts["unchecked"] += 1
+            continue
+        counts[check["verdict"]] += 1
+        if check["verdict"] not in LOADED:
+            continue
+        owner = tag_owner(r["label"])
+        r["entity"] = canonical_entity(owner, owner)
+        r["category"] = "exchange"
+        r["source"] = TAG_CHECKED_SOURCE
+        r["evidence"] = ("Explorer tag, filed upstream under another name; seen used on chain"
+                         + (f", and it pays into {owner}'s labelled wallet "
+                            f"{check['top_recipient']}" if check["verdict"] == "confirmed"
+                            else ""))
+        counts["loaded"] += 1
+    return counts
 
 
 def read_dune(csv_path: Path) -> list[dict]:
@@ -402,12 +446,15 @@ def build_recorded_labels(db_path: Path, json_path: Path = RECORDED_LABELS) -> d
 
 def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
                  derived_dir: Path | None = None, model_dir: Path | None = None,
-                 tagpacks_csv: Path | None = None, threats_csv: Path | None = None) -> dict:
+                 tagpacks_csv: Path | None = None, threats_csv: Path | None = None,
+                 checks_dir: Path | None = None) -> dict:
     read = read_derived(derived_dir, model_dir)
     derived, conflicting = _drop_conflicting(read)
     derived, dropped_derived, _ = _validate(derived)
     tagpacks = read_tagpacks(tagpacks_csv)
-    rows = read_wallet_attribution(wa_dir) + read_dune(dune_csv) + tagpacks
+    filed = read_wallet_attribution(wa_dir)
+    tag_checks = apply_tag_checks(filed, read_checks(checks_dir))
+    rows = filed + read_dune(dune_csv) + tagpacks
     kept, dropped, refiled = _validate(rows)
     df, threat_counts = _apply_threats(_dedupe(kept + derived), read_threat_tags(threats_csv))
     db_path = Path(db_path)
@@ -444,4 +491,5 @@ def build_labels(db_path: Path, wa_dir: Path, dune_csv: Path,
     stats["duplicates_dropped"] = len(kept) + len(derived) - stats["total"] \
         - stats["derived_shadowed"] + stats["threat_new_rows"]
     stats["exchange_tag_promoted"] = int(df["_promoted"].sum())
+    stats["tag_checks"] = tag_checks
     return stats

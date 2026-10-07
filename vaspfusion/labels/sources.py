@@ -2,8 +2,9 @@
 
 Only what is on record in this project is stated. The wallet-attribution set releases
 its code under MIT and says of its data that each upstream source "retains its own
-upstream license"; those licences are not recorded here, so they read as not recorded
-(None), never as MIT. GraphSense TagPacks are MIT (`SOURCE.json` beside the packs).
+upstream license"; a licence that was not read at its source reads as not recorded
+(None), never as MIT. GraphSense TagPacks are MIT (`SOURCE.json` beside the packs), and
+so is the eth-labels repository (its licence file, read 8 Oct 2026).
 
 The links are citations shown beside a source's name. Nothing here is ever fetched.
 """
@@ -21,10 +22,18 @@ TAGPACKS_SOURCE_URL = "https://github.com/graphsense/graphsense-tagpacks"
 OFAC_XML_SOURCE_URL = "https://www.treasury.gov/ofac/downloads/sdn.xml"
 RANSOMWHERE_SOURCE_URL = "https://ransomwhe.re"
 
+# Explorer deposit tags that upstream files under another exchange's name, named after
+# the tag once checked on chain (tagcheck.py). Counted apart from the other explorer tags.
+TAG_CHECKED_SOURCE = "eth-labels-checked-deposit-tags"
+ETH_LABELS_LICENCE = "MIT (the eth-labels repository, read 8 Oct 2026; the tags are Etherscan's)"
+
 # family -> (name, obtained from, licence or None, link)
 SOURCES: dict[str, tuple[str, str, str | None, str | None]] = {
-    "eth-labels": ("eth-labels: public tags of block explorers", WALLET_ATTRIBUTION, None,
-                   ETH_LABELS_SOURCE_URL),
+    "eth-labels": ("eth-labels: public tags of block explorers", WALLET_ATTRIBUTION,
+                   ETH_LABELS_LICENCE, ETH_LABELS_SOURCE_URL),
+    TAG_CHECKED_SOURCE: ("eth-labels: Etherscan \"Binance Dep\" tags, filed upstream under "
+                         "another name and checked on chain here", WALLET_ATTRIBUTION,
+                         ETH_LABELS_LICENCE, ETH_LABELS_SOURCE_URL),
     "defillama-cex": ("DefiLlama adapters: reserve wallets the exchanges published",
                       WALLET_ATTRIBUTION, None, DEFILLAMA_SOURCE_URL),
     "ofac-sdn": ("OFAC SDN list of sanctioned addresses", WALLET_ATTRIBUTION,

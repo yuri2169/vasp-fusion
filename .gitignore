@@ -24,6 +24,8 @@ ui/dist/
 .env.*
 # The deposit model's own fetches (B6). `make model-data` refills it; artifacts/model_v1 is tracked.
 data/model_cache.duckdb
+# The on-chain tag checks' own cache (`check-tags`); data/tag_checks/ is tracked.
+data/tag_check_cache.duckdb
 artifacts/**/model.pkl
 # The abstain validation's own traces (B7). `make abstain-eval` refills it; artifacts/abstain_v1 is tracked.
 data/abstain_cache.duckdb
