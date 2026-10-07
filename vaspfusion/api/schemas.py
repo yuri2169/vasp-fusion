@@ -1107,6 +1107,25 @@ class LabelCoverage(_M):
     traceable_chains: list[str] = []
 
 
+class FreezeReadiness(_M):
+    """Measured: from a complaint arriving to a freezing request ready for the officer's
+    signature (`make freeze-readiness`, artifacts/freeze_readiness.json). No freeze was
+    made or timed."""
+    what: str
+    not_measured: str
+    wallets: int
+    runs: int
+    seconds_to_results: float
+    seconds_to_requests_ready: float
+    requests_drafted: int
+    exchanges: list[str] = []
+    wallets_asked_about: int | None = None
+    median_seconds_to_draft_one_request: float | None = None
+    chain_data: str
+    machine: str
+    measured_on: str
+
+
 class Dashboard(_M):
     counts: DashboardCounts
     outcomes: dict[Outcome, int]
@@ -1120,6 +1139,9 @@ class Dashboard(_M):
     label_coverage: LabelCoverage
     risk_classes: dict[RiskClass, int] = Field({}, description=(
         "Finished cases by risk class. " + RISK_BASIS))
+    freeze_readiness: FreezeReadiness | None = Field(None, description=(
+        "The measured time from a complaint to a request ready to sign; null when it was "
+        "not measured on this installation"))
 
 
 # ------------------------------------------------------------------ watchlist (U4)

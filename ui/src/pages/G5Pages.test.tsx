@@ -170,7 +170,7 @@ describe('the measured throughput on the model page', () => {
   })
 
   it('shows no figure when nothing was measured', async () => {
-    vi.spyOn(api, 'scale').mockResolvedValue({ status: 'not_measured', runs: [], limits: [], notes: [] })
+    vi.spyOn(api, 'scale').mockResolvedValue({ status: 'not_measured', runs: [], limits: [], notes: [], live: [] })
     open('/model')
     const panel = await screen.findByRole('region', { name: 'Throughput: wallets traced per minute' })
     expect(await within(panel).findByText(/Not yet measured on this installation/)).toBeInTheDocument()

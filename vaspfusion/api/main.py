@@ -1509,7 +1509,20 @@ def get_dashboard(response: Response):
         _source(response, "mixed" if store else "mock")
     if store:
         dash["label_coverage"] = _coverage(store)
+    dash["freeze_readiness"] = freeze_readiness()
     return dash
+
+
+FREEZE_READINESS = ROOT / "artifacts" / "freeze_readiness.json"    # `make freeze-readiness`
+
+
+def freeze_readiness() -> dict | None:
+    """The measured time from a complaint to a freezing request ready to sign, as the
+    file records it. None when it was not measured: no figure is made up."""
+    if not Path(FREEZE_READINESS).exists():
+        return None
+    doc = json.loads(Path(FREEZE_READINESS).read_text())
+    return {k: v for k, v in doc.items() if k in S.FreezeReadiness.model_fields}
 
 
 # ------------------------------------------------------------------ watchlist (U4)

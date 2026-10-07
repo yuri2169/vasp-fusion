@@ -396,6 +396,20 @@ The graph of a case is sparse on purpose: it draws the wallet's money only. Two 
 
 Under a case's answer the interface quotes the row of **the case's own chain** (`wallets`, `named`, `wrong`, the error and its bound, `not_named`), and says the bar has not been measured on the chain when there is no measured row for it. A figure from another chain is never shown there.
 
+## Signed SAHYOG calls, the watcher and measured times (E6)
+
+All additive. The SAHYOG contract itself, with the signing scheme and the portal's half, is `docs/sahyog_contract.md`.
+
+- **`/api/sahyog/*`** take `X-SAHYOG-Timestamp`, `X-SAHYOG-Nonce` and `X-SAHYOG-Signature` beside `X-SAHYOG-Key` whenever a signing secret is configured: 401 for a missing or wrong signature or a clock more than 300 s off, 409 for a replayed call.
+- **`GatewayReceipt.gateway`** is `mock-outbox` or `sahyog-http` (with `SAHYOG_URL` set; `location` is then the portal's host and path). A portal that does not answer leaves the request `approved` and the PATCH answers 502 with the host and the reason.
+- **`ComplaintWallet.result_error`**: why the last hand-over of a result failed; it is tried again.
+- **`SahyogSim.portal_url`** (set, with `enabled: false`, when the portal is a separate program), **`tool_url`** and **`results_received`** (set by the reference portal when it serves the screen).
+- **`PsCoverage`**: `status` and `counts` gain `ready_to_connect` (built and tested on our side against a separate reference program; never counted as built; the row's `gap` says what is missing).
+- **`WatchList.watcher`** → `WatcherState`: `enabled`, `every_seconds`, `last_run_at`, `says` (one sentence to show as it is). **`WatchItem.auto_checked_at`**: when the background watcher last queued this wallet. `POST /api/watchlist/{id}/check` and the watcher both read the chain afresh instead of the cached pages.
+- **`ScaleMetrics.live[]`** → `LiveTiming`: `chain`, `median_seconds`, `median_requests`, `traces`, `source`, `measured_on`: seconds per live trace by chain, from the benchmark's own timings and `artifacts/live_timing.json`.
+- **`Dashboard.freeze_readiness`** → `FreezeReadiness`: the measured time from a complaint to freezing requests ready to sign (`artifacts/freeze_readiness.json`), with `not_measured` saying that no freeze was made or timed. Null when the file is absent.
+- **`Crossing.bridge`** may now be `Stargate` (`matched_by: scan.layerzero-api.com`) or `Wormhole` (`matched_by: api.wormholescan.io`).
+
 ## Mocks (`mocks/`, regenerate with `make mocks`)
 Seed 26182, deterministic (byte-identical on rerun). Three demo cases, one per outcome:
 

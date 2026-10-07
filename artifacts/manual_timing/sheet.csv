@@ -1,0 +1,6 @@
+task,chain,wallet,explorer,started_at,stopped_at,minutes,answer_exchange,answer_deposit_address,answer_tx_hash,how_sure_1_to_5,gave_up,notes
+1,tron,TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c,https://tronscan.org,,,,,,,,,
+2,tron,TGfoGrh8ddh4zzpBe3G82p1tgmeUq49sWr,https://tronscan.org,,,,,,,,,
+3,ethereum,0x8971dd825ba5dd32b60307773f71f6e3efb0eda9,https://etherscan.io,,,,,,,,,
+4,bitcoin,bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6,https://mempool.space,,,,,,,,,
+5,bsc,0xd43dec662060a0a089d7fe3f476746676284fa0c,https://bscscan.com,,,,,,,,,

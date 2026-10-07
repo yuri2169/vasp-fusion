@@ -1,0 +1,199 @@
+{
+ "recorded": "2026-10-07",
+ "max_hops": 3,
+ "address": "0xd652d8bc3d851b18d045b9c9bbb83d1001af5ea3",
+ "chain": "ethereum",
+ "chains": [
+  "ethereum",
+  "arbitrum"
+ ],
+ "asset": "USDC",
+ "outcome": "INSUFFICIENT_EVIDENCE",
+ "top_vasp": null,
+ "crossings": [
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0x3b0d73d86c8f7a60c00123d369f9a615d87a3831d01fe70f170e7e9a193a0a02",
+   "dest_name": "Arbitrum",
+   "recipient": "0xb6de222daef5029f31b8fabe498d34f3c491ef85",
+   "payout_tx": "0x8f2c2745af52411f48ab439efe2611fb4b4ddf15b9a3231b3d63fc61243e8fc9",
+   "asset_in": "USDC",
+   "amount_in": 20000.0,
+   "asset_out": "USDC",
+   "amount_out": 19987.999999,
+   "fee": 12.000001,
+   "seconds": 188,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0x1d5aaf370990cf426b618e8d6050cb5239c687f2dd4e54897a65d27455271b6d",
+   "dest_name": "Arbitrum",
+   "recipient": "0xb6de222daef5029f31b8fabe498d34f3c491ef85",
+   "payout_tx": "0xf0199e43aae75a416b1f34d4d05b3cb78568686c87def0d76289090399d6f2f6",
+   "asset_in": "USDC",
+   "amount_in": 4002.020378,
+   "asset_out": "USDC",
+   "amount_out": 3999.619165,
+   "fee": 2.40121295,
+   "seconds": 200,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0x570b6efb8a4712e2d40855da2027a32151638a3a8ba37819d1672493e512476b",
+   "dest_name": "Arbitrum",
+   "recipient": "0xb6de222daef5029f31b8fabe498d34f3c491ef85",
+   "payout_tx": "0xc24927f13e329c26d6b392eea35bc8879ee44c7f8351db5edf8fd54ee99be767",
+   "asset_in": "USDC",
+   "amount_in": 800.0,
+   "asset_out": "USDC",
+   "amount_out": 799.515999,
+   "fee": 0.484001,
+   "seconds": 191,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0xadcd0000540822bcd597fa81a01c2ab66e2bcc02c7106db0729a332b4809c238",
+   "dest_name": "Arbitrum",
+   "recipient": "0xb6de222daef5029f31b8fabe498d34f3c491ef85",
+   "payout_tx": "0x0d5ca200d1529663cf070fee91ef97438a8a8117c168ff20e305253a2ce293ce",
+   "asset_in": "USDC",
+   "amount_in": 3100.358296,
+   "asset_out": "USDC",
+   "amount_out": 3098.498081,
+   "fee": 1.860215,
+   "seconds": 191,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0x035089c89f0267e5620a9a2161fda39033c29d1eaeac00bbf1b7a93ded7a05a5",
+   "dest_name": "Arbitrum",
+   "recipient": "0xb6de222daef5029f31b8fabe498d34f3c491ef85",
+   "payout_tx": "0x10c92b4bccc0dcfe5e721a83d4372784b9439f5d74c055e62451bd59fb7e2b33",
+   "asset_in": "USDC",
+   "amount_in": 2850.0,
+   "asset_out": "USDC",
+   "amount_out": 2848.327049,
+   "fee": 1.66954173,
+   "seconds": 192,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "unresolved",
+   "source_chain": "ethereum",
+   "source_tx": "0x36cd414be132ad757b04fe36a01287b47e649e2a9727ea30fab2e727202b62a7",
+   "dest_name": null,
+   "recipient": null,
+   "payout_tx": null,
+   "asset_in": "USDC",
+   "amount_in": 327.908337,
+   "asset_out": null,
+   "amount_out": null,
+   "fee": null,
+   "seconds": null,
+   "matched_by": null,
+   "reason": "it is too small a part of the funds to follow"
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0xec2c3c4b20291d3431e38c6ad851263fb187134add39e32934ca43e949d19702",
+   "dest_name": "Arbitrum",
+   "recipient": "0x0b33eba531e5a5a331a3ff9f418b8205f01c2869",
+   "payout_tx": "0x46bf1fda81aa1f69c4fa22310d54de997047e0caf74fdc482bd698792286da6f",
+   "asset_in": "USDC",
+   "amount_in": 5100.000034,
+   "asset_out": "USDC",
+   "amount_out": 5096.940033,
+   "fee": 3.06000098,
+   "seconds": 201,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  },
+  {
+   "bridge": "Stargate",
+   "status": "followed",
+   "source_chain": "ethereum",
+   "source_tx": "0x2d2638aa187d21419b1c59a402c3bb4aca7862aeaf3ac52e6f52f7f82ec0dc12",
+   "dest_name": "Arbitrum",
+   "recipient": "0x0b33eba531e5a5a331a3ff9f418b8205f01c2869",
+   "payout_tx": "0xc3e453fbd9f7099ee6ca85003308e74226c652e8ac7182d1d7c134a3fd552918",
+   "asset_in": "USDC",
+   "amount_in": 4000.0,
+   "asset_out": "USDC",
+   "amount_out": 3997.599999,
+   "fee": 2.400001,
+   "seconds": 201,
+   "matched_by": "scan.layerzero-api.com",
+   "reason": null
+  }
+ ],
+ "where_funds_went": [
+  {
+   "kind": "beyond_hop_limit",
+   "share": 0.7508,
+   "text": null
+  },
+  {
+   "kind": "not_followed",
+   "share": 0.1499,
+   "text": null
+  },
+  {
+   "kind": "other_label",
+   "share": 0.0449,
+   "text": null
+  },
+  {
+   "kind": "other_label",
+   "share": 0.0171,
+   "text": null
+  },
+  {
+   "kind": "hub",
+   "share": 0.0129,
+   "text": null
+  },
+  {
+   "kind": "other_label",
+   "share": 0.0127,
+   "text": null
+  },
+  {
+   "kind": "bridge",
+   "share": 0.0064,
+   "text": null
+  },
+  {
+   "kind": "other_label",
+   "share": 0.0048,
+   "text": null
+  },
+  {
+   "kind": "bridge_fee",
+   "share": 0.0005,
+   "text": null
+  }
+ ],
+ "narrative": "Wallet 0xd652\u2026af5ea3 sent 50,276.76 USDC on Ethereum in 50 transfers between 18 Nov 2025 and 6 Oct 2026. 30,746.57 USDC (61%) left Ethereum through the Stargate bridge in 5 deposits, and 30,728.16 USDC of it arrived at 0xb6de\u202691ef85 on Arbitrum, where the trace goes on. 9,100 USDC (18%) left Ethereum through the Stargate bridge in 2 deposits, and 9,094.54 USDC of it arrived at 0x0b33\u20261c2869 on Arbitrum, where the trace goes on. No exchange is named. None of the 50,276.76 USDC this wallet sent reached a labelled exchange within 3 hops. 79% crossed to Arbitrum through the Stargate bridge and was followed there; 4% went into a named wallet that is not an exchange (CoW Protocol); 2% went into a named wallet that is not an exchange (MetaMask); 1% went into a named wallet that is not an exchange (Aster); 1% went into a bridge (Stargate); under 1% went into a DeFi contract (Uniswap V4); 1% stopped at unlabelled high-activity wallets, where funds from many senders mix; 75% went past the 3 hops that were traced; 14% is in wallets with more transfers than one fetch reads; 1% split into parts too small to follow; under 1% was kept by the bridge as its fee. Not followed in this run: 2,808.41 USDT in 17 transfers, 0.044711 ETH in 7 transfers."
+}

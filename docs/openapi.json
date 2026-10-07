@@ -5449,6 +5449,17 @@
             "title": "Risk Classes",
             "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.",
             "default": {}
+          },
+          "freeze_readiness": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreezeReadiness"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The measured time from a complaint to a request ready to sign; null when it was not measured on this installation"
           }
         },
         "additionalProperties": false,
@@ -6139,6 +6150,96 @@
           "text"
         ],
         "title": "FollowUp"
+      },
+      "FreezeReadiness": {
+        "properties": {
+          "what": {
+            "type": "string",
+            "title": "What"
+          },
+          "not_measured": {
+            "type": "string",
+            "title": "Not Measured"
+          },
+          "wallets": {
+            "type": "integer",
+            "title": "Wallets"
+          },
+          "runs": {
+            "type": "integer",
+            "title": "Runs"
+          },
+          "seconds_to_results": {
+            "type": "number",
+            "title": "Seconds To Results"
+          },
+          "seconds_to_requests_ready": {
+            "type": "number",
+            "title": "Seconds To Requests Ready"
+          },
+          "requests_drafted": {
+            "type": "integer",
+            "title": "Requests Drafted"
+          },
+          "exchanges": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Exchanges",
+            "default": []
+          },
+          "wallets_asked_about": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallets Asked About"
+          },
+          "median_seconds_to_draft_one_request": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Median Seconds To Draft One Request"
+          },
+          "chain_data": {
+            "type": "string",
+            "title": "Chain Data"
+          },
+          "machine": {
+            "type": "string",
+            "title": "Machine"
+          },
+          "measured_on": {
+            "type": "string",
+            "title": "Measured On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "what",
+          "not_measured",
+          "wallets",
+          "runs",
+          "seconds_to_results",
+          "seconds_to_requests_ready",
+          "requests_drafted",
+          "chain_data",
+          "machine",
+          "measured_on"
+        ],
+        "title": "FreezeReadiness",
+        "description": "Measured: from a complaint arriving to a freezing request ready for the officer's\nsignature (`make freeze-readiness`, artifacts/freeze_readiness.json). No freeze was\nmade or timed."
       },
       "FundsSlice": {
         "properties": {

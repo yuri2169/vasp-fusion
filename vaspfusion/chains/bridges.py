@@ -12,9 +12,18 @@ taken from it: the trace reads the payout transaction on the destination chain
 itself (trace.py), because what a bridge quotes and what the recipient received can
 differ (the recorded Across deposits pay a third party out of the output on arrival).
 
-Resolvers, each checked on real deposits (5 Oct 2026, no key needed):
-* Across: `GET app.across.to/api/deposit?originChainId=&depositTxHash=`. HTTP 404
-  `DepositNotFoundException` when the transaction holds no Across deposit.
+Resolvers, each checked on real deposits (no key needed):
+* Across (5 Oct 2026): `GET app.across.to/api/deposit?originChainId=&depositTxHash=`.
+  HTTP 404 `DepositNotFoundException` when the transaction holds no Across deposit.
+* Stargate over LayerZero (8 Oct 2026): `GET scan.layerzero-api.com/v1/messages/tx/<hash>`.
+  HTTP 404 when the transaction sent no LayerZero message. The index names the two
+  chains and the delivery transaction; the recipient is read from the message itself
+  (a Stargate transfer states it), and is then checked like any other: the payout must
+  be among that address's transfers on the destination chain, or nothing is followed.
+* Wormhole's token bridge (8 Oct 2026): `GET api.wormholescan.io/api/v1/operations?txHash=`.
+  An empty list when the transaction holds no Wormhole transfer. The token bridge pays
+  out its own wrapped token and only when someone redeems the transfer, so many
+  deposits are matched and named, not followed.
 """
 from __future__ import annotations
 
@@ -41,7 +50,7 @@ OTHER_CHAIN_IDS = {130: "Unichain", 232: "Lens", 324: "zkSync Era", 480: "World 
 @dataclass(frozen=True)
 class BridgeHop:
     """One deposit matched to its payout, as the bridge's index states it."""
-    bridge: str                     # the family: "Across"
+    bridge: str                     # the family: "Across", "Stargate", "Wormhole"
     source_chain: str
     source_tx: str
     dest_chain: str | None          # a chain this tool has an adapter for, else None
@@ -128,9 +137,157 @@ class AcrossResolver:
             token_out=(str(d["outputToken"]).lower() if d.get("outputToken") else None))
 
 
+LAYERZERO = "https://scan.layerzero-api.com/v1/messages/tx"
+# LayerZero endpoint id -> the chain as this tool names it (the ones an adapter exists for)
+LAYERZERO_EIDS = {30101: "ethereum", 30102: "bsc", 30106: "avalanche", 30109: "polygon",
+                  30110: "arbitrum", 30111: "optimism", 30184: "base"}
+_LZ_WAITING = ("INFLIGHT", "CONFIRMING", "PAYLOAD_STORED")
+_STARGATE_TAXI = 1                  # the first byte of a Stargate message that pays one recipient
+
+
+def _unix(value) -> datetime | None:
+    return datetime.fromtimestamp(int(value), timezone.utc) if value else None
+
+
+def _check_layerzero(body) -> None:
+    if not isinstance(body, dict):
+        raise ProviderError(f"unexpected body from LayerZero Scan: {str(body)[:200]}")
+    if body.get("code") == 4040:
+        return                      # an answer: the transaction sent no LayerZero message
+    rows = body.get("data")
+    if not isinstance(rows, list):
+        raise ProviderError(f"unexpected body from LayerZero Scan: {str(body)[:200]}")
+    if any(((m.get("status") or {}).get("name")) in _LZ_WAITING for m in rows):
+        # not an answer to keep: the message is still on its way
+        raise ProviderError("the LayerZero message has not been delivered yet")
+
+
+def stargate_recipient(payload: str | None) -> str | None:
+    """The recipient a Stargate message names, or None when the message is not a Stargate
+    transfer to one recipient: message type (1 byte, 1), asset id (2), recipient (32, an
+    address left-padded with zeros), amount (8)."""
+    raw = (payload or "").removeprefix("0x")
+    if len(raw) < 86 or int(raw[:2], 16) != _STARGATE_TAXI or set(raw[6:30]) != {"0"}:
+        return None
+    return "0x" + raw[30:70].lower()
+
+
+class LayerZeroResolver:
+    """Stargate deposits, matched through LayerZero Scan."""
+    family = "Stargate"
+
+    def __init__(self, fetcher: Fetcher):
+        self.fetcher = fetcher
+        fetcher.min_interval.setdefault("scan.layerzero-api.com", 0.25)
+
+    def resolve(self, transfer: Transfer) -> BridgeHop | Unresolved:
+        try:
+            body = self.fetcher.get_json(
+                transfer.chain, transfer.tx_hash, "bridge", f"{LAYERZERO}/{transfer.tx_hash}",
+                {}, check=_check_layerzero, accept=(404,))
+        except ProviderError as e:
+            return Unresolved(f"LayerZero Scan could not be read ({e})")
+        rows = body.get("data") or []
+        if not rows:
+            return Unresolved("LayerZero Scan holds no message for this transaction (a "
+                              "Stargate deposit that waits for a shared delivery sends its "
+                              "message in a later transaction)")
+        if len(rows) > 1:
+            return Unresolved("the transaction sent several LayerZero messages, which are "
+                              "not told apart")
+        m = rows[0]
+        status = (m.get("status") or {}).get("name")
+        dest_tx = ((m.get("destination") or {}).get("tx") or {})
+        if status != "DELIVERED" or not dest_tx.get("txHash"):
+            return Unresolved(f"LayerZero Scan reports the message as {status!r}, not "
+                              "delivered on another chain")
+        source_tx = ((m.get("source") or {}).get("tx") or {})
+        recipient = stargate_recipient(source_tx.get("payload"))
+        if recipient is None:
+            return Unresolved("the LayerZero message is not a Stargate transfer to one "
+                              "recipient, so it does not say who was paid")
+        pathway = m.get("pathway") or {}
+        eid = int(pathway.get("dstEid") or 0)
+        dest = LAYERZERO_EIDS.get(eid)
+        named = (pathway.get("receiver") or {}).get("chain")
+        return BridgeHop(
+            bridge=self.family, source_chain=transfer.chain, source_tx=transfer.tx_hash,
+            dest_chain=dest, dest_name=dest or named or f"LayerZero endpoint {eid}",
+            recipient=recipient, payout_tx=str(dest_tx["txHash"]).lower(),
+            paid_at=_unix(dest_tx.get("blockTimestamp")),
+            deposited_at=_unix(source_tx.get("blockTimestamp")),
+            source="scan.layerzero-api.com")
+
+
+WORMHOLE = "https://api.wormholescan.io/api/v1/operations"
+# Wormhole chain id -> the chain as this tool names it (the ones an adapter exists for)
+WORMHOLE_CHAINS = {1: "solana", 2: "ethereum", 4: "bsc", 5: "polygon", 6: "avalanche",
+                   23: "arbitrum", 24: "optimism", 30: "base"}
+OTHER_WORMHOLE_CHAINS = {3: "Terra", 8: "Algorand", 10: "Fantom", 13: "Kaia (Klaytn)",
+                         14: "Celo", 15: "NEAR", 16: "Moonbeam", 19: "Injective", 21: "Sui",
+                         22: "Aptos", 32: "Sei", 34: "Scroll", 35: "Mantle"}
+
+
+def _check_wormhole(body) -> None:
+    if not isinstance(body, dict) or not isinstance(body.get("operations"), list):
+        raise ProviderError(f"unexpected body from Wormholescan: {str(body)[:200]}")
+    for op in body["operations"]:
+        target = op.get("targetChain") or {}
+        if target.get("status") != "completed" or not (target.get("transaction") or {}).get(
+                "txHash"):
+            # not an answer to keep: nobody has redeemed the transfer on the other chain yet
+            raise ProviderError("the transfer has not been paid out on the destination "
+                                "chain yet")
+
+
+class WormholeResolver:
+    """Deposits into Wormhole's token bridge, matched through Wormholescan."""
+    family = "Wormhole"
+
+    def __init__(self, fetcher: Fetcher):
+        self.fetcher = fetcher
+        fetcher.min_interval.setdefault("api.wormholescan.io", 0.25)
+
+    def resolve(self, transfer: Transfer) -> BridgeHop | Unresolved:
+        try:
+            body = self.fetcher.get_json(
+                transfer.chain, transfer.tx_hash, "bridge", WORMHOLE,
+                {"txHash": transfer.tx_hash}, check=_check_wormhole)
+        except ProviderError as e:
+            return Unresolved(f"Wormholescan could not be read ({e})")
+        ops = body["operations"]
+        if not ops:
+            return Unresolved("Wormholescan holds no transfer for this transaction")
+        if len(ops) > 1:
+            return Unresolved("the transaction holds several Wormhole transfers, which are "
+                              "not told apart")
+        op = ops[0]
+        said = (op.get("content") or {}).get("standarizedProperties") or {}
+        target, source = op["targetChain"], op.get("sourceChain") or {}
+        if not said.get("toAddress") or not said.get("toChain"):
+            return Unresolved("Wormholescan does not say who the transfer was paid to")
+        chain_id = int(said["toChain"])
+        dest = WORMHOLE_CHAINS.get(chain_id)
+        recipient = str(said["toAddress"])
+        evm = dest is not None and dest != "solana"
+        return BridgeHop(
+            bridge=self.family, source_chain=transfer.chain, source_tx=transfer.tx_hash,
+            dest_chain=dest,
+            dest_name=dest or OTHER_WORMHOLE_CHAINS.get(chain_id, f"Wormhole chain {chain_id}"),
+            recipient=recipient.lower() if evm or recipient.startswith("0x") else recipient,
+            payout_tx=str(target["transaction"]["txHash"]).lower() if evm
+            or str(target["transaction"]["txHash"]).startswith("0x")
+            else str(target["transaction"]["txHash"]),
+            paid_at=_time(target.get("timestamp")), deposited_at=_time(source.get("timestamp")),
+            source="api.wormholescan.io")
+
+
 # the label store's name for a bridge family -> its resolver
 RESOLVERS: dict[str, Callable[[Fetcher], BridgeResolver]] = {
     "Across Protocol": AcrossResolver,
+    "Stargate": LayerZeroResolver,
+    "Stargate Finance": LayerZeroResolver,
+    "Wormhole": WormholeResolver,
 }
 
 

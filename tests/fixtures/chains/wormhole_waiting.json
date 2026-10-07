@@ -1,0 +1,74 @@
+{
+ "_recorded": "2026-10-07",
+ "_result": "1 answers",
+ "_source": "api.wormholescan.io operations, 0x485ea928400d369d7040f306d489763ad2a59e48179b2c1f8d87db976eaf1fd4 (USDT into the token bridge, not redeemed when recorded)",
+ "responses": {
+  "https://api.wormholescan.io/api/v1/operations?txHash=0x485ea928400d369d7040f306d489763ad2a59e48179b2c1f8d87db976eaf1fd4": {
+   "body": {
+    "operations": [
+     {
+      "content": {
+       "executorRequest": null,
+       "payload": {
+        "amount": "1000000",
+        "fee": "0",
+        "payloadType": 1,
+        "toAddress": "0xafe66f31e5d555e40ecced753d61b11cbb44bde2df18a2bcb919edaa35da92c1",
+        "toChain": 21,
+        "tokenAddress": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7",
+        "tokenChain": 2
+       },
+       "standarizedProperties": {
+        "amount": "100000000",
+        "appIds": [
+         "PORTAL_TOKEN_BRIDGE"
+        ],
+        "fee": "0",
+        "feeAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "feeChain": 2,
+        "fromAddress": "",
+        "fromChain": 2,
+        "normalizedDecimals": null,
+        "toAddress": "0xafe66f31e5d555e40ecced753d61b11cbb44bde2df18a2bcb919edaa35da92c1",
+        "toChain": 21,
+        "tokenAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "tokenChain": 2
+       }
+      },
+      "data": {
+       "symbol": "USDT",
+       "tokenAmount": "1",
+       "usdAmount": "0.999694"
+      },
+      "emitterAddress": {
+       "hex": "0000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585",
+       "native": "0x3ee18b2214aff97000d974cf647e7c347e8fa585"
+      },
+      "emitterChain": 2,
+      "id": "2/0000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585/691449",
+      "sequence": "691449",
+      "sourceChain": {
+       "chainId": 2,
+       "fee": "0.000222688811600688",
+       "feeUSD": "0.59478845445674160672",
+       "from": "0xea304a0d0e23a2bc5ffc48c8e841c11d71687c8c",
+       "gasTokenNotional": "2670.94",
+       "isSolanaShim": false,
+       "status": "confirmed",
+       "timestamp": "2026-09-29T05:26:35Z",
+       "transaction": {
+        "txHash": "0x485ea928400d369d7040f306d489763ad2a59e48179b2c1f8d87db976eaf1fd4"
+       }
+      },
+      "vaa": {
+       "guardianSetIndex": 7,
+       "isDuplicated": false,
+       "raw": "AQAAAAcNAPlEFtJuqj9PXijGn2jNkS4vWYqbp1wjJTfHWhhEY6i6aaq0QY0XPQe7IO0lGLKW7cz/hNzMP+JY94D5eGonw+UBAfQTthoBwvQzadjNQSIGupuwXovG+WBjIgYnF5LQ7dfPcOgGrkw6sucrwM19aKHRP5apk1dn9+dCr1JPglr9A80AA73hclXuk2j9Jb+32+pbUr4n0NhFPFjTETill8XDqOhbXpR2AqUO4UY4OSJii0Bc3u/x3iT5v5o6Qixm2Mmw5/4BBEgugZNlEdTTPu77jtYjLgPwkZf4xIMh6BiLx/RsRup3Z4xTIKuTteulBJaMcdeNsozpQi2Na5gZSpTiugHyhgQBBtzeSN5rXYtEWbCxAUFNOXN7urztOuPN9UQUonJ1gHlZLjUKEzMZm+gAGTktUkG4qvIlpHyQM4DIQpc5IzEYZ0IACfh7nfgge3redEIp17YsAEVzzy2wBEgZ2qsuYcxh5gSZSRnKAHcQ3CWE/0E2dJy/cHNeerGeueRZ5IbFCwJJpW8BCgRUCv7Sh/85okTYVS4oHSYWNf2dpGtdyBhuRk8+zD5Qbpg3x8nLD+CVCtJAVRGUlsB3kjUM9k1FImFssood90gBDFQOvJrzjkYqFZt66lRtnaZNyMwS/HJYJ908Wm8W+I12Kkep107AmJy+KV57Pu/OSrpTwsSEgd2PXhYadmHQwmMADctLw20KXBLJVWtsV8DNsAluBPDX7RBYtoPFpiSvU9NaWG4M7Bi4CyfUyKmXDGa+UG8kW+aL5VJya3L02gBwylUBDgdp1YzK7P97uS5KVPZYJR6qc8zQHrc3Fb5EmIykPLxscRtnXNoySP/MOI647k9fREf8g4H7T9MO4FK0m/2EtisAD+L/52bFW1RWSvGslb+xU71jjs2P0XOSs6ZlCQ7IOaZ0YNDGdfAtunWFt5hqaOgrGHlYMtX5yQIdnpcfK5jxqgwAEE0MeOWGmPbr5vNB4XeqNfLS0+Y+wX5rT+596XuVi69ZOd92SVw/QC9de9+08jm0SquB34dH+ztIyVR5oC1BsyIAEs2XZ1JijROtnKVIq2nZo/HvktUg3svHIahRuwkRxgBWQ8vcqH6NtVjbwixku5CKqK0S3i8waGM1fWmRKsaWuKQBartMCwAAAAAAAgAAAAAAAAAAAAAAAD7hiyIUr/lwANl0z2R+fDR+j6WFAAAAAAAKjPkBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD0JAAAAAAAAAAAAAAAAA2sF/lY0u5SOiIGIGmUWXwT2DHscAAq/mbzHl1VXkDsztdT1hsRy7RL3i3xiivLkZ7ao12pLBABUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      }
+     }
+    ]
+   },
+   "status": 200
+  }
+ }
+}

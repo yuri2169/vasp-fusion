@@ -298,6 +298,19 @@ export function DashboardPage() {
                     <p className="text-base text-muted">Not yet measured: no finished case names an exchange.</p>
                   )}
                 </Panel>
+                {d.freeze_readiness && (
+                  <Panel title="From a complaint to a freezing request ready to sign">
+                    <p className="tabular font-mono text-2xl text-fg" data-testid="freeze-readiness">
+                      {d.freeze_readiness.seconds_to_requests_ready.toFixed(1)} s
+                    </p>
+                    <p className="text-sm text-muted">
+                      Measured {d.freeze_readiness.measured_on}: one complaint with {plural(d.freeze_readiness.wallets, 'recorded wallet')}, traced with nobody
+                      touching the tool ({d.freeze_readiness.seconds_to_results.toFixed(1)} s), then {plural(d.freeze_readiness.requests_drafted, 'request')} drafted with
+                      their letters, one per exchange, asking for records and a freeze. Median of {plural(d.freeze_readiness.runs, 'run')}; chain data{' '}
+                      {d.freeze_readiness.chain_data}. {d.freeze_readiness.not_measured}
+                    </p>
+                  </Panel>
+                )}
               </div>
             </div>
 

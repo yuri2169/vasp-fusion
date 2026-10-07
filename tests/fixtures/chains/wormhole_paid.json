@@ -1,0 +1,94 @@
+{
+ "_recorded": "2026-10-07",
+ "_result": "1 answers",
+ "_source": "api.wormholescan.io operations, 0x8b70bbcf3eab77075c8acaf9cee475f82ab0a8e5b2ff00a01568784ba31e0eaf (USDT into the token bridge on Ethereum, redeemed)",
+ "responses": {
+  "https://api.wormholescan.io/api/v1/operations?txHash=0x8b70bbcf3eab77075c8acaf9cee475f82ab0a8e5b2ff00a01568784ba31e0eaf": {
+   "body": {
+    "operations": [
+     {
+      "content": {
+       "executorRequest": null,
+       "payload": {
+        "amount": "1442000000",
+        "fee": "0",
+        "payloadType": 1,
+        "toAddress": "0x000000000000000000000000f5aa070ba5e641923163fa6c12169b070a0a1504",
+        "toChain": 13,
+        "tokenAddress": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7",
+        "tokenChain": 2
+       },
+       "standarizedProperties": {
+        "amount": "144200000000",
+        "appIds": [
+         "PORTAL_TOKEN_BRIDGE"
+        ],
+        "fee": "0",
+        "feeAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "feeChain": 2,
+        "fromAddress": "",
+        "fromChain": 2,
+        "normalizedDecimals": null,
+        "toAddress": "0xF5aa070bA5E641923163fA6c12169B070A0a1504",
+        "toChain": 13,
+        "tokenAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "tokenChain": 2
+       }
+      },
+      "data": {
+       "symbol": "USDT",
+       "tokenAmount": "1442",
+       "usdAmount": "1441.816866"
+      },
+      "emitterAddress": {
+       "hex": "0000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585",
+       "native": "0x3ee18b2214aff97000d974cf647e7c347e8fa585"
+      },
+      "emitterChain": 2,
+      "id": "2/0000000000000000000000003ee18b2214aff97000d974cf647e7c347e8fa585/693734",
+      "sequence": "693734",
+      "sourceChain": {
+       "chainId": 2,
+       "fee": "0.000233567275856844",
+       "feeUSD": "0.60183046402757136636",
+       "from": "0xf5aa070ba5e641923163fa6c12169b070a0a1504",
+       "gasTokenNotional": "2576.69",
+       "isSolanaShim": false,
+       "status": "confirmed",
+       "timestamp": "2026-10-07T10:45:59Z",
+       "transaction": {
+        "txHash": "0x8b70bbcf3eab77075c8acaf9cee475f82ab0a8e5b2ff00a01568784ba31e0eaf"
+       }
+      },
+      "targetChain": {
+       "balanceChanges": [
+        {
+         "amount": "1442000000",
+         "recipient": "0xf5aa070ba5e641923163fa6c12169b070a0a1504",
+         "tokenAddress": "0x5c13e303a62fc5dedf5b52d66873f2e59fedadc2"
+        }
+       ],
+       "chainId": 13,
+       "fee": "0.0076879275",
+       "feeUSD": "0.0002914610171748",
+       "from": "0xf5aa070ba5e641923163fa6c12169b070a0a1504",
+       "gasTokenNotional": "0.03791152",
+       "status": "completed",
+       "timestamp": "2026-10-07T11:03:22Z",
+       "to": "0x5b08ac39eaed75c0439fc750d9fe7e1f9dd0193f",
+       "transaction": {
+        "txHash": "0x6aecf074ac3c685e9c8b54c2eb0dc5154e438670eb036c5eb390f98244bba790"
+       }
+      },
+      "vaa": {
+       "guardianSetIndex": 7,
+       "isDuplicated": false,
+       "raw": "AQAAAAcNAKkZWQ8TM/DRfx/MAmLhEHkCKnqZ/1lE4mip5JBjMnHmO4YZmPzDJ8ooHD1vgHA0r9Y5IelQHN/0MJVjpiMWSxEBAdSFC+slJbOxslhXXIAtbVImqtwYANyu5D2wnmLdv334SdCBwU55uhzaypWWFWD11WgB41sXRYbOV9RB7N62odkAAo/qtN3s2a/5cZ4SGHsuf4g5wjWRCSF5j8Ok7XytWPUzYbPL7hCiovU65DZbYycwNiCK6G/L/daZT0N6Lt0oKyoAAwqxIfAZougF1VYxv7AEQs1z2B/ndVGa59Mqsoslzu9iDDDD9ry1a364nWzbyZD+XYGOwkhfXD/erw5pITGHYrABBAIb0hbHOEcWUNWKpsdk/LNqNNxCmWsSpjEgF46M4qIAPba8Cu6z0dvqZJCR6yPJHV1OY3KTlfnHtSDqfZWe/+YABiUqzcGkVYr7FXCPwXyAXbYnQmoPDMDvGwe2Zu5GdAtMOuexG7dC/W+Ge8ysZtJHzEdKsK9PZH9EYjqvCtqVfvIBCfsYdBDmHMs3brVQoFxae7erR2K1agbAVokHtcymTjWlfzvqJs+HSP539ZI1QatHVvBGzkqBUYssdGXXwYASkNAADTe1hC66KOgyqmBIDw5HOU9kUq/I9mibRzfTAZm8BV3bLDJB707sWWJK+YUlyyP0fVsodd9uGpcvNBA9F4BWEDwADrVtbHyvqu7d3q9qHTs3Nm7IkgmJwgrr/6XWizq4nIO5HP1o1KEXV6bSQw8+pmLnUmhnnokbIKl+KpXr66hKu6ABD7AF0Bjr78A1eIvOwGjYVJfEjt483rUYKB7JpZXVGfRfUQpoj7KE6VT+QvIj4J9RS4iSOJAigvUdyQIMTqsWi7gBEE+ON4E7bSlQZEKUpY1xzjUo3jVOjy7/k15Tk/TqFJG2VN7/qzJBgJhBfDFvfqPYp1rL4snG7rHf54u2JKGp0REAEfJlekYZ+viRDOOZ93733+VhAVJMytVi9cetgrdDR87YTETX6V7lkPsF7Fdw9phwnHxIZXY412mCzlwayHoBJX8BEv/t3bSXYEaz69rzyt38ljZM6bkoJZvhIXPuKbmJXOK5Qd9HOkJjKRXyTAx+178gkDQK6S1dvbtzg6n6nr/FcUoAasYi5wAAAAAAAgAAAAAAAAAAAAAAAD7hiyIUr/lwANl0z2R+fDR+j6WFAAAAAAAKleYBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABV8yyAAAAAAAAAAAAAAAAA2sF/lY0u5SOiIGIGmUWXwT2DHscAAgAAAAAAAAAAAAAAAPWqBwul5kGSMWP6bBIWmwcKChUEAA0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+      }
+     }
+    ]
+   },
+   "status": 200
+  }
+ }
+}

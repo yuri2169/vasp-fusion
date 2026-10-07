@@ -381,6 +381,14 @@ Shell (`src/shell/`): `AppShell` (starts at `GET /api/auth/me`; shows the sign-i
 - **When the budget, not the evidence, ended a trace**, the case says so under the rail in the server's sentence, on a single data-coloured edge: it is a statement about what is unknown, so it is never the fusion colour.
 - **Throughput** is a panel at the foot of the Model page (`overview/Throughput.tsx`), read from `GET /api/scale`: a row per worker count, the bar in each row is that row's own figure against the fastest run, then what limits it in the file's own sentences. With no measurement the panel says so and shows no figure.
 
+## The reference portal, "ready to connect", the watcher's sentence (E6)
+- **Portal mode.** The reference portal (a separate program) serves this same build with `<meta name="vf-portal">` in the page; `App.tsx` then renders only `SahyogSimPage`, with no header and none of the tool's places. The banner "A simulator for demonstration. Not the SAHYOG portal." stays, and adds that this is a separate program. Links to a case or a request are plain anchors to the tool (`SahyogSim.tool_url`).
+- **In the tool, connected to a portal:** `/sahyog-sim` shows no form, says the portal's side runs as its own program, and links to it. A sent request's receipt says "Submitted over signed HTTP…" and that the portal may be the reference portal.
+- **Coverage status "Ready to connect":** the plug icon, a double border on the tag, a half-filled cell on the grid (`.dotfill`), between Built (solid) and Partly built (hatched). Never colour alone. It is never counted or drawn as Built.
+- **Watchlist:** the line under the title is the server's own sentence (`WatchList.watcher.says`): how often wallets are re-checked, or that nothing runs in the background.
+- **Model page, throughput panel:** "Live, from the public chain APIs: seconds for one trace" lists the measured medians by chain under the replayed table, with the request count and, for a small sample, the number of traces.
+- **Dashboard:** "From a complaint to a freezing request ready to sign" shows the measured seconds and, in the same paragraph, that no freeze was made or timed.
+
 ## Commands (in `ui/`)
 
 - `npm ci` once, then `npm run dev` (mock) or `VITE_API=live npm run dev`.

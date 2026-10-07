@@ -1,0 +1,25 @@
+{
+  "what": "From a complaint's POST to a freezing request drafted with its letter for each exchange its wallets route to: ready for the officer's signature.",
+  "not_measured": "No freeze was made or timed. Nothing here went to an exchange or to the SAHYOG portal; what happens after the officer approves is outside this tool.",
+  "wallets": 13,
+  "runs": 3,
+  "seconds_to_results": 3.91,
+  "seconds_to_requests_ready": 4.33,
+  "all_runs_seconds_to_requests_ready": [
+    5.3,
+    4.29,
+    4.33
+  ],
+  "requests_drafted": 4,
+  "exchanges": [
+    "Bitget",
+    "OKX",
+    "CoinDCX",
+    "HTX"
+  ],
+  "wallets_asked_about": 8,
+  "median_seconds_to_draft_one_request": 0.081,
+  "chain_data": "replayed from the recorded demo cache; no network",
+  "machine": "Darwin arm64, 10 cores, Python 3.12.14",
+  "measured_on": "2026-10-08"
+}

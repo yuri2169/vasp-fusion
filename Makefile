@@ -6,7 +6,7 @@ RESEARCH ?= ../research/data
 # Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
 OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce conformance portal serve-pair docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing freeze-readiness live-timing bench-scale offline-check reproduce conformance portal serve-pair docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -142,6 +142,12 @@ ui-shots:         ## screenshots of /kit and the shell into docs/screenshots/ (n
 
 intake-timing:    ## time the SAHYOG intake end to end on the recorded wallets (no network; after `make demo-cache`)
 	$(PY) scripts/intake_timing.py --out artifacts/intake_timing.json
+
+freeze-readiness: ## time a complaint to freezing requests ready for the officer's signature, on the recorded wallets (no network; after `make demo-cache`). No freeze is made or timed
+	$(PY) scripts/freeze_readiness.py --out artifacts/freeze_readiness.json
+
+live-timing:      ## time live traces of a fixed sample of the benchmark's wallets from an empty cache (network; LIVE_CHAIN=tron N=8) -> artifacts/live_timing.json
+	$(PY) scripts/live_timing.py --chain $(or $(LIVE_CHAIN),tron) --n $(or $(N),8)
 
 ROUNDS ?= 25
 bench-scale:      ## measure throughput at 1, 2, 4 and 8 workers on the recorded wallets -> artifacts/scale/metrics.json (no network; after `make demo-cache`)

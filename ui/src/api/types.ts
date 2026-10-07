@@ -2146,6 +2146,8 @@ export interface components {
             risk_classes: {
                 [key: string]: number;
             };
+            /** @description The measured time from a complaint to a request ready to sign; null when it was not measured on this installation */
+            freeze_readiness?: components["schemas"]["FreezeReadiness"] | null;
         };
         /** DashboardCounts */
         DashboardCounts: {
@@ -2417,6 +2419,43 @@ export interface components {
             due: string;
             /** Text */
             text: string;
+        };
+        /**
+         * FreezeReadiness
+         * @description Measured: from a complaint arriving to a freezing request ready for the officer's
+         *     signature (`make freeze-readiness`, artifacts/freeze_readiness.json). No freeze was
+         *     made or timed.
+         */
+        FreezeReadiness: {
+            /** What */
+            what: string;
+            /** Not Measured */
+            not_measured: string;
+            /** Wallets */
+            wallets: number;
+            /** Runs */
+            runs: number;
+            /** Seconds To Results */
+            seconds_to_results: number;
+            /** Seconds To Requests Ready */
+            seconds_to_requests_ready: number;
+            /** Requests Drafted */
+            requests_drafted: number;
+            /**
+             * Exchanges
+             * @default []
+             */
+            exchanges: string[];
+            /** Wallets Asked About */
+            wallets_asked_about?: number | null;
+            /** Median Seconds To Draft One Request */
+            median_seconds_to_draft_one_request?: number | null;
+            /** Chain Data */
+            chain_data: string;
+            /** Machine */
+            machine: string;
+            /** Measured On */
+            measured_on: string;
         };
         /**
          * FundsSlice

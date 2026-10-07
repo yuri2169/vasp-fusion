@@ -52,7 +52,8 @@ def _run(name: str, source: str, fn) -> None:
         fetcher = Fetcher(ChainCache(Path(d) / "c.duckdb"), rec, offline=False)
         try:
             rows = fn(fetcher)
-            note = f"{len(rows)} {'answers' if name.startswith('across') else 'transfers'}"
+            bridge = name.startswith(("across", "layerzero", "wormhole"))
+            note = f"{len(rows)} {'answers' if bridge else 'transfers'}"
         except ProviderError as e:
             note = f"raised {type(e).__name__}: {e}"
     OUT.mkdir(parents=True, exist_ok=True)
@@ -212,7 +213,54 @@ def across_unknown(f):
     return [AcrossResolver(f).resolve(_deposit(NOT_ACROSS))]
 
 
+# Real deposits found on 8 Oct 2026: USDT sent into Stargate's pool on Ethereum (labelled
+# `Stargate`, eth-labels) and into Wormhole's token bridge (labelled `Wormhole`).
+STARGATE_POOL = "0x933597a323eb81cae705c5bc29985172fd5a3973"
+STARGATE_A = "0x0443506c46795eef7141c016df18a918a45405b0cfb86e6609005703213a0645"
+STARGATE_B = "0x5db177c6873979a0c0f6470efecc068d4d4ed0d126d8b514d8cf3cfe0a04ca9c"
+WORMHOLE_BRIDGE = "0x3ee18b2214aff97000d974cf647e7c347e8fa585"
+WORMHOLE_PAID = "0x8b70bbcf3eab77075c8acaf9cee475f82ab0a8e5b2ff00a01568784ba31e0eaf"
+WORMHOLE_WAITING = "0x485ea928400d369d7040f306d489763ad2a59e48179b2c1f8d87db976eaf1fd4"
+
+
+def layerzero_delivered(f):
+    from vaspfusion.chains.bridges import LayerZeroResolver
+    r = LayerZeroResolver(f)
+    return [r.resolve(_deposit(STARGATE_A)), r.resolve(_deposit(STARGATE_B))]
+
+
+def layerzero_unknown(f):
+    from vaspfusion.chains.bridges import LayerZeroResolver
+    return [LayerZeroResolver(f).resolve(_deposit(NOT_ACROSS))]
+
+
+def wormhole_paid(f):
+    from vaspfusion.chains.bridges import WormholeResolver
+    return [WormholeResolver(f).resolve(_deposit(WORMHOLE_PAID))]
+
+
+def wormhole_waiting(f):
+    from vaspfusion.chains.bridges import WormholeResolver
+    return [WormholeResolver(f).resolve(_deposit(WORMHOLE_WAITING))]
+
+
+def wormhole_unknown(f):
+    from vaspfusion.chains.bridges import WormholeResolver
+    return [WormholeResolver(f).resolve(_deposit(NOT_ACROSS))]
+
+
 SCENARIOS = {
+    "layerzero_delivered": (f"scan.layerzero-api.com message index, {STARGATE_A} and "
+                            f"{STARGATE_B} (USDT into Stargate's pool on Ethereum)",
+                            layerzero_delivered),
+    "layerzero_unknown": (f"scan.layerzero-api.com message index, {NOT_ACROSS} (no LayerZero "
+                          "message: HTTP 404)", layerzero_unknown),
+    "wormhole_paid": (f"api.wormholescan.io operations, {WORMHOLE_PAID} (USDT into the token "
+                      "bridge on Ethereum, redeemed)", wormhole_paid),
+    "wormhole_waiting": (f"api.wormholescan.io operations, {WORMHOLE_WAITING} (USDT into the "
+                         "token bridge, not redeemed when recorded)", wormhole_waiting),
+    "wormhole_unknown": (f"api.wormholescan.io operations, {NOT_ACROSS} (no Wormhole "
+                         "transfer: an empty list)", wormhole_unknown),
     "across_filled": (f"app.across.to deposit index, origin chain 1, {ACROSS_DEPOSIT} and "
                       f"{ACROSS_SMALL}", across_filled),
     "across_unknown": (f"app.across.to deposit index, origin chain 1, {NOT_ACROSS} (not an "
