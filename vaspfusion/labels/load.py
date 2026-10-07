@@ -356,7 +356,7 @@ def build_recorded_labels(db_path: Path, json_path: Path = RECORDED_LABELS) -> d
     """A label database holding only the rows the recorded demo wallets' traces read.
 
     The full database is built from label sets that are not part of this repository.
-    What is tracked is every row of it that the twelve recorded traces (and the two
+    What is tracked is every row of it that the thirteen recorded traces (and the two
     watchlist traces) were answered with, kept as they were returned
     (tests/fixtures/demo/labels.json). A database of just those rows gives the same
     answer for those wallets: the same findings fingerprints, checked by

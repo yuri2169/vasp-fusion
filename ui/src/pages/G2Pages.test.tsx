@@ -153,7 +153,7 @@ describe('risk on a case', () => {
     expect(wallet).toHaveAttribute('data-risk', sanctioned.risk!.risk_class!)
     expect(wallet).toHaveTextContent(`${sanctioned.risk!.score}/100`)
     expect(flow).toHaveTextContent('flow risk')
-    expect(line).toHaveTextContent(RISK_BASIS)
+    expect(line).toHaveTextContent(sanctioned.risk!.basis)
   })
 
   it('lists each indicator with its points and its sentence in the Risk tab', async () => {

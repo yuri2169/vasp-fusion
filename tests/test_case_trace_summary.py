@@ -22,6 +22,7 @@ PINNED = {
     "sol-okx": (7, 5, 1, 1, 3),
     "polygon-bitget": (7, 4, 1, 1, 3),
     "tron-terror-link": (672, 152, 11, 9, 61),
+    "wazirx-2024": (82, 3, 1, 1, 38),
 }
 
 

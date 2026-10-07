@@ -239,3 +239,23 @@ def test_label_search_and_coverage_know_the_threats(client):
     assert client.get("/api/labels/search", params={"threat": "nonsense"}).status_code == 422
     cover = client.get("/api/labels/coverage").json()
     assert cover["by_threat"]["terrorism_financing"] == 2
+
+
+# ------------------------------------------------------------------ a documented case (E2)
+def test_a_documented_incidents_wallet_carries_its_statement_and_sources(client):
+    cid, = _trace(client, "wazirx-2024")
+    case = client.get(f"/api/cases/{cid}").json()
+    doc = case["documented"]
+    assert case["outcome"] == "INSUFFICIENT_EVIDENCE" and case["top_vasp"] is None
+    assert doc == SPECS["wazirx-2024"]["documented"]
+    assert all(s["url"].startswith("https://") for s in doc["sources"])
+    # the statement says no more than the trace found: the source of the funds, no cash-out
+    assert [c["vasp"] for c in case["candidates"]] == ["WazirX"]
+    assert case["candidates"][0]["direction"] == "inbound"
+    listed = {c["id"]: c for c in client.get("/api/cases").json()["items"]}
+    assert listed[cid]["documented"]["title"] == doc["title"]
+
+
+def test_an_ordinary_recorded_wallet_is_not_called_documented(client):
+    cid, = _trace(client, "tron-ofac")
+    assert client.get(f"/api/cases/{cid}").json()["documented"] is None

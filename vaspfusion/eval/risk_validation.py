@@ -333,16 +333,36 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+VIEW_WORDS = {"as_shown": "Every label, as the tool shows it",
+              "own_hidden": "The wallet's own label hidden",
+              "entity_hidden": "Every label of the wallet's own entity hidden"}
+
+
 def summary(m: dict) -> dict:
-    """The few figures the interface and the documents quote (GET /api/model)."""
-    v = m["views"][m["main_view"]]
-    p, c = v["arms"]["positive"], v["arms"]["control"]
-    return {"version": m["version"], "positives": m["positives"], "controls": m["controls"],
-            "view": m["main_view"],
-            "positives_high_or_above": p["high_or_above"], "positives_scored": p["wallets"] - p["could_not_be_read"],
-            "controls_high_or_above": c["high_or_above"], "controls_scored": c["wallets"] - c["could_not_be_read"],
+    """`RiskValidation`: the figures the interface and the documents quote."""
+    views = []
+    for view in VIEWS:
+        v = m["views"][view]
+        p, c = v["arms"]["positive"], v["arms"]["control"]
+        views.append({
+            "view": view, "words": VIEW_WORDS[view],
+            "positives_scored": p["wallets"] - p["could_not_be_read"],
+            "positives_high_or_above": p["high_or_above"],
+            "positives_interval": p["high_or_above_interval"],
             "positives_nothing_to_trace": p["nothing_to_trace"],
+            "positives_classes": p["classes"],
+            "controls_scored": c["wallets"] - c["could_not_be_read"],
+            "controls_high_or_above": c["high_or_above"],
+            "controls_interval": c["high_or_above_interval"],
             "controls_nothing_to_trace": c["nothing_to_trace"],
-            "auc_score": v["separation"]["auc_score"],
-            "auc_behaviour_score": v["separation"]["auc_behaviour_score"],
-            "rules": v["rules"], "notes": m["notes"]}
+            "controls_classes": c["classes"],
+            "p_fisher": v["separation"]["p_fisher"], "auc_score": v["separation"]["auc_score"],
+            "auc_behaviour_score": v["separation"]["auc_behaviour_score"]})
+    return {"version": m["version"], "seed": m["seed"], "positives": m["positives"],
+            "controls": m["controls"], "main_view": m["main_view"], "views": views,
+            "rules": m["views"][m["main_view"]]["rules"], "notes": m["notes"]}
+
+
+def read_summary(folder: Path) -> dict | None:
+    path = Path(folder) / "results.json"
+    return summary(json.loads(path.read_text())) if path.exists() else None

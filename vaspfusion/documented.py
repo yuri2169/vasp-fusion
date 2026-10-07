@@ -17,14 +17,16 @@ DEFAULT_PATH = ROOT / "demo" / "cases.json"
 
 
 @lru_cache(maxsize=4)
-def _load(path: str) -> dict[str, dict]:
+def _load(path: str) -> dict[tuple[str, str], dict]:
     try:
         specs = json.loads(Path(path).read_text())["cases"]
     except (OSError, ValueError, KeyError):
         return {}
-    return {s["id"]: s["documented"] for s in specs if s.get("documented")}
+    return {(s["chain"], s["address"]): s["documented"] for s in specs if s.get("documented")}
 
 
-def documented_for(case_id: str, path: Path | str | None = None) -> dict | None:
-    """The `DocumentedCase` of a recorded case, or None."""
-    return _load(str(path or os.environ.get("VASPFUSION_DEMO_CASES") or DEFAULT_PATH)).get(case_id)
+def documented_for(case: dict, path: Path | str | None = None) -> dict | None:
+    """The `DocumentedCase` of a case that traces a documented incident's address, or None.
+    It goes by the wallet, so the same address typed in by an officer carries it too."""
+    known = _load(str(path or os.environ.get("VASPFUSION_DEMO_CASES") or DEFAULT_PATH))
+    return known.get((case.get("chain"), case.get("address")))

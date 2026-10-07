@@ -6,7 +6,7 @@ RESEARCH ?= ../research/data
 # Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
 OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing bench-scale offline-check reproduce docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -21,7 +21,7 @@ labels:           ## build data/labels.duckdb from the research label CSVs + der
 demo-labels:      ## data/labels.duckdb with only the labels the recorded demo read (tracked; no research data needed). Leaves an existing database alone
 	$(PY) -m vaspfusion.cli demo-labels
 
-offline-demo:     ## from a fresh clone, no network, no keys, no research data: labels (if none), the demo cache, the twelve recorded cases checked against their fingerprints, verify
+offline-demo:     ## from a fresh clone, no network, no keys, no research data: labels (if none), the demo cache, the thirteen recorded cases checked against their fingerprints, verify
 	@test -f data/labels.duckdb || $(PY) -m vaspfusion.cli demo-labels
 	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli demo-cache
 	$(OFFLINE_ENV) $(PY) -m vaspfusion.cli demo --golden tests/golden/fingerprints.json
@@ -61,6 +61,12 @@ abstain-eval:     ## measure the abstain threshold on label-hidden traces of rea
 
 benchmark:        ## measure attribution on every chain beside the naive baseline (cached in data/benchmark_cache/; OFFLINE=1 replays; BENCH_CHAIN=ethereum for one)
 	$(PY) -m vaspfusion.cli benchmark --chain "$(BENCH_CHAIN)" --commit "$$(git rev-parse --short HEAD)"
+
+risk-validation:  ## the risk score and the pattern rules on the validation wallets, from the tracked traced cases (no network) -> artifacts/risk_validation_v1/results.json
+	$(PY) -m vaspfusion.cli risk-validation
+
+risk-validation-trace: ## trace the validation wallets again (network; OFFLINE=1 replays data/risk_validation_cache.duckdb), then measure
+	$(PY) -m vaspfusion.cli risk-validation --trace
 
 test:             ## unit + integration tests
 	$(PY) -m pytest -q

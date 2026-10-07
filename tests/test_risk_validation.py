@@ -134,3 +134,19 @@ def test_the_tracked_results_are_what_the_tracked_cases_give():
     m = V.measure(json.loads(corpus_path.read_text()), V.read_cases(out / "cases.json.gz"),
                   config_sha256=V.sha256(R.DEFAULT_PATH), corpus_sha256=V.sha256(corpus_path))
     assert json.loads(json.dumps(m)) == json.loads((out / "results.json").read_text())
+
+
+def test_the_wazirx_statement_says_what_the_trace_table_holds():
+    table = json.loads((ROOT / "artifacts" / "wazirx_2024" / "trace_table.json").read_text())
+    source = json.loads((ROOT / "data" / "validation" / "wazirx_2024.json").read_text())
+    statement = SPECS["wazirx-2024"]["documented"]["statement"]
+    rows = table["rows"]
+    assert len(rows) == len(source["addresses"]) == 27
+    mixer = sum(r["as_shown"]["outcome"] == "SANCTIONED_OR_MIXER_REACHED" for r in rows)
+    assert f"{mixer} of the 27 tagged wallets reach Tornado Cash" in statement
+    cashed_out = [r["tag"] for r in rows for view in ("as_shown", "entity_hidden")
+                  if any(x["direction"] == "outbound" for x in r[view]["exchanges"])]
+    assert cashed_out == [] and "none reaches a named exchange within 3 hops" in statement
+    main = next(r for r in rows if r["address"] == SPECS["wazirx-2024"]["address"])
+    assert [(x["vasp"], x["direction"]) for x in main["as_shown"]["exchanges"]] == \
+        [("WazirX", "inbound")]

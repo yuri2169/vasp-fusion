@@ -4,8 +4,9 @@ import { cx } from '../lib/cx'
 export const RISK_ORDER: RiskClass[] = ['low', 'medium', 'high', 'severe']
 export const RISK_WORDS: Record<RiskClass, string> = { low: 'Low', medium: 'Medium', high: 'High', severe: 'Severe' }
 
-/** What the score is, wherever it is shown (the API sends the same sentence as `risk.basis`). */
-export const RISK_BASIS = 'An indicator score from published red-flag rules. Not a probability, and not measured against known outcomes.'
+/** What the score is, where there is no room or no case at hand. A case's own `risk.basis` (from
+ *  the API) also carries the measured figures; the Model page has the table. */
+export const RISK_BASIS = 'An indicator score from published red-flag rules. Not a probability. Checked on real listed and ordinary wallets: the figures are on the Model page.'
 
 const BOX: Record<RiskClass, string> = {
   low: 'border-rule text-ink-soft',

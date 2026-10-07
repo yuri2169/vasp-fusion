@@ -21,6 +21,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from .. import fx
+from ..documented import documented_for
 from .. import provenance as P
 from ..attribute.rules import TIER_WEIGHT, RuleConfig
 from ..trace import TraceConfig
@@ -60,6 +61,14 @@ DEMO_NOTICE = ("Demonstration case. This is a real public wallet, chosen because
                "on-chain history shows a pattern the tool should handle. Nothing here "
                "alleges wrongdoing by whoever controls it, and the case reference is not a "
                "real complaint.")
+
+
+def documented_notice(doc: dict) -> str:
+    """The head note of a recorded case whose address comes from a documented incident."""
+    sources = "; ".join(f"{s['name']} ({s['url']})" for s in doc["sources"])
+    return (f"Recorded case of a publicly documented incident. {doc['what_happened']} "
+            f"{doc['statement']} The case reference is not a real complaint. Sources: {sources}.")
+
 
 SHORT_NOTE = ("In the sentences of this file a long address is written as its first six and "
               "last six characters. Every wallet of this case is listed in full under 'Flow "
@@ -137,7 +146,10 @@ def _header(case: dict) -> list[dict]:
         rows.append(("Amount reported lost", f"Rs {fmt.amount(Decimal(str(case['amount_lost_inr'])))}"))
     out = [{"t": "title", "text": "Case file",
             "sub": "Nearest-exchange attribution of a crypto wallet"}]
-    if case.get("demo"):
+    doc = case.get("documented") or documented_for(case)
+    if doc:
+        out.append({"t": "note", "text": documented_notice(doc)})
+    elif case.get("demo"):
         out.append({"t": "note", "text": DEMO_NOTICE})
     out.append({"t": "kv", "rows": rows})
     return out

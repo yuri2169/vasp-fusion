@@ -209,6 +209,88 @@ function Abstain({ a }: { a: NonNullable<ModelInfo['abstain']> }) {
   )
 }
 
+type RiskCheckInfo = NonNullable<ModelInfo['risk_validation']>
+type RiskView = RiskCheckInfo['views'][number]
+type RuleCheck = RiskCheckInfo['rules'][number]
+
+const RULE_WORDS: Record<string, string> = {
+  peel_chain: 'Peel chain',
+  fan_out: 'Spread to many wallets in a short time',
+  fan_in: 'Funded by many wallets, or split funds merged again',
+  rapid_forwarding: 'Forwarded within minutes',
+  round_amounts: 'Mostly round amounts',
+}
+
+/** The risk score and the pattern rules on real wallets: how many of the listed ones and how many
+ *  of the ordinary ones scored High or above, under each view of the labels, and what each rule
+ *  fired on. Poor figures are shown as they came out. */
+function RiskCheck({ r }: { r: RiskCheckInfo }) {
+  const of = (k: number, n: number) => (
+    <span className={mono}>
+      {count(k)} of {count(n)}
+    </span>
+  )
+  const views: Column<RiskView>[] = [
+    {
+      key: 'view',
+      header: 'Labels the score could read',
+      cell: (v) => (
+        <span>
+          {v.words}
+          {v.view === r.main_view && <span className="ml-2 rounded-sm border border-fg px-1 text-sm font-semibold">the figure to quote</span>}
+        </span>
+      ),
+    },
+    { key: 'pos', header: 'Listed wallets at High or above', align: 'right', sortValue: (v) => v.positives_high_or_above, cell: (v) => of(v.positives_high_or_above, v.positives_scored) },
+    { key: 'ctl', header: 'Ordinary wallets at High or above', align: 'right', sortValue: (v) => v.controls_high_or_above, cell: (v) => of(v.controls_high_or_above, v.controls_scored) },
+    {
+      key: 'empty',
+      header: 'Nothing to trace (listed / ordinary)',
+      align: 'right',
+      cell: (v) => (
+        <span className={mono}>
+          {count(v.positives_nothing_to_trace)} / {count(v.controls_nothing_to_trace)}
+        </span>
+      ),
+    },
+    {
+      key: 'auc',
+      header: 'Listed outscores ordinary',
+      align: 'right',
+      sortValue: (v) => v.auc_score ?? null,
+      cell: (v) => <span className={mono}>{v.auc_score != null ? share(v.auc_score) : 'not measured'}</span>,
+    },
+    {
+      key: 'behaviour',
+      header: 'The same, behaviour rules only',
+      align: 'right',
+      sortValue: (v) => v.auc_behaviour_score ?? null,
+      cell: (v) => <span className={mono}>{v.auc_behaviour_score != null ? share(v.auc_behaviour_score) : 'not measured'}</span>,
+    },
+  ]
+  const rules: Column<RuleCheck>[] = [
+    { key: 'rule', header: 'Pattern rule', cell: (x) => RULE_WORDS[x.code] ?? x.code },
+    { key: 'pos', header: 'Fired on listed wallets', align: 'right', sortValue: (x) => x.positive, cell: (x) => of(x.positive, x.positive_of) },
+    { key: 'ctl', header: 'Fired on ordinary wallets', align: 'right', sortValue: (x) => x.control, cell: (x) => of(x.control, x.control_of) },
+  ]
+  return (
+    <Panel
+      title="The risk score, checked on real wallets"
+      note={`${plural(r.positives, 'wallet')} that public sources list as sanctioned, ransomware, scam, phishing or theft addresses, and ${plural(r.controls, 'wallet')} with a documented ordinary purpose. Both lists were fixed before any wallet was traced, and the points were not changed afterwards. The same for every chain.`}
+    >
+      <DataTable caption="Wallets scoring High or above, by what the score could read" columns={views} rows={r.views} rowKey={(v) => v.view} />
+      <p className="text-sm text-muted">“Listed outscores ordinary” is the chance that a listed wallet scores higher than an ordinary one, ties counting half: 50% is no better than a coin.</p>
+      <div className="grid items-start gap-6 border-t border-rule pt-3 lg:grid-cols-2">
+        <DataTable caption="Each pattern rule, with the wallet's own label hidden" columns={rules} rows={r.rules} rowKey={(x) => x.code} />
+        <div>
+          <h3 className="eyebrow mb-2">What this check does not show</h3>
+          <Sentences items={r.notes} />
+        </div>
+      </div>
+    </Panel>
+  )
+}
+
 /** How the deposit-address model was measured: calibration, accuracy when it answers, what it reads,
  *  how it does on an exchange it never saw, and what the numbers do not say. Nothing here is a placeholder. */
 export function ModelPage() {
@@ -356,6 +438,8 @@ export function ModelPage() {
               <p className="text-base text-muted">Not yet measured on {about.name}: the 0.60 naming bar was checked on Tron wallets only.</p>
             </Panel>
           )}
+
+          {m.risk_validation && <RiskCheck r={m.risk_validation} />}
 
           {m.notes.length > 0 && (
             <Panel title="What these numbers are, and are not">

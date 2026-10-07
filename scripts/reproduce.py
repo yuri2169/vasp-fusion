@@ -12,8 +12,10 @@ What is regenerated, and from what:
   abstain       artifacts/abstain_v1/tron/   the tracked claims.csv
   benchmark     artifacts/benchmark_v1/      the tracked wallets.csv of each chain, the Tron
                                              claims.csv, and both models' dataset.csv
+  risk          artifacts/risk_validation_v1/results.json   the tracked cases.json.gz
+                                             and config/risk.yaml
   demo-cache    a chain cache                tests/fixtures/demo (recorded chain responses)
-  demo          the twelve demo cases        that cache, OFFLINE=1; golden fingerprints
+  demo          the thirteen demo cases      that cache, OFFLINE=1; golden fingerprints
   verify        each case traced again       cache only
   golden        tests/golden/, expected.json the recorded fixtures
   mocks         mocks/                       the label DB (seeded)
@@ -194,9 +196,11 @@ def main() -> None:
                  *cli, "benchmark", needs=ROOT / "data" / "benchmark_cache", env={"OFFLINE": "1"})
     run.step("benchmark", "the benchmark table, re-measured from the tracked wallets",
              *cli, "benchmark", "--from-wallets")
+    run.step("risk", "the risk score on the validation wallets, from the tracked cases",
+             *cli, "risk-validation")
     if run.step("demo-cache", "the demo's chain cache, from the recorded fixtures",
                 *cli, "demo-cache", "--out", str(cache)):
-        run.step("demo", "the twelve demo cases, offline, against the golden fingerprints",
+        run.step("demo", "the thirteen demo cases, offline, against the golden fingerprints",
                  *cli, "demo", "--golden", "tests/golden/fingerprints.json", env=demo_env)
         run.step("verify", "each case traced again from the cache only",
                  *cli, "verify", "--all", env=demo_env)

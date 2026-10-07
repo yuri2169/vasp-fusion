@@ -92,6 +92,35 @@ function CaseTile({ c }: { c: CaseSummary }) {
   )
 }
 
+/** A recorded case whose address comes from a publicly documented incident: what the cited
+ *  sources say happened, what the trace shows and what it does not, and the sources. */
+function DocumentedCase({ c }: { c: CaseSummary }) {
+  const d = c.documented
+  if (!d) return null
+  return (
+    <article aria-label={d.title} className="flex flex-col gap-2 border border-rule border-l-2 border-l-confirm bg-surface px-3 py-2.5" data-testid="documented-case">
+      <h3 className="font-cond text-sm font-bold tracking-tight text-ink">{d.title}</h3>
+      <p className="text-sm text-ink-soft">{d.what_happened}</p>
+      <p className="text-sm text-ink">
+        <span className="colhead mr-1.5">What the trace shows</span>
+        {d.statement}
+      </p>
+      <CaseTile c={c} />
+      <p className="text-2xs text-ink-dim">
+        Sources:{' '}
+        {d.sources.map((s, i) => (
+          <span key={s.url}>
+            {i > 0 && ' · '}
+            <a href={s.url} rel="noreferrer noopener" target="_blank" className="underline decoration-rule underline-offset-2 hover:text-ink">
+              {s.name}
+            </a>
+          </span>
+        ))}
+      </p>
+    </article>
+  )
+}
+
 /** How often naming is right, beside the recorded wallets. Read from the measurement; with
  *  no measurement the line is not drawn (the figures below the fold say "not yet measured"). */
 function NamingRecord() {
@@ -126,9 +155,9 @@ function NamingRecord() {
 function RecordedCases() {
   const cases = useCases()
   const all = cases.data?.items ?? []
-  const { named, notNamed } = featuredCases(all)
+  const { named, notNamed, documented } = featuredCases(all)
   if (cases.isPending) return <p className="colhead">Looking for recorded wallets…</p>
-  if (named.length + notNamed.length === 0) {
+  if (named.length + notNamed.length + documented.length === 0) {
     const shown = all.slice(0, 4)
     if (shown.length === 0) return null
     return (
@@ -157,6 +186,16 @@ function RecordedCases() {
     <section aria-label="Recorded wallets">
       <p className="colhead mb-2">or open a recorded wallet: real, already traced</p>
       <div className="flex flex-col gap-3">
+        {documented.length > 0 && (
+          <div>
+            <h2 className="colhead mb-1.5 text-ink-soft">A publicly documented case</h2>
+            <div className="flex flex-col gap-2">
+              {documented.map((c) => (
+                <DocumentedCase key={c.id} c={c} />
+              ))}
+            </div>
+          </div>
+        )}
         {group('Named an exchange', named)}
         {group('Did not name one, and says why', notNamed)}
       </div>

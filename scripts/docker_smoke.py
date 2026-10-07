@@ -5,7 +5,7 @@
 
 `make docker-smoke` runs the first form inside a container started with
 `--network none`, so everything below is proved to work with no network at all:
-sign in, the twelve demo cases, the case file PDF, the receipt, verify, a fresh trace
+sign in, the thirteen demo cases, the case file PDF, the receipt, verify, a fresh trace
 from the cache, a refusal for a wallet that is not cached, the request desk, a
 request drafted, approved and sent to the mock outbox, label search, the model page,
 the audit log and its hash chain.

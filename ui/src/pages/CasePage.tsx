@@ -92,6 +92,11 @@ function Meta({ c }: { c: CaseDetail }) {
           Recorded
         </span>
       )}
+      {c.documented && (
+        <span title={`${c.documented.what_happened} ${c.documented.statement}`} className="ml-1 inline-block rounded-sm border border-rule-strong px-1 text-sm text-fg" data-testid="documented-tag">
+          Documented case · {c.documented.title}
+        </span>
+      )}
     </p>
   )
 }

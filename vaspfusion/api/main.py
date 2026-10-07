@@ -54,6 +54,7 @@ MOCKS = ROOT / "mocks"
 LABEL_DB = DEFAULT_DB
 MODEL_DIR = ROOT / "artifacts" / "model_v1"   # metrics.json per chain (`make model`)
 BENCHMARK_DIR = ROOT / "artifacts" / "benchmark_v1"   # summary.json (`make benchmark`)
+RISK_VALIDATION_DIR = ROOT / "artifacts" / "risk_validation_v1"   # `make risk-validation`
 ABSTAIN_DIR = ROOT / "artifacts" / "abstain_v1"   # validation.json per chain (`make abstain-eval`)
 log = logging.getLogger(__name__)
 CASE_DB: Path | None = None      # None = data/case.duckdb (or VASPFUSION_CASE_DB)
@@ -828,7 +829,7 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
         try:
             out = {**c, **(R.summary(store.get(c["id"])) if c["status"] == "done" else {}),
                    "sahyog_complaint_ref": refs.get(c["id"]),
-                   "documented": documented_for(c["id"])}
+                   "documented": documented_for(c)}
             S.CaseSummary.model_validate(out)
             return out
         except Exception:
@@ -1586,9 +1587,11 @@ def get_model(response: Response, chain: str = "tron"):
     _source(response, "live")
     from ..eval.abstain import abstain_info, read_validation
     validation = read_validation(ABSTAIN_DIR, chain)
+    from ..eval.risk_validation import read_summary
     return {**model_info(metrics),
             "abstain": abstain_info(validation) if validation else None,
-            "benchmark": benchmark}
+            "benchmark": benchmark,
+            "risk_validation": read_summary(RISK_VALIDATION_DIR)}
 
 
 # ------------------------------------------------------------------ problem-statement coverage (G2)
@@ -1618,7 +1621,7 @@ def _enrich(case: dict) -> dict:
     case["risk_class"] = risk["risk_class"] if risk else None
     case["risk_score"] = risk["score"] if risk else None
     case["sahyog_complaint_ref"] = _complaints().refs_by_case().get(case["id"])
-    case["documented"] = documented_for(case["id"])
+    case["documented"] = documented_for(case)
     return case
 
 

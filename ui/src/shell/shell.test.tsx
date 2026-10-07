@@ -145,6 +145,22 @@ describe('the app shell', () => {
     expect(stages.map((b) => b.querySelector('span span')!.textContent)).toEqual(['intake', 'fetch', 'label', 'trace', 'discover', 'attribute', 'decide', 'explain', 'deliver'])
   })
 
+  it('offers a publicly documented case on its own, with what the trace shows and the sources', async () => {
+    const list = await api.cases()
+    const documented = { title: 'The WazirX theft, 18 July 2024', what_happened: 'Assets were taken from a wallet of WazirX.', statement: 'It names WazirX as the source of the funds. It names no exchange the money was cashed out at.', sources: [{ name: 'WazirX, preliminary report', url: 'https://wazirx.com/blog/preliminary-report-cyber-attack-on-wazirx-multisig-wallet/' }] }
+    const wazirx = { ...list.items.find((c) => c.outcome === 'INSUFFICIENT_EVIDENCE')!, id: 'wazirx-2024', case_ref: 'DOC/2024/WAZIRX', demo: true, documented } as CaseSummary
+    vi.spyOn(api, 'cases').mockResolvedValue({ total: list.total + 1, items: [wazirx, ...list.items] })
+    renderApp(<AppRoutes />, { route: '/' })
+    const card = await screen.findByRole('article', { name: documented.title })
+    expect(card).toHaveTextContent(documented.what_happened)
+    expect(card).toHaveTextContent('It names no exchange the money was cashed out at.')
+    expect(within(card).getByRole('link', { name: /DOC\/2024\/WAZIRX/ })).toHaveAttribute('href', '/cases/wazirx-2024')
+    expect(within(card).getByRole('link', { name: 'WazirX, preliminary report' })).toHaveAttribute('href', documented.sources[0].url)
+    // it is not also listed among the anonymous recorded wallets
+    const recorded = screen.getByRole('region', { name: 'Recorded wallets' })
+    expect(within(recorded).getAllByRole('link', { name: /DOC\/2024\/WAZIRX/ })).toHaveLength(1)
+  })
+
   it('traces a wallet pasted on the landing', async () => {
     const openCase = vi.spyOn(api, 'openCase')
     const { user } = renderApp(<AppRoutes />, { route: '/' })

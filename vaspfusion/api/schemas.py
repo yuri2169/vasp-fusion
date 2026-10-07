@@ -12,6 +12,9 @@ Two rules are encoded in the types, not just in the docs:
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from datetime import date, datetime
 from typing import Literal
 
@@ -44,8 +47,29 @@ Ask = Literal["kyc", "transactions", "freeze", "preservation"]
 FollowUpKind = Literal["reply_overdue", "freeze_lapsing", "preservation_closing"]
 Direction = Literal["outbound", "inbound"]
 RiskClass = Literal["low", "medium", "high", "severe"]
-RISK_BASIS = ("An indicator score from published red-flag rules. Not a probability, and not "
-              "measured against known outcomes.")
+
+
+def _risk_basis() -> str:
+    """What the risk score is, in the sentence that travels with it. The figures are read
+    from the tracked measurement (artifacts/risk_validation_v1/results.json, `make
+    risk-validation`), so the sentence cannot say more than was measured."""
+    start = "An indicator score from published red-flag rules. Not a probability"
+    path = Path(__file__).resolve().parents[2] / "artifacts" / "risk_validation_v1" / "results.json"
+    try:
+        m = json.loads(path.read_text())
+        arms = m["views"][m["main_view"]]["arms"]
+        p, c = arms["positive"], arms["control"]
+        p_n, c_n = p["wallets"] - p["could_not_be_read"], c["wallets"] - c["could_not_be_read"]
+    except (OSError, ValueError, KeyError):
+        return start + ", and not measured against known outcomes."
+    return (f"{start}. Checked on {p_n} wallets that public sources list as illicit and {c_n} "
+            f"with a documented ordinary purpose, each with its own label hidden: "
+            f"{p['high_or_above']} of {p_n} and {c['high_or_above']} of {c_n} scored High or "
+            "above. The points were not fitted to these wallets, and the wallets are not a "
+            "sample of real complaints.")
+
+
+RISK_BASIS = _risk_basis()
 FundsKind = Literal["vasp", "sanctioned", "mixer", "bridge", "other_label", "hub",
                     "beyond_hop_limit", "not_moved", "not_followed", "returned",
                     "fee",   # Bitcoin only: miner fees paid along the trail (B5)
@@ -1268,6 +1292,50 @@ class BenchmarkInfo(_M):
     model_gates: list[ModelGate] = []
 
 
+class RiskValidationView(_M):
+    view: Literal["as_shown", "own_hidden", "entity_hidden"]
+    words: str
+    positives_scored: int
+    positives_high_or_above: int
+    positives_interval: list[float] | None = Field(None, description="95% Clopper-Pearson")
+    positives_nothing_to_trace: int
+    positives_classes: dict[str, int]
+    controls_scored: int
+    controls_high_or_above: int
+    controls_interval: list[float] | None = None
+    controls_nothing_to_trace: int
+    controls_classes: dict[str, int]
+    p_fisher: float | None = Field(None, description="Fisher's exact test on the two shares")
+    auc_score: float | None = Field(None, description=(
+        "The chance a positive outscores a control, ties counting half"))
+    auc_behaviour_score: float | None = Field(None, description=(
+        "The same for the points of the behaviour indicators alone (no list is read)"))
+
+
+class RiskRuleCheck(_M):
+    code: str
+    positive: int
+    positive_of: int
+    positive_share: float | None = None
+    control: int
+    control_of: int
+    control_share: float | None = None
+    p_fisher: float | None = None
+
+
+class RiskValidation(_M):
+    """The risk score measured on real wallets (`make risk-validation`). Show the notes."""
+    version: str
+    seed: int
+    positives: int = Field(description="Wallets a public source lists as illicit")
+    controls: int = Field(description="Wallets with a documented ordinary purpose")
+    main_view: str = Field(description="The view to quote: the wallet's own label hidden")
+    views: list[RiskValidationView]
+    rules: list[RiskRuleCheck] = Field(description=(
+        "Each pattern rule: the wallets it fired on, in the main view"))
+    notes: list[str]
+
+
 class ModelInfo(_M):
     status: Literal["not_measured", "measured"]
     version: str | None = None
@@ -1288,6 +1356,9 @@ class ModelInfo(_M):
     benchmark: BenchmarkInfo | None = Field(None, description=(
         "The benchmark table for every chain (the same whichever chain was asked for); "
         "null when `make benchmark` has not been run"))
+    risk_validation: RiskValidation | None = Field(None, description=(
+        "What the risk score and the pattern rules did on real listed and ordinary wallets "
+        "(the same for every chain); null when it was not measured"))
 
 
 # ------------------------------------------------------------------ receipt / verify (B9)

@@ -184,7 +184,7 @@ def test_demo_labels_builds_the_database_the_recorded_demo_needs(tmp_path, capsy
     db = tmp_path / "labels.duckdb"
     cli.main(["demo-labels", "--db", str(db)])
     said = capsys.readouterr().out
-    assert "24 labels" in said and "NOT the full label database" in said
+    assert "27 labels" in said and "NOT the full label database" in said
     from vaspfusion.labels.lookup import LabelStore
     with LabelStore(db) as store:       # a real label store: the CoinDCX wallet is in it
         got = store.lookup_many([("TU7BbAsb8t371eMijQeiGXsiLvY1vZbsFs", "tron")])

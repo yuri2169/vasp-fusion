@@ -1,0 +1,182 @@
+CASE FILE
+Nearest-exchange attribution of a crypto wallet
+
+Recorded case of a publicly documented incident. On 18 July 2024 assets worth over USD 230
+million were taken from a multi-signature wallet of the Indian exchange WazirX on Ethereum.
+WazirX named the wallet in its own report; this is the address the assets were moved to, which
+the block explorer tags "WazirX Exploiter". The trace reads 5,792,698.56 USDT arriving straight
+from WazirX's own wallet on 18 July 2024 and moving on to a second wallet the explorer tags as
+the exploiter's, so it names WazirX as the source of the funds. It names no exchange the money
+was cashed out at, and it does not follow the 15,302 ETH this wallet also moved (a trace follows
+one asset). Traced one by one at the same settings, 2 of the 27 tagged wallets reach Tornado
+Cash and none reaches a named exchange within 3 hops. The case reference is not a real
+complaint. Sources: WazirX, "Preliminary Report: Cyber Attack on WazirX Multisig Wallet" (18
+July 2024) (https://wazirx.com/blog/preliminary-report-cyber-attack-on-wazirx-multisig-wallet/);
+CloudSEK, "WazirX Incident Explained" (https://cloudsek.com/blog/wazirx-incident-explained);
+Etherscan public name tags "WazirX Exploiter" to "WazirX Exploiter 27", as collected in the
+eth-labels data set (https://github.com/dawsbot/eth-labels).
+
+  Case reference    DOC/2024/WAZIRX
+  Complaint number  -
+  Wallet traced     0x04b21735e93fa3f8df70e2da89e6922616891a88
+  Chain             Ethereum
+  Asset followed    USDT
+  Traced on         2 Oct 2026, 09:00:00 UTC
+  Case id           wazirx-2024
+  Hop limit         3
+
+RESULT
+------
+INSUFFICIENT EVIDENCE: NO EXCHANGE IS NAMED
+No exchange is named.
+None of the 5,792,698.56 USDT this wallet sent reached a labelled exchange within 3 hops. 100%
+went into a named wallet that is not an exchange (Wazirx Exploit).
+
+
+SUMMARY
+-------
+Wallet 0x04b2…891a88 sent 5,792,698.56 USDT on Ethereum in 2 transfers on 18 Jul 2024. No
+exchange is named. None of the 5,792,698.56 USDT this wallet sent reached a labelled exchange
+within 3 hops. 100% went into a named wallet that is not an exchange (Wazirx Exploit). The
+wallet received 5,792,698.56 USDT; 100% came directly from WazirX (0x27fd…60c9b4). Not followed
+in this run: 544,818.71 USDC in 1 transfer, 15,302.25 ETH in 7 transfers.
+
+In the sentences of this file a long address is written as its first six and last six
+characters. Every wallet of this case is listed in full under 'Flow of funds'. A short address
+that matches none of them is a wallet outside this case; two addresses can share those twelve
+characters, so check the full address before acting on it.
+
+
+WHERE THE FUNDS WENT
+--------------------
+  Share | Amount | Where
+  100% | 5,792,698.56 USDT (Rs 55,48,82,595) | Reached another labelled party: Wazirx Exploit
+  100% | 5,792,698.56 USDT (Rs 55,48,82,595) | Sent by the traced wallet
+
+FLOW OF FUNDS
+-------------
+Followed 3 of 82 transfers seen. 38 wallets not followed: 36 below the dust limit, 2 already
+labelled (the trail ends there).
+
+  3 wallets, 3 transfers. Each box is one wallet (its number is in the table below) with the traced funds that reached it.
+    W2  column Funded the wallet, row 1: WazirX
+    W0  column Traced wallet, row 1: Traced wallet
+    W1  column Hop 1, row 1: Unlabelled wallet
+    arrow 0x04b21735e93fa3f8df70e2da89e6922616891a88 -> 0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd (outbound, 2 transfers, 5,792,698.56 USDT (Rs 55,48,82,595))
+    arrow 0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4 -> 0x04b21735e93fa3f8df70e2da89e6922616891a88 (inbound, 1 transfer, 5,792,698.56 USDT (Rs 55,48,82,595))
+  No. | Address | What it is | Hop | Traced funds
+  W0 | 0x04b21735e93fa3f8df70e2da89e6922616891a88 | Traced wallet: Wazirx Exploit | - | 5,792,698.56 USDT (Rs 55,48,82,595)
+  W1 | 0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd | Unlabelled wallet (not followed): Wazirx Exploit | 1 | 5,792,698.56 USDT (Rs 55,48,82,595)
+  W2 | 0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4 | Exchange wallet: WazirX | funded it | 5,792,698.56 USDT (Rs 55,48,82,595)
+
+EXCHANGES REACHED
+-----------------
+Proximity rank and confidence are two separate numbers. Rank orders the exchanges by hops, then
+share of the funds, then time. Confidence is how far the evidence supports that the address the
+funds reached belongs to that exchange.
+
+  Rank | Exchange | Standing | Confidence | Hops | Share | Amount | Label tier
+  1 | WazirX | funded the wallet | 0.85 (rule confidence) | 1 | 100% | 5,792,698.56 USDT (Rs 55,48,82,595) | curated list
+
+  WazirX (funded the traced wallet)
+  Address reached  0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4
+  Route            W2  ->  W0
+  Time to reach    0 seconds
+    [Label] 0x27fd…60c9b4 is labelled WazirX ("WazirX 2"): curated list, source wazirx.com
+    post-incident report + etherscan + dune-spellbook [weight 0.85]
+    [Route] 100% of the wallet's USDT (5,792,698.56 USDT) came from it in 1 hop [weight 1.00]
+        tx 0x9e6f3d6dd51a47cac9cd2fab79c35c6b599aefa85369e3f5413ad40cd211386b
+
+MAIN PATH OF THE FUNDS
+----------------------
+  Hop | From -> to | Traced funds | Time | After | Transaction
+  1 | W0 -> W1 | 5,783,698.56 USDT (Rs 55,40,20,485) | 18 Jul 2024, 06:39:11 UTC | - | 0x16c1857c6ace4d49cf4a5a6191fd66b12966d5c0666e8cf4dd18a207d31cabbd
+
+RISK INDICATORS
+---------------
+Risk class: Low (score 0 of 100). An indicator score from published red-flag rules. Not a
+probability, and not measured against known outcomes. The indicator list follows Financial
+Action Task Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and
+Terrorist Financing", September 2020; the points are this tool's.
+
+No indicator is present in the traced funds.
+
+Transaction flows: All 3 transfers read are Low. The path shown above is Low.
+
+
+HOW THE CONFIDENCE WAS WORKED OUT
+---------------------------------
+Confidence = share factor x the average, over the traced funds, of (label weight x 0.85 for each
+hop after the first).
+
+Label weight: 0.95 for an address the exchange published itself, 0.85 for a curated list, 0.75
+for an explorer tag. A deposit address derived by VASP-FUSION weighs its own confidence: the
+weight of the exchange wallet it sweeps into x the deposit-address model's probability, where
+the model confirmed it.
+
+Share factor: 1 when 25% or more of the funds reached the exchange, and smaller in proportion
+below that.
+
+An exchange is named only at 0.60 or more. Below that the result is 'insufficient evidence',
+with what would change it.
+
+What is calibrated: only the deposit-address model's probability (the range shown beside a
+confidence is its Venn-Abers range carried through the formula). The label weights, the hop
+decay, the share factor and the bar are set by rule. A confidence marked 'rule confidence' has
+no calibrated part. Confidence is not the probability that the named exchange is right.
+
+The bar has not been measured on this chain.
+
+
+NEXT STEPS
+----------
+  - The wallet was funded from WazirX (100% of what it received): ask WazirX which account
+    withdrew to it
+
+LIMITATIONS
+-----------
+  - This file reads public blockchain records and address labels. It does not identify a person.
+    Only the exchange's own customer records (KYC) can say who holds the account an address
+    belongs to.
+  - A label can be wrong or out of date. Each label's tier is stated. A label 'derived by
+    VASP-FUSION' was inferred from on-chain behaviour; it is not a statement by the exchange.
+  - Only USDT was followed. Anything the wallet moved in other assets is not in this file.
+  - The trace stops at any labelled address, at a wallet with 30 or more counterparties (too
+    busy to follow one person's money through), after 3 hops, at shares under 1%, and after 40
+    wallets. Funds beyond those points are counted under 'Where the funds went' and not
+    followed.
+  - Money that entered a wallet is matched to that wallet's next outgoing transfers in time
+    order. Where a wallet held other money too, that matching is a convention, not a fact
+    recorded on the chain.
+  - Flags and leads describe patterns. They never decide the result.
+  - All times are UTC. Amounts are in the asset followed; no exchange rate is applied.
+  - The result is as of the chain responses listed in the receipt. Transfers made after they
+    were fetched are not in this file.
+
+PROVENANCE RECEIPT
+------------------
+What this case was computed from. The fingerprint covers every figure, address, time and
+transaction hash of the result and none of its wording; the content digest covers the wording
+too. Neither covers the case reference, complaint number or amount reported lost: those are the
+officer's entries. To check it, trace the wallet again from the same responses: python -m
+vaspfusion.cli verify wazirx-2024
+
+  Findings fingerprint    14fe2f9fe6646dde91e8b73081beeff3349ad689d5d106d68889baa43ab6236a
+  Input                   ethereum 0x04b21735e93fa3f8df70e2da89e6922616891a88, hop limit 3
+  Input SHA-256           77747a873184216982f002810723ba6fd94b4d209ae557db0b4829521f9df0e9
+  Chain responses         5 read from api.etherscan.io
+  Responses SHA-256       6e4b5e124648337935de4e11a3085b4615440511fee27645384c3a03599df3f7
+  Label database SHA-256  not recorded
+  Model                   not used in this case
+  Code                    b5-bitcoin-1, commit 0000000000000000000000000000000000000000
+  Seed                    26182
+  Fetched                 2 Oct 2026, 09:00:00 UTC
+  Content SHA-256         8e8f85acf2d543656b84136f0b9ee6258586685d67da4fd5fd85ab650d8c3666
+  Receipt SHA-256         e07c64357680d6d638d77757e587a00f641f66eb43f42e07368ee69cc5df9f1d
+
+  Chain responses read
+    d928dcac16d74e7c25fab60f6d01e96b0a7dc1191bae5313ded2395637602bd9  https://api.etherscan.io/v2/api?action=tokentx&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&contractaddress=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&module=account&offset=100&page=1&sort=asc&startblock=0
+    2f7d892535c2815b874d877126f05a3c03e4161ad979c0ae9efbd6f452bd7de9  https://api.etherscan.io/v2/api?action=tokentx&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&contractaddress=0xdac17f958d2ee523a2206206994597c13d831ec7&module=account&offset=100&page=1&sort=asc&startblock=0
+    bad3b2ca8c64471ef23cdd16e9f78f0407a46afaca7b0e48de08a244347003df  https://api.etherscan.io/v2/api?action=txlist&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&module=account&offset=100&page=1&sort=asc&startblock=0
+    0ef1da9a2303f4adfa1db6301b525703d5f5ca345bb99d208a974da4a53339c9  https://api.etherscan.io/v2/api?action=txlist&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&module=account&offset=100&page=2&sort=asc&startblock=0
+    0d9d7e4ede1c429fa22015c4c6c36fc215ab95f3ca8eda500adc7925e6a5938f  https://api.etherscan.io/v2/api?action=txlist&address=0x04b21735e93fa3f8df70e2da89e6922616891a88&chainid=1&module=account&offset=100&page=3&sort=asc&startblock=0

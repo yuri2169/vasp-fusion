@@ -738,5 +738,37 @@
     }
    ]
   ]
+ },
+ "wazirx-2024": {
+  "outcome": "INSUFFICIENT_EVIDENCE",
+  "top_vasp": null,
+  "confidence": null,
+  "asset": "USDT",
+  "total_sent": 5792698.555,
+  "candidates": [
+   {
+    "vasp": "WazirX",
+    "direction": "inbound",
+    "proximity_rank": 1,
+    "confidence": 0.85,
+    "confidence_interval": null,
+    "hops": 1,
+    "share_of_funds": 1.0,
+    "deposit_address": "0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4",
+    "label_tier": "curated",
+    "counterfactual_holds": null
+   }
+  ],
+  "where_funds_went": [
+   {
+    "kind": "other_label",
+    "name": "Wazirx Exploit",
+    "share": 1.0,
+    "amount": 5792698.555
+   }
+  ],
+  "nodes": 3,
+  "edges": 3,
+  "flags": []
  }
 }

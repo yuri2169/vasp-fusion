@@ -1,5 +1,5 @@
 {
-  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1, 2 and 5 Oct 2026 from senders into labelled exchange, bridge and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint.",
+  "_notice": "Real wallets, real on-chain transfers, real labels. These addresses were picked only because their public transaction history shows a pattern the tool should handle (chosen 1, 2 and 5 Oct 2026 from senders into labelled exchange, bridge and OFAC-listed addresses). Nothing here alleges wrongdoing by whoever controls them, and no case reference below is a real complaint. The one exception is `wazirx-2024`: its address comes from a publicly documented theft, and its `documented` block cites the sources.",
   "cases": [
     {
       "id": "tron-coindcx",
@@ -143,6 +143,37 @@
       "expect": {
         "outcome": "SANCTIONED_OR_MIXER_REACHED",
         "top_vasp": null
+      }
+    },
+    {
+      "id": "wazirx-2024",
+      "title": "The WazirX theft of 18 July 2024: the wallet the stolen assets were moved to",
+      "address": "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+      "chain": "ethereum",
+      "max_hops": 3,
+      "case_ref": "DOC/2024/WAZIRX",
+      "expect": {
+        "outcome": "INSUFFICIENT_EVIDENCE",
+        "top_vasp": null
+      },
+      "documented": {
+        "title": "The WazirX theft, 18 July 2024",
+        "what_happened": "On 18 July 2024 assets worth over USD 230 million were taken from a multi-signature wallet of the Indian exchange WazirX on Ethereum. WazirX named the wallet in its own report; this is the address the assets were moved to, which the block explorer tags \"WazirX Exploiter\".",
+        "statement": "The trace reads 5,792,698.56 USDT arriving straight from WazirX's own wallet on 18 July 2024 and moving on to a second wallet the explorer tags as the exploiter's, so it names WazirX as the source of the funds. It names no exchange the money was cashed out at, and it does not follow the 15,302 ETH this wallet also moved (a trace follows one asset). Traced one by one at the same settings, 2 of the 27 tagged wallets reach Tornado Cash and none reaches a named exchange within 3 hops.",
+        "sources": [
+          {
+            "name": "WazirX, \"Preliminary Report: Cyber Attack on WazirX Multisig Wallet\" (18 July 2024)",
+            "url": "https://wazirx.com/blog/preliminary-report-cyber-attack-on-wazirx-multisig-wallet/"
+          },
+          {
+            "name": "CloudSEK, \"WazirX Incident Explained\"",
+            "url": "https://cloudsek.com/blog/wazirx-incident-explained"
+          },
+          {
+            "name": "Etherscan public name tags \"WazirX Exploiter\" to \"WazirX Exploiter 27\", as collected in the eth-labels data set",
+            "url": "https://github.com/dawsbot/eth-labels"
+          }
+        ]
       }
     }
   ]

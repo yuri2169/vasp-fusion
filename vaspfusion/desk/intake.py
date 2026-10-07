@@ -14,6 +14,8 @@ import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ..api.schemas import RISK_BASIS
+
 ROOT = Path(__file__).resolve().parents[2]
 KEY_HEADER = "X-SAHYOG-Key"
 DEFAULT_KEY_FILE = ROOT / "data" / "sahyog_api_key"
@@ -130,7 +132,6 @@ def result_payload(complaint: dict, wallet: dict, *, code_version: str, now: dat
         "wallet": {k: wallet.get(k) for k in (
             "address", "chain", "case_id", "status", "outcome", "top_vasp", "confidence",
             "exchanges", "risk_class", "risk_score", "report_pdf")},
-        "risk_basis": "An indicator score from published red-flag rules. Not a probability, "
-                      "and not measured against known outcomes.",
+        "risk_basis": RISK_BASIS,
         "generated_by": {"tool": "VASP-FUSION", "code_version": code_version},
     }

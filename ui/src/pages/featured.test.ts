@@ -46,4 +46,13 @@ describe('featuredCases', () => {
     expect(f.named).toEqual([])
     expect(f.notNamed).toEqual([])
   })
+
+  it('keeps a documented case out of the two groups and offers it on its own', () => {
+    const wazirx = { ...c(113, 'ethereum', 'INSUFFICIENT_EVIDENCE'), case_ref: 'DOC/2024/WAZIRX', documented: { title: 't', what_happened: 'w', statement: 's', sources: [] } } as CaseSummary
+    const f = featuredCases([wazirx, ...ELEVEN])
+    expect(f.documented).toEqual([wazirx])
+    expect(f.named).not.toContain(wazirx)
+    expect(f.notNamed).not.toContain(wazirx)
+    expect(featuredCases(ELEVEN).documented).toEqual([])
+  })
 })
