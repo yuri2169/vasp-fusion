@@ -1,0 +1,1259 @@
+{
+ "case": "wazirx_2024",
+ "title": "The WazirX theft of 18 July 2024",
+ "chain": "ethereum",
+ "trace": {
+  "max_hops": 3,
+  "max_wallets": 40,
+  "inbound_hops": 1,
+  "since": null
+ },
+ "addresses": 27,
+ "views": {
+  "as_shown": "every label",
+  "entity_hidden": "the case's own tags hidden"
+ },
+ "summary": {
+  "as_shown": {
+   "insufficient evidence: most funds stopped at a wallet with a non-exchange label": 23,
+   "reached a mixer or a sanctioned address": 2,
+   "insufficient evidence: most funds stopped at an unlabelled high-activity wallet": 1,
+   "nothing to trace": 1
+  },
+  "entity_hidden": {
+   "insufficient evidence: most funds went beyond the hop limit": 18,
+   "reached a mixer or a sanctioned address": 6,
+   "insufficient evidence: most funds stopped at an unlabelled high-activity wallet": 2,
+   "nothing to trace": 1
+  }
+ },
+ "rows": [
+  {
+   "address": "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+   "tag": "WazirX Exploiter",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT",
+    "total_sent": 5792698.555,
+    "wallets": 3,
+    "transfers": 3,
+    "exchanges": [
+     {
+      "vasp": "WazirX",
+      "direction": "inbound",
+      "hops": 1,
+      "confidence": 0.85
+     }
+    ],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT",
+    "total_sent": 5792698.555,
+    "wallets": 4,
+    "transfers": 6,
+    "exchanges": [
+     {
+      "vasp": "WazirX",
+      "direction": "inbound",
+      "hops": 1,
+      "confidence": 0.85
+     }
+    ],
+    "where_funds_went": [
+     {
+      "kind": "hub",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 30,
+    "risk_class": "medium"
+   }
+  },
+  {
+   "address": "0x35febc10112302e0d69f35f42cce85816f8745ca",
+   "tag": "WazirX Exploiter 2",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 29082.658156563906,
+    "wallets": 20,
+    "transfers": 44,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "fan_in",
+     "fan_out"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 29082.658156563906,
+    "wallets": 28,
+    "transfers": 346,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.9998
+     },
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.0001
+     },
+     {
+      "kind": "not_moved",
+      "name": null,
+      "share": 0.0001
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0
+     }
+    ],
+    "flags": [
+     "fan_in",
+     "fan_out",
+     "mixer_contact"
+    ],
+    "risk_score": 99,
+    "risk_class": "severe"
+   }
+  },
+  {
+   "address": "0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd",
+   "tag": "WazirX Exploiter 3",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT",
+    "total_sent": 5792698.555,
+    "wallets": 3,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "hub",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 15,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "USDT",
+    "total_sent": 5792698.555,
+    "wallets": 3,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "hub",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x361384e2761150170d349924a28d965f0dd3f092",
+   "tag": "WazirX Exploiter 4",
+   "as_shown": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 43800.372872486165,
+    "wallets": 15,
+    "transfers": 485,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.9998
+     },
+     {
+      "kind": "not_moved",
+      "name": null,
+      "share": 0.0001
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0001
+     }
+    ],
+    "flags": [
+     "fan_in",
+     "mixer_contact"
+    ],
+    "risk_score": 92,
+    "risk_class": "severe"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 43800.372872486165,
+    "wallets": 15,
+    "transfers": 485,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.9998
+     },
+     {
+      "kind": "not_moved",
+      "name": null,
+      "share": 0.0001
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0001
+     }
+    ],
+    "flags": [
+     "fan_in",
+     "mixer_contact"
+    ],
+    "risk_score": 92,
+    "risk_class": "severe"
+   }
+  },
+  {
+   "address": "0x6eedf92fb92dd68a270c3205e96dccc527728066",
+   "tag": "WazirX Exploiter 5",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null,
+    "total_sent": null,
+    "wallets": 2,
+    "transfers": 1,
+    "exchanges": [],
+    "where_funds_went": [],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": null,
+    "total_sent": null,
+    "wallets": 2,
+    "transfers": 1,
+    "exchanges": [],
+    "where_funds_went": [],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x9652e54fd0fc60f198e2c0310f2edfd508ffa1c8",
+   "tag": "WazirX Exploiter 6",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 309.42596830717815,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 309.42596830717815,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xb822ae96ca67ddc4129b254d46c5cd904bc1c33e",
+   "tag": "WazirX Exploiter 7",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 410.62100748159213,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 410.62100748159213,
+    "wallets": 5,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x231e2547ca75b8f9e22be1b45845db07300cf9b4",
+   "tag": "WazirX Exploiter 8",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2962.8762438442955,
+    "wallets": 4,
+    "transfers": 6,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2962.8762438442955,
+    "wallets": 6,
+    "transfers": 10,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9999
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0001
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xb8343bcc0256aa2d11022f12941c40c9822b6afb",
+   "tag": "WazirX Exploiter 9",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 390.33044385805067,
+    "wallets": 3,
+    "transfers": 3,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 390.33044385805067,
+    "wallets": 5,
+    "transfers": 7,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xcfbd2326234ddb5f0eaea69313b864c3dff00008",
+   "tag": "WazirX Exploiter 10",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1103.843051631351,
+    "wallets": 2,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1103.843051631351,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x62b4daa783bb22cf45b6524c63c0477ee10b215f",
+   "tag": "WazirX Exploiter 11",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2321.8066731448453,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2321.8066731448453,
+    "wallets": 6,
+    "transfers": 7,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9992
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0008
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xc5265fb6ebe88d62626e2212234c7d3b8b7ef912",
+   "tag": "WazirX Exploiter 12",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 86.00288129022337,
+    "wallets": 2,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 86.00288129022337,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x313f7c62b4ac4377ebd69fcebbb484a26faef678",
+   "tag": "WazirX Exploiter 13",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 7486.183558208464,
+    "wallets": 3,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 7486.183558208464,
+    "wallets": 6,
+    "transfers": 8,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x0cffef1c95e280abc2ff1c44693eee19de921093",
+   "tag": "WazirX Exploiter 14",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1643.095027679765,
+    "wallets": 3,
+    "transfers": 3,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1643.095027679765,
+    "wallets": 5,
+    "transfers": 6,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x252bdaaee67e3a94d80c98b22b6e85c2e4a86e56",
+   "tag": "WazirX Exploiter 15",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2455.554267547595,
+    "wallets": 4,
+    "transfers": 3,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2455.554267547595,
+    "wallets": 6,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9977
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0023
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x8f5376c6eddc246d7e57040b1b0647fd3cbaff89",
+   "tag": "WazirX Exploiter 16",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2516.7423595785867,
+    "wallets": 4,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 2516.7423595785867,
+    "wallets": 6,
+    "transfers": 7,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9999
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0001
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x6ad4486edfbceafc170c3dd7762e8be1ddae12c2",
+   "tag": "WazirX Exploiter 17",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 5038.145011404814,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 5038.145011404814,
+    "wallets": 7,
+    "transfers": 8,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9984
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0016
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x57949b506d895d9ededdd9883bc301a820fdd063",
+   "tag": "WazirX Exploiter 18",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 476.82209855435264,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 476.82209855435264,
+    "wallets": 5,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x2d8231e7cb5d21887f0b007878a4bdd8b1a9c0e4",
+   "tag": "WazirX Exploiter 19",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1373.7897748733628,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1373.7897748733628,
+    "wallets": 5,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xfae288c79c337e7f55db70abe85d39b59ed130ea",
+   "tag": "WazirX Exploiter 20",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 95.88299949906344,
+    "wallets": 3,
+    "transfers": 3,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 95.88299949906344,
+    "wallets": 5,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.999
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.001
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xba19fa8e1ebab926a13ebe35ad595d2a4e2c7081",
+   "tag": "WazirX Exploiter 21",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 302.92704819624794,
+    "wallets": 3,
+    "transfers": 3,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 302.92704819624794,
+    "wallets": 5,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x6febb3debfcaea0a58fb8a648d5689e691fcf558",
+   "tag": "WazirX Exploiter 22",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 0.09650229243790827,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 0.09650229243790827,
+    "wallets": 4,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "rapid_forwarding"
+    ],
+    "risk_score": 15,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0x7189c049e5b5e07ea5bb70c90880bffdb65c6d9b",
+   "tag": "WazirX Exploiter 23",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 72.3564269938116,
+    "wallets": 3,
+    "transfers": 2,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 72.3564269938116,
+    "wallets": 5,
+    "transfers": 4,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   }
+  },
+  {
+   "address": "0xc63dd6d4efe063807a521ebcbff6c61cd786b2e9",
+   "tag": "WazirX Exploiter 24",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1.9577026203792505,
+    "wallets": 6,
+    "transfers": 5,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 1.9577026203792505,
+    "wallets": 10,
+    "transfers": 9,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "beyond_hop_limit",
+      "name": null,
+      "share": 0.9567
+     },
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.023
+     },
+     {
+      "kind": "not_moved",
+      "name": null,
+      "share": 0.0111
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0092
+     }
+    ],
+    "flags": [
+     "mixer_contact",
+     "rapid_forwarding"
+    ],
+    "risk_score": 90,
+    "risk_class": "severe"
+   }
+  },
+  {
+   "address": "0x6ea4cd20a0930eaf5b0bc097238ceaf9008703d5",
+   "tag": "WazirX Exploiter 25",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1365.7618356042515,
+    "wallets": 6,
+    "transfers": 10,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 1365.7618356042515,
+    "wallets": 7,
+    "transfers": 25,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.9971
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0029
+     }
+    ],
+    "flags": [
+     "mixer_contact"
+    ],
+    "risk_score": 87,
+    "risk_class": "severe"
+   }
+  },
+  {
+   "address": "0x1957a4c3d2edcb893c9b85833a417ea035d3aed7",
+   "tag": "WazirX Exploiter 26",
+   "as_shown": {
+    "outcome": "INSUFFICIENT_EVIDENCE",
+    "asset": "ETH",
+    "total_sent": 1304.3104774017131,
+    "wallets": 5,
+    "transfers": 8,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "other_label",
+      "name": "Wazirx Exploit",
+      "share": 1.0
+     }
+    ],
+    "flags": [],
+    "risk_score": 0,
+    "risk_class": "low"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 1304.3104774017131,
+    "wallets": 6,
+    "transfers": 22,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 0.9965
+     },
+     {
+      "kind": "not_followed",
+      "name": null,
+      "share": 0.0035
+     }
+    ],
+    "flags": [
+     "mixer_contact"
+    ],
+    "risk_score": 87,
+    "risk_class": "severe"
+   }
+  },
+  {
+   "address": "0x668399a6604c41d46c81430e4dff71443d44efe6",
+   "tag": "WazirX Exploiter 27",
+   "as_shown": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 2661.2220601377703,
+    "wallets": 5,
+    "transfers": 35,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "mixer_contact",
+     "rapid_forwarding"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
+   },
+   "entity_hidden": {
+    "outcome": "SANCTIONED_OR_MIXER_REACHED",
+    "asset": "ETH",
+    "total_sent": 2661.2220601377703,
+    "wallets": 5,
+    "transfers": 35,
+    "exchanges": [],
+    "where_funds_went": [
+     {
+      "kind": "mixer",
+      "name": "Tornado.Cash",
+      "share": 1.0
+     }
+    ],
+    "flags": [
+     "mixer_contact",
+     "rapid_forwarding"
+    ],
+    "risk_score": 100,
+    "risk_class": "severe"
+   }
+  }
+ ]
+}

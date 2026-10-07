@@ -274,6 +274,19 @@ class Screening(_M):
     tag: ThreatTag | None = None
 
 
+class DocumentedSource(_M):
+    name: str
+    url: str
+
+
+class DocumentedCase(_M):
+    """A recorded case whose address comes from a publicly documented incident."""
+    title: str
+    what_happened: str = Field(description="The incident, as the cited sources state it")
+    statement: str = Field(description="What the trace shows, and what it does not")
+    sources: list[DocumentedSource]
+
+
 class CaseSummary(_M):
     id: str
     address: str
@@ -301,6 +314,9 @@ class CaseSummary(_M):
     sahyog_complaint_ref: str | None = Field(None, description=(
         "Set when the case was opened by a complaint filed through the SAHYOG intake API: "
         "show 'Reported through SAHYOG' with this reference"))
+    documented: DocumentedCase | None = Field(None, description=(
+        "Set on a recorded case that is a publicly documented incident (demo/cases.json): "
+        "show the statement and the sources wherever the case is offered"))
 
 
 class CaseList(_M):

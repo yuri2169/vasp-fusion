@@ -43,3 +43,6 @@ data/audit.duckdb.key
 data/demo_cache.duckdb
 # `make reproduce` writes its demo cache and cases here, not to the working stores.
 data/reproduce/
+data/risk_validation_cache.duckdb
+data/risk_validation_cache.rows.jsonl
+data/e2_cache.duckdb

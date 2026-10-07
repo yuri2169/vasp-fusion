@@ -648,6 +648,64 @@ def cmd_benchmark(args) -> None:
     print(f"wrote {root}/")
 
 
+def cmd_risk_validation(args) -> None:
+    """Measure the risk score and the pattern rules on the validation wallets."""
+    import sys
+
+    from . import chains
+    from .eval import risk_validation as V
+    from .labels.lookup import LabelStore
+    from .risk import DEFAULT_PATH, load_config
+
+    out = Path(args.out)
+    corpus = json.loads(Path(args.corpus).read_text())
+    packed = out / "cases.json.gz"
+    if args.trace:
+        part = Path(args.cache).with_suffix(".rows.jsonl")     # traced so far, to resume
+        done = {}
+        if part.exists():
+            done = {r["address"]: r for r in map(json.loads, part.read_text().splitlines())}
+        wanted = {w["address"] for w in corpus["wallets"]}
+        done = {a: r for a, r in done.items() if a in wanted
+                and not any("error" in v for v in r["views"].values())}
+        if chains.cache.offline_mode():
+            fetcher = chains.Fetcher(chains.ChainCache(args.cache, read_only=True),
+                                     chains.UrllibTransport())
+        else:
+            from .chains.ratelimit import RateLimiter
+            fetcher = chains.Fetcher(chains.ChainCache(args.cache, hold=True),
+                                     chains.UrllibTransport(), limiter=RateLimiter())
+        with part.open("a") as log:
+            def told(row: dict) -> None:
+                log.write(json.dumps(row, sort_keys=True) + "\n")
+                log.flush()
+                heads = " / ".join(v.get("outcome") or "could not be read"
+                                   for v in row["views"].values())
+                print(f"  {row['chain']:<9}{row['address'][:44]:<45}{heads}  ({_pages(fetcher)})",
+                      file=sys.stderr, flush=True)
+            rows = V.trace_corpus(corpus["wallets"], fetcher, lambda: LabelStore(args.labels_db),
+                                  done=done, on_done=told)
+        V.write_cases(packed, rows)
+        print(f"{len(rows)} wallets traced under {len(V.VIEWS)} views -> {packed}")
+    m = V.measure(corpus, V.read_cases(packed), load_config(),
+                  config_sha256=V.sha256(DEFAULT_PATH), corpus_sha256=V.sha256(args.corpus))
+    (out / "results.json").write_text(json.dumps(m, indent=1, allow_nan=False) + "\n")
+    print(f"risk score on {m['positives']} positives and {m['controls']} controls (seed "
+          f"{m['seed']}); High or above:")
+    for view in V.VIEWS:
+        v = m["views"][view]
+        p, c = v["arms"]["positive"], v["arms"]["control"]
+        print(f"  {view:<14} positives {p['high_or_above']}/{p['wallets'] - p['could_not_be_read']}"
+              f"   controls {c['high_or_above']}/{c['wallets'] - c['could_not_be_read']}"
+              f"   p={v['separation']['p_fisher']}  AUC {v['separation']['auc_score']}"
+              f"  behaviour-only AUC {v['separation']['auc_behaviour_score']}"
+              + ("   <- the main figure" if view == m["main_view"] else ""))
+    print(f"  pattern rules ({m['main_view']}): " + ", ".join(
+        f"{r['code']} {r['positive']}/{r['positive_of']} vs {r['control']}/{r['control_of']}"
+        for r in m["views"][m["main_view"]]["rules"]))
+    print(f"wrote {out}/results.json")
+
+
 def cmd_trace(args) -> None:
     import sys
     import textwrap
@@ -1252,6 +1310,17 @@ def main(argv: list[str] | None = None) -> None:
                    help="no tracing: measure again from the tracked wallets.csv")
     s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
     s.set_defaults(fn=cmd_benchmark)
+
+    s = sub.add_parser("risk-validation", help="measure the risk score and the pattern rules on "
+                                               "real positives and controls")
+    s.add_argument("--corpus", default=str(ROOT / "data" / "validation" / "corpus.json"))
+    s.add_argument("--out", default=str(ROOT / "artifacts" / "risk_validation_v1"))
+    s.add_argument("--trace", action="store_true",
+                   help="trace the wallets (network, or OFFLINE=1 with the cache) and rewrite "
+                        "cases.json.gz; without it the tracked cases are scored again")
+    s.add_argument("--cache", default=str(ROOT / "data" / "risk_validation_cache.duckdb"))
+    s.add_argument("--labels-db", default=str(ROOT / "data" / "labels.duckdb"))
+    s.set_defaults(fn=cmd_risk_validation)
 
     s = sub.add_parser("demo-labels", help="a label database of only the rows the recorded "
                                            "demo read (no research data needed)")

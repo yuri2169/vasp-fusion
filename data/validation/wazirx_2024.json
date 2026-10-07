@@ -1,0 +1,205 @@
+{
+ "id": "wazirx_2024",
+ "title": "The WazirX theft of 18 July 2024",
+ "chain": "ethereum",
+ "summary": "On 18 July 2024 about USD 230 million of customer assets were taken from a multi-signature wallet of the Indian exchange WazirX on Ethereum. WazirX named the wallet in its own report; the block explorer tags the wallets the assets went to.",
+ "victim_wallet": {
+  "address": "0x27fd43babfbe83a81d14665b1a6fb8030a60c9b4",
+  "what": "The WazirX multi-signature wallet the assets were taken from, as WazirX's own report names it"
+ },
+ "main_address": {
+  "address": "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+  "what": "The wallet the assets were moved to on 18 July 2024: the explorer's 'WazirX Exploiter', and the first theft address in the published investigation"
+ },
+ "sources": [
+  {
+   "name": "WazirX, \"Preliminary Report: Cyber Attack on WazirX Multisig Wallet\" (18 July 2024)",
+   "url": "https://wazirx.com/blog/preliminary-report-cyber-attack-on-wazirx-multisig-wallet/",
+   "supports": "the date, the loss of over USD 230 million, and the affected wallet 0x27fD43BABfbe83a81d14665b1a6fB8030A60C9b4",
+   "accessed": "2026-10-08"
+  },
+  {
+   "name": "CloudSEK, \"WazirX Incident Explained\"",
+   "url": "https://cloudsek.com/blog/wazirx-incident-explained",
+   "supports": "the theft addresses 0x04b21735E93Fa3f8df70e2Da89e6922616891a88, 0x35febC10112302e0d69F35F42cCe85816f8745CA and 0x90ca792206eD7Ee9bc9da0d0dF981FC5619F91Fd, and the later use of Tornado Cash",
+   "accessed": "2026-10-08"
+  },
+  {
+   "name": "Etherscan public name tags \"WazirX Exploiter\" to \"WazirX Exploiter 27\", as collected in the eth-labels data set",
+   "url": "https://github.com/dawsbot/eth-labels",
+   "supports": "the 27 addresses listed below",
+   "accessed": "2026-10-05"
+  },
+  {
+   "name": "Etherscan, token transfers of 0x04b21735e93fa3f8df70e2da89e6922616891a88",
+   "url": "https://etherscan.io/address/0x04b21735e93fa3f8df70e2da89e6922616891a88#tokentxns",
+   "supports": "on-chain check: the trace read 5,792,698.56 USDT arriving from 0x27fd…60c9b4 in 2 transfers on 18 July 2024",
+   "accessed": "2026-10-08"
+  }
+ ],
+ "selection": "Every address in the label store with the entity 'Wazirx Exploit' on Ethereum (the explorer's tags), taken by script; none added or removed by hand.",
+ "addresses": [
+  {
+   "address": "0x04b21735e93fa3f8df70e2da89e6922616891a88",
+   "tag": "WazirX Exploiter",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x35febc10112302e0d69f35f42cce85816f8745ca",
+   "tag": "WazirX Exploiter 2",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x90ca792206ed7ee9bc9da0d0df981fc5619f91fd",
+   "tag": "WazirX Exploiter 3",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x361384e2761150170d349924a28d965f0dd3f092",
+   "tag": "WazirX Exploiter 4",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x6eedf92fb92dd68a270c3205e96dccc527728066",
+   "tag": "WazirX Exploiter 5",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x9652e54fd0fc60f198e2c0310f2edfd508ffa1c8",
+   "tag": "WazirX Exploiter 6",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xb822ae96ca67ddc4129b254d46c5cd904bc1c33e",
+   "tag": "WazirX Exploiter 7",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x231e2547ca75b8f9e22be1b45845db07300cf9b4",
+   "tag": "WazirX Exploiter 8",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xb8343bcc0256aa2d11022f12941c40c9822b6afb",
+   "tag": "WazirX Exploiter 9",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xcfbd2326234ddb5f0eaea69313b864c3dff00008",
+   "tag": "WazirX Exploiter 10",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x62b4daa783bb22cf45b6524c63c0477ee10b215f",
+   "tag": "WazirX Exploiter 11",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xc5265fb6ebe88d62626e2212234c7d3b8b7ef912",
+   "tag": "WazirX Exploiter 12",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x313f7c62b4ac4377ebd69fcebbb484a26faef678",
+   "tag": "WazirX Exploiter 13",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x0cffef1c95e280abc2ff1c44693eee19de921093",
+   "tag": "WazirX Exploiter 14",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x252bdaaee67e3a94d80c98b22b6e85c2e4a86e56",
+   "tag": "WazirX Exploiter 15",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x8f5376c6eddc246d7e57040b1b0647fd3cbaff89",
+   "tag": "WazirX Exploiter 16",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x6ad4486edfbceafc170c3dd7762e8be1ddae12c2",
+   "tag": "WazirX Exploiter 17",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x57949b506d895d9ededdd9883bc301a820fdd063",
+   "tag": "WazirX Exploiter 18",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x2d8231e7cb5d21887f0b007878a4bdd8b1a9c0e4",
+   "tag": "WazirX Exploiter 19",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xfae288c79c337e7f55db70abe85d39b59ed130ea",
+   "tag": "WazirX Exploiter 20",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xba19fa8e1ebab926a13ebe35ad595d2a4e2c7081",
+   "tag": "WazirX Exploiter 21",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x6febb3debfcaea0a58fb8a648d5689e691fcf558",
+   "tag": "WazirX Exploiter 22",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x7189c049e5b5e07ea5bb70c90880bffdb65c6d9b",
+   "tag": "WazirX Exploiter 23",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0xc63dd6d4efe063807a521ebcbff6c61cd786b2e9",
+   "tag": "WazirX Exploiter 24",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x6ea4cd20a0930eaf5b0bc097238ceaf9008703d5",
+   "tag": "WazirX Exploiter 25",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x1957a4c3d2edcb893c9b85833a417ea035d3aed7",
+   "tag": "WazirX Exploiter 26",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  },
+  {
+   "address": "0x668399a6604c41d46c81430e4dff71443d44efe6",
+   "tag": "WazirX Exploiter 27",
+   "source": "eth-labels",
+   "source_url": "https://github.com/dawsbot/eth-labels"
+  }
+ ]
+}

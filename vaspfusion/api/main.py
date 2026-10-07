@@ -36,6 +36,7 @@ from pydantic import BaseModel
 from .. import chains
 from ..auth import tokens
 from ..auth.officers import USERNAME, Locked, Officers
+from ..documented import documented_for
 from ..cases import case_id_for, file_sha256, run_case, skeleton, trace_provider
 from ..explain.progress import progress_sentence
 from ..labels.lookup import DEFAULT_DB, LabelStore
@@ -826,7 +827,8 @@ def list_cases(response: Response, outcome: S.Outcome | None = None,
         others: it is listed as unreadable under its id."""
         try:
             out = {**c, **(R.summary(store.get(c["id"])) if c["status"] == "done" else {}),
-                   "sahyog_complaint_ref": refs.get(c["id"])}
+                   "sahyog_complaint_ref": refs.get(c["id"]),
+                   "documented": documented_for(c["id"])}
             S.CaseSummary.model_validate(out)
             return out
         except Exception:
@@ -1616,6 +1618,7 @@ def _enrich(case: dict) -> dict:
     case["risk_class"] = risk["risk_class"] if risk else None
     case["risk_score"] = risk["score"] if risk else None
     case["sahyog_complaint_ref"] = _complaints().refs_by_case().get(case["id"])
+    case["documented"] = documented_for(case["id"])
     return case
 
 
