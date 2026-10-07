@@ -93,7 +93,19 @@ def bar_check_for(chain: str, directory: Path | str = ABSTAIN_DIR) -> dict | Non
     """How the naming bar was measured on this chain (`make abstain-eval`), or None."""
     from ..eval.abstain import abstain_info, read_validation
     validation = read_validation(directory, chain)
-    return abstain_info(validation) if validation else None
+    if validation:
+        return abstain_info(validation)
+    return benchmark_row_for(chain)
+
+
+def benchmark_row_for(chain: str, directory: Path | str | None = None) -> dict | None:
+    """The chain's row of the benchmark (`make benchmark`) when it traced any wallet
+    there, as {"benchmark": row}; else None."""
+    from ..eval.benchmark import read_summary
+    summary = read_summary(directory or ABSTAIN_DIR.parent / "benchmark_v1")
+    row = next((r for r in (summary or {}).get("chains", [])
+                if r["chain"] == chain and r.get("measured") and r.get("wallets")), None)
+    return {"benchmark": row, "bar": summary["bar"]} if row else None
 
 
 def _confidence_words(c: dict) -> str:
@@ -339,7 +351,22 @@ def _confidence(case: dict, rules: RuleConfig, bar_check: dict | None) -> list[d
             "inputs of one transaction are signed by one owner). Its weight is the weight of "
             f"that labelled address x {CO_SPEND:.2f} for having been spent together; the "
             f"{CO_SPEND:.2f} is set by rule, not measured."))
-    if bar_check:
+    if bar_check and bar_check.get("benchmark"):
+        row = bar_check["benchmark"]
+        chain = CHAIN_NAMES.get(row["chain"], row["chain"])
+        said = (f"The {bar_check['bar']:.2f} bar was checked on {row['wallets']} real {chain} "
+                "wallets that paid a labelled exchange address, traced with the labels one hop "
+                "away hidden: ")
+        if row["named"]:
+            said += (f"an exchange was named for {row['named']} wallets and the name was "
+                     f"wrong for {row['wrong']} ({row['error'] * 100:.1f}%; upper bound "
+                     f"{row['error_upper_95'] * 100:.1f}%); {row['not_named']} got "
+                     "\"insufficient evidence\".")
+        else:
+            said += (f"no exchange was named for any of them, so no error rate could be "
+                     "measured on this chain.")
+        paras.append(said + " That is a check on a label hold-out, not a calibration.")
+    elif bar_check:
         used = next((b for b in bar_check["bars"]
                      if abs(b["threshold"] - bar_check["current_threshold"]) < 1e-9), None)
         if used:

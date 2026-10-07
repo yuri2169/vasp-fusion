@@ -85,10 +85,38 @@ def test_an_attributed_case_says_what_its_confidence_is_made_of(cases):
 
 
 def test_a_rule_confidence_is_called_one(cases):
-    text = " ".join(CF.case_file_text(cases["eth-bitget"]).split())
+    text = " ".join(CF.case_file_text(cases["eth-bitget"], bar_check=None).split())
     assert "Nearest exchange: Bitget. Confidence 0.75 (rule confidence)." in text
     assert "The bar has not been measured on this chain." in text
     assert "not used in this case" in text           # no model on Ethereum
+
+
+def test_the_bar_is_quoted_with_the_figures_of_the_cases_own_chain(cases):
+    row = {"chain": "ethereum", "measured": True, "wallets": 200, "named": 50, "wrong": 4,
+           "error": 0.08, "error_upper_95": 0.1741, "not_named": 150}
+    text = " ".join(CF.case_file_text(cases["eth-bitget"],
+                                      bar_check={"benchmark": row, "bar": 0.6}).split())
+    assert ("The 0.60 bar was checked on 200 real Ethereum wallets that paid a labelled "
+            "exchange address, traced with the labels one hop away hidden: an exchange was "
+            "named for 50 wallets and the name was wrong for 4 (8.0%; upper bound 17.4%); "
+            "150 got \"insufficient evidence\".") in text
+    assert "has not been measured" not in text and "280" not in text
+    none = {**row, "named": 0, "wrong": 0, "error": None, "error_upper_95": None,
+            "not_named": 200}
+    text = " ".join(CF.case_file_text(cases["eth-bitget"],
+                                      bar_check={"benchmark": none, "bar": 0.6}).split())
+    assert "no exchange was named for any of them, so no error rate could be measured" in text
+
+
+def test_a_chain_the_benchmark_did_not_trace_has_no_row(tmp_path):
+    import json
+    (tmp_path / "summary.json").write_text(json.dumps({"bar": 0.6, "chains": [
+        {"chain": "solana", "measured": False},
+        {"chain": "polygon", "measured": True, "wallets": 74, "named": 11}]}))
+    assert CF.benchmark_row_for("solana", tmp_path) is None
+    assert CF.benchmark_row_for("arbitrum", tmp_path) is None
+    assert CF.benchmark_row_for("polygon", tmp_path)["benchmark"]["wallets"] == 74
+    assert CF.benchmark_row_for("polygon", tmp_path / "nowhere") is None
 
 
 def test_an_abstain_names_no_exchange_and_says_why(cases):
