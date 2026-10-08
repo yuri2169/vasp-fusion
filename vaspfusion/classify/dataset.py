@@ -97,8 +97,11 @@ class DatasetConfig:
 @dataclass(frozen=True)
 class TaggedConfig:
     chain: str = "ethereum"
-    # "Bilaxy" is the upstream slug of 5,000 addresses Etherscan tags "Binance Dep"
-    entities: tuple[str, ...] = ("Bitget", "Bilaxy")
+    # Binance's tagged deposit addresses are the "Binance Dep" tags upstream files under
+    # `bilaxy`, named Binance once checked on chain (labels/tagcheck.py). The tracked
+    # dataset.csv was drawn before that, when they were held as "Bilaxy": its group column
+    # still says so, and a rebuild draws a new Binance sample.
+    entities: tuple[str, ...] = ("Bitget", "Binance")
     n_positive: int = 300            # tagged deposit addresses per exchange
     n_negative: int = 300            # tagged non-deposit addresses (B4's hold-out sample)
     per_exchange: int = 300          # customers sampled per exchange

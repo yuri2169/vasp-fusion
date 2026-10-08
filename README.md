@@ -210,11 +210,35 @@ One row per `(address, chain)`: `entity, category, kind, tier, source, source_ur
 - EVM addresses are lowercased; Tron and BTC keep their case.
 - Dune "EVM" rows are stored as chain `evm` and match any EVM chain on lookup.
 - Sources: the wallet-attribution set and the Dune spellbook extract (115,242 labels), the derived deposit addresses, and the exchange packs of the **GraphSense TagPacks** (MIT, pinned to one commit): 336,531 exchange tags on Bitcoin, Ethereum and Tron, of which 336,208 are BitMEX's own published address list and 120 are WalletExplorer's named exchange wallets. `make tagpacks` flattens the packs in `research/data/graphsense-tagpacks/` into the CSV `make labels` reads.
+- **Explorer deposit tags checked on chain (8 Oct 2026).** The explorer-tag set files 5,000 Ethereum addresses that Etherscan tags "Binance Dep: 0x..." under another exchange's label page (`bilaxy`), so they used to be held without an owner. `python -m vaspfusion.cli check-tags` read each address's own transfers (`data/tag_checks/binance_dep_ethereum.csv`, one row per address): **3,268 pay most often into a wallet already labelled Binance, 1,711 were used but pay into no labelled wallet in the 50 transfers read, 21 had never been used, 0 pay mostly into another exchange's wallet, 0 could not be read.** The 4,979 used ones are now Binance deposit addresses (tier `explorer_tag`, source `eth-labels-checked-deposit-tags`); the rest stay as filed. Binance's exchange labels on Ethereum went from 56 to 5,035. The store's total is unchanged (the rows were already held). The eth-labels repository is MIT-licensed (its licence file, read 8 Oct 2026); the tags themselves are Etherscan's public name tags. Twelve more "Binance Dep" tags exist upstream on addresses a stablecoin issuer has blocked; the pinned extract of 17 Jul 2026 does not carry the tag for them (two are OFAC-listed and stay sanctioned), so they are not loaded.
 
 ```python
 from vaspfusion.labels.lookup import lookup, LabelStore
 lookup("TAa8e7U7seCy7NcZ52xYVQXXybFfwvsUxz", "tron")   # Label(entity='Bitget', tier='published_por', ...)
 ```
+
+## Indian exchanges the tool can name
+A trace names an exchange only when it reaches a wallet the label store holds for that exchange. So the honest question for an Indian investigator is: of the providers registered in India, which can this tool name at all?
+
+The list is the newest official one found: **Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: 47 virtual-digital-asset service providers registered with FIU-IND** (`data/indian_exchanges.yaml`, copied as published; read 8 Oct 2026). FIU-IND publishes no register on its own website, so a registration is a claim about that date. The list does not say which providers are exchanges.
+
+**6 of the 47 can be named today; 1 is named by a recorded case.** The providers the store holds any address for (`python -m vaspfusion.cli indian-coverage`; the Labels page shows the same table):
+
+| # | Registered entity | Trade name | Exchange labels held | Chains | Best tier | Recorded case | Can the tool name it? |
+|---|---|---|---|---|---|---|---|
+| 1 | Neblio Technologies Private Limited | Coin DCX | 762 | tron 571, evm 53, avalanche 52, worldchain 52, bitcoin 26, xrp 5, bsc 3 | published_por | `bnb-coindcx`, `tron-coindcx`, `tron-htx-coindcx` | yes |
+| 6 | Bitbns Internet Private Limited | Bitbns | 0 | none | none | none | **no** |
+| 8 | Zanmai Labs Pvt Ltd | WazirX | 32 | avalanche 10, evm 10, worldchain 10, tron 2 | curated | none | yes |
+| 9 | Bitcipher Labs LLP | Coinswitch | 4 | evm 2, avalanche 1, worldchain 1 | curated | none | yes |
+| 13 | WOLLFISH Labs Pvt Ltd | Coindhan | 2 | avalanche 1, worldchain 1 | explorer_tag | none | **no** |
+| 23 | Transak Technology India Pvt Ltd | Transak | 4 | avalanche 2, worldchain 2 | explorer_tag | none | **no** |
+| 29 | Excellium Technologies Pvt Ltd | Delta Exchange | 7 | avalanche 3, worldchain 3, ethereum 1 | explorer_tag | none | yes |
+| 41 | Peken Global Ltd | KuCoin | 1,306 | tron 982, avalanche 80, worldchain 79, ethereum 68, arbitrum 16, solana 15, bsc 13, base 10, xrp 8, cardano 7, algorand 6, kcc 5, bitcoin 4, optimism 4, kava 3, dogecoin 2, near 2, polkadot 1, polygon 1 | published_por | none | yes |
+| 47 | Binance International Limited | Binance | 5,399 | ethereum 5,035, avalanche 145, worldchain 145, bitcoin 44, bsc 19, tron 8, arbitrum 1, optimism 1, solana 1 | published_por | none | yes |
+
+**No labelled address is held for the other 38**, so a trace can pass through their wallets and not know it: ANQ Finance, Unocoin, Onramp, Giottus, Zebpay, CoinswitchX, Mudrex, Buyucoin, Rario, Suncrypto, Carret, Ante Multimedia Pvt Ltd, Onmeta, Cryptosmartlife, Pyor, Rario, Vair, Getbit, Bytex, ARDOUR labs Pvt Ltd, Inocyx, Fanztar, Rovi91 Innovations Pvt Ltd, Bitbse.com, Flitpay, Stable Pay, ArthBit, Density Exchange, pi42, KoinBX, Mindless Pandora Tech Solutions Pvt Ltd, FanzCraze Technologies Inc, BIT24HR, Alpyne, Square, Liminal, Eclipton, Blockoville.
+
+What this means in practice: CoinDCX is covered well (its published reserves, its Dune-listed wallets, and 558 Tron deposit addresses derived here); WazirX and CoinSwitch only on EVM chains and two Tron wallets; ZebPay, Unocoin, Giottus, Mudrex and the rest not at all. No public, citable address list was found for them in the sets this project holds (eth-labels, the DefiLlama reserve adapters, the Dune spellbook, GraphSense TagPacks, cex-list); nothing was added from an uncited source. The avalanche and worldchain counts are rows the explorer-tag set files under those chains; the tool does not trace either chain, so they do not make a provider nameable.
 
 ## Where each exchange is registered, and the map
 `data/vasp_directory.yaml` holds, for 22 exchanges, only what a source states; each fact names its source and the day it was read. A cited jurisdiction is on file for 13 of them, including every exchange the recorded cases reach:
