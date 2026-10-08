@@ -140,13 +140,18 @@ def test_real_db_exchange_count_matches_the_source():
         stats = s.stats()
         from_sources = s.con.execute(
             "SELECT count(*) FROM labels WHERE category = 'exchange' AND tier <> 'derived' "
-            "AND source NOT LIKE 'graphsense-tagpack:%'").fetchone()[0]
+            "AND source NOT LIKE 'graphsense-tagpack:%' "
+            "AND source <> 'eth-labels-checked-deposit-tags'").fetchone()[0]
+        checked = s.con.execute("SELECT entity, chain, kind, count(*) FROM labels WHERE source "
+                                "= 'eth-labels-checked-deposit-tags' GROUP BY ALL").fetchall()
         tagpacks = s.con.execute("SELECT chain, count(*) FROM labels WHERE source LIKE "
                                  "'graphsense-tagpack:%' GROUP BY 1").fetchall()
     # 27.7k exchange rows upstream + Dune, plus the Etherscan Exchange-tag rows. Deposit
     # addresses derived by `make discover` come on top and grow with every run; so do the
     # GraphSense TagPacks (B5), which are counted on their own.
     assert 36_000 <= from_sources <= 38_000
+    # the "Binance Dep" tags named after the on-chain check (data/tag_checks/): 4,979 of 5,000
+    assert checked == [("Binance", "ethereum", "deposit", 4979)]
     if tagpacks:   # the optional CSV was there when the DB was built
         assert dict(tagpacks)["bitcoin"] > 336_000      # BitMEX's own list is 336,208 of them
     assert stats["by_category"]["swap_service"] > 0
