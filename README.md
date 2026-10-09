@@ -1,6 +1,6 @@
 # VASP-FUSION
 
-Given an unknown crypto wallet, find the nearest VASP (exchange, custodial wallet or swap service) that took deposits from it, with a calibrated confidence, an investigation report and a SAHYOG request. SIH 2026 · PS 26182 (MHA / I4C) · Team 112bits: Yury Trochin, with Harshit Kumar Sengar ([@Harsh7t](https://github.com/Harsh7t)) as collaborator.
+Given an unknown crypto wallet, find the nearest VASP (exchange, custodial wallet or swap service) that took deposits from it, with a calibrated confidence, an investigation report and a SAHYOG request. SIH 2026 · PS 26182 (MHA / I4C) · Team 112bits.
 
 Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, FastAPI, Polars, igraph, LightGBM, SHAP and DuckDB; React, Vite, Tailwind and Cytoscape on the front end side.
 
@@ -10,7 +10,7 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **The problem.** A stolen-funds complaint gives an investigator one thing: a wallet address. To freeze the money or identify who holds it, the investigator has to know which exchange (VASP) took the deposits, and has to be able to show why.
 
-**What this does.** Paste the wallet. VASP-FUSION follows its money on chain (Tron, Ethereum, Bitcoin), names the nearest exchange that took it, shows the evidence transfer by transfer, gives a confidence that has been measured, and drafts the request to that exchange for the SAHYOG channel. **When the evidence does not hold, it says "insufficient evidence" and says what would change that, instead of guessing.**
+**What this does.** Given a wallet address, VASP-FUSION traces its outgoing transfers on chain (Tron, Ethereum, Bitcoin) to the nearest exchange-controlled deposit address, lists the supporting transfers hop by hop, and attaches a calibrated confidence (the deposit-address model's calibration error is measured on held-out data, see the results table). It then drafts a consolidated request to that exchange for the SAHYOG channel. **Below the abstention bar it returns "insufficient evidence" together with the evidence that would change the outcome, rather than a low-confidence guess.**
 
 **Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 9 partly built, 0 only planned** (5 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **the SAHYOG screen is a simulator** (the portal's interface is not public; `docs/sahyog_contract.md` is our side of a contract, both directions), and **the risk score is an indicator score from published red-flag rules, not a probability**; measured on real listed and ordinary wallets it separates them only through links to other listed addresses, and none of its five pattern rules does, so those rules are capped below Medium (`make risk-validation`, the table below).
 
