@@ -15,6 +15,7 @@ export function FrozenListPanel({ frozen }: { frozen: FrozenCoverage }) {
   return (
     <Panel
       title="Frozen by the issuer of USDT"
+      className="lg:col-span-12"
       note={
         <>
           {count(frozen.total)} addresses on USDT’s blacklist{frozen.cutoff ? ` as it stood on ${formatDateTime(frozen.cutoff)}` : ''}, read from the token contracts themselves (
@@ -46,11 +47,11 @@ export function FrozenListPanel({ frozen }: { frozen: FrozenCoverage }) {
         {found.data && <span className="pb-1.5 text-sm text-ink-soft">{count(found.data.total)} match{found.data.total === 1 ? '' : 'es'}</span>}
       </form>
       {found.data && found.data.items.length > 0 && (
-        <ul className="flex flex-col divide-y divide-rule-soft">
+        <ul className="grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
           {found.data.items.map((r) => (
-            <li key={`${r.chain}:${r.address}`} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-1.5 text-sm">
+            <li key={`${r.chain}:${r.address}`} className="flex items-center justify-between gap-3 border-b border-rule-soft py-1.5 text-sm">
               <AddressChip address={r.address} chain={r.chain as never} actions="copy" to={`/wallets/${r.chain}/${r.address}`} />
-              <span className="text-ink">Frozen {formatDate(r.frozen_at)}</span>
+              <span className="whitespace-nowrap text-ink-soft">{chainName(r.chain)} · frozen {formatDate(r.frozen_at)}</span>
             </li>
           ))}
         </ul>

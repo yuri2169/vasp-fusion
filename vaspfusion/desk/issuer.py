@@ -110,10 +110,13 @@ def issuer_request(case: dict, freeze_list: FreezeList | None = None) -> dict:
                            "already frozen by the issuer." if found else
                            "The traced USDT did not stop at, or pass through, an address "
                            "outside an exchange: the exchange request covers it.")}
+    one = len(open_) == 1
+    held = any(a["role"] == "held" for a in open_)
+    verb = ("holds" if one else "hold") if held else "passed on"
     return {"offered": True, "reason": (
-        f"{len(open_)} address{'es' if len(open_) != 1 else ''} outside any exchange "
-        f"{'hold' if any(a['role'] == 'held' for a in open_) else 'passed on'} traced USDT. "
-        "No exchange can be asked to act on them; the issuer can freeze USDT at an address."),
+        f"{len(open_)} address{'' if one else 'es'} outside any exchange {verb} traced USDT. "
+        f"No exchange can be asked to act on {'it' if one else 'them'}; the issuer of USDT can "
+        "freeze it at an address."),
         "draft": _draft(case, open_, [a for a in found if a["frozen"]])}
 
 

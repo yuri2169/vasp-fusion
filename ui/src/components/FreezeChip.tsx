@@ -60,7 +60,7 @@ export function FreezeNote({ marks }: { marks: readonly FreezeMark[] | undefined
       <ul className="flex flex-col gap-1">
         {marks.map((m) => (
           <li key={`${m.chain}:${m.address}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base text-ink">
-            <span className="colhead w-[19ch] shrink-0">{WHERE[m.where]}</span>
+            <span className="colhead w-[26ch] shrink-0">{WHERE[m.where]}</span>
             {m.where !== 'origin' && <AddressChip address={m.id} chain={m.chain as never} />}
             <FreezeChip mark={m} size="sm" />
             {m.where !== 'origin' && m.amount > 0 && m.asset && (

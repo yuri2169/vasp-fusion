@@ -86,10 +86,14 @@ def _unmeasured(measured: Path) -> str:
         then = yaml.safe_load(measured.read_text())
     except OSError:
         return ""
-    added = [v["name"] for k, v in now["indicators"].items() if k not in then["indicators"]]
+    added = [k for k in now["indicators"] if k not in then["indicators"]]
     if not added:
         return ""
-    return (f" Added after this check and not measured: {'; '.join(added)}.")
+    if all(k.startswith("frozen_") for k in added):
+        return (" The indicators for an address the issuer of USDT froze were added after "
+                "this check and are not measured.")
+    return (" Added after this check and not measured: "
+            f"{'; '.join(now['indicators'][k]['name'] for k in added)}.")
 
 
 RISK_BASIS = _risk_basis()

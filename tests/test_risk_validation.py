@@ -190,9 +190,8 @@ def test_the_sentence_that_travels_with_the_score_quotes_the_fresh_set():
         in RISK_BASIS
     assert "none of them used to set the points" in RISK_BASIS
     # the issuer-freeze indicators came after the measurement, and the sentence says so
-    assert RISK_BASIS.endswith("Added after this check and not measured: The issuer of USDT "
-                               "froze the address; Funds reached an address the issuer of USDT "
-                               "froze; Funded by an address the issuer of USDT froze.")
+    assert RISK_BASIS.endswith("The indicators for an address the issuer of USDT froze were "
+                               "added after this check and are not measured.")
     shown = RiskValidation.model_validate(V.summary(m))
     assert shown.main_view == "own_hidden" and len(shown.views) == 3 and len(shown.rules) == 5
     # scored with the copy kept beside it, which today's points differ from only by the

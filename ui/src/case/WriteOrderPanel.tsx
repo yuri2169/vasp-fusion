@@ -5,7 +5,7 @@ import { StatusTag } from '../desk/StatusTag'
 import { letterOfRequestLink } from '../desk/status'
 import { formatPercent } from '../lib/format'
 
-const ROUTE_WORDS: Record<WriteOrderRow['route'], string> = {
+export const ROUTE_WORDS: Record<WriteOrderRow['route'], string> = {
   domestic_notice: 'Notice under Indian law',
   direct_channel: "The exchange's own channel",
   letter_of_request: 'Letter of request',

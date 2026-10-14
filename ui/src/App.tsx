@@ -24,6 +24,7 @@ const CoveragePage = lazy(() => import('./pages/CoveragePage').then((m) => ({ de
 const BatchPage = lazy(() => import('./pages/BatchPage').then((m) => ({ default: m.BatchPage })))
 const BatchUploadPage = lazy(() => import('./pages/BatchPage').then((m) => ({ default: m.BatchUploadPage })))
 const SahyogSimPage = lazy(() => import('./pages/SahyogSimPage').then((m) => ({ default: m.SahyogSimPage })))
+const PresentPage = lazy(() => import('./present/PresentPage').then((m) => ({ default: m.PresentPage })))
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage').then((m) => ({ default: m.WatchlistPage })))
 
 // The component kit shows every component on the demo fixtures, so it exists only where the
@@ -63,6 +64,8 @@ export function AppRoutes() {
   if (servedByPortal()) return <PortalRoutes />
   return (
     <Routes>
+      {/* present mode fills the screen: no header, no status bar */}
+      <Route path="cases/:id/present" element={later(<PresentPage />)} />
       <Route element={<AppShell />}>
         <Route index element={<StartPage />} />
         <Route path="cases" element={<CasesPage />} />

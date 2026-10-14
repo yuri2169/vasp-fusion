@@ -98,6 +98,17 @@ try {
     ['case-risk', '/cases/tron-ofac?tab=risk', GRAPH],
     ['case-transfers-risk', '/cases/tron-ofac?tab=transfers', GRAPH],
     ['wallet-risk', '/wallets/tron/TU1D9STZpxQjk3p4PXMjDVm1T6pYWpmwLV'],
+    // the issuer's freeze list (E7): marks on a case, the request to the issuer, the list itself
+    ['case-frozen', '/cases/tron-terror-link', GRAPH],
+    ['case-issuer-request', '/cases/wazirx-2024', `document.querySelector('[data-issuer-request]') !== null`],
+    ['labels-frozen', '/labels', `document.querySelector('[aria-label="Frozen by the issuer of USDT"]') !== null`],
+    // present mode (E7): one case in four screens, one viewport each
+    ['present-finding', '/cases/tron-coindcx/present', `document.querySelector('[data-present] h1') !== null`, false],
+    ['present-route', '/cases/tron-coindcx/present?screen=2', GRAPH, false],
+    ['present-left-out', '/cases/tron-coindcx/present?screen=3', `document.querySelector('[data-present] h1') !== null`, false],
+    ['present-handoff', '/cases/tron-coindcx/present?screen=4', `document.querySelector('[data-present] h1') !== null`, false],
+    ['present-insufficient', '/cases/tron-abstain/present', `document.querySelector('[data-present] h1') !== null`, false],
+    ['present-handoff-issuer', '/cases/tron-terror-link/present?screen=4', `document.querySelector('[data-present] h1') !== null`, false],
     ['coverage', '/coverage'],
     ['sahyog-sim', '/sahyog-sim'],
   ]

@@ -4,7 +4,7 @@ import { CHAINS } from '../lib/chains'
 import { TxChains } from '../lib/txChains'
 import { threatOf } from '../components/ThreatChip'
 import type { FreezeMark, ThreatTag } from '../api/models'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { API_MODE, api } from '../api/api'
 import { ApiError } from '../api/client'
 import type { CaseDetail, Tier } from '../api/models'
@@ -212,6 +212,9 @@ export function CasePage() {
                 Case file
               </a>
             )}
+            <Link to={`/cases/${encodeURIComponent(c.id)}/present`} className={buttonClass('secondary')} title="Four screens for a projector; arrow keys move, Esc leaves">
+              Present
+            </Link>
             <Button onClick={() => setAsking(true)}>Trace again</Button>
           </>
         )
