@@ -108,3 +108,11 @@ def test_the_wallet_page_counts_its_own_freeze():
     assert risk["risk_class"] == "high"
     assert "was frozen by Tether on 4 Nov 2025 (USDT)" in risk["reasons"][0]
     assert R.wallet_risk(S, None, [])["risk_class"] is None
+
+
+def test_the_interface_says_what_a_freeze_means_in_the_same_words():
+    from pathlib import Path
+
+    from vaspfusion.labels.frozen import MEANING
+    ts = (Path(__file__).resolve().parents[1] / "ui" / "src" / "components" / "FreezeChip.tsx").read_text()
+    assert MEANING.replace("'", "’") in ts

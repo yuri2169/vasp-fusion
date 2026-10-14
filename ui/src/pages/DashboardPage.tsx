@@ -17,7 +17,9 @@ import { CHAINS } from '../lib/chains'
 import { cx } from '../lib/cx'
 import { useRupees } from '../components/Rupees'
 import { formatDate, formatDuration, formatUsd } from '../lib/format'
+import { API_MODE } from '../api/api'
 import { JurisdictionPanel } from '../overview/JurisdictionPanel'
+import { LinkedComplaintsPanel } from '../overview/LinkedComplaintsPanel'
 import { Ledger, Panel, type LedgerEntry } from '../overview/parts'
 import { chainName, count, plural } from '../overview/words'
 import type { Tier } from '../api/models'
@@ -333,6 +335,7 @@ export function DashboardPage() {
             </div>
           </div>
           {d.destinations_by_jurisdiction && <JurisdictionPanel data={d.destinations_by_jurisdiction} scope="all" />}
+          {API_MODE === 'live' && <LinkedComplaintsPanel />}
         </div>
       )}
     </>

@@ -104,3 +104,8 @@ def test_the_recorded_tron_cases_share_one_busy_wallet_and_no_exchange(recorded)
     assert all(r["amount"] > 0 and r["hop"] >= 2 for r in hub["cases"])
     # CoinDCX's wallets are reached by two cases and are left out: they are an exchange's
     assert not any(k["label"] == "CoinDCX" for k in links)
+
+
+def test_the_interface_says_the_limit_in_the_same_words():
+    ts = (Path(__file__).resolve().parents[1] / "ui" / "src" / "overview" / "LinkedComplaints.tsx").read_text()
+    assert f"'{LIMIT}'" in ts

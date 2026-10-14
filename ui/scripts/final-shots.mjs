@@ -102,6 +102,9 @@ try {
     ['case-frozen', '/cases/tron-terror-link', GRAPH],
     ['case-issuer-request', '/cases/wazirx-2024', `document.querySelector('[data-issuer-request]') !== null`],
     ['labels-frozen', '/labels', `document.querySelector('[aria-label="Frozen by the issuer of USDT"]') !== null`],
+    // linked complaints (E7): on a case and on the dashboard
+    ['case-related', '/cases/tron-coindcx', `document.querySelector('[data-related]') !== null`],
+    ['dashboard-linked', '/dashboard', `document.querySelector('[aria-label="Linked complaints"]') !== null`],
     // present mode (E7): one case in four screens, one viewport each
     ['present-finding', '/cases/tron-coindcx/present', `document.querySelector('[data-present] h1') !== null`, false],
     ['present-route', '/cases/tron-coindcx/present?screen=2', GRAPH, false],

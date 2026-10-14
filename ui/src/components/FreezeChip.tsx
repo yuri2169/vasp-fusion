@@ -7,7 +7,7 @@ import { Tip, useTip } from './Tip'
 
 /** What a freeze establishes, and what it does not (mirrors vaspfusion/labels/frozen.py, MEANING). */
 export const FREEZE_MEANING =
-  'The issuer put this address on the token’s blacklist on that date and had not taken it off when the list was read. It does not say why, and it says nothing about anyone who dealt with the address.'
+  'The issuer put this address on the token’s blacklist on that date, and had not taken it off when the list was read. It does not say why, and it says nothing about anyone who dealt with the address.'
 
 /** An address the issuer of USDT has frozen. Drawn in the chain colour: the freeze is the token contract's own
  *  on-chain record, not a third party's list. Always the icon and the backend's words. */

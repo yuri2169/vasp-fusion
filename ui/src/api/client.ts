@@ -46,7 +46,7 @@ import type {
   WalletDetail,
   WatchCreate,
   WatchItem,
-  WatchList, FrozenSearch } from './models'
+  WatchList, FrozenSearch, LinkedComplaints } from './models'
 
 /** An error the officer can read: `detail` is the server's sentence (what happened, what to do). */
 export class ApiError extends Error {
@@ -192,6 +192,8 @@ export function createApi(transport: Transport) {
     labelSearch: (query: LabelQuery) => get<LabelSearch>('/labels/search', query),
     /** How many labels the store holds, by chain, category, tier and source. */
     labelCoverage: () => get<LabelCoverage>('/labels/coverage'),
+    /** Wallets the traces of different suspect wallets share (stored traces only). */
+    linkedComplaints: () => get<LinkedComplaints>('/linked-complaints'),
     /** The issuer of USDT's freeze list as held (a dated snapshot). */
     frozenSearch: (query: { q?: string; chain?: 'tron' | 'ethereum'; limit?: number }) => get<FrozenSearch>('/labels/frozen', query),
 

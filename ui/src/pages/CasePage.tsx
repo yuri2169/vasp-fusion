@@ -18,6 +18,7 @@ import { WalletPanel } from '../case/WalletPanel'
 import { AuditTab } from '../case/tabs/AuditTab'
 import { EventsTab } from '../case/tabs/EventsTab'
 import { IssuerRequestPanel } from '../case/IssuerRequestPanel'
+import { RelatedCasesPanel } from '../overview/LinkedComplaints'
 import { WriteOrderPanel } from '../case/WriteOrderPanel'
 import { InboundTab } from '../case/tabs/InboundTab'
 import { PatternsTab } from '../case/tabs/PatternsTab'
@@ -367,6 +368,7 @@ export function CasePage() {
 
       {c.write_order && !tracing && <WriteOrderPanel order={c.write_order} caseId={c.id} />}
       {c.issuer_request?.offered && !tracing && API_MODE === 'live' && <IssuerRequestPanel request={c.issuer_request} caseId={c.id} chain={c.chain} />}
+      {!tracing && <RelatedCasesPanel links={c.related} caseId={c.id} />}
 
       <div className="mt-6">
         <Tabs label="Case records" tabs={tabs} active={tab} onChange={(next) => setParam('tab', next === 'timeline' ? null : next)}>

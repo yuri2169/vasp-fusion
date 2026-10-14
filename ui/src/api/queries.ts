@@ -73,6 +73,9 @@ export function useCase(id: string) {
   })
 }
 
+export const useLinkedComplaints = (enabled = true) =>
+  useQuery({ queryKey: ['linked-complaints'], queryFn: () => api.linkedComplaints(), enabled })
+
 export const useFrozenSearch = (q: string, chain: 'tron' | 'ethereum' | undefined) =>
   useQuery({ queryKey: ['labels', 'frozen', q, chain ?? ''], queryFn: () => api.frozenSearch({ q: q || undefined, chain, limit: 20 }) })
 
