@@ -212,7 +212,7 @@ Example (a real demo wallet, shortened to one wallet):
   "draft": false,
   "recipient": {"vasp": "CoinDCX", "legal_name": "Neblio Technologies Private Limited",
                 "jurisdiction": "India", "fiu_ind_registered": true,
-                "fiu_ind_as_of": "2023-12-04", "channel": null},
+                "fiu_ind_as_of": "2024-12-02", "channel": null},
   "officer": "Insp. A. Rao, Cyber PS",
   "subject": "Request for KYC records and a freeze in respect of 1 wallet attributed to CoinDCX (DEMO/2026/104)",
   "cases": [{"case_id": "tron-htx-coindcx", "case_ref": "DEMO/2026/104", "complaint_no": null,

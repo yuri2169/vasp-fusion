@@ -63,14 +63,25 @@ def test_the_draft_cites_section_112_and_carries_the_evidence_of_the_domestic_le
     assert not desk.outbox.exists() or not list(desk.outbox.iterdir())
 
 
-def test_a_blank_jurisdiction_stays_blank_for_the_officer(desk):
+def test_a_blank_jurisdiction_stays_blank_for_the_officer(desk, monkeypatch):
+    # every exchange the recorded cases reach now has a cited country: blank HTX's
+    real = desk.directory.get
+    monkeypatch.setattr(desk.directory, "get",
+                        lambda name: {**real(name), "jurisdiction": None})
     made = desk.letter_of_request("HTX", None, OFFICER)
     entry, letter = made["directory"], made["letter"]
-    assert entry["jurisdiction"] is None            # nothing cited in the directory
+    assert entry["jurisdiction"] is None
     assert letter["to"] == "The competent Court or authority, ____________________"
     assert any("No jurisdiction is on record for HTX" in n for n in letter["review_notes"])
     assert "none is on record with this office" in letter["paragraphs"][2]
     assert made["recommended"] is False             # HTX publishes a channel
+
+
+def test_htx_is_addressed_to_its_cited_jurisdiction(desk):
+    made = desk.letter_of_request("HTX", None, OFFICER)
+    assert made["directory"]["jurisdiction"] == "Panama"     # UK FCA, cited in the directory
+    assert made["letter"]["to"] == "The competent Court or authority, Panama"
+    assert not any("No jurisdiction" in n for n in made["letter"]["review_notes"])
 
 
 def test_a_cited_jurisdiction_is_used(desk, monkeypatch):

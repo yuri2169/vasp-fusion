@@ -40,7 +40,7 @@ def test_the_two_exchange_case_puts_the_registered_exchange_first():
     assert (first["rank"], first["vasp"], first["route"]) == (1, "CoinDCX", DOMESTIC)
     assert (second["rank"], second["vasp"], second["route"]) == (2, "HTX", DIRECT)
     assert first["letter_of_request"] is False and second["letter_of_request"] is True
-    assert "Registered with FIU-IND as of 4 Dec 2023 (an official list)." in first["reasons"]
+    assert "Registered with FIU-IND as of 2 Dec 2024 (an official list)." in first["reasons"]
     assert any("not on record" in r for r in second["reasons"])
     assert any(r.startswith("A law-enforcement channel is on record") for r in second["reasons"])
     assert first["reasons"][-1] == "No law-enforcement channel is on record for it."
