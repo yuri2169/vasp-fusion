@@ -43,6 +43,9 @@ _CHAIN_ALIASES = {"trx": "tron", "btc": "bitcoin", "eth": "ethereum", "evm": "ev
 _TIER_OF_SOURCE = (
     ("defillama-cex", "published_por"),     # exchange-published proof-of-reserves
     ("ofac-sdn", "curated"),                # also the official XML (`ofac-sdn-xml`, G3)
+    ("uk-sanctions-list", "curated"),       # official government lists (E7)
+    ("eu-fsf", "curated"),
+    ("il-nbctf", "curated"),
     ("ransomwhere", "curated"),             # crowdsourced, each report reviewed before listing
     ("cex-list", "curated"),
     ("mew-ethereum-lists", "curated"),

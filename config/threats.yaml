@@ -29,6 +29,32 @@ sources:            # in order of precedence when two sources give the same thre
     name: "GraphSense TagPacks"
     licence: "MIT"
     url: "https://github.com/graphsense/graphsense-tagpacks"
+  # Other governments' lists (E7), last so that no address tagged before changes its
+  # primary source; an address several lists name keeps every other listing in `also`.
+  uk-sanctions-list:
+    name: "UK Sanctions List (FCDO, official XML)"
+    licence: "Open Government Licence v3.0"
+    url: "https://www.gov.uk/government/publications/the-uk-sanctions-list"
+  eu-fsf:
+    name: "EU Financial Sanctions File (consolidated list, official XML)"
+    licence: "European Commission reuse notice (Decision 2011/833/EU)"
+    url: "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions"
+  il-nbctf:
+    name: "Israel NBCTF crypto seizure and forfeiture orders (official export)"
+    licence: "No terms published (the site's terms-of-use pages hold placeholder text, 14 Oct 2026); the site offers the export and an API"
+    url: "https://matal.mod.gov.il/en/"
+
+# A UK entry is terrorism financing when its regime name holds one of these; otherwise
+# it is a sanctioned party (the regime stays in the evidence).
+uk:
+  terrorism_regimes: ["Counter-Terrorism", "ISIL (Da'esh) and Al-Qaida", "Isil (Da'esh) and Al-Qaeda"]
+
+# An EU entry is terrorism financing when its regulation's programme is one of these.
+eu:
+  terrorism_programmes: ["TERR", "TAQA"]
+
+# NBCTF orders are made by Israel's National Bureau for Counter Terror Financing: every
+# address one names is tagged terrorism_financing, with the order, its date and validity.
 
 ofac:
   # Sanctions programme -> threat. A listed entry with any of these programme codes is

@@ -1,29 +1,29 @@
 {
   "_demo": true,
   "_notice": "DEMO FIXTURE. Labelled addresses are real (research/data label sets); suspect/hop addresses, tx hashes, amounts and confidences are synthetic placeholders for UI development. Not evidence.",
-  "total": 474142,
+  "total": 474889,
   "by_category": {
     "exchange": 383595,
-    "entity": 69381,
+    "entity": 70114,
     "defi": 11087,
     "scam": 6146,
     "bridge": 2062,
-    "sanctioned": 1052,
+    "sanctioned": 1066,
     "custodial_wallet": 454,
     "swap_service": 289,
     "mixer": 76
   },
   "by_tier": {
-    "curated": 349440,
+    "curated": 350187,
     "explorer_tag": 117515,
     "derived": 5497,
     "published_por": 1690
   },
   "by_chain": {
-    "bitcoin": 348908,
-    "ethereum": 93272,
+    "bitcoin": 348961,
+    "ethereum": 93289,
+    "tron": 6646,
     "base": 5996,
-    "tron": 5969,
     "avalanche": 4946,
     "worldchain": 4902,
     "arbitrum": 3186,
@@ -149,6 +149,17 @@
       }
     },
     {
+      "source": "il-nbctf",
+      "name": "il-nbctf",
+      "obtained_from": null,
+      "licence": null,
+      "url": null,
+      "labels": 733,
+      "tiers": {
+        "curated": 733
+      }
+    },
+    {
       "source": "mew-ethereum-lists",
       "name": "MyEtherWallet ethereum-lists: scam addresses",
       "obtained_from": "wallet-attribution set",
@@ -191,13 +202,35 @@
       "tiers": {
         "curated": 88
       }
+    },
+    {
+      "source": "uk-sanctions-list",
+      "name": "uk-sanctions-list",
+      "obtained_from": null,
+      "licence": null,
+      "url": null,
+      "labels": 8,
+      "tiers": {
+        "curated": 8
+      }
+    },
+    {
+      "source": "eu-fsf",
+      "name": "eu-fsf",
+      "obtained_from": null,
+      "licence": null,
+      "url": null,
+      "labels": 6,
+      "tiers": {
+        "curated": 6
+      }
     }
   ],
   "by_threat": {
     "ransomware": 11271,
     "fraud": 6607,
-    "sanctioned_other": 613,
-    "terrorism_financing": 367,
+    "terrorism_financing": 1100,
+    "sanctioned_other": 627,
     "theft": 317,
     "darknet_market": 182
   },
@@ -212,7 +245,7 @@
     "bitcoin",
     "solana"
   ],
-  "traceable_total": 462747,
+  "traceable_total": 463494,
   "indian_providers": {
     "source": {
       "title": "Lok Sabha Unstarred Question No. 966, answered 2 Dec 2024, Annexure-A: Details of 47 Virtual Digital Asset Service Providers (VDA SPs) Registered with Financial Intelligence Unit-India (FIU-IND)",

@@ -92,7 +92,7 @@ def real_labels(store: LabelStore) -> dict:
         "okx": first("chain = 'tron' AND entity = 'OKX'", []),
         "htx": first("chain = 'tron' AND entity = 'HTX'", []),
         "coindcx": first("chain = 'tron' AND entity = 'CoinDCX'", []),
-        "ofac": first("chain = 'tron' AND category = 'sanctioned'", []),
+        "ofac": first("chain = 'tron' AND category = 'sanctioned' AND source LIKE 'ofac-sdn%'", []),
         "changenow": first("chain = 'ethereum' AND label = 'ChangeNOW: Hot Wallet 1'", []),
     }
 

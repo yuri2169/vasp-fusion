@@ -144,6 +144,15 @@ class ThreatTag(_M):
                                                    "programme codes, pack fields")
 
 
+class ThreatListing(_M):
+    """Another list's entry for an address that several lists name."""
+    source: str
+    entity: str | None = None
+    threat: Threat
+    url: str | None = None
+    evidence: str | None = None
+
+
 class LabelOut(_M):
     address: str
     chain: str = Field(description="Chain slug as stored; 'evm' = any EVM chain")
@@ -174,6 +183,18 @@ class LabelOut(_M):
     threat_source: str | None = None
     threat_url: str | None = None
     threat_evidence: str | None = None
+    threat_also: list[ThreatListing] | None = Field(None, description=(
+        "Set when more than one list names the address: every other entry, so each "
+        "listing can be shown (E7)"))
+
+    @model_serializer(mode="wrap")
+    def _also_only_when_listed_twice(self, handler):
+        """A label one list names reads as it did before E7 (and so keeps every stored
+        case's content digest)."""
+        out = handler(self)
+        if out.get("threat_also") is None:
+            out.pop("threat_also", None)
+        return out
 
 
 class LabelSearch(_M):

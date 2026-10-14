@@ -3454,6 +3454,11 @@ export interface components {
             threat_url?: string | null;
             /** Threat Evidence */
             threat_evidence?: string | null;
+            /**
+             * Threat Also
+             * @description Set when more than one list names the address: every other entry, so each listing can be shown (E7)
+             */
+            threat_also?: components["schemas"]["ThreatListing"][] | null;
         };
         /** LabelSearch */
         LabelSearch: {
@@ -4872,6 +4877,25 @@ export interface components {
              * @description sahyog: the exchange's reply arrived through the SAHYOG gateway, not typed in
              */
             via?: "sahyog" | null;
+        };
+        /**
+         * ThreatListing
+         * @description Another list's entry for an address that several lists name.
+         */
+        ThreatListing: {
+            /** Source */
+            source: string;
+            /** Entity */
+            entity?: string | null;
+            /**
+             * Threat
+             * @enum {string}
+             */
+            threat: "terrorism_financing" | "ransomware" | "darknet_market" | "theft" | "fraud" | "sanctioned_other";
+            /** Url */
+            url?: string | null;
+            /** Evidence */
+            evidence?: string | null;
         };
         /**
          * ThreatTag

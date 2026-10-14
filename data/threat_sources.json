@@ -18,6 +18,30 @@
    "commit": "b5569783685d452c175b84c8fda0c37eaf2f3fea",
    "commit_date": "2026-10-02T10:08:27Z",
    "note": "every pack, copied unchanged"
+  },
+  "uk_sanctions_list.xml": {
+   "from": "https://sanctionslist.fcdo.gov.uk/docs/UK-Sanctions-List.xml",
+   "page": "https://www.gov.uk/government/publications/the-uk-sanctions-list",
+   "licence": "Open Government Licence v3.0 (gov.uk: 'All content is available under the Open Government Licence v3.0, except where otherwise stated')",
+   "fetched": "2026-10-14",
+   "sha256": "067e24eed2e973175f40e9c477fed83bbbfda160c72d6ea5629791cbd700ca72",
+   "note": "DateGenerated 12/10/2026, 6,408 designations; crypto addresses only in the free text of OtherInformation"
+  },
+  "eu_fsf_full.xml": {
+   "from": "https://webgate.ec.europa.eu/fsd/fsf/public/files/xmlFullSanctionsList_1_1/content?token=dG9rZW4tMjAxNw",
+   "page": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions",
+   "licence": "European Commission reuse notice (Decision 2011/833/EU), as data.europa.eu states for this file",
+   "fetched": "2026-10-14",
+   "sha256": "ea1ca08a57230ffbf003b0c55d93c617b926dc4ed4e877bf8a2a6fdaed175644",
+   "note": "generationDate 2026-10-12; crypto addresses only in nameAlias remarks"
+  },
+  "nbctf_crypto_orders.csv": {
+   "from": "https://matal.mod.gov.il/sanctions/export (the site's 'Export Lists' form: type seizureAndForfeitureOrderCryptocurrency, CSV, English)",
+   "page": "https://matal.mod.gov.il/en/",
+   "licence": "No terms published: the site's terms-of-use pages (English and Hebrew) hold placeholder text only, on 14 Oct 2026. The site offers the export and an API for its lists.",
+   "fetched": "2026-10-14",
+   "sha256": "a96bce1421e8cda2cce588fc2ba7dcc1640b502d87f664205bf61c31b4cb3744",
+   "note": "Israel National Bureau for Counter Terror Financing (NBCTF, Ministry of Defence): 38 seizure (ASO) and forfeiture (FO) orders; the export's Assets column mixes crypto addresses with payment-app phone numbers; only the crypto addresses are read. Personal names in the file are not copied into this repository."
   }
  },
  "sources": {
@@ -35,6 +59,21 @@
    "name": "GraphSense TagPacks",
    "licence": "MIT",
    "url": "https://github.com/graphsense/graphsense-tagpacks"
+  },
+  "uk-sanctions-list": {
+   "name": "UK Sanctions List (FCDO, official XML)",
+   "licence": "Open Government Licence v3.0",
+   "url": "https://www.gov.uk/government/publications/the-uk-sanctions-list"
+  },
+  "eu-fsf": {
+   "name": "EU Financial Sanctions File (consolidated list, official XML)",
+   "licence": "European Commission reuse notice (Decision 2011/833/EU)",
+   "url": "https://data.europa.eu/data/datasets/consolidated-list-of-persons-groups-and-entities-subject-to-eu-financial-sanctions"
+  },
+  "il-nbctf": {
+   "name": "Israel NBCTF crypto seizure and forfeiture orders (official export)",
+   "licence": "No terms published (the site's terms-of-use pages hold placeholder text, 14 Oct 2026); the site offers the export and an API",
+   "url": "https://matal.mod.gov.il/en/"
   }
  },
  "skipped": {
@@ -50,29 +89,29 @@
   "lazarus2": "abuse: sanction; covered by the SDN XML"
  },
  "counts": {
-  "total": 18446,
+  "total": 19193,
   "by_threat": {
-   "sanctioned_other": 613,
+   "sanctioned_other": 627,
    "ransomware": 11271,
    "fraud": 6013,
-   "darknet_market": 182,
-   "terrorism_financing": 367
+   "terrorism_financing": 1100,
+   "darknet_market": 182
   },
   "by_chain": {
    "sanctioned_other": {
     "arbitrum": 1,
-    "bitcoin": 309,
+    "bitcoin": 313,
     "bitcoin-cash": 7,
     "bitcoin-gold": 1,
     "bitcoin-sv": 1,
     "bsc": 1,
     "dash": 5,
-    "ethereum": 107,
+    "ethereum": 111,
     "ethereum-classic": 1,
     "litecoin": 13,
     "monero": 3,
     "solana": 3,
-    "tron": 155,
+    "tron": 161,
     "verge": 1,
     "xrp": 1,
     "zcash": 4
@@ -85,21 +124,23 @@
     "bitcoin": 322,
     "ethereum": 5691
    },
+   "terrorism_financing": {
+    "bitcoin": 211,
+    "ethereum": 28,
+    "monero": 3,
+    "solana": 1,
+    "tron": 857
+   },
    "darknet_market": {
     "bitcoin": 177,
     "monero": 5
-   },
-   "terrorism_financing": {
-    "bitcoin": 162,
-    "ethereum": 15,
-    "monero": 3,
-    "solana": 1,
-    "tron": 186
    }
   },
   "by_source": {
    "sanctioned_other": {
-    "ofac-sdn-xml": 613
+    "ofac-sdn-xml": 613,
+    "eu-fsf": 6,
+    "uk-sanctions-list": 8
    },
    "ransomware": {
     "ransomwhere": 11186,
@@ -110,14 +151,16 @@
     "graphsense-tagpacks": 5984,
     "ofac-sdn-xml": 29
    },
+   "terrorism_financing": {
+    "il-nbctf": 733,
+    "graphsense-tagpacks": 155,
+    "ofac-sdn-xml": 212
+   },
    "darknet_market": {
     "ofac-sdn-xml": 166,
     "graphsense-tagpacks": 16
-   },
-   "terrorism_financing": {
-    "graphsense-tagpacks": 155,
-    "ofac-sdn-xml": 212
    }
-  }
+  },
+  "also": 9229
  }
 }

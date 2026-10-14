@@ -39,6 +39,8 @@ class Label:
     threat_source: str | None = None
     threat_url: str | None = None
     threat_evidence: str | None = None
+    # JSON: the other list entries for the address when several lists name it (E7)
+    threat_also: str | None = None
 
     @property
     def is_vasp(self) -> bool:
@@ -50,6 +52,10 @@ class Label:
         if self.threat is None:     # an untagged label reads as it did before tags existed
             for key in THREAT_COLUMNS:
                 del d[key]
+        elif self.threat_also is None:      # one listing reads as it did before E7
+            del d["threat_also"]
+        else:
+            d["threat_also"] = json.loads(self.threat_also)
         return d
 
     @classmethod
@@ -59,6 +65,8 @@ class Label:
         d = {k: v for k, v in row.items() if k in names}
         if d.get("model") is not None and not isinstance(d["model"], str):
             d["model"] = json.dumps(d["model"], ensure_ascii=False, sort_keys=True)
+        if d.get("threat_also") is not None and not isinstance(d["threat_also"], str):
+            d["threat_also"] = json.dumps(d["threat_also"], ensure_ascii=False, sort_keys=True)
         return cls(**d)
 
 

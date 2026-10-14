@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import xml.etree.ElementTree as ET
 from functools import lru_cache
 from pathlib import Path
@@ -26,8 +27,13 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = ROOT / "config" / "threats.yaml"
 DEFAULT_CSV = ROOT / "data" / "threat_tags.csv"
-COLUMNS = ["address", "chain", "threat", "entity", "source", "source_url", "evidence"]
+COLUMNS = ["address", "chain", "threat", "entity", "source", "source_url", "evidence", "also"]
 OFAC_SOURCE = "ofac-sdn-xml"
+UK_SOURCE = "uk-sanctions-list"
+EU_SOURCE = "eu-fsf"
+NBCTF_SOURCE = "il-nbctf"
+# government lists of sanctioned parties: an address on one is filed `sanctioned`
+SANCTIONS_SOURCES = (OFAC_SOURCE, UK_SOURCE, EU_SOURCE)
 RANSOMWHERE_SOURCE = "ransomwhere"
 TAGPACK_PREFIX = "graphsense-tagpack:"
 THREAT_WORDS = {"terrorism_financing": "terrorism financing", "ransomware": "ransomware",
@@ -68,6 +74,8 @@ def source_family(source: str) -> str:
 def source_name(source: str, path: Path | str | None = None) -> str:
     """How a threat source is named in a sentence: 'OFAC SDN list', 'Ransomwhere'."""
     short = {OFAC_SOURCE: "OFAC SDN list", RANSOMWHERE_SOURCE: "Ransomwhere",
+             UK_SOURCE: "UK Sanctions List", EU_SOURCE: "EU financial sanctions list",
+             NBCTF_SOURCE: "Israel NBCTF seizure order",
              "graphsense-tagpacks": "GraphSense TagPacks", "ofac-sdn": "OFAC SDN list",
              "mew-ethereum-lists": "MyEtherWallet scam list", "eth-labels": "explorer tag"}
     first = source.split("+")[0].strip()
@@ -218,6 +226,116 @@ def read_tagpacks(packs_dir: Path | str, cfg: dict | None = None) -> list[dict]:
     return rows
 
 
+# ------------------------------------------------------------------ other governments (E7)
+# Crypto addresses on the UK and EU lists sit in free text (UK `OtherInformation`, EU
+# `remark`), and NBCTF's orders list them among an order's assets beside phone numbers.
+# Every candidate is kept only when it is a valid address on a chain (`_chain_by_form`).
+_ADDRESS = re.compile(r"(?<![0-9A-Za-z])(T[1-9A-HJ-NP-Za-km-z]{33}|0x[0-9a-fA-F]{40}|"
+                      r"bc1[02-9ac-hj-np-z]{11,71}|[13][1-9A-HJ-NP-Za-km-z]{25,34})(?![0-9A-Za-z])")
+
+
+def _addresses(text: str) -> list[tuple[str, str]]:
+    """(address, chain) for each valid address in a piece of free text, in order, once."""
+    out, seen = [], set()
+    for a in _ADDRESS.findall(text or ""):
+        chain = _chain_by_form(a)
+        if chain is not None and a not in seen:
+            seen.add(a)
+            out.append((a, chain))
+    return out
+
+
+def _regime_threat(regime: str, cfg: dict, key: str) -> str:
+    words = cfg[key]["terrorism_regimes"]
+    return "terrorism_financing" if any(w.lower() in regime.lower() for w in words) \
+        else "sanctioned_other"
+
+
+def read_uk(xml_path: Path | str, cfg: dict | None = None) -> list[dict]:
+    """The UK Sanctions List (FCDO, XML): addresses an entry's `OtherInformation` names.
+    The threat comes from the entry's regime (config `uk.terrorism_regimes`)."""
+    cfg = cfg or config()
+    root = ET.parse(str(xml_path)).getroot()
+    generated = (root.findtext("DateGenerated") or "").strip()
+    page = cfg["sources"][UK_SOURCE]["url"]
+    rows = []
+    for d in root.iter("Designation"):
+        info = d.findtext("OtherInformation") or ""
+        found = _addresses(info)
+        if not found:
+            continue
+        uid = (d.findtext("UniqueID") or "").strip()
+        regime = (d.findtext("RegimeName") or "").strip()
+        names = [n for n in d.iter("Name")
+                 if (n.findtext("NameType") or "").strip() == "Primary Name"] or list(d.iter("Name"))
+        name = " ".join(t.strip() for t in (names[0].findtext(f"Name{i}") or "" for i in (1, 2, 3, 4, 5, 6))
+                        if t.strip()) if names else uid
+        evidence = (f"UK Sanctions List (generated {generated}), {uid}: {name}; regime "
+                    f"{regime}. The entry names the address in its other information.")
+        threat = _regime_threat(regime, cfg, "uk")
+        rows += [{"address": a, "chain": c, "threat": threat, "entity": name, "source": UK_SOURCE,
+                  "source_url": page, "evidence": evidence} for a, c in found]
+    return rows
+
+
+def read_eu(xml_path: Path | str, cfg: dict | None = None) -> list[dict]:
+    """The EU Financial Sanctions File (XML): addresses an entry's remarks name. The threat
+    comes from the regulation's programme (config `eu.terrorism_programmes`)."""
+    cfg = cfg or config()
+    root = ET.parse(str(xml_path)).getroot()
+    ns = {"e": root.tag[1:root.tag.index("}")]} if root.tag.startswith("{") else {}
+    q = (lambda t: f"e:{t}") if ns else (lambda t: t)
+    generated = root.get("generationDate", "")[:10]
+    terror = set(cfg["eu"]["terrorism_programmes"])
+    rows = []
+    for ent in root.findall(q("sanctionEntity"), ns):
+        text = " ".join(r.text or "" for r in ent.iter(f"{{{ns['e']}}}remark" if ns else "remark"))
+        found = _addresses(text)
+        if not found:
+            continue
+        ref = ent.get("euReferenceNumber", "")
+        reg = ent.find(q("regulation"), ns)
+        programme = reg.get("programme", "") if reg is not None else ""
+        url = (reg.findtext(q("publicationUrl"), default="", namespaces=ns) or "").strip() \
+            if reg is not None else ""
+        alias = ent.find(q("nameAlias"), ns)
+        name = alias.get("wholeName", ref) if alias is not None else ref
+        threat = "terrorism_financing" if programme in terror else "sanctioned_other"
+        evidence = (f"EU financial sanctions list (generated {generated}), {ref}: {name}; "
+                    f"programme {programme}. The entry's remarks name the address.")
+        rows += [{"address": a, "chain": c, "threat": threat, "entity": name, "source": EU_SOURCE,
+                  "source_url": url or cfg["sources"][EU_SOURCE]["url"], "evidence": evidence}
+                 for a, c in found]
+    return rows
+
+
+def read_nbctf(csv_path: Path | str, cfg: dict | None = None, today: str | None = None) -> list[dict]:
+    """Israel's NBCTF seizure (ASO) and forfeiture (FO) orders, as its own export gives
+    them: the crypto addresses among each order's assets. A cancelled order is skipped; an
+    order past its validity date is kept and says so. Personal names are not read."""
+    cfg = cfg or config()
+    page = cfg["sources"][NBCTF_SOURCE]["url"]
+    with Path(csv_path).open(newline="", encoding="utf-8-sig") as fh:
+        text = fh.read().lstrip("\ufeff")
+    rows = []
+    for r in csv.DictReader(text.splitlines(keepends=True)):
+        if (r.get("Is Canceled") or "").strip().lower() == "true":
+            continue
+        found = _addresses(r.get("Assets") or "")
+        if not found:
+            continue
+        kind, number = r["Order Type"].strip(), r["Order Number"].strip()
+        dated, valid = r["Order Date"].strip(), r["Validity Date"].strip()
+        lapsed = f" (that date has passed)" if today and valid and valid < today else ""
+        evidence = (f"Israel National Bureau for Counter Terror Financing (NBCTF): {kind} order "
+                    f"{number}, dated {dated}, valid until {valid}{lapsed}. The order lists the "
+                    "address among its assets.")
+        rows += [{"address": a, "chain": c, "threat": "terrorism_financing",
+                  "entity": f"NBCTF order {number}", "source": NBCTF_SOURCE, "source_url": page,
+                  "evidence": evidence} for a, c in found]
+    return rows
+
+
 # ------------------------------------------------------------------ one row per address
 def _normal(row: dict) -> dict | None:
     """The row with its address as the label store spells it, on the chain it is valid on;
@@ -232,11 +350,14 @@ def _normal(row: dict) -> dict | None:
 
 def merge(rows: list[dict], cfg: dict | None = None) -> list[dict]:
     """One row per (address, chain): the most specific threat, then the source listed
-    first in the config, then the source name. Sorted, so the file is deterministic."""
+    first in the config, then the source name. Sorted, so the file is deterministic. An
+    address that several sources (or entries) list keeps the others in `also` (JSON:
+    source, entity, threat, url, evidence), so each listing can be shown."""
     cfg = cfg or config()
     t_rank = {t: i for i, t in enumerate(cfg["threats"])}
     s_rank = {s: i for i, s in enumerate(cfg["sources"])}
     best: dict[tuple[str, str], tuple] = {}
+    seen: dict[tuple[str, str], list] = {}
     for raw in rows:
         r = _normal(raw)
         if r is None:
@@ -244,9 +365,20 @@ def merge(rows: list[dict], cfg: dict | None = None) -> list[dict]:
         rank = (t_rank[r["threat"]], s_rank[source_family(r["source"])], r["source"],
                 r["entity"])
         key = (r["address"], r["chain"])
+        seen.setdefault(key, []).append((rank, r))
         if key not in best or rank < best[key][0]:
             best[key] = (rank, r)
-    return [best[k][1] for k in sorted(best, key=lambda k: (k[1], k[0]))]
+    out = []
+    for k in sorted(best, key=lambda k: (k[1], k[0])):
+        top = best[k][1]
+        others = {(r["source"], r["entity"]): {"source": r["source"], "entity": r["entity"],
+                                               "threat": r["threat"], "url": r["source_url"] or None,
+                                               "evidence": r["evidence"]}
+                  for _, r in sorted(seen[k], key=lambda x: x[0])
+                  if (r["source"], r["entity"]) != (top["source"], top["entity"])}
+        out.append({**top, "also": json.dumps(list(others.values()), ensure_ascii=False,
+                                              sort_keys=True) if others else ""})
+    return out
 
 
 def write_csv(rows: list[dict], out: Path | str) -> None:

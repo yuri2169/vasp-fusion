@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react'
 import { FreezeChip } from '../components/FreezeChip'
-import { ThreatChip, threatOf } from '../components/ThreatChip'
+import { AlsoListed, ThreatChip, threatOf } from '../components/ThreatChip'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { Chain, FlowSummary, WalletDetail } from '../api/models'
@@ -210,6 +210,9 @@ export function WalletPage() {
               {label ? (
                 <>
                   <LabelBlock label={label} chain={chain} level={2} />
+                  <div className="mt-3">
+                    <AlsoListed also={label.threat_also} />
+                  </div>
                   {label.category !== 'sanctioned' && label.entity !== 'Unidentified exchange' && (
                     <Link
                       to={`/vasps/${encodeURIComponent(label.entity)}`}

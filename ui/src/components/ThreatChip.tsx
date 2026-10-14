@@ -1,5 +1,5 @@
 import { BadgeAlert, Ban, KeyRound, LockKeyhole, ShieldAlert, ShieldCheck, Siren, Store, type LucideIcon } from 'lucide-react'
-import type { LabelOut, Screening, Threat, ThreatTag } from '../api/models'
+import type { LabelOut, Screening, Threat, ThreatListing, ThreatTag } from '../api/models'
 import { cx } from '../lib/cx'
 import { Tip, useTip } from './Tip'
 
@@ -25,6 +25,9 @@ export function threatSource(source: string | null | undefined): string | null {
     {
       'ofac-sdn-xml': 'OFAC SDN list',
       'ofac-sdn': 'OFAC SDN list',
+      'uk-sanctions-list': 'UK Sanctions List',
+      'eu-fsf': 'EU financial sanctions list',
+      'il-nbctf': 'Israel NBCTF seizure order',
       ransomwhere: 'Ransomwhere',
       'mew-ethereum-lists': 'MyEtherWallet scam list',
       'eth-labels': 'explorer tag',
@@ -92,6 +95,29 @@ export function ThreatChip({ threat, tag, size = 'md', bare = false }: Props) {
         </Tip>
       )}
     </>
+  )
+}
+
+/** Every other list's entry for an address several lists name (`LabelOut.threat_also`): each one with who it
+ *  names and its own words. */
+export function AlsoListed({ also }: { also: readonly ThreatListing[] | null | undefined }) {
+  if (!also?.length) return null
+  return (
+    <section aria-label="Also listed by" className="flex flex-col gap-1.5">
+      <h3 className="colhead">Also listed by</h3>
+      <ul className="flex flex-col gap-2">
+        {also.map((a) => (
+          <li key={`${a.source}:${a.entity ?? ''}`} className="flex flex-col gap-0.5 border-l-2 border-danger pl-2">
+            <span className="inline-flex flex-wrap items-center gap-2 text-sm">
+              <ThreatChip threat={a.threat} size="sm" />
+              <span className="font-semibold text-ink">{threatSource(a.source)}</span>
+              {a.entity && <span className="text-ink-soft">{a.entity}</span>}
+            </span>
+            {a.evidence && <span className="text-sm text-ink-soft [overflow-wrap:anywhere]">{a.evidence}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

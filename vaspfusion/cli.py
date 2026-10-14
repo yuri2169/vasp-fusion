@@ -39,11 +39,20 @@ def cmd_threats(args) -> None:
     from .labels import threats as T
     raw = Path(args.raw)
     cfg = T.config()
-    rows = T.merge(T.read_ofac(raw / "sdn.xml", cfg) + T.read_ransomwhere(raw / "ransomwhere.json", cfg)
-                   + T.read_tagpacks(raw / "graphsense-tagpacks" / "packs", cfg), cfg)
+    fetched = json.loads((raw / "SOURCES.json").read_text())
+    rows = T.read_ofac(raw / "sdn.xml", cfg) + T.read_ransomwhere(raw / "ransomwhere.json", cfg) \
+        + T.read_tagpacks(raw / "graphsense-tagpacks" / "packs", cfg)
+    # other governments' lists (E7), each read only when its official file is there
+    for name, read in (("uk_sanctions_list.xml", T.read_uk), ("eu_fsf_full.xml", T.read_eu)):
+        if (raw / name).exists():
+            rows += read(raw / name, cfg)
+    if (raw / "nbctf_crypto_orders.csv").exists():
+        rows += T.read_nbctf(raw / "nbctf_crypto_orders.csv", cfg,
+                             today=fetched["files"]["nbctf_crypto_orders.csv"]["fetched"])
+    rows = T.merge(rows, cfg)
     T.write_csv(rows, args.out)
     counts = T.counts(rows)
-    fetched = json.loads((raw / "SOURCES.json").read_text())
+    counts["also"] = sum(1 for r in rows if r.get("also"))
     record = {"_notice": "Where data/threat_tags.csv comes from. Written by `python -m "
                          "vaspfusion.cli threats`; the rules are in config/threats.yaml.",
               "fetched": fetched["fetched"], "files": fetched["files"],

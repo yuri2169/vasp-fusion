@@ -8540,6 +8540,21 @@
               }
             ],
             "title": "Threat Evidence"
+          },
+          "threat_also": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ThreatListing"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threat Also",
+            "description": "Set when more than one list names the address: every other entry, so each listing can be shown (E7)"
           }
         },
         "additionalProperties": false,
@@ -12140,6 +12155,67 @@
           "at"
         ],
         "title": "StatusEvent"
+      },
+      "ThreatListing": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "entity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entity"
+          },
+          "threat": {
+            "type": "string",
+            "enum": [
+              "terrorism_financing",
+              "ransomware",
+              "darknet_market",
+              "theft",
+              "fraud",
+              "sanctioned_other"
+            ],
+            "title": "Threat"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "threat"
+        ],
+        "title": "ThreatListing",
+        "description": "Another list's entry for an address that several lists name."
       },
       "ThreatTag": {
         "properties": {

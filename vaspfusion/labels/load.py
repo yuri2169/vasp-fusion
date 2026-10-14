@@ -46,7 +46,8 @@ from .normalize import (
 from .sources import TAG_CHECKED_SOURCE
 from .tagcheck import LOADED, VERDICTS, read_checks, tag_owner
 
-THREAT_COLUMNS = ["threat", "threat_entity", "threat_source", "threat_url", "threat_evidence"]
+THREAT_COLUMNS = ["threat", "threat_entity", "threat_source", "threat_url", "threat_evidence",
+                  "threat_also"]
 LABEL_COLUMNS = ["address", "chain", "entity", "category", "kind", "tier", "source",
                  "source_url", "label", "confidence", "evidence", "confidence_low",
                  "confidence_high", "model", *THREAT_COLUMNS]
@@ -79,6 +80,8 @@ CREATE TABLE labels (
     threat_source   VARCHAR,  -- the source of the tag (may differ from the label's source)
     threat_url      VARCHAR,
     threat_evidence VARCHAR,  -- the source's own words: programme codes, pack fields
+    threat_also     VARCHAR,  -- JSON: every other list entry for the address (source, entity,
+                              -- threat, url, evidence), when several lists name it
     PRIMARY KEY (address, chain)
 )
 """
@@ -293,7 +296,7 @@ def _threat_category(row: dict) -> str:
     """The category of a label row made for a tagged address nothing else labels. No
     category is invented: a listed address is `sanctioned`, a fraud address is `scam`
     (as the scam lists already file them), anything else is a named `entity`."""
-    if row["source"] == OFAC_SOURCE:
+    if row["source"] in SANCTIONS_SOURCES:
         return "sanctioned"
     return "scam" if row["threat"] == "fraud" else "entity"
 
@@ -305,7 +308,8 @@ def _apply_threats(df: pl.DataFrame, tags: list[dict]) -> tuple[pl.DataFrame, di
     tdf = pl.DataFrame([{"address": t["address"], "chain": t["chain"], "threat": t["threat"],
                          "threat_entity": t["entity"], "threat_source": t["source"],
                          "threat_url": t["source_url"] or None,
-                         "threat_evidence": t["evidence"]} for t in tags], schema=empty)
+                         "threat_evidence": t["evidence"],
+                         "threat_also": t.get("also") or None} for t in tags], schema=empty)
     df = df.drop(THREAT_COLUMNS).join(tdf, on=["address", "chain"], how="left")
     joined = int(df["threat"].is_not_null().sum())
 
@@ -317,7 +321,7 @@ def _apply_threats(df: pl.DataFrame, tags: list[dict]) -> tuple[pl.DataFrame, di
               "confidence_low": None, "confidence_high": None, "model": None,
               "threat": t["threat"], "threat_entity": t["entity"], "threat_source": t["source"],
               "threat_url": t["source_url"] or None, "threat_evidence": t["evidence"],
-              "_promoted": False}
+              "threat_also": t.get("also") or None, "_promoted": False}
              for t in tags if (t["address"], t["chain"]) not in have]
     if fresh:
         df = pl.concat([df, pl.DataFrame(fresh, schema=df.schema).select(df.columns)])
@@ -390,7 +394,7 @@ def threat_stats(con: duckdb.DuckDBPyConnection) -> dict:
 
 
 from .sources import by_source, family  # noqa: E402
-from .threats import OFAC_SOURCE, config as threat_config, read_csv as read_threat_tags, source_family  # noqa: E402
+from .threats import OFAC_SOURCE, SANCTIONS_SOURCES, config as threat_config, read_csv as read_threat_tags, source_family  # noqa: E402
 
 
 def label_stats(con: duckdb.DuckDBPyConnection) -> dict:
