@@ -310,7 +310,7 @@ try {
   const order = await page.evaluate(`[...document.querySelectorAll('section[aria-label="Who to write to first"] > ol > li')].map((li) => li.querySelector('a').textContent.trim())`)
   expect(order.join(',') === 'CoinDCX,HTX', `the registered exchange first, then the other (${order.join(',')})`)
   const why = await page.evaluate(`document.querySelector('section[aria-label="Who to write to first"]').innerText`)
-  expect(why.includes('Registered with FIU-IND as of 4 Dec 2023') && why.includes('not on record'), 'each exchange has its reasons, a blank said as a blank')
+  expect(why.includes('Registered with FIU-IND as of 2 Dec 2024') && why.includes('not on record'), 'each exchange has its reasons, a blank said as a blank')
   expect(why.includes('No response time is stated') && !/within \d+ (hours|days)/i.test(why), 'no response time is promised')
   await page.evaluate(`document.querySelector('section[aria-label="Who to write to first"]').scrollIntoView({ block: 'center' })`)
   say('A case that reaches two exchanges says who to write to first, with reasons from the share of funds, the last arrival and the cited directory; no response time is promised')
