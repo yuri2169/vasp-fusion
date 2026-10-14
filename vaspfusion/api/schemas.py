@@ -411,6 +411,37 @@ class IssuerRequest(_M):
     draft: IssuerDraft | None = None
 
 
+class LinkedCase(_M):
+    case_id: str
+    case_ref: str | None = None
+    suspect: str = Field(description="The case's own wallet")
+    hop: int | None = Field(None, description="How far the shared wallet was from it; 0 = it is the suspect wallet")
+    amount: float = Field(description="Its traced money that arrived there (for the suspect wallet: what it sent)")
+    asset: str | None = None
+    first_arrival: datetime | None = None
+    is_suspect: bool = False
+
+
+class SharedWallet(_M):
+    """A wallet the traces of two or more different suspect wallets reached (stored traces
+    only). A lead, not proof of one operation."""
+    address: str
+    chain: str
+    label: str | None = Field(None, description="The warning label it carries, if any")
+    flags: list[str] = Field([], description=(
+        "Warnings, in words: a threat tag, a scam or sanctions list, the issuer's freeze"))
+    busy: bool = Field(False, description=(
+        "A wallet with very many counterparties: most likely a service, listed last"))
+    suspects: int = Field(description="Different suspect wallets whose traces reached it")
+    cases: list[LinkedCase]
+
+
+class LinkedComplaints(_M):
+    links: list[SharedWallet]
+    cases_read: int = Field(description="Finished cases the links were looked for in")
+    limit: str = Field(description="What a link does not establish: show it as it is")
+
+
 class Screening(_M):
     """The check of the case's own address against the threat tags, made when the case
     is opened and before the trace starts."""
@@ -889,6 +920,9 @@ class CaseDetail(CaseSummary):
     freezes: list[FreezeMark] = Field([], description=(
         "The case's wallets the issuer of USDT has frozen: its own, on the Hop Rail, or "
         "elsewhere in the trace. Looked up when the case is read; never stored"))
+    related: list[SharedWallet] = Field([], description=(
+        "Wallets this case's trace shares with other cases' traces (stored traces only). "
+        "Worked out when the case is read; never stored"))
     issuer_request: IssuerRequest | None = Field(None, description=(
         "Whether a draft request to the issuer of USDT is offered for this case, and the "
         "draft. Worked out when the case is read; never stored"))

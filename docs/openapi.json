@@ -581,6 +581,141 @@
         }
       }
     },
+    "/api/linked-complaints": {
+      "get": {
+        "summary": "Get Linked Complaints",
+        "description": "Wallets that the traces of two or more different suspect wallets reached, read from\nthe stored traces (no chain request). Exchange, bridge, mixer, swap-service and other\nlabelled wallets are left out; a warning label or the issuer's freeze stays, named.",
+        "operationId": "get_linked_complaints_api_linked_complaints_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedComplaints"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/related": {
+      "get": {
+        "summary": "Get Related",
+        "description": "The wallets this case's trace shares with other cases' traces.",
+        "operationId": "get_related_api_cases__case_id__related_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedComplaints"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/issuer-request": {
+      "get": {
+        "summary": "Get Issuer Request",
+        "description": "A draft request to the issuer of USDT to freeze traced USDT at addresses outside\nany exchange, or why none is offered. A draft: nothing is sent.",
+        "operationId": "get_issuer_request_api_cases__case_id__issuer_request_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssuerRequest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/issuer-request.pdf": {
+      "get": {
+        "summary": "Get Issuer Request Pdf",
+        "description": "The draft request to the issuer as an A4 PDF (banner, watermark, blanks for the\nofficer). 409 when none is offered, with the reason.",
+        "operationId": "get_issuer_request_pdf_api_cases__case_id__issuer_request_pdf_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The draft request to the issuer, A4",
+            "content": {
+              "application/pdf": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/pdf": {
       "get": {
         "summary": "Get Case Pdf",
@@ -3936,7 +4071,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -4002,6 +4137,26 @@
             "title": "Freezes",
             "description": "The case's wallets the issuer of USDT has frozen: its own, on the Hop Rail, or elsewhere in the trace. Looked up when the case is read; never stored",
             "default": []
+          },
+          "related": {
+            "items": {
+              "$ref": "#/components/schemas/SharedWallet"
+            },
+            "type": "array",
+            "title": "Related",
+            "description": "Wallets this case's trace shares with other cases' traces (stored traces only). Worked out when the case is read; never stored",
+            "default": []
+          },
+          "issuer_request": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IssuerRequest"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether a draft request to the issuer of USDT is offered for this case, and the draft. Worked out when the case is read; never stored"
           },
           "risk": {
             "anyOf": [
@@ -4605,7 +4760,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured."
           },
           "sahyog_complaint_ref": {
             "anyOf": [
@@ -5133,7 +5288,7 @@
               }
             ],
             "title": "Risk Score",
-            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
+            "description": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured."
           },
           "report_pdf": {
             "anyOf": [
@@ -5783,7 +5938,7 @@
             },
             "type": "object",
             "title": "Risk Classes",
-            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints.",
+            "description": "Finished cases by risk class. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured.",
             "default": {}
           },
           "freeze_readiness": {
@@ -7674,6 +7829,298 @@
         ],
         "title": "IndianProvider"
       },
+      "IssuerAddress": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "hop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hop"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "held",
+              "passed_through"
+            ],
+            "title": "Role",
+            "description": "held = the trace left traced USDT there; passed_through = on the Hop Rail, passed on"
+          },
+          "received": {
+            "type": "number",
+            "title": "Received",
+            "description": "Traced USDT that reached it"
+          },
+          "held": {
+            "type": "number",
+            "title": "Held",
+            "description": "Traced USDT the trace left there (not its balance today)"
+          },
+          "busy": {
+            "type": "boolean",
+            "title": "Busy",
+            "description": "A wallet with a great many counterparties (the trace's hub): probably a service",
+            "default": false
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "first_seen": {
+            "type": "string",
+            "format": "date-time",
+            "title": "First Seen"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Seen"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "frozen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frozen",
+            "description": "'Frozen by Tether on \u2026' when already frozen"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "role",
+          "received",
+          "held",
+          "asset",
+          "first_seen",
+          "last_seen",
+          "tx_hashes"
+        ],
+        "title": "IssuerAddress"
+      },
+      "IssuerDraft": {
+        "properties": {
+          "watermark": {
+            "type": "string",
+            "title": "Watermark"
+          },
+          "to": {
+            "type": "string",
+            "title": "To"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "description": "What the issuer publishes about where to write. It names no channel for submitting a request; this says so"
+          },
+          "subject": {
+            "type": "string",
+            "title": "Subject"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "type": "string",
+            "title": "Case Ref"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "traced_wallet": {
+            "type": "string",
+            "title": "Traced Wallet"
+          },
+          "evidence_fingerprint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Fingerprint",
+            "description": "The case's findings SHA-256"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Paragraphs"
+          },
+          "wallets": {
+            "items": {
+              "$ref": "#/components/schemas/IssuerAddress"
+            },
+            "type": "array",
+            "title": "Wallets"
+          },
+          "legal_provision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Provision",
+            "description": "Always null: the officer enters it"
+          },
+          "officer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Officer",
+            "description": "Always null: the officer enters it"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/IssuerPolicy"
+          },
+          "review_notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Review Notes",
+            "description": "For the reviewing officer; not part of the request"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "watermark",
+          "to",
+          "channel",
+          "subject",
+          "case_id",
+          "case_ref",
+          "chain",
+          "traced_wallet",
+          "paragraphs",
+          "wallets",
+          "policy",
+          "review_notes"
+        ],
+        "title": "IssuerDraft"
+      },
+      "IssuerPolicy": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "publisher": {
+            "type": "string",
+            "title": "Publisher"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "updated": {
+            "type": "string",
+            "title": "Updated"
+          },
+          "read": {
+            "type": "string",
+            "title": "Read"
+          },
+          "says": {
+            "type": "string",
+            "title": "Says",
+            "description": "What the policy says, in our words"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "publisher",
+          "url",
+          "updated",
+          "read",
+          "says"
+        ],
+        "title": "IssuerPolicy"
+      },
+      "IssuerRequest": {
+        "properties": {
+          "offered": {
+            "type": "boolean",
+            "title": "Offered"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "description": "Why it is or is not offered, in one sentence"
+          },
+          "draft": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IssuerDraft"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "offered",
+          "reason"
+        ],
+        "title": "IssuerRequest",
+        "description": "A draft request to the issuer of USDT to freeze traced funds at addresses outside\nany exchange. A draft: this tool never sends it."
+      },
       "JurisdictionExchange": {
         "properties": {
           "vasp": {
@@ -8474,6 +8921,112 @@
           "tier"
         ],
         "title": "LetterWallet"
+      },
+      "LinkedCase": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Ref"
+          },
+          "suspect": {
+            "type": "string",
+            "title": "Suspect",
+            "description": "The case's own wallet"
+          },
+          "hop": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hop",
+            "description": "How far the shared wallet was from it; 0 = it is the suspect wallet"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "description": "Its traced money that arrived there (for the suspect wallet: what it sent)"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset"
+          },
+          "first_arrival": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Arrival"
+          },
+          "is_suspect": {
+            "type": "boolean",
+            "title": "Is Suspect",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "case_id",
+          "suspect",
+          "amount"
+        ],
+        "title": "LinkedCase"
+      },
+      "LinkedComplaints": {
+        "properties": {
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/SharedWallet"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "cases_read": {
+            "type": "integer",
+            "title": "Cases Read",
+            "description": "Finished cases the links were looked for in"
+          },
+          "limit": {
+            "type": "string",
+            "title": "Limit",
+            "description": "What a link does not establish: show it as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "links",
+          "cases_read",
+          "limit"
+        ],
+        "title": "LinkedComplaints"
       },
       "LiveTiming": {
         "properties": {
@@ -10515,7 +11068,7 @@
               }
             ],
             "title": "Score",
-            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. null: not assessed"
+            "description": "The sum of the points of the indicators present, capped at 100. An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured. null: not assessed"
           },
           "risk_class": {
             "anyOf": [
@@ -10583,7 +11136,7 @@
           "basis": {
             "type": "string",
             "title": "Basis",
-            "default": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints."
+            "default": "An indicator score from published red-flag rules. Not a probability. Checked on 65 wallets that public sources list as illicit and 65 with a documented ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65 and 2 of 65 scored High or above, all of those through a link to another listed address. No pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are not a sample of real complaints. The indicators for an address the issuer of USDT froze were added after this check and are not measured."
           },
           "source": {
             "anyOf": [
@@ -11364,6 +11917,67 @@
         ],
         "title": "Screening",
         "description": "The check of the case's own address against the threat tags, made when the case\nis opened and before the trace starts."
+      },
+      "SharedWallet": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label",
+            "description": "The warning label it carries, if any"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Flags",
+            "description": "Warnings, in words: a threat tag, a scam or sanctions list, the issuer's freeze",
+            "default": []
+          },
+          "busy": {
+            "type": "boolean",
+            "title": "Busy",
+            "description": "A wallet with very many counterparties: most likely a service, listed last",
+            "default": false
+          },
+          "suspects": {
+            "type": "integer",
+            "title": "Suspects",
+            "description": "Different suspect wallets whose traces reached it"
+          },
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedCase"
+            },
+            "type": "array",
+            "title": "Cases"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "suspects",
+          "cases"
+        ],
+        "title": "SharedWallet",
+        "description": "A wallet the traces of two or more different suspect wallets reached (stored traces\nonly). A lead, not proof of one operation."
       },
       "SimRequest": {
         "properties": {

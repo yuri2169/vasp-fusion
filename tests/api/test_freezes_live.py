@@ -76,3 +76,19 @@ def test_the_list_is_counted_apart_and_searchable(client):
     assert all(i["chain"] == "ethereum" and i["issuer"] == "Tether" for i in r["items"])
     one = r["items"][0]["address"]
     assert client.get("/api/labels/frozen", params={"q": one[2:12]}).json()["total"] >= 1
+
+
+# ------------------------------------------------------------------ linked complaints (E7)
+def test_linked_complaints_from_the_stored_traces(client):
+    ids = [client.post("/api/cases", json={"address": SPECS[n]["address"]}).json()["id"]
+           for n in ("tron-coindcx", "tron-abstain", "tron-htx-coindcx")]
+    body = client.get("/api/linked-complaints").json()
+    S.LinkedComplaints.model_validate(body)
+    assert body["cases_read"] == 3 and "read a link with its amounts" in body["limit"]
+    [hub] = body["links"]
+    assert hub["busy"] is True and hub["suspects"] == 2
+    assert {r["case_id"] for r in hub["cases"]} == {ids[0], ids[1]}
+    case = client.get(f"/api/cases/{ids[0]}").json()
+    assert [k["address"] for k in case["related"]] == [hub["address"]]
+    assert client.get(f"/api/cases/{ids[2]}/related").json()["links"] == []
+    assert client.get("/api/cases/nope/related").status_code == 404

@@ -1129,6 +1129,32 @@ def _issuer(case_id: str) -> dict:
     return issuer_request(case)
 
 
+def _finished_cases() -> list[dict]:
+    store = _cases()
+    ids = [c["id"] for c in store.list(status="done")]
+    return [c for c in store.get_many(ids).values() if c and c.get("status") == "done"]
+
+
+@app.get("/api/linked-complaints", response_model=S.LinkedComplaints)
+def get_linked_complaints():
+    """Wallets that the traces of two or more different suspect wallets reached, read from
+    the stored traces (no chain request). Exchange, bridge, mixer, swap-service and other
+    labelled wallets are left out; a warning label or the issuer's freeze stays, named."""
+    from ..campaigns import LIMIT, linked
+    cases = _finished_cases()
+    return {"links": linked(cases), "cases_read": len(cases), "limit": LIMIT}
+
+
+@app.get("/api/cases/{case_id}/related", response_model=S.LinkedComplaints)
+def get_related(case_id: str):
+    """The wallets this case's trace shares with other cases' traces."""
+    from ..campaigns import LIMIT, related
+    if _cases().get(case_id) is None:
+        raise HTTPException(404, _no_case(case_id))
+    cases = _finished_cases()
+    return {"links": related(case_id, cases), "cases_read": len(cases), "limit": LIMIT}
+
+
 @app.get("/api/cases/{case_id}/issuer-request", response_model=S.IssuerRequest)
 def get_issuer_request(case_id: str):
     """A draft request to the issuer of USDT to freeze traced USDT at addresses outside
@@ -1896,6 +1922,9 @@ def _enrich(case: dict) -> dict:
     from ..freezes import case_freezes
     case["freezes"] = case_freezes(case)
     case["issuer_request"] = issuer_request(case) if case.get("status") == "done" else None
+    if case.get("status") == "done":
+        from ..campaigns import related
+        case["related"] = related(case["id"], _finished_cases())
     risk = R.case_risk(case)
     case["risk"] = risk
     case["risk_class"] = risk["risk_class"] if risk else None
