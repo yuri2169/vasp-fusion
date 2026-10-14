@@ -23,6 +23,7 @@ from pathlib import Path
 import yaml
 
 from .api.schemas import RISK_BASIS
+from .explain import fmt
 from .freezes import case_freezes
 from .labels.frozen import mark_text
 from .labels.threats import named as threat_words
@@ -191,7 +192,7 @@ def _found(case: dict, cfg: dict) -> list[dict]:
         inbound = m["side"] == "inbound"
         whole = case.get("total_received" if inbound else "total_sent") or 0.0
         share = m["amount"] / whole if whole else 0.0
-        amount = f"{m['amount']:,.2f} {m['asset']}" if m.get("asset") else "funds"
+        amount = fmt.amount(m["amount"], m["asset"]) if m.get("asset") else "funds"
         add("frozen_funding" if inbound else "frozen_contact",
             (f"{_short(m['id'])} funded the wallet ({amount}) and {_frozen_words(m)}" if inbound
              else f"{amount} of the traced funds reached {_short(m['id'])}, "

@@ -116,3 +116,20 @@ def test_the_interface_says_what_a_freeze_means_in_the_same_words():
     from vaspfusion.labels.frozen import MEANING
     ts = (Path(__file__).resolve().parents[1] / "ui" / "src" / "components" / "FreezeChip.tsx").read_text()
     assert MEANING.replace("'", "’") in ts
+
+
+def test_a_case_with_no_chain_is_not_looked_up():
+    assert case_freezes({"address": S}, fl(S)) == []
+
+
+def test_a_built_case_stores_none_of_the_served_views():
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from demokit import run_demo
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        c = run_demo("tron-ofac", Path(tmp) / "c.duckdb")
+    assert not {"freeze", "freezes", "issuer_request", "related"} & set(c)
+    codes = {i["code"] for i in R.case_risk(c)["indicators"]}
+    assert "frozen_contact" in codes            # every view looks the freeze list up

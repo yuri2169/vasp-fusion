@@ -292,6 +292,9 @@ def fmt_amount(d: Decimal) -> str:
     return f"{d:,.2f}".rstrip("0").rstrip(".") if d % 1 else f"{d:,.0f}"
 
 
+SERVED_ONLY = ("freeze", "freezes", "issuer_request", "related")
+
+
 def skeleton(summary: dict) -> dict:
     """A CaseDetail for a case that has no result yet (queued, running or failed)."""
     return {**summary, "hop_rail": [], "graph": {"nodes": [], "edges": []}, "candidates": [],
@@ -328,7 +331,12 @@ def build_case(tr: TraceResult, att: Attribution, *, case_id: str, meta: dict | 
         "next_steps": att.next_steps,
         "provenance": {"seed": SEED, "code_version": CODE_VERSION, **(provenance or {})},
     }
-    return S.CaseDetail.model_validate(detail).model_dump(mode="json")
+    out = S.CaseDetail.model_validate(detail).model_dump(mode="json")
+    # looked up each time the case is read (freezes.py, desk/issuer.py, campaigns.py): a
+    # stored empty value would read as "none" to every other view
+    for key in SERVED_ONLY:
+        out.pop(key, None)
+    return out
 
 
 def run_case(address: str, chain: str, provider, labels, *, case_id: str | None = None,

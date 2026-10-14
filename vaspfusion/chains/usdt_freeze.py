@@ -32,6 +32,9 @@ EVENTS = ("AddedBlackList", "RemovedBlackList")
 TOPIC = {e: "0x" + keccak256(f"{e}(address)".encode()).hex() for e in EVENTS}
 IS_BLACKLISTED = keccak256(b"isBlackListed(address)")[:4].hex()
 CONTRACT = {"tron": TRON_USDT, "ethereum": ETH_USDT}
+# each contract's page on a block explorer (cited with the snapshot, never fetched)
+EXPLORER = {"tron": f"https://tronscan.org/#/token20/{TRON_USDT}",
+            "ethereum": f"https://etherscan.io/token/{ETH_USDT}"}
 
 
 def tron_hex(address: str) -> str:

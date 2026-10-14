@@ -106,12 +106,19 @@ probability. Checked on 65 wallets that public sources list as illicit and 65 wi
 ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65
 and 2 of 65 scored High or above, all of those through a link to another listed address. No
 pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are
-not a sample of real complaints. The indicator list follows Financial Action Task Force (FATF),
-"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September
-2020; the points are this tool's.
+not a sample of real complaints. The indicators for an address the issuer of USDT froze were
+added after this check and are not measured. The indicator list follows Financial Action Task
+Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist
+Financing", September 2020; the points are this tool's.
 
     [Funds reached a sanctioned address (+100)] 99% of the funds (100,008 USDT) reached a
     sanctioned address, TFdHux…T6nXey (OFAC SDN), 1 hop away
+        tx 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
+        tx 7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07
+        tx cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9
+    [Funds reached an address the issuer of USDT froze (+45)] 100,008 USDT of the traced funds
+    reached TFdHux…T6nXey, 1 hop away, which was frozen by Tether on 4 Nov 2025 (USDT). The
+    freeze says nothing about why, or about the other wallets that dealt with it.
         tx 30e0d7db4bd64dd2ce315ae1177c43797338fc710c2deeb290b77a85fc44aa4b
         tx 7ef75861468014150f951a0984e908ebaad01a4b49fb9c299b98dc76776f2d07
         tx cfcb6036a45a564f696bc7c67d01a711bdda3729481c2d237e45d00bc71045a9

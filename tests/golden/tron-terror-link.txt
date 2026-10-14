@@ -346,13 +346,23 @@ probability. Checked on 65 wallets that public sources list as illicit and 65 wi
 ordinary purpose, none of them used to set the points, each with its own label hidden: 22 of 65
 and 2 of 65 scored High or above, all of those through a link to another listed address. No
 pattern rule fired more often on the listed wallets than on the ordinary ones. These wallets are
-not a sample of real complaints. The indicator list follows Financial Action Task Force (FATF),
-"Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist Financing", September
-2020; the points are this tool's.
+not a sample of real complaints. The indicators for an address the issuer of USDT froze were
+added after this check and are not measured. The indicator list follows Financial Action Task
+Force (FATF), "Virtual Assets - Red Flag Indicators of Money Laundering and Terrorist
+Financing", September 2020; the points are this tool's.
 
     [Funds reached a sanctioned address (+79)] 15% of the funds (17,060 USDT) reached a
     sanctioned address, TLDtPq…drVgoJ (OFAC SDN), 1 hop away; tagged terrorism financing (ISIL
     KHORASAN, OFAC SDN list) (and 1 more of this kind)
+        tx 2108152207b7d7a1bde834462c1f716316ec7f1ec4ca00244754acce42409062
+        tx 7cfbd6697980072ca9bfbaedc1215be7e4492515292156831a9bf0c2ff8026d5
+        tx 85fe0817625f534ba239ceec761693930b8e400ae2faa7afedfd6045f30a8e6a
+        tx a4566cf202f208c74d23fd0d906e8aa9f4d73b83c94461cc085e00b6cacd7b30
+        tx d8af25254f565e778e04d7483a793b9c517a8304250974a4d4b2d15f0f10a6d7
+    [Funds reached an address the issuer of USDT froze (+36)] 15,010 USDT of the traced funds
+    reached TCEe3M…s5dFTL, 1 hop away, which was frozen by Tether on 1 Jul 2026 (USDT). The
+    freeze says nothing about why, or about the other wallets that dealt with it. (and 1 more of
+    this kind)
         tx 2108152207b7d7a1bde834462c1f716316ec7f1ec4ca00244754acce42409062
         tx 7cfbd6697980072ca9bfbaedc1215be7e4492515292156831a9bf0c2ff8026d5
         tx 85fe0817625f534ba239ceec761693930b8e400ae2faa7afedfd6045f30a8e6a

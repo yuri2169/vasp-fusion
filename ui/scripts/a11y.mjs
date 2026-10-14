@@ -92,6 +92,12 @@ const ROUTES = [
   '/watchlist',
   '/cases/tron-ofac?tab=risk',
   '/cases/tron-ofac?tab=transfers',
+  '/cases/wazirx-2024', // the request to the issuer of USDT (E7)
+  '/cases/tron-coindcx/present', // present mode, its four screens (E7)
+  '/cases/tron-coindcx/present?screen=2',
+  '/cases/tron-coindcx/present?screen=3',
+  '/cases/tron-coindcx/present?screen=4',
+  '/cases/tron-abstain/present',
   '/coverage',
   '/sahyog-sim',
   `/wallets/tron/${HERO}`,

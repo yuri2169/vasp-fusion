@@ -29,7 +29,7 @@ ASSET = "USDT"
 POLICY = {
     "title": "Law Enforcement Requests Policy",
     "publisher": "Tether",
-    "url": "https://tether.to/en/legal/?tab=law-enforcement-requests",
+    "source_url": "https://tether.to/en/legal/?tab=law-enforcement-requests",
     "updated": "3 January 2018",
     "read": "14 October 2026",
     "says": ("Requests to freeze Tether addresses should be accompanied by appropriate legal "
@@ -38,7 +38,7 @@ POLICY = {
 }
 CHANNEL = (f"Tether publishes no channel for submitting a request. For inquiries about its "
            f"policies and procedures it gives inforequests@tether.to ({POLICY['publisher']}, "
-           f"{POLICY['title']}, last updated {POLICY['updated']}, {POLICY['url']}).")
+           f"{POLICY['title']}, last updated {POLICY['updated']}, {POLICY['source_url']}).")
 WATERMARK = "Draft - officer review required"
 BLANK = "____________________"
 # a wallet with one of these labels is a service that can be asked itself, or a contract
@@ -140,7 +140,7 @@ def _draft(case: dict, wallets: list[dict], already: list[dict]) -> dict:
     ]
     notes = [
         f"Tether's own published policy ({POLICY['title']}, last updated {POLICY['updated']}, "
-        f"{POLICY['url']}, read {POLICY['read']}) says a request to freeze should come with "
+        f"{POLICY['source_url']}, read {POLICY['read']}) says a request to freeze should come with "
         "appropriate legal process. Attach it, and enter the legal provision above.",
         "Tether names no channel for submitting a request. The address it gives "
         "(inforequests@tether.to) is for inquiries about its policies and procedures.",
@@ -162,7 +162,8 @@ def _draft(case: dict, wallets: list[dict], already: list[dict]) -> dict:
         "traced_wallet": case["address"], "evidence_fingerprint": fp,
         "paragraphs": paragraphs, "wallets": wallets,
         "legal_provision": None, "officer": None,
-        "policy": POLICY, "review_notes": notes,
+        "policy": {**{k: v for k, v in POLICY.items() if k != "source_url"},
+                   "url": POLICY["source_url"]}, "review_notes": notes,
     }
 
 

@@ -150,9 +150,8 @@ def cmd_frozen(args) -> None:
              for c in ("tron", "ethereum") for e in UF.EVENTS}
     meta = {
         "source": FZ.SOURCE,
-        "contracts": {c: {"address": a, "explorer": (
-            f"https://tronscan.org/#/token20/{a}" if c == "tron"
-            else f"https://etherscan.io/token/{a}")} for c, a in FZ.CONTRACTS.items()},
+        "contracts": {c: {"address": a, "explorer": UF.EXPLORER[c]}
+                      for c, a in FZ.CONTRACTS.items()},
         "read_with": {"tron": "TronGrid /v1/contracts/{contract}/events (api.trongrid.io)",
                       "ethereum": "Etherscan logs/getLogs (api.etherscan.io/v2)",
                       "check": "isBlackListed(address) by eth_call (TronGrid JSON-RPC, "

@@ -41,7 +41,10 @@ def case_freezes(case: dict, freeze_list: FreezeList | None = None) -> list[dict
                       "frozen_at": hit["frozen_at"], "tx_hash": hit["tx_hash"],
                       "contract": hit["contract"], "text": mark_text(hit)})
 
-    add(case["address"], case["address"], case["chain"], "origin", "origin", 0,
+    chain = case.get("chain")
+    if chain is None or not case.get("address"):
+        return []                       # not a case this can place on a chain
+    add(case["address"], case["address"], chain, "origin", "origin", 0,
         case.get("total_sent") or 0.0, case.get("asset"), [])
     for n in nodes:
         if n.get("role") == "suspect":
@@ -51,7 +54,7 @@ def case_freezes(case: dict, freeze_list: FreezeList | None = None) -> list[dict
         side = "outbound" if into or not out_of else "inbound"
         moved = into if side == "outbound" else out_of
         address = n.get("address") or n["id"].rpartition(":")[2]
-        add(n["id"], address, n.get("chain") or case["chain"],
+        add(n["id"], address, n.get("chain") or chain,
             "path" if address in on_path else "graph", side, n.get("hop") or 0,
             float(sum(e.get("traced_amount") or 0.0 for e in moved)),
             (moved[0].get("asset") if moved else None) or case.get("asset"),

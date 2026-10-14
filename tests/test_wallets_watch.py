@@ -111,8 +111,9 @@ def test_a_new_exchange_and_a_new_alert_are_named(ofac, hero):
     found = changes(snapshot(before), hero)
     assert [c["text"] for c in found if c["kind"] == "new_exchange"] == [
         "New exchange contact: CoinDCX was reached, 1 hop away"]
-    quiet = {**ofac, "typology_flags": [f for f in ofac["typology_flags"]
-                                        if f["severity"] != "high"]}
+    # a baseline taken before anything was known of it: no alert, no freeze mark
+    quiet = {**ofac, "freezes": [], "typology_flags": [f for f in ofac["typology_flags"]
+                                                        if f["severity"] != "high"]}
     found = changes(snapshot(quiet), ofac)
     alert = next(c for c in found if c["kind"] == "new_alert")
     assert alert["severity"] == "high" and "sanctioned" in alert["text"]
