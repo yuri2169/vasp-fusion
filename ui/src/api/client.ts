@@ -46,8 +46,7 @@ import type {
   WalletDetail,
   WatchCreate,
   WatchItem,
-  WatchList,
-} from './models'
+  WatchList, FrozenSearch } from './models'
 
 /** An error the officer can read: `detail` is the server's sentence (what happened, what to do). */
 export class ApiError extends Error {
@@ -186,11 +185,15 @@ export function createApi(transport: Transport) {
     caseContext: (id: string, wallet?: string | null) => get<CaseContext>(`/cases/${seg(id)}/context`, wallet ? { wallet } : undefined),
     verifyCase: (id: string) => call<VerifyResult>('POST', `/cases/${seg(id)}/verify`),
     caseFileUrl: (id: string) => `/api/cases/${seg(id)}/pdf`,
+    /** The draft request to the issuer of USDT as A4 (409 when none is offered). */
+    issuerRequestPdfUrl: (id: string) => `/api/cases/${seg(id)}/issuer-request.pdf`,
 
     wallet: (chain: Chain, address: string) => get<WalletDetail>(`/wallets/${seg(chain)}/${seg(address)}`),
     labelSearch: (query: LabelQuery) => get<LabelSearch>('/labels/search', query),
     /** How many labels the store holds, by chain, category, tier and source. */
     labelCoverage: () => get<LabelCoverage>('/labels/coverage'),
+    /** The issuer of USDT's freeze list as held (a dated snapshot). */
+    frozenSearch: (query: { q?: string; chain?: 'tron' | 'ethereum'; limit?: number }) => get<FrozenSearch>('/labels/frozen', query),
 
     watchlist: () => get<WatchList>('/watchlist'),
     watch: (body: WatchCreate) => call<WatchItem>('POST', '/watchlist', { body }),

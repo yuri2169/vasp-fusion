@@ -4,7 +4,7 @@
  *  The layout is ours, not a library's: a column per hop (funders to the left of the wallet
  *  the case is about), and the path the Hop Rail shows kept on the first line, so the graph
  *  reads as the rail with its side branches hanging under it. Same case, same picture. */
-import type { CaseDetail, ContextEdge, Crossing, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
+import type { CaseDetail, ContextEdge, Crossing, FreezeMark, GraphEdge, GraphNode, LabelOut, Tier } from '../api/models'
 import { walletId } from './chains'
 
 export type Role = GraphNode['role']
@@ -40,6 +40,8 @@ export interface FlowNode {
   at?: { x: number; y: number }
   /** Not part of the trail: a wallet on another transfer of a wallet the trace read (lib/context.ts). */
   context?: true
+  /** The issuer of USDT froze this wallet (`CaseDetail.freezes`): a mark, not an owner. */
+  frozen?: FreezeMark
 }
 
 export type FanSide = 'in' | 'out'
@@ -133,6 +135,7 @@ export function buildFlow(c: CaseDetail, opts: FlowOptions = {}): FlowView {
 
   const named = (n: GraphNode) => c.outcome === 'ATTRIBUTED' && !!c.top_vasp && n.id !== suspect && (n.cluster ?? n.label?.entity) === c.top_vasp
 
+  const frozen = new Map((c.freezes ?? []).map((m) => [m.id, m]))
   const nodes = new Map<string, FlowNode>()
   for (const n of raw) {
     const id = idOf.get(n.id)!
@@ -154,6 +157,7 @@ export function buildFlow(c: CaseDetail, opts: FlowOptions = {}): FlowView {
         members: [n.id],
         received: 0,
         sent: 0,
+        ...(id === n.id && frozen.has(n.id) ? { frozen: frozen.get(n.id) } : {}),
       })
       continue
     }

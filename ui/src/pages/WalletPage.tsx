@@ -1,4 +1,5 @@
 import { Eye, EyeOff } from 'lucide-react'
+import { FreezeChip } from '../components/FreezeChip'
 import { ThreatChip, threatOf } from '../components/ThreatChip'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
@@ -165,6 +166,7 @@ export function WalletPage() {
             <span className="font-mono text-lg font-medium normal-case tracking-normal [overflow-wrap:anywhere]">{address}</span>
             <CopyButton value={address} label="Copy the address" />
             <ThreatChip tag={threatOf(label)} />
+            {w?.freeze && <FreezeChip mark={w.freeze} />}
           </span>
         }
         meta={

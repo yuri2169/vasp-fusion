@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import type { ThreatTag } from '../api/models'
+import type { FreezeMark, ThreatTag } from '../api/models'
+import { FreezeChip } from './FreezeChip'
 import { ThreatChip } from './ThreatChip'
 import type { Chain, Hop, Tier } from '../api/models'
 import { CHAINS, walletId } from '../lib/chains'
@@ -19,7 +20,7 @@ export interface HopRailProps {
   /** What the case came to; drawn as the docket stamp the rail ends in. */
   stamp: Omit<OutcomeStampProps, 'size' | 'tilt'>
   /** Owners of labelled wallets on the path, by wallet id (from `CaseDetail.graph.nodes`). */
-  labels?: Record<string, { entity: string; tier: Tier; threat?: ThreatTag }>
+  labels?: Record<string, { entity?: string; tier?: Tier; threat?: ThreatTag; freeze?: FreezeMark }>
   /** 'tracing' while the case is queued or running: the wallet, and a line still being drawn. */
   state?: 'tracing' | 'done'
   /** While tracing: how many hops out the trace has gone so far (`CaseDetail.progress.hop`). */
@@ -213,6 +214,7 @@ export function HopRail({
                     {...pick(to)}
                   />
                   {labels[to]?.threat && <ThreatChip tag={labels[to].threat} size="sm" />}
+                  {labels[to]?.freeze && <FreezeChip mark={labels[to].freeze} size="sm" />}
                 </span>
               </li>
             )

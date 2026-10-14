@@ -13,6 +13,7 @@ import { ErrorState } from '../components/ErrorState'
 import { PageHeader } from '../components/PageHeader'
 import { TierTag, TIERS } from '../components/TierTag'
 import { formatConfidence, formatPercent } from '../lib/format'
+import { FrozenListPanel } from '../overview/FrozenListPanel'
 import { IndianProviders } from '../overview/IndianProviders'
 import { Panel } from '../overview/parts'
 import { CATEGORY_NAMES, categoryName, chainName, count, isChain, plural } from '../overview/words'
@@ -238,6 +239,7 @@ function CoveragePanels({ cov, pick }: { cov: LabelCoverage; pick: (key: string,
         </Panel>
       )}
       {cov.indian_providers && <IndianProviders india={cov.indian_providers} />}
+      {cov.frozen && <FrozenListPanel frozen={cov.frozen} />}
     </div>
   )
 }

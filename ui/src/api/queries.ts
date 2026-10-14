@@ -73,6 +73,9 @@ export function useCase(id: string) {
   })
 }
 
+export const useFrozenSearch = (q: string, chain: 'tron' | 'ethereum' | undefined) =>
+  useQuery({ queryKey: ['labels', 'frozen', q, chain ?? ''], queryFn: () => api.frozenSearch({ q: q || undefined, chain, limit: 20 }) })
+
 export const useLabelSearch = (query: LabelQuery, enabled = true) =>
   useQuery({ queryKey: keys.labels(query), queryFn: () => api.labelSearch(query), enabled })
 

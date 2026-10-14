@@ -3,7 +3,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { CHAINS } from '../lib/chains'
 import { TxChains } from '../lib/txChains'
 import { threatOf } from '../components/ThreatChip'
-import type { ThreatTag } from '../api/models'
+import type { FreezeMark, ThreatTag } from '../api/models'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import { API_MODE, api } from '../api/api'
 import { ApiError } from '../api/client'
@@ -17,6 +17,7 @@ import { TraceProgress } from '../case/TraceProgress'
 import { WalletPanel } from '../case/WalletPanel'
 import { AuditTab } from '../case/tabs/AuditTab'
 import { EventsTab } from '../case/tabs/EventsTab'
+import { IssuerRequestPanel } from '../case/IssuerRequestPanel'
 import { WriteOrderPanel } from '../case/WriteOrderPanel'
 import { InboundTab } from '../case/tabs/InboundTab'
 import { PatternsTab } from '../case/tabs/PatternsTab'
@@ -30,6 +31,7 @@ import { ErrorState } from '../components/ErrorState'
 import { FundsBar } from '../components/FundsBar'
 import { HopRail } from '../components/HopRail'
 import { PageHeader } from '../components/PageHeader'
+import { FreezeNote } from '../components/FreezeChip'
 import { ScreeningNote, ThreatChips } from '../components/ThreatChip'
 import { RiskPanel } from '../components/RiskPanel'
 import { JurisdictionPanel } from '../overview/JurisdictionPanel'
@@ -45,10 +47,12 @@ import { formatDate, formatInr } from '../lib/format'
 const FlowGraph = lazy(() => import('../case/FlowGraph').then((m) => ({ default: m.FlowGraph })))
 
 /** Owners of the labelled wallets in a case, by address, for the Hop Rail's chips. */
-function labelsOf(c: CaseDetail): Record<string, { entity: string; tier: Tier; threat?: ThreatTag }> {
-  const out: Record<string, { entity: string; tier: Tier; threat?: ThreatTag }> = {}
+function labelsOf(c: CaseDetail): Record<string, { entity?: string; tier?: Tier; threat?: ThreatTag; freeze?: FreezeMark }> {
+  const out: Record<string, { entity?: string; tier?: Tier; threat?: ThreatTag; freeze?: FreezeMark }> = {}
   for (const node of c.graph.nodes)
     if (node.label) out[node.id] = { entity: node.label.entity, tier: node.label.tier, threat: threatOf(node.label) ?? undefined }
+  // the issuer's freeze is a mark beside the owner, never a name: an unlabelled wallet keeps no owner
+  for (const m of c.freezes ?? []) if (m.where !== 'origin') out[m.id] = { ...out[m.id], freeze: m }
   return out
 }
 
@@ -279,8 +283,9 @@ export function CasePage() {
     return (
       <>
         {header}
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col gap-2">
           <ScreeningNote screening={c.screening} />
+          <FreezeNote marks={c.freezes} />
         </div>
         {rail}
         <TraceProgress
@@ -304,6 +309,12 @@ export function CasePage() {
           Tracing again. This is the previous result; the new one replaces it when it is ready.
           {c.progress && <span className="mt-1 block text-muted">{c.progress.message}</span>}
         </p>
+      )}
+
+      {(c.freezes?.length ?? 0) > 0 && (
+        <div className="mb-4">
+          <FreezeNote marks={c.freezes} />
+        </div>
       )}
 
       {rail}
@@ -352,6 +363,7 @@ export function CasePage() {
       </div>
 
       {c.write_order && !tracing && <WriteOrderPanel order={c.write_order} caseId={c.id} />}
+      {c.issuer_request?.offered && !tracing && API_MODE === 'live' && <IssuerRequestPanel request={c.issuer_request} caseId={c.id} chain={c.chain} />}
 
       <div className="mt-6">
         <Tabs label="Case records" tabs={tabs} active={tab} onChange={(next) => setParam('tab', next === 'timeline' ? null : next)}>

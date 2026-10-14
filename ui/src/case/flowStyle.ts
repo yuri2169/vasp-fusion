@@ -107,10 +107,15 @@ function captionOf(n: FlowNode): string | null {
   if (n.role === 'suspect') return 'Suspect'
   // a tagged wallet says what it is tagged as, in words, beside the warning sign
   if (n.label?.threat) return `\u26A0 ${THREATS[n.label.threat].name}: ${n.label.threat_entity ?? n.entity ?? ''}`.replace(/: $/, '')
+  // the issuer's freeze, in its own words, beside the snowflake (an owner's name, if any, is on the wallet panel)
+  if (n.frozen) return `${FROZEN_MARK} ${n.frozen.text}`
   if (n.entity) return n.entity
   if (n.role === 'hub') return 'Busy wallet'
   return null
 }
+
+/** The mark a frozen wallet's caption starts with. */
+export const FROZEN_MARK = '\u2744'
 
 /** The mark a cross-chain line wears on the canvas, before the bridge's name. */
 export const BRIDGE_MARK = '\u21C4'
@@ -191,7 +196,7 @@ export function toElements(view: FlowView, flows?: ReadonlyMap<string, FlowRisk>
         group: 'nodes',
         data: { id: `caption:${n.id}`, owner: n.id, label: caption },
         position: { x: position.x, y: captionY(position.y, side) },
-        classes: n.label?.threat && n.role !== 'suspect' ? 'caption threat' : 'caption',
+        classes: n.role === 'suspect' ? 'caption' : n.label?.threat ? 'caption threat' : n.frozen ? 'caption frozen' : 'caption',
         selectable: false,
         grabbable: false,
       })
@@ -449,6 +454,7 @@ export function stylesheet(t: ThemeColors): StylesheetJsonBlock[] {
       },
     },
     { selector: 'node.caption.threat', style: { color: t.seal } },
+    { selector: 'node.caption.frozen', style: { color: t.chain } },
 
     // --- transfers --------------------------------------------------------
     {

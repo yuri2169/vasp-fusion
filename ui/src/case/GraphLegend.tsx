@@ -2,7 +2,7 @@ import type { Tier } from '../api/models'
 import { TIERS } from '../components/TierTag'
 import type { FlowView, Role } from '../lib/caseGraph'
 import { ROLE_NAMES, ROLE_ORDER } from './caseText'
-import { RISK_MARK } from './flowStyle'
+import { FROZEN_MARK, RISK_MARK } from './flowStyle'
 import { iconMarkup, ROLE_ICONS } from './roleIcons'
 
 const BOX = { w: 30, h: 20 }
@@ -164,6 +164,14 @@ export function GraphLegend({ view, named, flagged = false }: { view: FlowView; 
               <rect x={21.5} y={5.5} width={8} height={8} fill="var(--surface-2)" stroke="var(--data)" />
             </svg>
             Other transfers (context, not the suspect's money)
+          </li>
+        )}
+        {view.nodes.some((n) => n.frozen) && (
+          <li className={item}>
+            <span aria-hidden className="inline-flex w-[30px] shrink-0 justify-center text-sm font-semibold text-chain">
+              {FROZEN_MARK}
+            </span>
+            Frozen by the issuer of USDT, with the date (it does not say why)
           </li>
         )}
         {flagged && (
