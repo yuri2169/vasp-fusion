@@ -55,6 +55,7 @@ def wallet_view(address: str, chain: str, cases: list[dict], label: dict | None)
         used += hit
 
     mine = [c for c in cases if c.get("chain") == chain]
-    return {"risk": wallet_risk(address, label, mine),
+    from .labels.frozen import FreezeList
+    return {"risk": wallet_risk(address, label, mine, freeze=FreezeList.load().lookup(address, chain)),
             "inbound": _flow(inbound, "source"), "outbound": _flow(outbound, "target"),
             "flows_from_cases": used}

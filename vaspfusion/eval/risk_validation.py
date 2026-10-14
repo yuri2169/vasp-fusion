@@ -135,6 +135,8 @@ def slim(case: dict) -> dict:
         "where_funds_went": [{"kind": s["kind"], "name": s.get("name"), "share": s["share"]}
                              for s in case.get("where_funds_went", [])],
         "hop_rail": [{"tx_hash": h["tx_hash"]} for h in case.get("hop_rail") or []],
+        # both measurements predate the freeze indicators (config/risk.yaml): none counted
+        "freezes": [],
     }
 
 
@@ -225,7 +227,8 @@ def score_view(row: dict, view: str, cfg: dict) -> dict:
         return {"error": case["error"], "traced": False, "score": None, "risk_class": None,
                 "indicators": [], "rules": [], "behaviour_score": None, "outcome": None}
     label = row["own_label"] if view == "as_shown" else None
-    risk = R.wallet_risk(row["address"], label, [case], cfg)
+    # measured before the freeze indicators existed (config/risk.yaml): scored without them
+    risk = R.wallet_risk(row["address"], label, [{**case, "freezes": []}], cfg)
     codes = [i["code"] for i in risk["indicators"]]
     behaviour = min(100, sum(i["points"] for i in risk["indicators"] if i["code"] in BEHAVIOUR))
     return {"traced": bool(case["graph"]["edges"]), "score": risk["score"],
@@ -341,7 +344,9 @@ def measure(corpus: dict, rows: dict, cfg: dict | None = None, *, config_sha256:
             },
             "rules": rules,
             "rules_traced": _fired(by_arm, RULES, "rules", traced_only=True),
-            "indicators": _fired(by_arm, R.CODES, "indicators", traced_only=False),
+            # the indicators this measurement had (the freeze ones came after it)
+            "indicators": _fired(by_arm, [c for c in R.CODES if c not in R.LATER],
+                                 "indicators", traced_only=False),
             "by_stratum": _groups(wallets, scored, "stratum"),
             "by_chain": _groups(wallets, scored, "chain"),
         }

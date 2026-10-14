@@ -6,7 +6,7 @@ RESEARCH ?= ../research/data
 # Any ETHERSCAN_API_KEY selects the backend those pages were recorded from; it is never sent.
 OFFLINE_ENV = OFFLINE=1 ETHERSCAN_API_KEY=$${ETHERSCAN_API_KEY:-offline-replay} VASPFUSION_CHAIN_CACHE=data/demo_cache.duckdb
 
-.PHONY: help setup labels demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing freeze-readiness live-timing bench-scale offline-check reproduce conformance portal serve-pair docker docker-up docker-down docker-smoke clean
+.PHONY: help setup labels frozen demo-labels offline-demo offline-serve tagpacks threats discover discover-run discover-eval model-data model abstain-eval benchmark risk-validation risk-validation-trace test serve fetch trace demo demo-cache verify case-pdf audit desk letter mocks openapi types ui-setup ui-dev ui-test ui-build ui-shots ui-perf ui-a11y demo-flow final-shots intake-timing freeze-readiness live-timing bench-scale offline-check reproduce conformance portal serve-pair docker docker-up docker-down docker-smoke clean
 
 help:
 	@grep -E '^[a-z-]+:.*?##' $(MAKEFILE_LIST) | sed 's/:.*##/\t/' | expand -t18
@@ -37,6 +37,9 @@ tagpacks:         ## flatten the GraphSense exchange TagPacks ($(RESEARCH)/graph
 threats:          ## flatten the threat sources ($(RESEARCH)/threats: OFAC SDN XML, Ransomwhere, GraphSense) into data/threat_tags.csv, which `make labels` joins on
 	$(PY) -m vaspfusion.cli threats --raw "$(RESEARCH)/threats"
 
+frozen:           ## USDT's freeze list read from the token contracts (Tron, Ethereum) into data/usdt_frozen.csv + .json, a dated snapshot (network; OFFLINE=1 replays data/freeze_cache.duckdb)
+	$(PY) -m vaspfusion.cli frozen
+
 discover:         ## derive Tron deposit addresses into derived/ (cached; OFFLINE=1 replays), then `make labels`
 	$(PY) -m vaspfusion.cli discover --chain tron
 	$(PY) -m vaspfusion.cli discover --chain tron --entities CoinDCX --since 2026-08-01 --name tron_coindcx_aug
@@ -62,7 +65,7 @@ abstain-eval:     ## measure the abstain threshold on label-hidden traces of rea
 benchmark:        ## measure attribution on every chain beside the naive baseline (cached in data/benchmark_cache/; OFFLINE=1 replays; BENCH_CHAIN=ethereum for one)
 	$(PY) -m vaspfusion.cli benchmark --chain "$(BENCH_CHAIN)" --commit "$$(git rev-parse --short HEAD)"
 
-risk-validation:  ## the risk score and the pattern rules on both validation sets, from the tracked traced cases (no network) -> artifacts/risk_validation_v1 (the first set, the points as they were) and _v2 (a fresh set, the points in use)
+risk-validation:  ## the risk score and the pattern rules on both validation sets, from the tracked traced cases (no network) -> artifacts/risk_validation_v1 (the first set, the points as they were) and _v2 (a fresh set, the points of 8 Oct 2026; the copy kept beside each)
 	$(PY) -m vaspfusion.cli risk-validation --set v1
 	$(PY) -m vaspfusion.cli risk-validation --set v2
 

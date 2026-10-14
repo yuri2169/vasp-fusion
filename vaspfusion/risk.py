@@ -23,6 +23,8 @@ from pathlib import Path
 import yaml
 
 from .api.schemas import RISK_BASIS
+from .freezes import case_freezes
+from .labels.frozen import mark_text
 from .labels.threats import named as threat_words
 from .labels.threats import tag_of
 
@@ -48,7 +50,19 @@ CODES = ("sanctioned_self", "sanctioned_contact", "sanctioned_funding", "mixer_s
          "mixer_contact", "mixer_funding", "threat_self", "threat_contact", "threat_funding",
          "coinjoin_shape", "scam_self", "scam_contact",
          "bridge_hop", "swap_service", "peel_chain", "rapid_forwarding", "fan_out", "fan_in",
-         "round_amounts", "unlabelled_hub")
+         "round_amounts", "unlabelled_hub", "frozen_self", "frozen_contact", "frozen_funding")
+
+
+def _frozen_words(m: dict) -> str:
+    """'was frozen by Tether on 4 Nov 2025 (USDT)'."""
+    return f"was f{m['text'][1:]} ({m['frozen_asset']})"
+
+
+# Indicators added after both measurements (artifacts/risk_validation_v1, _v2). A config
+# written before them (the copies kept beside those measurements) counts them as nothing.
+LATER = {"frozen_self": "The issuer of USDT froze the address",
+         "frozen_contact": "Funds reached an address the issuer of USDT froze",
+         "frozen_funding": "Funded by an address the issuer of USDT froze"}
 
 
 class RiskConfigError(ValueError):
@@ -64,6 +78,9 @@ def _load(path: str) -> dict:
             sorted(classes.values()) != list(classes.values()) or \
             len(set(classes.values())) != 4 or classes["severe"] > 100:
         raise RiskConfigError("classes must be low: 0 < medium < high < severe <= 100")
+    if not any(c in inds for c in LATER):     # written before them: they count as nothing
+        for code, name in LATER.items():
+            inds[code] = {"name": name, "points": 0, "fatf_category": "Source of funds or wealth"}
     missing = [c for c in CODES if c not in inds]
     if missing:
         raise RiskConfigError(f"indicators missing: {', '.join(missing)}")
@@ -165,6 +182,23 @@ def _found(case: dict, cfg: dict) -> list[dict]:
                 add("swap_service", f"Funds went into a swap service, {_short(n['id'])} "
                                     f"({named})", n["id"], paid)
 
+    marks = case.get("freezes")
+    for m in case_freezes(case) if marks is None else marks:
+        if m["where"] == "origin":
+            add("frozen_self", f"The wallet itself {_frozen_words(m)}. The issuer's freeze does "
+                               "not say why.", m["id"], [])
+            continue
+        inbound = m["side"] == "inbound"
+        whole = case.get("total_received" if inbound else "total_sent") or 0.0
+        share = m["amount"] / whole if whole else 0.0
+        amount = f"{m['amount']:,.2f} {m['asset']}" if m.get("asset") else "funds"
+        add("frozen_funding" if inbound else "frozen_contact",
+            (f"{_short(m['id'])} funded the wallet ({amount}) and {_frozen_words(m)}" if inbound
+             else f"{amount} of the traced funds reached {_short(m['id'])}, "
+                  f"{m['hop']} hop{'s' if m['hop'] != 1 else ''} away, which {_frozen_words(m)}")
+            + ". The freeze says nothing about why, or about the other wallets that dealt "
+              "with it.", m["id"], m["tx_hashes"], share, m["hop"] or 1)
+
     hub = sum(s["share"] for s in case.get("where_funds_went", []) if s["kind"] == "hub")
     if hub >= cfg["indicators"]["unlabelled_hub"].get("min_share", 0.5):
         hubs = {n["id"] for n in case.get("graph", {}).get("nodes", []) if n.get("is_hub")}
@@ -265,13 +299,13 @@ def summary(case: dict | None, cfg: dict | None = None) -> dict:
 
 
 def wallet_risk(address: str, label: dict | None, cases: list[dict],
-                cfg: dict | None = None) -> dict:
+                cfg: dict | None = None, freeze: dict | None = None) -> dict:
     """`RiskInfo` of one address: its own label, the pattern flags that name it in any
     stored case, and, where it is the wallet a case traced, that case's indicators.
     Not assessed (class null) when it has no label and is in no finished case."""
     cfg = cfg or load_config()
     done = [c for c in cases if c.get("status") == "done"]
-    if not label and not done:
+    if not label and not done and not freeze:
         return {"score": None, "risk_class": None, "indicators": [], "reasons": [], "flows": [],
                 "path_class": None, "basis": RISK_BASIS, "source": cfg["source"]}
     found: list[dict] = []
@@ -289,6 +323,11 @@ def wallet_risk(address: str, label: dict | None, cases: list[dict],
         found.append({"code": "threat_self", "points": _points(cfg, "threat_self"),
                       "wallet": address, "tx_hashes": [],
                       "text": f"This address is tagged {threat_words(tag)}.{said}"})
+    if freeze:              # a row of the issuer's freeze list (labels/frozen.py)
+        found.append({"code": "frozen_self", "points": _points(cfg, "frozen_self"),
+                      "wallet": address, "tx_hashes": [],
+                      "text": f"This address {_frozen_words({'text': mark_text(freeze), 'frozen_asset': freeze['asset']})}"
+                              ". The issuer's freeze does not say why."})
     for case in done:
         if case.get("address") == address:
             mine = [i for i in _found(case, cfg) if not i["code"].endswith("_self")]

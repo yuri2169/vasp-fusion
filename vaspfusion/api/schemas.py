@@ -75,7 +75,21 @@ def _risk_basis() -> str:
             f"with its own label hidden: "
             f"{p['high_or_above']} of {p_n} and {c['high_or_above']} of {c_n} scored High or "
             f"above, {how} through a link to another listed address. {rules}. These wallets "
-            "are not a sample of real complaints.")
+            "are not a sample of real complaints." + _unmeasured(path.parent / "risk.yaml"))
+
+
+def _unmeasured(measured: Path) -> str:
+    """A sentence naming the indicators in use that the measurement did not have."""
+    import yaml
+    try:
+        now = yaml.safe_load((measured.parents[2] / "config" / "risk.yaml").read_text())
+        then = yaml.safe_load(measured.read_text())
+    except OSError:
+        return ""
+    added = [v["name"] for k, v in now["indicators"].items() if k not in then["indicators"]]
+    if not added:
+        return ""
+    return (f" Added after this check and not measured: {'; '.join(added)}.")
 
 
 RISK_BASIS = _risk_basis()
@@ -312,6 +326,87 @@ class ScaleMetrics(_M):
         "Seconds per live trace by chain, beside the replayed figures above"))
 
 
+class FreezeMark(_M):
+    """An address the issuer of USDT has frozen (the token contract's blacklist, read from
+    its own events: labels/frozen.py). It establishes that the issuer froze the address on
+    that date and had not released it when the list was read. It does not give the
+    reason, and it says nothing about anyone who dealt with the address. A mark, never the
+    name of an owner: a trace walks through a frozen address."""
+    id: str = Field(description="The graph node id (`chain:address` on another chain)")
+    address: str
+    chain: str
+    where: Literal["origin", "path", "graph"] = Field(description=(
+        "origin = the case's own wallet; path = on the Hop Rail; graph = elsewhere in the trace"))
+    side: Literal["origin", "outbound", "inbound"]
+    hop: int
+    amount: float = Field(description=(
+        "Traced money that reached it (outbound), or that it sent the wallet (inbound), "
+        "in `asset`; for the case's own wallet, what it sent"))
+    asset: str | None = None
+    tx_hashes: list[str] = Field([], description="The case's transfers into (or out of) it")
+    issuer: str = Field(description="Tether")
+    frozen_asset: str = Field(description="USDT")
+    frozen_at: datetime = Field(description="When the issuer last put it on the blacklist")
+    tx_hash: str = Field(description="The issuer's transaction that froze it")
+    contract: str = Field(description="The token contract whose blacklist it is on")
+    text: str = Field(description="'Frozen by Tether on 3 Aug 2024': show as it is")
+
+
+class IssuerAddress(_M):
+    address: str
+    chain: str
+    hop: int | None = None
+    role: Literal["held", "passed_through"] = Field(description=(
+        "held = the trace left traced USDT there; passed_through = on the Hop Rail, passed on"))
+    received: float = Field(description="Traced USDT that reached it")
+    held: float = Field(description="Traced USDT the trace left there (not its balance today)")
+    busy: bool = Field(False, description=(
+        "A wallet with a great many counterparties (the trace's hub): probably a service"))
+    asset: str
+    first_seen: datetime
+    last_seen: datetime
+    tx_hashes: list[str]
+    label: str | None = None
+    frozen: str | None = Field(None, description="'Frozen by Tether on …' when already frozen")
+
+
+class IssuerPolicy(_M):
+    title: str
+    publisher: str
+    url: str
+    updated: str
+    read: str
+    says: str = Field(description="What the policy says, in our words")
+
+
+class IssuerDraft(_M):
+    watermark: str
+    to: str
+    channel: str = Field(description=(
+        "What the issuer publishes about where to write. It names no channel for "
+        "submitting a request; this says so"))
+    subject: str
+    case_id: str
+    case_ref: str
+    chain: str
+    traced_wallet: str
+    evidence_fingerprint: str | None = Field(None, description="The case's findings SHA-256")
+    paragraphs: list[str]
+    wallets: list[IssuerAddress]
+    legal_provision: str | None = Field(None, description="Always null: the officer enters it")
+    officer: str | None = Field(None, description="Always null: the officer enters it")
+    policy: IssuerPolicy
+    review_notes: list[str] = Field(description="For the reviewing officer; not part of the request")
+
+
+class IssuerRequest(_M):
+    """A draft request to the issuer of USDT to freeze traced funds at addresses outside
+    any exchange. A draft: this tool never sends it."""
+    offered: bool
+    reason: str = Field(description="Why it is or is not offered, in one sentence")
+    draft: IssuerDraft | None = None
+
+
 class Screening(_M):
     """The check of the case's own address against the threat tags, made when the case
     is opened and before the trace starts."""
@@ -348,6 +443,10 @@ class CaseSummary(_M):
     demo: bool = False
     error: str | None = Field(None, description="Set when status is 'failed': what went "
                                                 "wrong, in plain English")
+    freeze: FreezeMark | None = Field(None, description=(
+        "Set on the answer to opening a case when the issuer of USDT has frozen the "
+        "address itself (screening, like `screening`). A served case carries it in "
+        "`freezes` (where = origin). Never part of the case's digests"))
     screening: Screening | None = Field(None, description=(
         "Present from the moment the case is opened (also while queued or running). null "
         "on a case stored before screening existed"))
@@ -783,6 +882,12 @@ class CaseDetail(CaseSummary):
     destinations_by_jurisdiction: DestinationsByJurisdiction | None = Field(None, description=(
         "This case's routed exchanges by cited jurisdiction. Worked out when the case is "
         "read; never stored. null on a mock case"))
+    freezes: list[FreezeMark] = Field([], description=(
+        "The case's wallets the issuer of USDT has frozen: its own, on the Hop Rail, or "
+        "elsewhere in the trace. Looked up when the case is read; never stored"))
+    issuer_request: IssuerRequest | None = Field(None, description=(
+        "Whether a draft request to the issuer of USDT is offered for this case, and the "
+        "draft. Worked out when the case is read; never stored"))
     risk: RiskInfo | None = Field(None, description=(
         "Wallet and flow risk of a finished case. Worked out when the case is read from "
         "its stored flags, labels and transfers; never stored, so it is not part of the "
@@ -885,6 +990,8 @@ class WalletDetail(_M):
     address: str
     chain: TraceChain
     labels: list[LabelOut]
+    freeze: FreezeMark | None = Field(None, description=(
+        "Set when the issuer of USDT has frozen this address"))
     risk: RiskInfo
     cases: list[WalletCaseRef]
     inbound: FlowSummary | None = None
@@ -1274,6 +1381,36 @@ class IndianCoverage(_M):
     providers: list[IndianProvider]
 
 
+class FrozenCoverage(_M):
+    """The issuer's freeze list as held: a dated snapshot of USDT's blacklist."""
+    total: int
+    by_chain: dict[str, int]
+    cutoff: datetime | None = Field(None, description="The list as it stood at this moment")
+    fetched_at: datetime | None = None
+    source: str
+    meaning: str = Field(description="What a match establishes and what it does not")
+    check: str | None = Field(None, description=(
+        "How a seeded sample compared with the contract's own `isBlackListed` call"))
+
+
+class FrozenRow(_M):
+    address: str
+    chain: str
+    asset: str
+    issuer: str
+    frozen_at: datetime
+    tx_hash: str
+    contract: str
+
+
+class FrozenSearch(_M):
+    query: str
+    total: int
+    limit: int
+    offset: int
+    items: list[FrozenRow]
+
+
 class LabelCoverage(_M):
     total: int
     by_category: dict[str, int]
@@ -1288,6 +1425,9 @@ class LabelCoverage(_M):
     indian_providers: IndianCoverage | None = Field(None, description=(
         "On `GET /api/labels/coverage` only (null inside the dashboard): which providers "
         "registered with FIU-IND the tool can name"))
+    frozen: FrozenCoverage | None = Field(None, description=(
+        "On `GET /api/labels/coverage` only: the issuer's freeze list, counted apart from "
+        "the labels (a frozen address is a mark, not a name)"))
 
 
 class FreezeReadiness(_M):

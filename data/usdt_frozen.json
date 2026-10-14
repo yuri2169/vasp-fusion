@@ -1,0 +1,48 @@
+{
+  "source": "USDT token contracts on Tron and Ethereum: every AddedBlackList and RemovedBlackList event, replayed in order",
+  "contracts": {
+    "tron": {
+      "address": "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+      "explorer": "https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+    },
+    "ethereum": {
+      "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "explorer": "https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7"
+    }
+  },
+  "read_with": {
+    "tron": "TronGrid /v1/contracts/{contract}/events (api.trongrid.io)",
+    "ethereum": "Etherscan logs/getLogs (api.etherscan.io/v2)",
+    "check": "isBlackListed(address) by eth_call (TronGrid JSON-RPC, Etherscan proxy)"
+  },
+  "events_verified": "AddedBlackList(address _user), RemovedBlackList(address _user), isBlackListed(address) -> bool: read from each contract's published interface (TronGrid wallet/getcontract, Etherscan getabi) on 14 Oct 2026",
+  "licence": "Public on-chain record: the token contracts' own events. No licence terms apply to reading them.",
+  "meaning": "The issuer put this address on the token's blacklist on that date, and had not taken it off when the list was read. It does not say why, and it says nothing about anyone who dealt with the address.",
+  "fetched_at": "2026-10-14T16:58:05Z",
+  "cutoff": {
+    "at": "2026-10-14T00:00:00Z",
+    "tron_until_ms": 1791936000000,
+    "ethereum_block": 26187014
+  },
+  "events": {
+    "tron:AddedBlackList": 8862,
+    "tron:RemovedBlackList": 978,
+    "ethereum:AddedBlackList": 3167,
+    "ethereum:RemovedBlackList": 347
+  },
+  "released_not_refrozen": 1309,
+  "check": {
+    "seed": 26182,
+    "per_chain_each_way": 25,
+    "checked": 100,
+    "agreed": 100,
+    "disagreed": 0,
+    "disagreements": [],
+    "note": "The contract was asked at its latest block, after the cut-off: an address frozen or released in between would disagree."
+  },
+  "counts": {
+    "ethereum": 2814,
+    "tron": 7860
+  },
+  "total": 10674
+}

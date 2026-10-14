@@ -153,3 +153,23 @@ indicators:
     # counted when at least this share of the traced funds stopped at such wallets
     min_share: 0.5
     fatf_category: "Sender or recipient profiles"
+  # USDT's issuer froze the address (its blacklist, read from the token contracts:
+  # labels/frozen.py). Added on 14 Oct 2026, AFTER both measurements above, so these three
+  # are NOT measured: the validation sets were scored without them (eval/risk_validation.py
+  # sets each case's `freezes` to none). A freeze shows that someone, usually an authority,
+  # asked the issuer to act on the address; it does not say why, so it counts below a
+  # sanctions listing and a contact alone stays below High.
+  frozen_self:
+    name: "The issuer of USDT froze the address"
+    points: 60
+    fatf_category: "Source of funds or wealth"
+  frozen_contact:
+    name: "Funds reached an address the issuer of USDT froze"
+    points: 35
+    extra: 10
+    fatf_category: "Source of funds or wealth"
+  frozen_funding:
+    name: "Funded by an address the issuer of USDT froze"
+    points: 25
+    extra: 10
+    fatf_category: "Source of funds or wealth"

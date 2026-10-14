@@ -848,6 +848,90 @@
         }
       }
     },
+    "/api/labels/frozen": {
+      "get": {
+        "summary": "Search Frozen",
+        "description": "The issuer's freeze list (USDT's blacklist as it stood at the snapshot's cut-off).",
+        "operationId": "search_frozen_api_labels_frozen_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "chain",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "tron",
+                    "ethereum"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Chain"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrozenSearch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/labels/search": {
       "get": {
         "summary": "Search Labels",
@@ -3783,6 +3867,17 @@
             "title": "Error",
             "description": "Set when status is 'failed': what went wrong, in plain English"
           },
+          "freeze": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreezeMark"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on the answer to opening a case when the issuer of USDT has frozen the address itself (screening, like `screening`). A served case carries it in `freezes` (where = origin). Never part of the case's digests"
+          },
           "screening": {
             "anyOf": [
               {
@@ -3898,6 +3993,15 @@
               }
             ],
             "description": "This case's routed exchanges by cited jurisdiction. Worked out when the case is read; never stored. null on a mock case"
+          },
+          "freezes": {
+            "items": {
+              "$ref": "#/components/schemas/FreezeMark"
+            },
+            "type": "array",
+            "title": "Freezes",
+            "description": "The case's wallets the issuer of USDT has frozen: its own, on the Hop Rail, or elsewhere in the trace. Looked up when the case is read; never stored",
+            "default": []
           },
           "risk": {
             "anyOf": [
@@ -4431,6 +4535,17 @@
             ],
             "title": "Error",
             "description": "Set when status is 'failed': what went wrong, in plain English"
+          },
+          "freeze": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreezeMark"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set on the answer to opening a case when the issuer of USDT has frozen the address itself (screening, like `screening`). A served case carries it in `freezes` (where = origin). Never part of the case's digests"
           },
           "screening": {
             "anyOf": [
@@ -6454,6 +6569,121 @@
         ],
         "title": "FollowUp"
       },
+      "FreezeMark": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "The graph node id (`chain:address` on another chain)"
+          },
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "where": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "path",
+              "graph"
+            ],
+            "title": "Where",
+            "description": "origin = the case's own wallet; path = on the Hop Rail; graph = elsewhere in the trace"
+          },
+          "side": {
+            "type": "string",
+            "enum": [
+              "origin",
+              "outbound",
+              "inbound"
+            ],
+            "title": "Side"
+          },
+          "hop": {
+            "type": "integer",
+            "title": "Hop"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount",
+            "description": "Traced money that reached it (outbound), or that it sent the wallet (inbound), in `asset`; for the case's own wallet, what it sent"
+          },
+          "asset": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset"
+          },
+          "tx_hashes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tx Hashes",
+            "description": "The case's transfers into (or out of) it",
+            "default": []
+          },
+          "issuer": {
+            "type": "string",
+            "title": "Issuer",
+            "description": "Tether"
+          },
+          "frozen_asset": {
+            "type": "string",
+            "title": "Frozen Asset",
+            "description": "USDT"
+          },
+          "frozen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Frozen At",
+            "description": "When the issuer last put it on the blacklist"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash",
+            "description": "The issuer's transaction that froze it"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract",
+            "description": "The token contract whose blacklist it is on"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "'Frozen by Tether on 3 Aug 2024': show as it is"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "address",
+          "chain",
+          "where",
+          "side",
+          "hop",
+          "amount",
+          "issuer",
+          "frozen_asset",
+          "frozen_at",
+          "tx_hash",
+          "contract",
+          "text"
+        ],
+        "title": "FreezeMark",
+        "description": "An address the issuer of USDT has frozen (the token contract's blacklist, read from\nits own events: labels/frozen.py). It establishes that the issuer froze the address on\nthat date and had not released it when the list was read. It does not give the\nreason, and it says nothing about anyone who dealt with the address. A mark, never the\nname of an owner: a trace walks through a frozen address."
+      },
       "FreezeReadiness": {
         "properties": {
           "what": {
@@ -6543,6 +6773,159 @@
         ],
         "title": "FreezeReadiness",
         "description": "Measured: from a complaint arriving to a freezing request ready for the officer's\nsignature (`make freeze-readiness`, artifacts/freeze_readiness.json). No freeze was\nmade or timed."
+      },
+      "FrozenCoverage": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "by_chain": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "By Chain"
+          },
+          "cutoff": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cutoff",
+            "description": "The list as it stood at this moment"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "meaning": {
+            "type": "string",
+            "title": "Meaning",
+            "description": "What a match establishes and what it does not"
+          },
+          "check": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Check",
+            "description": "How a seeded sample compared with the contract's own `isBlackListed` call"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "total",
+          "by_chain",
+          "source",
+          "meaning"
+        ],
+        "title": "FrozenCoverage",
+        "description": "The issuer's freeze list as held: a dated snapshot of USDT's blacklist."
+      },
+      "FrozenRow": {
+        "properties": {
+          "address": {
+            "type": "string",
+            "title": "Address"
+          },
+          "chain": {
+            "type": "string",
+            "title": "Chain"
+          },
+          "asset": {
+            "type": "string",
+            "title": "Asset"
+          },
+          "issuer": {
+            "type": "string",
+            "title": "Issuer"
+          },
+          "frozen_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Frozen At"
+          },
+          "tx_hash": {
+            "type": "string",
+            "title": "Tx Hash"
+          },
+          "contract": {
+            "type": "string",
+            "title": "Contract"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "address",
+          "chain",
+          "asset",
+          "issuer",
+          "frozen_at",
+          "tx_hash",
+          "contract"
+        ],
+        "title": "FrozenRow"
+      },
+      "FrozenSearch": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FrozenRow"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ],
+        "title": "FrozenSearch"
       },
       "FundsSlice": {
         "properties": {
@@ -7482,6 +7865,17 @@
               }
             ],
             "description": "On `GET /api/labels/coverage` only (null inside the dashboard): which providers registered with FIU-IND the tool can name"
+          },
+          "frozen": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrozenCoverage"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "On `GET /api/labels/coverage` only: the issuer's freeze list, counted apart from the labels (a frozen address is a mark, not a name)"
           }
         },
         "additionalProperties": false,
@@ -12042,6 +12436,17 @@
             },
             "type": "array",
             "title": "Labels"
+          },
+          "freeze": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FreezeMark"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the issuer of USDT has frozen this address"
           },
           "risk": {
             "$ref": "#/components/schemas/RiskInfo"

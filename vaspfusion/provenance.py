@@ -172,7 +172,9 @@ NOT_CONTENT = frozenset({"id", "status", "error", "created_at", "case_ref", "com
                          "risk_class", "risk_score", "sahyog_complaint_ref",
                          "documented", "timeline", "write_order",
                          # worked out when the case is read, from the VASP directory
-                         "destinations_by_jurisdiction"})
+                         "destinations_by_jurisdiction",
+                         # looked up when the case is read, from the freeze snapshot
+                         "freezes", "freeze", "issuer_request"})
 
 
 def content_sha256(case: dict) -> str:

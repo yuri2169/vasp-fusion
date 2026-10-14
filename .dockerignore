@@ -12,12 +12,15 @@ wheels
 .env
 .env.*
 
-# data/: only the label database, the cited directory and the coverage rows. The caches (1.7 GB), the case
+# data/: only the label database, the cited directory, the coverage rows and the issuer's
+# freeze snapshot. The caches (1.7 GB), the case
 # store, the desk, officer accounts, the token secret and the audit log stay on the host.
 data/*
 !data/labels.duckdb
 !data/vasp_directory.yaml
 !data/ps_coverage.yaml
+!data/usdt_frozen.csv
+!data/usdt_frozen.json
 
 # tests/: only the recorded demo fixtures and their golden fingerprints.
 tests/*

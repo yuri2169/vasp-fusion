@@ -389,6 +389,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/labels/frozen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Frozen
+         * @description The issuer's freeze list (USDT's blacklist as it stood at the snapshot's cut-off).
+         */
+        get: operations["search_frozen_api_labels_frozen_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/labels/search": {
         parameters: {
             query?: never;
@@ -1535,6 +1555,8 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+            /** @description Set on the answer to opening a case when the issuer of USDT has frozen the address itself (screening, like `screening`). A served case carries it in `freezes` (where = origin). Never part of the case's digests */
+            freeze?: components["schemas"]["FreezeMark"] | null;
             /** @description Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed */
             screening?: components["schemas"]["Screening"] | null;
             /**
@@ -1566,6 +1588,12 @@ export interface components {
             write_order?: components["schemas"]["WriteOrder"] | null;
             /** @description This case's routed exchanges by cited jurisdiction. Worked out when the case is read; never stored. null on a mock case */
             destinations_by_jurisdiction?: components["schemas"]["DestinationsByJurisdiction"] | null;
+            /**
+             * Freezes
+             * @description The case's wallets the issuer of USDT has frozen: its own, on the Hop Rail, or elsewhere in the trace. Looked up when the case is read; never stored
+             * @default []
+             */
+            freezes: components["schemas"]["FreezeMark"][];
             /** @description Wallet and flow risk of a finished case. Worked out when the case is read from its stored flags, labels and transfers; never stored, so it is not part of the case's digests */
             risk?: components["schemas"]["RiskInfo"] | null;
             /** @description Set only while status is queued or running and this server is tracing the case: poll the case to watch it. Never stored; null on a finished case */
@@ -1764,6 +1792,8 @@ export interface components {
              * @description Set when status is 'failed': what went wrong, in plain English
              */
             error?: string | null;
+            /** @description Set on the answer to opening a case when the issuer of USDT has frozen the address itself (screening, like `screening`). A served case carries it in `freezes` (where = origin). Never part of the case's digests */
+            freeze?: components["schemas"]["FreezeMark"] | null;
             /** @description Present from the moment the case is opened (also while queued or running). null on a case stored before screening existed */
             screening?: components["schemas"]["Screening"] | null;
             /**
@@ -2534,6 +2564,82 @@ export interface components {
             text: string;
         };
         /**
+         * FreezeMark
+         * @description An address the issuer of USDT has frozen (the token contract's blacklist, read from
+         *     its own events: labels/frozen.py). It establishes that the issuer froze the address on
+         *     that date and had not released it when the list was read. It does not give the
+         *     reason, and it says nothing about anyone who dealt with the address. A mark, never the
+         *     name of an owner: a trace walks through a frozen address.
+         */
+        FreezeMark: {
+            /**
+             * Id
+             * @description The graph node id (`chain:address` on another chain)
+             */
+            id: string;
+            /** Address */
+            address: string;
+            /** Chain */
+            chain: string;
+            /**
+             * Where
+             * @description origin = the case's own wallet; path = on the Hop Rail; graph = elsewhere in the trace
+             * @enum {string}
+             */
+            where: "origin" | "path" | "graph";
+            /**
+             * Side
+             * @enum {string}
+             */
+            side: "origin" | "outbound" | "inbound";
+            /** Hop */
+            hop: number;
+            /**
+             * Amount
+             * @description Traced money that reached it (outbound), or that it sent the wallet (inbound), in `asset`; for the case's own wallet, what it sent
+             */
+            amount: number;
+            /** Asset */
+            asset?: string | null;
+            /**
+             * Tx Hashes
+             * @description The case's transfers into (or out of) it
+             * @default []
+             */
+            tx_hashes: string[];
+            /**
+             * Issuer
+             * @description Tether
+             */
+            issuer: string;
+            /**
+             * Frozen Asset
+             * @description USDT
+             */
+            frozen_asset: string;
+            /**
+             * Frozen At
+             * Format: date-time
+             * @description When the issuer last put it on the blacklist
+             */
+            frozen_at: string;
+            /**
+             * Tx Hash
+             * @description The issuer's transaction that froze it
+             */
+            tx_hash: string;
+            /**
+             * Contract
+             * @description The token contract whose blacklist it is on
+             */
+            contract: string;
+            /**
+             * Text
+             * @description 'Frozen by Tether on 3 Aug 2024': show as it is
+             */
+            text: string;
+        };
+        /**
          * FreezeReadiness
          * @description Measured: from a complaint arriving to a freezing request ready for the officer's
          *     signature (`make freeze-readiness`, artifacts/freeze_readiness.json). No freeze was
@@ -2569,6 +2675,70 @@ export interface components {
             machine: string;
             /** Measured On */
             measured_on: string;
+        };
+        /**
+         * FrozenCoverage
+         * @description The issuer's freeze list as held: a dated snapshot of USDT's blacklist.
+         */
+        FrozenCoverage: {
+            /** Total */
+            total: number;
+            /** By Chain */
+            by_chain: {
+                [key: string]: number;
+            };
+            /**
+             * Cutoff
+             * @description The list as it stood at this moment
+             */
+            cutoff?: string | null;
+            /** Fetched At */
+            fetched_at?: string | null;
+            /** Source */
+            source: string;
+            /**
+             * Meaning
+             * @description What a match establishes and what it does not
+             */
+            meaning: string;
+            /**
+             * Check
+             * @description How a seeded sample compared with the contract's own `isBlackListed` call
+             */
+            check?: string | null;
+        };
+        /** FrozenRow */
+        FrozenRow: {
+            /** Address */
+            address: string;
+            /** Chain */
+            chain: string;
+            /** Asset */
+            asset: string;
+            /** Issuer */
+            issuer: string;
+            /**
+             * Frozen At
+             * Format: date-time
+             */
+            frozen_at: string;
+            /** Tx Hash */
+            tx_hash: string;
+            /** Contract */
+            contract: string;
+        };
+        /** FrozenSearch */
+        FrozenSearch: {
+            /** Query */
+            query: string;
+            /** Total */
+            total: number;
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Items */
+            items: components["schemas"]["FrozenRow"][];
         };
         /**
          * FundsSlice
@@ -2990,6 +3160,8 @@ export interface components {
             traceable_chains: string[];
             /** @description On `GET /api/labels/coverage` only (null inside the dashboard): which providers registered with FIU-IND the tool can name */
             indian_providers?: components["schemas"]["IndianCoverage"] | null;
+            /** @description On `GET /api/labels/coverage` only: the issuer's freeze list, counted apart from the labels (a frozen address is a mark, not a name) */
+            frozen?: components["schemas"]["FrozenCoverage"] | null;
         };
         /** LabelOut */
         LabelOut: {
@@ -4777,6 +4949,8 @@ export interface components {
             chain: "tron" | "ethereum" | "bsc" | "polygon" | "arbitrum" | "base" | "optimism" | "avalanche" | "bitcoin" | "solana";
             /** Labels */
             labels: components["schemas"]["LabelOut"][];
+            /** @description Set when the issuer of USDT has frozen this address */
+            freeze?: components["schemas"]["FreezeMark"] | null;
             risk: components["schemas"]["RiskInfo"];
             /** Cases */
             cases: components["schemas"]["WalletCaseRef"][];
@@ -5537,6 +5711,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LabelCoverage"];
+                };
+            };
+        };
+    };
+    search_frozen_api_labels_frozen_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                chain?: ("tron" | "ethereum") | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FrozenSearch"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

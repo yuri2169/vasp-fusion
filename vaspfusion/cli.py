@@ -97,6 +97,81 @@ def cmd_check_tags(args) -> None:
     print(f"check-tags -> {args.out}\n  {summary(rows)}")
 
 
+def cmd_frozen(args) -> None:
+    """USDT's freeze list from the contracts' own events, to a fixed cut-off, with a seeded
+    sample put to the contract's own call (cached; OFFLINE=1 replays the last snapshot)."""
+    import sys
+    from datetime import datetime, timezone
+
+    from . import chains
+    from .chains import cache as chain_cache
+    from .chains import usdt_freeze as UF
+    from .labels import frozen as FZ
+    out = Path(args.out)
+    old = json.loads(out.with_suffix(".json").read_text()) if out.with_suffix(".json").exists() else {}
+    offline = chain_cache.offline_mode()
+    if args.until:
+        cut = datetime.fromisoformat(args.until.replace("Z", "+00:00"))
+    elif offline and old.get("cutoff"):
+        cut = datetime.fromisoformat(old["cutoff"]["at"].replace("Z", "+00:00"))
+    else:
+        cut = datetime.now(timezone.utc).replace(second=0, microsecond=0)
+    until_ms = int(cut.timestamp() * 1000)
+    fetcher = chains.Fetcher(chains.ChainCache(args.cache, hold=not offline, read_only=offline),
+                             chains.UrllibTransport())
+    eth_block = old["cutoff"]["ethereum_block"] if offline and old.get("cutoff") and \
+        not args.until else UF.eth_block_at(fetcher, until_ms // 1000)
+    events = []
+    for event in UF.EVENTS:
+        tron = UF.tron_events(fetcher, event, until_ms)
+        eth = UF.eth_logs(fetcher, event, eth_block)
+        print(f"  {event}: tron {len(tron):,}, ethereum {len(eth):,}", file=sys.stderr)
+        events += tron + eth
+    now = FZ.replay(events)
+    gone = FZ.released(events)
+    checks = []
+    for chain in ("tron", "ethereum"):
+        sample = FZ.check_sample({k: v for k, v in now.items() if k[1] == chain},
+                                 [g for g in gone if g[1] == chain], args.sample, args.seed)
+        for address, ch, want in sample:
+            got = UF.is_blacklisted(fetcher, ch, address)
+            checks.append({"address": address, "chain": ch, "expected": want, "contract": got})
+    bad = [c for c in checks if c["expected"] != c["contract"]]
+    count = {f"{c}:{e}": sum(1 for x in events if x["chain"] == c and x["event"] == e)
+             for c in ("tron", "ethereum") for e in UF.EVENTS}
+    meta = {
+        "source": FZ.SOURCE,
+        "contracts": {c: {"address": a, "explorer": (
+            f"https://tronscan.org/#/token20/{a}" if c == "tron"
+            else f"https://etherscan.io/token/{a}")} for c, a in FZ.CONTRACTS.items()},
+        "read_with": {"tron": "TronGrid /v1/contracts/{contract}/events (api.trongrid.io)",
+                      "ethereum": "Etherscan logs/getLogs (api.etherscan.io/v2)",
+                      "check": "isBlackListed(address) by eth_call (TronGrid JSON-RPC, "
+                               "Etherscan proxy)"},
+        "events_verified": "AddedBlackList(address _user), RemovedBlackList(address _user), "
+                           "isBlackListed(address) -> bool: read from each contract's published "
+                           "interface (TronGrid wallet/getcontract, Etherscan getabi) on 14 Oct 2026",
+        "licence": "Public on-chain record: the token contracts' own events. No licence terms "
+                   "apply to reading them.",
+        "meaning": FZ.MEANING,
+        "fetched_at": old.get("fetched_at") if offline and old else
+        datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "cutoff": {"at": FZ.iso(until_ms), "tron_until_ms": until_ms, "ethereum_block": eth_block},
+        "events": count,
+        "released_not_refrozen": len(gone),
+        "check": {"seed": args.seed, "per_chain_each_way": args.sample, "checked": len(checks),
+                  "agreed": len(checks) - len(bad), "disagreed": len(bad),
+                  "disagreements": bad,
+                  "note": "The contract was asked at its latest block, after the cut-off: an "
+                          "address frozen or released in between would disagree."},
+    }
+    meta = FZ.write_snapshot(now, out, meta)
+    print(f"frozen -> {out}\n  frozen at {meta['cutoff']['at']}: {meta['total']:,} "
+          f"({', '.join(f'{c} {n:,}' for c, n in meta['counts'].items())}); released and not "
+          f"frozen again {len(gone):,}\n  contract check: {len(checks) - len(bad)} of "
+          f"{len(checks)} agreed (seed {args.seed})")
+
+
 def cmd_indian_coverage(args) -> None:
     from .api.main import TRACEABLE
     from .labels.india import coverage, markdown
@@ -720,14 +795,14 @@ def cmd_risk_validation(args) -> None:
     from .labels.lookup import LabelStore
     from .risk import DEFAULT_PATH, load_config
 
-    # v1: the first set, scored with the points as they were (the copy kept beside it);
-    # v2: the fresh set, scored with the points in use
+    # each set is scored with the points it was measured with (the copy kept beside it):
+    # v1 before the pattern cap, v2 before the issuer-freeze indicators (14 Oct 2026)
     version = f"risk_validation_{args.set}"
     out = Path(args.out or ROOT / "artifacts" / version)
     first = args.set == "v1"
     corpus_path = Path(args.corpus or ROOT / "data" / "validation"
                        / ("corpus.json" if first else f"corpus_{args.set}.json"))
-    config_path = out / "risk.yaml" if first else DEFAULT_PATH
+    config_path = out / "risk.yaml" if (out / "risk.yaml").exists() else DEFAULT_PATH
     corpus = json.loads(corpus_path.read_text())
     packed = out / "cases.json.gz"
     if args.trace and first:
@@ -1266,6 +1341,17 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--limit", type=int, default=50, help="transfers read per address")
     s.add_argument("--max", type=int, default=None, help="check only the first N (a trial run)")
     s.set_defaults(fn=cmd_check_tags)
+
+    s = sub.add_parser("frozen", help="USDT's freeze list read from the token contracts on Tron "
+                       "and Ethereum, to a dated snapshot (cached; OFFLINE=1 replays it)")
+    s.add_argument("--out", default=str(ROOT / "data" / "usdt_frozen.csv"))
+    s.add_argument("--cache", default=str(ROOT / "data" / "freeze_cache.duckdb"))
+    s.add_argument("--until", default=None, help="cut-off, ISO time (default: now, or the "
+                   "snapshot's own cut-off under OFFLINE=1)")
+    s.add_argument("--sample", type=int, default=25,
+                   help="addresses per chain, each way, put to the contract's own call")
+    s.add_argument("--seed", type=int, default=26182)
+    s.set_defaults(fn=cmd_frozen)
 
     s = sub.add_parser("threats", help="flatten the OFAC SDN XML, Ransomwhere and the "
                                        "GraphSense threat packs into the CSV `labels` reads")

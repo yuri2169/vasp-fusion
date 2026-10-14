@@ -787,8 +787,10 @@ def _start_case(chain: str, address: str, body: S.CaseCreate, background: Backgr
     else:
         with LabelStore(LABEL_DB) as own:
             screening = screen(own.lookup(address, chain))
+    from ..freezes import case_freezes
+    origin = case_freezes({"address": address, "chain": chain})
     summary = S.CaseSummary(
-        screening=screening,
+        screening=screening, freeze=origin[0] if origin else None,
         threats=[screening["tag"]["threat"]] if screening["tag"] else [],
         id=cid, address=address, chain=chain, status="queued",
         case_ref=body.case_ref or old.get("case_ref"),
@@ -1119,6 +1121,36 @@ def get_case(case_id: str, response: Response):
     return fixture
 
 
+def _issuer(case_id: str) -> dict:
+    from ..desk.issuer import issuer_request
+    case = _cases().get(case_id)
+    if case is None:
+        raise HTTPException(404, _no_case(case_id))
+    return issuer_request(case)
+
+
+@app.get("/api/cases/{case_id}/issuer-request", response_model=S.IssuerRequest)
+def get_issuer_request(case_id: str):
+    """A draft request to the issuer of USDT to freeze traced USDT at addresses outside
+    any exchange, or why none is offered. A draft: nothing is sent."""
+    return _issuer(case_id)
+
+
+@app.get("/api/cases/{case_id}/issuer-request.pdf", response_class=Response,
+         responses={200: {"content": {"application/pdf": {}},
+                          "description": "The draft request to the issuer, A4"}})
+def get_issuer_request_pdf(case_id: str):
+    """The draft request to the issuer as an A4 PDF (banner, watermark, blanks for the
+    officer). 409 when none is offered, with the reason."""
+    from ..desk.issuer import issuer_pdf
+    req = _issuer(case_id)
+    if not req["offered"]:
+        raise HTTPException(409, req["reason"])
+    return Response(issuer_pdf(req["draft"]), media_type="application/pdf",
+                    headers={"Content-Disposition":
+                             f'inline; filename="issuer-request-{case_id}.pdf"'})
+
+
 @app.get("/api/cases/{case_id}/pdf", response_class=Response, responses=_CASE_PDF)
 def get_case_pdf(case_id: str):
     """The case file as an A4 PDF: result, summary, where the funds went, flow diagram,
@@ -1240,6 +1272,9 @@ def get_wallet(chain: S.TraceChain, address: str, response: Response):
             hit = store.lookup(address, chain)
         wallet["labels"] = [hit.as_dict()] if hit else []
         kind = "mixed" if kind == "mock" else kind
+    from ..freezes import case_freezes
+    mark = case_freezes({"address": address, "chain": chain})
+    wallet["freeze"] = mark[0] if mark else None
     cases = _cases()
     refs = cases.wallet_cases(address, chain)
     if kind == "live" or refs:      # a demo wallet's mock figures stand until a real case reads it
@@ -1279,7 +1314,32 @@ def label_coverage(response: Response):
     _source(response, "live")
     with LabelStore(LABEL_DB) as again:          # `_coverage` closes the one it is given
         indian = india_coverage(again, TRACEABLE)
-    return {**_coverage(store), "indian_providers": indian}
+    return {**_coverage(store), "indian_providers": indian, "frozen": _frozen_coverage()}
+
+
+def _frozen_coverage() -> dict | None:
+    from ..labels.frozen import MEANING, SOURCE, FreezeList
+    fl = FreezeList.load()
+    st = fl.stats()
+    if not st["total"]:
+        return None
+    chk = fl.meta.get("check") or {}
+    return {"total": st["total"], "by_chain": st["by_chain"],
+            "cutoff": (st["cutoff"] or {}).get("at"), "fetched_at": st["fetched_at"],
+            "source": SOURCE, "meaning": MEANING,
+            "check": f"{chk['agreed']} of {chk['checked']} addresses drawn at random (seed "
+                     f"{chk['seed']}), frozen and released, gave the same answer from the "
+                     "contract's own isBlackListed call" if chk else None}
+
+
+@app.get("/api/labels/frozen", response_model=S.FrozenSearch)
+def search_frozen(q: str = "", chain: Literal["tron", "ethereum"] | None = None,
+                  limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0)):
+    """The issuer's freeze list (USDT's blacklist as it stood at the snapshot's cut-off)."""
+    from ..labels.frozen import FreezeList
+    items, total = FreezeList.load().search(chain=chain, q=q or None, limit=limit,
+                                            offset=offset)
+    return {"query": q, "total": total, "limit": limit, "offset": offset, "items": items}
 
 
 @app.get("/api/labels/search", response_model=S.LabelSearch)
@@ -1829,8 +1889,13 @@ def _complaints():
 
 
 def _enrich(case: dict) -> dict:
-    """What a served case carries that a stored one does not: its risk (risk.py reads the
-    stored flags, labels and slices) and the complaint that reported it, if one did."""
+    """What a served case carries that a stored one does not: the issuer's freeze marks on
+    its wallets, its risk (risk.py reads the stored flags, labels, slices and those marks)
+    and the complaint that reported it, if one did."""
+    from ..desk.issuer import issuer_request
+    from ..freezes import case_freezes
+    case["freezes"] = case_freezes(case)
+    case["issuer_request"] = issuer_request(case) if case.get("status") == "done" else None
     risk = R.case_risk(case)
     case["risk"] = risk
     case["risk_class"] = risk["risk_class"] if risk else None

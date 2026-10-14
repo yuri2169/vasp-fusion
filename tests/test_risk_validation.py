@@ -43,7 +43,8 @@ def test_every_label_of_the_entity_is_hidden_and_others_stay():
 def test_a_slim_case_scores_exactly_as_the_full_case(name, tmp_path):
     case = run_demo(name, tmp_path / "c.duckdb")
     slim = json.loads(json.dumps(V.slim(case)))
-    full, kept = R.case_risk(case), R.case_risk(slim)
+    # the measurements are made without the issuer's freeze marks (config/risk.yaml)
+    full, kept = R.case_risk({**case, "freezes": []}), R.case_risk(slim)
     assert kept["score"] == full["score"] and kept["risk_class"] == full["risk_class"]
     assert [i["code"] for i in kept["indicators"]] == [i["code"] for i in full["indicators"]]
     assert kept["flows"] == full["flows"] and kept["path_class"] == full["path_class"]
@@ -123,7 +124,7 @@ def test_the_packed_cases_are_written_the_same_way_twice(tmp_path):
 
 
 SETS = {"v1": ("corpus.json", lambda: ROOT / "artifacts" / "risk_validation_v1" / "risk.yaml"),
-        "v2": ("corpus_v2.json", lambda: R.DEFAULT_PATH)}
+        "v2": ("corpus_v2.json", lambda: ROOT / "artifacts" / "risk_validation_v2" / "risk.yaml")}
 
 
 @pytest.mark.parametrize("name", list(SETS))
@@ -187,8 +188,19 @@ def test_the_sentence_that_travels_with_the_score_quotes_the_fresh_set():
     p, c = arms["positive"], arms["control"]
     assert f"{p['high_or_above']} of {p['wallets']} and {c['high_or_above']} of {c['wallets']}" \
         in RISK_BASIS
-    assert "not measured" not in RISK_BASIS and "none of them used to set the points" in RISK_BASIS
+    assert "none of them used to set the points" in RISK_BASIS
+    # the issuer-freeze indicators came after the measurement, and the sentence says so
+    assert RISK_BASIS.endswith("Added after this check and not measured: The issuer of USDT "
+                               "froze the address; Funds reached an address the issuer of USDT "
+                               "froze; Funded by an address the issuer of USDT froze.")
     shown = RiskValidation.model_validate(V.summary(m))
     assert shown.main_view == "own_hidden" and len(shown.views) == 3 and len(shown.rules) == 5
-    assert m["risk_config_sha256"] == V.sha256(R.DEFAULT_PATH)   # scored with today's points
+    # scored with the copy kept beside it, which today's points differ from only by the
+    # indicators added afterwards
+    kept = ROOT / "artifacts" / "risk_validation_v2" / "risk.yaml"
+    assert m["risk_config_sha256"] == V.sha256(kept)
     assert m["pattern_cap"] == R.load_config()["pattern_cap"]
+    then, now = R.load_config(kept)["indicators"], R.load_config()["indicators"]
+    assert {k: v for k, v in now.items() if k not in R.LATER} == \
+        {k: v for k, v in then.items() if k not in R.LATER}
+    assert all(then[k]["points"] == 0 for k in R.LATER)
