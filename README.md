@@ -6,7 +6,7 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **On Windows?** Follow [docs/WINDOWS.md](docs/WINDOWS.md) (WSL2).
 
-## For judges: the one-minute version
+## For judges: the one-minute version.
 
 **The problem.** A stolen-funds complaint gives an investigator one thing: a wallet address. To freeze the money or identify who holds it, the investigator has to know which exchange (VASP) took the deposits, and has to be able to show why.
 
