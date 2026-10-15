@@ -18,15 +18,25 @@ const CANDIDATES = [
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
+// One check that gets no answer (the browser can drop the reply to an evaluation made while a
+// page is being replaced) is given up after a few seconds and asked again, never waited on forever.
+const ATTEMPT_MS = 5000
+
 export async function waitFor(fn, what, timeoutMs = 20000, everyMs = 100) {
   const deadline = Date.now() + timeoutMs
   let last
   while (Date.now() < deadline) {
+    let timer
     try {
-      const v = await fn()
+      const giveUp = new Promise((_, fail) => {
+        timer = setTimeout(() => fail(new Error('no answer from the browser')), Math.min(ATTEMPT_MS, Math.max(1, deadline - Date.now())))
+      })
+      const v = await Promise.race([fn(), giveUp])
       if (v) return v
     } catch (e) {
       last = e
+    } finally {
+      clearTimeout(timer)
     }
     await sleep(everyMs)
   }
