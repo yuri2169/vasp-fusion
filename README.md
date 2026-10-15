@@ -10,9 +10,11 @@ Forked from our own BTC-FUSION (SIH26146), with the same stack: Python 3.12, Fas
 
 **The problem.** A stolen-funds complaint gives an investigator one thing: a wallet address. To freeze the money or identify who holds it, the investigator has to know which exchange (VASP) took the deposits, and has to be able to show why.
 
-**What this does.** Given a wallet address, VASP-FUSION traces its outgoing transfers on chain (Tron, Ethereum, Bitcoin) to the nearest exchange-controlled deposit address, lists the supporting transfers hop by hop, and attaches a calibrated confidence (the deposit-address model's calibration error is measured on held-out data, see the results table). It then drafts a consolidated request to that exchange for the SAHYOG channel. **Below the abstention bar it returns "insufficient evidence" together with the evidence that would change the outcome, rather than a low-confidence guess.**
+**What this does.** Given a wallet address, VASP-FUSION follows its transfers on chain (Tron, Ethereum, Bitcoin, BNB Chain, Polygon, Solana, Arbitrum, Base and Optimism, and across the Across and Stargate bridges when the money lands on one of those chains) to the nearest exchange-controlled deposit address. It lists the supporting transfers hop by hop and gives a confidence with every exchange it names. It then drafts a consolidated request to that exchange for the SAHYOG channel. **Below the bar of 0.60 it returns "insufficient evidence", together with the evidence that would change the outcome, rather than a low-confidence guess.** The confidence is a rule-set score. Measured on six chains, it orders answers but is not a calibrated probability; the deposit-address model inside it is calibrated, on Tron. What was measured, and what to quote, is how often a named exchange is wrong (below).
 
-**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 3 ready to connect, 6 partly built, 0 only planned** (8 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo: **SAHYOG is integrated as far as it can be without access to the portal**: the tool and a separate reference portal (`refportal/`, a simulator, not SAHYOG) exchange complaints, results, requests and replies over a signed HTTP API, proven by a conformance suite (`make conformance`); the real portal's interface is not public, and the three SAHYOG lines therefore read "ready to connect", never "built" (`docs/sahyog_contract.md` ends with what I4C would need to give), and **the risk score is an indicator score from published red-flag rules, not a probability**; measured on real listed and ordinary wallets it separates them only through links to other listed addresses, and none of its five pattern rules does, so those rules are capped below Medium (`make risk-validation`, the table below).
+**Held to the problem statement.** The screen at `/coverage` lists every line of PS 26182, word for word, with what the tool does about it: **15 lines built, 3 ready to connect, 6 partly built, 0 only planned** (15 Oct 2026; `data/ps_coverage.yaml`, held to the truth by `tests/test_coverage.py`). Each partly built line says what is missing. Two things to know before the demo:
+- **SAHYOG is integrated as far as it can be without access to the portal.** The tool and a separate reference portal (`refportal/`, a simulator, not SAHYOG) exchange complaints, results, requests and replies over a signed HTTP API, proven by a conformance suite (`make conformance`). The real portal's interface is not public, so the three SAHYOG lines read "ready to connect", never "built". `docs/sahyog_contract.md` ends with what I4C would need to give.
+- **The risk score is an indicator score from published red-flag rules, not a probability.** Measured on real listed and ordinary wallets, it separates them only through links to other listed addresses. None of its five pattern rules does, so those rules are capped below Medium (`make risk-validation`, figures below).
 
 **Check it yourself** (no network needed after the image is built):
 
@@ -22,23 +24,51 @@ make demo-flow                           # the 3-minute demo, driven and asserte
 make reproduce                           # every figure below, regenerated from tracked files
 ```
 
-**Results.** Every figure is read from a file in this repository; `make reproduce` fails if one no longer matches.
+**Results.** Every figure is read from a file in this repository. `make reproduce` fails if a file no longer regenerates to what git holds, and `tests/test_readme_figures.py` holds this section to those files.
+
+**1. Does it name the right exchange?** Measured on 761 real wallets that paid a labelled exchange, with the labels one hop away hidden (on Tron, the tool's own 5,497 derived deposit labels), seed 26182, bar 0.60. The baseline is the nearest labelled exchange the same trace reached, whatever its confidence; it never abstains. Every figure is a count of wallets (`artifacts/benchmark_v1/summary.json`; the protocol and its limits are in [Attribution measured on every chain](#attribution-measured-on-every-chain-beside-a-naive-baseline)).
+
+| Chain | Wallets traced | Named | Named wrongly (95% upper bound) | Insufficient evidence | Baseline named | Baseline wrongly |
+|---|---|---|---|---|---|---|
+| Tron | 280 | 155 | 15 of 155 (9.7%; at most 14.5%) | 125 | 248 | 39 of 248 (15.7%; at most 20.0%) |
+| Ethereum | 213 | 69 | 22 of 69 (31.9%; at most 42.3%) | 144 | 100 | 40 of 100 (40.0%; at most 48.7%) |
+| Bitcoin | 96 | 28 | 2 of 28 (7.1%; at most 20.8%) | 68 | 43 | 8 of 43 (18.6%; at most 31.1%) |
+| BNB Chain | 84 | 19 | 0 of 19 (0.0%; at most 14.6%) | 65 | 23 | 4 of 23 (17.4%; at most 35.5%) |
+| Polygon | 74 | 11 | 0 of 11 (0.0%; at most 23.8%) | 63 | 16 | 3 of 16 (18.8%; at most 41.7%) |
+| Solana | 14 | 3 | 0 of 3 (0.0%; at most 63.2%) | 11 | 3 | 0 of 3 (0.0%; at most 63.2%) |
+
+On every chain the tool names fewer wallets than the baseline and is wrong less often. **Ethereum is poor: 22 of 69 names were wrong.** Most wallets off Tron got "insufficient evidence", mostly because the money stopped at a busy unlabelled wallet, which is what an exchange's hot wallet looks like once its label is hidden. Solana's 14 wallets are too few to conclude anything. The Tron row is not like for like with the others (different wallets, different labels hidden). Its bound is the plain one-sided bound for the one bar in use; corrected for the nine bars tried when the bar was checked, it is 17.3% (`artifacts/abstain_v1/tron/validation.json`). Every wallet here paid an exchange; nothing measures a wallet that never did.
+
+**2. Is the risk score worth reading?** Measured on 65 wallets public sources list as illicit and 65 with a documented ordinary purpose, drawn after the points were last changed and none of them used to set them. Each wallet's own label is hidden, since a listed wallet scores Severe by lookup alone (`artifacts/risk_validation_v2/results.json`):
+- **22 of 65 listed wallets (33.8%; 95% interval 22.6% to 46.7%) and 2 of 65 ordinary ones (3.1%; 0.4% to 10.7%) score High or above.** All 22 got there through a link to another listed address. With every label of the wallet's own list entry hidden too, it is 3 of 65 against 2 of 65: no difference.
+- **No pattern rule fired more often on the listed wallets**, in this set or in the first (`artifacts/risk_validation_v1/results.json`). Together the five rules are capped at 20 points, below Medium.
+- 9 of 10 ransomware addresses score Low without their own label: for those, the score is only as good as the list. The indicators for an address the issuer of USDT has frozen were added on 14 Oct 2026, after this measurement, and are not measured.
+
+**3. A real, publicly documented case: the WazirX theft of 18 July 2024.** The tool traced each of the 27 wallets the block explorer tags "WazirX Exploiter", at the interface's defaults. It names WazirX's own wallet as the source of the funds. 2 wallets reach Tornado Cash, or 6 reach Tornado Cash with the explorer's tags hidden. **None of the 27 wallets reaches a named exchange in either run**, so the tool names no cash-out exchange and says "insufficient evidence" (`artifacts/wazirx_2024/trace_table.json`; the recorded case `wazirx-2024`, with its sources on the landing page).
+
+**4. Which Indian exchanges can it name?** Take the 47 providers on the newest official list of FIU-IND registrations (Lok Sabha Unstarred Question 966, answered 2 Dec 2024; `data/indian_exchanges.yaml`). The label store holds addresses that let a trace name 6 of them, and one, CoinDCX, is named by three recorded cases. For the other 41, a trace can pass through their wallets and not know it (`python -m vaspfusion.cli indian-coverage`; the Labels page shows the same table):
+
+| Provider (trade name) | Exchange labels held | Can the tool name it? | Recorded case |
+|---|---|---|---|
+| CoinDCX | 762 (Tron 571, EVM 53, Bitcoin 26, ...) | yes | `bnb-coindcx`, `tron-coindcx`, `tron-htx-coindcx` |
+| Binance | 5,399 (Ethereum 5,035, ...) | yes | none |
+| KuCoin | 1,306 (Tron 982, ...) | yes | none |
+| WazirX | 32 (EVM 10, Tron 2, ...) | yes | none |
+| Delta Exchange | 7 (Ethereum 1, ...) | yes | none |
+| CoinSwitch | 4 (EVM 2, ...) | yes | none |
+| Bitbns, Coindhan, Transak | 0, 2, 4, none on a chain the tool traces | **no** | none |
+| The other 38 (ZebPay, Unocoin, Giottus, Mudrex, ...) | none | **no** | none |
+
+**5. Other figures.**
 
 | What was measured | Result | Read from |
 |---|---|---|
-| Real exchange customers' wallets traced with our own derived labels hidden | 280 | `artifacts/abstain_v1/tron/validation.json` |
-| ...of which the tool named an exchange (at the 0.60 bar in use) | 155 | same |
-| ...of those, named wrongly | 15 (9.7%; upper bound 17.3%) | same |
-| ...and declined to name one ("insufficient evidence") | 125 | same |
-| The same test on the other chains, labels one hop away hidden, beside a naive baseline | Ethereum 213 wallets: 69 named, 22 wrongly (31.9%). Bitcoin 96: 28, 2. BNB Chain 84: 19, 0. Polygon 74: 11, 0. Solana 14: 3, 0. Full table below | `artifacts/benchmark_v1/summary.json` |
-| Deposit-address model, calibration error (ECE) | 0.0093 | `artifacts/model_v1/tron/metrics.json` |
+| Deposit-address model (Tron), calibration error (ECE) | 0.0093 | `artifacts/model_v1/tron/metrics.json` |
 | Deposit-address model, Brier score | 0.0026 | same |
 | Deposit-address model, share of addresses it answers for | 98.6% of 1,791 held out by time and by exchange | same |
-| Labelled addresses on file | 474,142 (1,690 published by exchanges, 349,440 curated, 117,515 explorer tags, 5,497 derived here) | `make labels` |
-| ...of which carry a threat tag from a cited public source | 19,357: ransomware 11,271, fraud 6,607, terrorism financing 367, hack or exploit 317, darknet market 182, other sanctioned 613 | `make labels`, `data/threat_sources.json` |
-| Risk score at High or above, each wallet's own label hidden (the points in use, on wallets not used to set them) | 22 of 65 wallets public sources list as illicit (33.8%; 95% interval 22.6% to 46.7%), 2 of 65 with a documented ordinary purpose (3.1%; 0.4% to 10.7%). All 22 through a link to another listed address | `artifacts/risk_validation_v2/results.json` |
-| ...with every label of the wallet's own list entry hidden too | 3 of 65 against 2 of 65 (no difference) | same |
-| Pattern rules that fired more often on the listed wallets than on the ordinary ones | 0 of 5 (in both sets; together they are capped at 20 points, below Medium) | same, and `artifacts/risk_validation_v1/results.json` |
+| Labelled addresses on file | 474,889 (1,690 published by exchanges, 350,187 curated, 117,515 explorer tags, 5,497 derived here) | `make labels` |
+| ...of which carry a threat tag from a cited public source | 20,104: ransomware 11,271, fraud 6,607, terrorism financing 1,100, hack or exploit 317, darknet market 182, other sanctioned 627 | `make labels`, `data/threat_sources.json` |
+| Addresses the issuer of USDT had frozen on 14 Oct 2026, read from the token contracts' own events | 10,674 addresses (Tron 7,860, Ethereum 2,814); the contract's own check agreed on 100 of 100 sampled | `data/usdt_frozen.json` |
 | Recorded demonstration cases that replay offline to the same fingerprint | 13 of 13 (7 name an exchange, 4 say insufficient evidence, one of them the documented WazirX theft of July 2024, 2 reach a sanctioned address, one of them listed under a terrorism programme) | `tests/golden/fingerprints.json` |
 
 **Volume.** A batch of wallets is uploaded at `/batch`, queued, and traced by a pool of worker processes (`make serve WORKERS=4`). Measured by `make bench-scale` on one laptop (Darwin arm64, 10 cores, 5 Oct 2026), 300 cases per run, chain responses replayed from a cache, read from `artifacts/scale/metrics.json`:
