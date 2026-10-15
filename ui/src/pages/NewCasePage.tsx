@@ -204,7 +204,7 @@ export function NewCasePage() {
               spellCheck={false}
               autoFocus
               error={addressError}
-              hint="The chain is read from the address. Tron, Bitcoin, Ethereum, Polygon, Arbitrum, Base and Optimism wallets can be traced."
+              hint="The chain is read from the address. Tron, Bitcoin, Ethereum, BNB Chain, Polygon, Solana, Arbitrum, Base and Optimism wallets can be traced."
               className="pr-28 font-mono"
             >
               <span className="absolute right-2 flex items-center">

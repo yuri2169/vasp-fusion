@@ -33,6 +33,15 @@ describe('opening a case', () => {
     expect(trace()).toBeEnabled()
   })
 
+  it('names every chain a wallet can be traced on under the address field', async () => {
+    open()
+    await screen.findByRole('heading', { level: 1 })
+    const hint = within(form()).getByText(/The chain is read from the address/).textContent ?? ''
+    for (const name of ['Tron', 'Bitcoin', 'Ethereum', 'BNB Chain', 'Polygon', 'Solana', 'Arbitrum', 'Base', 'Optimism']) {
+      expect(hint).toContain(name)
+    }
+  })
+
   it('catches a typo before any trace, and says what is wrong', async () => {
     const { user } = open()
     await screen.findByRole('heading', { level: 1 })
