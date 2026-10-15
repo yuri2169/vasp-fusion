@@ -46,6 +46,13 @@ def home(recorded, tmp_path, monkeypatch):
     monkeypatch.setattr(main, "CASE_DB", tmp_path / "case.duckdb")
     monkeypatch.setattr(main, "DESK_DB", tmp_path / "desk.duckdb")
     monkeypatch.setattr(main, "OUTBOX", tmp_path / "outbox")
+    # Its own officer and audit stores: an officer account in the checkout's data/ would
+    # otherwise make the API ask this test for a login.
+    monkeypatch.setattr(main, "OFFICERS", tmp_path / "officers.json")
+    monkeypatch.setattr(main, "AUDIT_DB", tmp_path / "audit.duckdb")
+    monkeypatch.setattr(main, "AUTH_SECRET", tmp_path / "auth_secret")
+    monkeypatch.setattr(main, "AUTH", None)
+    monkeypatch.delenv("VASPFUSION_AUTH", raising=False)
     monkeypatch.setattr(main, "LABEL_DB", recorded["labels"])
     yield tmp_path / "case.duckdb"
     main.stop_pool()
