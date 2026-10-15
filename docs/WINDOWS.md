@@ -47,7 +47,7 @@ make setup           # creates .venv and installs everything (internet needed)
 make offline-demo    # no network, no keys, no outside data
 ```
 
-`make offline-demo` replays the recorded cases and checks each one against its recorded fingerprint. It should finish with every case marked `VERIFIED` and a line such as `14/14 verified`.
+`make offline-demo` replays the recorded cases and checks each one against its recorded fingerprint. It should print `13/13 as expected` for the thirteen recorded cases, then finish with every stored trace marked `VERIFIED` and `15/15 verified` (the thirteen cases and the two traces of the demonstration watchlist).
 
 Then build the interface and start the server:
 
