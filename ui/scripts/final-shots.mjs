@@ -112,6 +112,12 @@ try {
     ['present-handoff', '/cases/tron-coindcx/present?screen=4', `document.querySelector('[data-present] h1') !== null`, false],
     ['present-insufficient', '/cases/tron-abstain/present', `document.querySelector('[data-present] h1') !== null`, false],
     ['present-handoff-issuer', '/cases/tron-terror-link/present?screen=4', `document.querySelector('[data-present] h1') !== null`, false],
+    // the request desk's additions (E5): the case's own events, and the offshore letter of request
+    ['case-events', '/cases/tron-coindcx?tab=events', GRAPH],
+    ['letter-of-request', '/vasps/HTX/letter-of-request?case=tron-htx-coindcx', `document.querySelectorAll('.sheet table tbody tr').length > 0`],
+    // where the exchanges are registered (E3), and the publicly documented case (E2)
+    ['case-jurisdiction', '/cases/tron-htx-coindcx?tab=where', `document.querySelector('svg[aria-label^="World map"] path') !== null`],
+    ['case-documented', '/cases/wazirx-2024', GRAPH],
     ['coverage', '/coverage'],
     ['sahyog-sim', '/sahyog-sim'],
   ]
