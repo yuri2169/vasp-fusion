@@ -3,7 +3,7 @@ import type { CaseList } from '../api/models'
 import { readMock } from '../test/files'
 import { detectChain, inspectAddress, validate } from './addresses'
 
-// Real addresses: the demo wallets in demo/cases.json (see PROGRESS.md), the two
+// Real addresses: the demo wallets in demo/cases.json, the two
 // checksum examples printed in EIP-55, and Solana's wrapped-SOL mint.
 const TRON = 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c'
 const ETH_LOWER = '0x8971dd825ba5dd32b60307773f71f6e3efb0eda9'

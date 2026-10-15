@@ -42,12 +42,12 @@ import { formatInr } from '../lib/format'
 
 const DEMO_CASES = ['demo-tron-okx', 'demo-eth-abstain', 'demo-tron-sanctioned'] as const
 
-// Real wallets from demo/cases.json (PROGRESS.md, B3 and B5). Nothing about them is alleged.
+// Real wallets from demo/cases.json. Nothing about them is alleged.
 const HERO_TRON = 'TYJD2hZKBNrcKW2gYUTV6rJJ2nYie2HP1c'
 const DEMO_BTC = 'bc1qw75rzzczmu2ulmjnrat3kn8h2rrrlr6wt7q3x6'
 
 // Where the money of three real demo wallets ended up (`where_funds_went` of tron-coindcx,
-// tron-ofac and eth-bridge as traced on 2 Oct 2026; PROGRESS.md, B3 and B7). The B1 fixtures
+// tron-ofac and eth-bridge as traced on 2 Oct 2026). The first fixtures
 // were recorded before that field existed, so the kit carries these figures itself.
 const FUNDS: { asset: string; total: number; named?: string; slices: FundsSlice[] }[] = [
   {

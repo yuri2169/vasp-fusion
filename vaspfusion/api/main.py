@@ -74,9 +74,9 @@ AUTH: str | None = None          # None = VASPFUSION_AUTH, else "auto"; "off" | 
 SAHYOG_KEY: Path | None = None   # None = data/sahyog_api_key (or VASPFUSION_SAHYOG_KEY_FILE)
 SAHYOG_SECRET: Path | None = None  # None = data/sahyog_signing_secret (or ..._SECRET_FILE)
 VERSION = "0.1.0"
-# Chains a trace can run on today. BSC has no free data source; Solana and Avalanche
-# have no adapter yet (PROGRESS.md, B2). Bitcoin is traced since B5 (chains/btc.py: an
-# address's pro-rata share of each transaction; cluster.py: labels by co-spending).
+# Chains a trace can run on today. Avalanche has no adapter. Bitcoin is traced through
+# chains/btc.py (an address's pro-rata share of each transaction) and cluster.py (labels by
+# co-spending).
 TRACEABLE = ("tron", "ethereum", "bsc", "polygon", "arbitrum", "base", "optimism", "bitcoin",
              "solana")
 

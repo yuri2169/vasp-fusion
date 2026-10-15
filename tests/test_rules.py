@@ -70,7 +70,7 @@ def test_a_small_share_scales_confidence_down():
 
 
 def test_share_full_of_one_is_the_plain_product():
-    """tier weight x share x hop decay, exactly as the phase brief writes it."""
+    """tier weight x share x hop decay, exactly as the rule is written."""
     att = run([tx(1, "S", "M1", 460, 0), tx(2, "M1", "HOT", 460, 1), tx(3, "S", "X", 540, 2)],
               rules=RuleConfig(share_full=1.0))
     assert att.candidates[0].confidence == approx(TIER_WEIGHT["curated"] * 0.46 * 0.85)

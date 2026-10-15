@@ -8,7 +8,9 @@ Run it: `make labels`, `UI=build make docker`, `make docker-up`, open http://127
 sign in with the demonstration account in `demo/officer.json`. To start again from a clean desk:
 `docker compose down -v && make docker-up`.
 
-The order below is the phase brief's. A mock jury session during U5 asked for the
+This is the short version; `docs/demo_runbook.md` has the full running order with the screens
+added since (the reference portal, case events, the letter of request, present mode), the
+fallbacks when a live trace is slow, and the jury's likely questions. A mock jury session asked for the
 second case to be given the most time and for four sentences to be said aloud; they are marked **Say**.
 
 | Time | Do | Say |

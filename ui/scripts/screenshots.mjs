@@ -145,8 +145,8 @@ const SHOTS = [
   ['overview-wallet-demo', '/wallets/tron/THS5KLm2HwoZyXt5XeVpfuhdKkXpotELsR?theme=light', 1440, 900, true, { ready: WALLET }],
   ['overview-watchlist-empty', '/watchlist?theme=light', 1440, 900, false, { ready: WATCH }],
   ['overview-cases-filtered', '/cases?theme=light&outcome=ATTRIBUTED', 1440, 900, false, { ready: STAMP }],
-  // The real demo cases through the live API. The watchlist shots need watched wallets: the U4 notes in
-  // PROGRESS.md say how the ones pictured were added.
+  // The real demo cases through the live API. The watchlist shots need watched wallets: `make demo`
+  // adds the demonstration watchlist (demo/watchlist.json).
   ['overview-live-dashboard-light', '/dashboard?theme=light', 1440, 900, true, { ready: COUNTS, live: true }],
   ['overview-live-dashboard-dark', '/dashboard?theme=dark', 1440, 900, true, { ready: COUNTS, live: true }],
   ['overview-live-dashboard-1280', '/dashboard?theme=light', 1280, 800, false, { ready: COUNTS, live: true }],
